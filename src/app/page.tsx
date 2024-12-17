@@ -1,53 +1,61 @@
-import Link from "next/link";
-
-import { LatestPost } from "~/app/_components/post";
-import { api, HydrateClient } from "~/trpc/server";
+import { TourCardForm, TourCardOutput } from "./_components/TourCardForm";
+import { currentUser } from "@clerk/nextjs/server";
+import { db } from "../server/db";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
+  // seedDatabase();
+  const user = await currentUser();
+  const season = await db.season.findUnique({ where: { year: 2025 } });
+  const tourCard = await db.tourCard.findFirst({
+    where: { seasonId: season?.id, userId: user?.id },
+  });
+  const tours = await db.tour.findMany({
+    where: { seasonId: season?.id },
+    include: { tourCards: true },
+  });
 
-  void api.post.getLatest.prefetch();
+  if (!tours || !season) return <div>Error</div>;
 
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
-          </div>
+    <div className="mx-1 my-4 flex h-[100vh] flex-col">
+      <SignedIn>
+        <h1 className="py-3 text-center font-yellowtail text-5xl">
+          Welcome to the PGC Tour
+        </h1>
 
-          <LatestPost />
-        </div>
-      </main>
-    </HydrateClient>
+        {tourCard && (
+          <>
+            <TourCardOutput
+              {...{
+                name: tourCard.fullName,
+                tourName: tours.filter((obj) => obj.id === tourCard.tourId)[0]
+                  ?.name,
+                pictureUrl: tours.filter((obj) => obj.id === tourCard.tourId)[0]
+                  ?.logoUrl,
+                tourCard: tourCard,
+              }}
+            />
+            <p className="mx-auto mb-8 w-5/6 text-center text-sm italic text-red-600">
+              {tourCard.account === 0 && `Payment info to come`}
+            </p>
+          </>
+        )}
+        {!tourCard && <TourCardForm {...{ tours }} />}
+      </SignedIn>
+      <SignedOut>
+        <div>Sign in here</div>
+        <div></div>
+      </SignedOut>
+      {/* <div className="mx-auto w-5/6 max-w-xl flex-wrap text-center font-varela text-sm">
+        The PGC Tour is an elite fantasy golf experience. Both tours are
+        identical and run in parallel, coordinate with your friends to ensure
+        you sign up for the same tour. For more info on how the tour operates
+        throughout the season check out the{" "}
+        <Link href="/rulebook" className="underline">
+          PGC Tour Rulebook
+        </Link>
+      </div> */}
+    </div>
   );
 }

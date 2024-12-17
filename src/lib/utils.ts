@@ -1,0 +1,97 @@
+import { type ClassValue, clsx } from "clsx";
+import { formatDate, formatDistanceToNowStrict } from "date-fns";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export function formatRelativeDate(from: Date) {
+  const currentDate = new Date();
+  if (currentDate.getTime() - from.getTime() < 24 * 60 * 60 * 1000) {
+    return formatDistanceToNowStrict(from, { addSuffix: true });
+  } else {
+    if (currentDate.getFullYear() === from.getFullYear()) {
+      return formatDate(from, "MMM d");
+    } else {
+      return formatDate(from, "MMM d, yyyy");
+    }
+  }
+}
+
+export function formatNumber(n: number): string {
+  return Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 1,
+  }).format(n);
+}
+export function formatCompactNumber(n: number): string {
+  return Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(n);
+}
+
+export function formatMoney(number: number) {
+  number = Number(number);
+  if (Math.abs(number) >= 1e6) {
+    return "$" + (number / 1e6).toFixed(1) + "M";
+  } else if (Math.abs(number) >= 1e4) {
+    return "$" + (number / 1e3).toFixed(0) + "k";
+  } else if (Math.abs(number) === 0 || isNaN(number)) {
+    return "-";
+  } else {
+    return Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(number);
+  }
+}
+
+export function formatScore(score: number | null | "E") {
+  switch (true) {
+    case typeof score === "number" && score > 99:
+      score = null;
+      break;
+    case typeof score === "number" && score > 0:
+      score = "+" + score;
+      break;
+    case typeof score === "number" && score === 0:
+      score = "E";
+      break;
+    default:
+      break;
+  }
+  return score;
+}
+export function formatThru(thru: number, teetime: string) {
+  if (+thru === 18) {
+    return "F";
+  } else if (+thru > 0) {
+    return +thru;
+  } else {
+    return teetime;
+  }
+}
+
+export function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/ /g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+export function formatRank(number: number) {
+  if (number < 20 && number > 5) {
+    return number + "th";
+  } else {
+    if (number.toString().slice(-1) === "1") {
+      return number + "st";
+    } else if (number.toString().slice(-1) === "2") {
+      return number + "nd";
+    } else if (number.toString().slice(-1) === "3") {
+      return number + "rd";
+    } else {
+      return number + "th";
+    }
+  }
+}

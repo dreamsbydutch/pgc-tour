@@ -1,20 +1,218 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL")
+  // directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Season {
+  id          String       @id @default(cuid())
+  year        Int          @unique
+  number      Int          @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tourCards   TourCard[]
+  tournaments Tournament[]
+  tours       Tour[]
+  tiers       Tier[]
 
-    @@index([name])
+  @@map("seasons")
+}
+
+model Tour {
+  id        String @id @default(cuid())
+  name      String
+  logoUrl   String
+  seasonId  String
+  shortForm String
+  buyIn     Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tournaments Tournament[]
+  tourCards   TourCard[]
+  tiers       Tier[]
+  season      Season       @relation(fields: [seasonId], references: [id])
+
+  @@unique([name, seasonId])
+  @@map("tours")
+}
+
+model Tier {
+  id          String       @id @default(cuid())
+  payouts     Float[]
+  points      Float[]
+  name        String
+  seasonId    String
+  tours       Tour[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tournaments Tournament[]
+
+  season Season @relation(fields: [seasonId], references: [id])
+
+  @@unique([name, seasonId])
+  @@map("tiers")
+}
+
+model Tournament {
+  id           String   @id @default(cuid())
+  name         String
+  startDate    DateTime
+  endDate      DateTime
+  tierId       String
+  courseId     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  logoUrl      String?
+  seasonId     String
+  apiId        String?
+  currentRound Int?
+  livePlay     Boolean?
+  tours        Tour[]
+  golfers      Golfer[]
+  teams        Team[]
+  course       Course   @relation(fields: [courseId], references: [id])
+  season       Season   @relation(fields: [seasonId], references: [id])
+  tier         Tier     @relation(fields: [tierId], references: [id])
+
+  @@map("tournaments")
+}
+
+model Course {
+  id          String       @id @default(cuid())
+  apiId       String
+  name        String       @unique
+  location    String
+  par         Int
+  front       Int
+  back        Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tournaments Tournament[]
+
+  @@map("courses")
+}
+
+model Team {
+  id           String      @id @default(cuid())
+  golferIds    String[]
+  tournamentId String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @default(now()) @updatedAt
+  earnings     Float?
+  makeCut      Float?
+  points       Float?
+  tourCardId   String
+  position     String?
+  score        Float?
+  strokes      Float?
+  teamRounds   TeamRound[]
+  tourCard     TourCard    @relation(fields: [tourCardId], references: [id])
+  tournament   Tournament  @relation(fields: [tournamentId], references: [id])
+
+  @@map("teams")
+}
+
+model TeamRound {
+  id        String    @id @default(cuid())
+  position  String?
+  score     Float?
+  strokes   Float?
+  thru      Float?
+  round     Int?
+  teeTime   DateTime?
+  front     Float?
+  back      Float?
+  teamId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  team      Team      @relation(fields: [teamId], references: [id])
+
+  @@map("team_rounds")
+}
+
+model TourCard {
+  id          String  @id @default(cuid())
+  userId      String
+  fullName    String
+  displayName String
+  email       String
+  account     Float   @default(0)
+  points      Float?
+  position    String?
+  tourId      String
+  seasonId    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  teams  Team[]
+  season Season @relation(fields: [seasonId], references: [id])
+  tour   Tour   @relation(fields: [tourId], references: [id])
+
+  @@unique([userId, seasonId])
+  @@map("tour_cards")
+}
+
+model Golfer {
+  apiId        String        @id @unique
+  position     String?
+  playerName   String
+  score        Int?
+  makeCut      Float?
+  topTen       Float?
+  win          Float?
+  round        Int?
+  group        Int?
+  usage        Float?
+  earnings     Float?
+  tournamentId String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  rounds       GolferRound[]
+  tournament   Tournament    @relation(fields: [tournamentId], references: [id])
+
+  @@unique([playerName, tournamentId])
+  @@map("golfers")
+}
+
+model GolferRound {
+  id        String    @id @default(cuid())
+  position  String?
+  score     Float?
+  strokes   Float?
+  thru      Float?
+  round     Int?
+  teeTime   DateTime?
+  front     Float?
+  back      Float?
+  golferId  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  golfer    Golfer    @relation(fields: [golferId], references: [apiId])
+
+  @@map("golfer_rounds")
+}
+
+model Transactions {
+  id              String          @id @default(cuid())
+  userId          String
+  seasonId        String
+  description     String
+  amount          Float
+  transactionType TransactionType
+}
+
+enum TransactionType {
+  TourCardFee
+  TournamentWinnings
+  Withdrawal
+  LeagueDonation
+  CharityDonation
 }
