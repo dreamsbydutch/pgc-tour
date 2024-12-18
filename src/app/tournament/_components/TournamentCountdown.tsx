@@ -1,53 +1,53 @@
-'use client'
+"use client";
 
-import React, { useEffect, useRef, useState } from 'react'
-import { Tournament } from '@prisma/client'
+import React, { useEffect, useRef, useState } from "react";
+import { Tournament } from "@prisma/client";
 
 export default function TournamentCountdown({
   tourney,
 }: {
-  tourney: Tournament
+  tourney: Tournament;
 }) {
-  const timer = calculateTimeLeft(tourney.startDate)
+  const timer = calculateTimeLeft(tourney.startDate);
   if (
     timer.days === 0 &&
     timer.hours === 0 &&
     timer.minutes === 0 &&
     timer.seconds === 0
   ) {
-    return <></>
+    return <></>;
   }
-  return <CountdownTimer tourney={tourney} startDateTime={tourney.startDate} />
+  return <CountdownTimer tourney={tourney} startDateTime={tourney.startDate} />;
 }
 
 // https://stackoverflow.com/a/2998874/1673761
-export const twoDigits = (num: number) => String(num).padStart(2, '0')
+export const twoDigits = (num: number) => String(num).padStart(2, "0");
 
 type TimeLeftType = {
-  days: number
-  hours: number
-  minutes: number
-  seconds: number
-}
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
 const CountdownTimer = ({
   tourney,
   startDateTime,
 }: {
-  tourney: Tournament
-  startDateTime: Date
+  tourney: Tournament;
+  startDateTime: Date;
 }) => {
   const [timeLeft, setTimeLeft] = useState<TimeLeftType>(
-    calculateTimeLeft(startDateTime)
-  )
+    calculateTimeLeft(startDateTime),
+  );
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft(startDateTime))
-    }, 1000)
+      setTimeLeft(calculateTimeLeft(startDateTime));
+    }, 1000);
 
     // Cleanup the interval on component unmount
-    return () => clearInterval(timer)
-  }, [startDateTime])
+    return () => clearInterval(timer);
+  }, [startDateTime]);
 
   return (
     <div className="my-8 rounded-2xl bg-gray-100 p-2 shadow-md">
@@ -60,7 +60,7 @@ const CountdownTimer = ({
             <img
               className="max-h-32 w-full md:max-h-40"
               alt="Tourney Logo"
-              src={tourney.logoUrl}
+              src={tourney.logoUrl || undefined}
             />
           </div>
           <div className="font-varela text-2xl font-bold sm:text-3xl md:text-4xl">
@@ -71,12 +71,12 @@ const CountdownTimer = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const calculateTimeLeft = (startDateTime: Date) => {
-  const difference = +new Date(startDateTime) - +new Date()
-  let timeLeft = {}
+  const difference = +new Date(startDateTime) - +new Date();
+  let timeLeft = {};
 
   if (difference > 0) {
     timeLeft = {
@@ -84,15 +84,15 @@ const calculateTimeLeft = (startDateTime: Date) => {
       hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
       minutes: Math.floor((difference / 1000 / 60) % 60),
       seconds: Math.floor((difference / 1000) % 60),
-    }
+    };
   } else {
     timeLeft = {
       days: 0,
       hours: 0,
       minutes: 0,
       seconds: 0,
-    }
+    };
   }
 
-  return timeLeft as TimeLeftType
-}
+  return timeLeft as TimeLeftType;
+};
