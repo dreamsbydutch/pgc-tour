@@ -15,7 +15,7 @@ import { createClient } from "@/src/lib/supabase/server";
 export default async function Page({
   searchParams,
 }: {
-  searchParams?: { [key: string]: string | undefined };
+  searchParams?: Record<string,string | undefined>
 }) {
   return (
     <div className="flex w-full flex-col">
@@ -51,7 +51,7 @@ export default async function Page({
 export async function LeaderboardListing({
   searchParams,
 }: {
-  searchParams?: { [key: string]: string | undefined };
+  searchParams?: Record<string,string | undefined>
 }) {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
@@ -61,9 +61,9 @@ export async function LeaderboardListing({
   if (!leaderboardData || error)
     throw new Error("Error fetching leaderboard data. LeaderboardListing:6");
   const { focusTourney, teams, toursInPlay } = leaderboardData;
-  const activeTour = toursInPlay.filter(
+  const activeTour = toursInPlay.find(
     (obj) => obj.shortForm === searchParams?.tour,
-  )[0];
+  )
   return (
     <>
       <TournamentCountdown tourney={focusTourney} />
@@ -127,17 +127,17 @@ async function fetchLeaderboardListingInfo({
   });
 
   const focusTourney = activeTourneyID
-    ? tournaments?.filter((obj) => obj.id === activeTourneyID)[0]
-    : tournaments?.filter((obj) => obj.endDate < date)[0];
+    ? tournaments?.find((obj) => obj.id === activeTourneyID)
+    : tournaments?.find((obj) => obj.endDate < date)
 
   let teams = await db.team.findMany({
     where: { tournamentId: focusTourney?.id },
     include: teamDataInclude,
     orderBy: { score: "asc" },
   });
-  const activeTour = focusTourney?.tours.filter(
+  const activeTour = focusTourney?.tours.find(
     (obj) => obj.shortForm === activeTourID,
-  )[0];
+  )
   teams = teams.filter((team) => team.tourCard.tourId === activeTour?.id);
   if (!season || !focusTourney) return null;
 

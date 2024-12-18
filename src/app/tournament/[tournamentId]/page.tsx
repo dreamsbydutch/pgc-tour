@@ -10,7 +10,7 @@ export default async function Page({
   searchParams,
 }: {
   params: { tournamentId: string };
-  searchParams?: { [key: string]: string | undefined };
+  searchParams?: Record<string, string | undefined>;
 }) {
   return (
     <div className="flex w-full flex-col">

@@ -21,8 +21,8 @@ export default async function LeaderboardHeader({
   });
 
   const focusTourney = focusTourneyId
-    ? tournaments?.filter((obj) => obj.id === focusTourneyId)[0]
-    : tournaments?.filter((obj) => obj.endDate < date)[0];
+    ? tournaments?.find((obj) => obj.id === focusTourneyId)
+    : tournaments?.find((obj) => obj.endDate < date);
 
   if (!focusTourney)
     throw new Error(

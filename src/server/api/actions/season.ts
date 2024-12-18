@@ -23,5 +23,6 @@ export async function seedSeasons() {
         console.log(season);
       }
     }
+    return;
   });
 }

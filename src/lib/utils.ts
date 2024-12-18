@@ -84,11 +84,11 @@ export function formatRank(number: number) {
   if (number < 20 && number > 5) {
     return number + "th";
   } else {
-    if (number.toString().slice(-1) === "1") {
+    if (number.toString().endsWith("1")) {
       return number + "st";
-    } else if (number.toString().slice(-1) === "2") {
+    } else if (number.toString().endsWith("2")) {
       return number + "nd";
-    } else if (number.toString().slice(-1) === "3") {
+    } else if (number.toString().endsWith("3")) {
       return number + "rd";
     } else {
       return number + "th";

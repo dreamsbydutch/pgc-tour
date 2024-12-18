@@ -1,4 +1,4 @@
-import { LoaderCircle, LogIn, LogOut, LucideProps } from "lucide-react";
+import { LoaderCircle, LogIn, LogOut, type LucideProps } from "lucide-react";
 
 export const Icons = {
   logIn: LogIn,

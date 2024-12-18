@@ -31,7 +31,7 @@ export default function SignInPage() {
       if (error) {
         throw error;
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Please try again.",
         description: "There was an error logging in with Google.",

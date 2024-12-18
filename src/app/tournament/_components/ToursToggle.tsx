@@ -4,9 +4,9 @@ import { api } from "@/src/trpc/react";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
-  Dispatch,
-  ReactNode,
-  SetStateAction,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
   useEffect,
   useState,
 } from "react";
@@ -16,7 +16,7 @@ export default function ToursToggle({
   searchParams,
 }: {
   children: ReactNode;
-  searchParams?: { [key: string]: string | undefined };
+  searchParams?: Record<string,string | undefined>;
 }) {
   const date = new Date();
   const year = date.getFullYear();
@@ -32,7 +32,7 @@ export default function ToursToggle({
     if (searchParams?.tour === activeTourShortForm) {
       setActiveTourLoading(false);
     }
-  }, [activeTourLoading, searchParams?.tour]);
+  }, [activeTourLoading, activeTourShortForm, searchParams?.tour]);
 
   const { data: season } = api.season.getByYear.useQuery({ year });
   const { data: tournaments } = api.tournament.getBySeason.useQuery({
@@ -40,8 +40,8 @@ export default function ToursToggle({
   });
 
   const focusTourney = focusTourneyId
-    ? tournaments?.filter((obj) => obj.id === focusTourneyId)[0]
-    : tournaments?.filter((obj) => obj.endDate < date)[0];
+    ? tournaments?.find((obj) => obj.id === focusTourneyId)
+    : tournaments?.find((obj) => obj.endDate < date)
 
   if (!season || !focusTourney) return <Loader2 />;
 

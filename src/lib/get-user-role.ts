@@ -1,6 +1,6 @@
 import "server-only";
 
-import { JWTPayload, jwtVerify } from "jose";
+import { type JWTPayload, jwtVerify } from "jose";
 
 import { createClient } from "@/lib/supabase/server";
 

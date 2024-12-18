@@ -1,24 +1,25 @@
 "use client";
 
 import { api } from "@/src/trpc/react";
-import { Tour } from "@prisma/client";
+import { type Tour } from "@prisma/client";
 import { useSearchParams } from "next/navigation";
 import { type Dispatch, type SetStateAction, useState } from "react";
 
 export default function PGCStandings() {
   const searchParams = useSearchParams();
   const [standingsToggle, setStandingsToggle] = useState(
-    searchParams.get("tour") || "",
+    searchParams.get("tour") ?? "",
   );
   const tours = api.tour.getActive.useQuery();
 
-  if (!tours.data || !tours.data[0]) return null;
+  if (!tours.data) return null;
+  if (!tours.data[0]) return null;
   if (standingsToggle === "") {
     setStandingsToggle(tours.data[0].shortForm);
   }
-  const activeTour = tours.data?.filter(
+  const activeTour = tours.data?.find(
     (tour) => tour.shortForm === standingsToggle,
-  )[0];
+  );
   return (
     <>
       <div className="mb-4 pb-2 text-center font-yellowtail text-5xl sm:text-6xl md:text-7xl">
@@ -51,7 +52,10 @@ export default function PGCStandings() {
           </div>
         </div>
         {activeTour?.tourCards.map((tourCard) => (
-          <div className="grid grid-flow-row grid-cols-8 text-center">
+          <div
+            key={tourCard.id}
+            className="grid grid-flow-row grid-cols-8 text-center"
+          >
             <div className="place-self-center font-varela text-sm sm:text-base">
               {tourCard.position}
             </div>

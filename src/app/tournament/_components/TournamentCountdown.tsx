@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { Tournament } from "@prisma/client";
+import React, { useEffect, useState } from "react";
+import { type Tournament } from "@prisma/client";
+import Image from "next/image";
 
 export default function TournamentCountdown({
   tourney,
@@ -57,10 +58,10 @@ const CountdownTimer = ({
         </h1>
         <div className="flex w-full items-center justify-center py-3">
           <div className="">
-            <img
+            <Image
               className="max-h-32 w-full md:max-h-40"
               alt="Tourney Logo"
-              src={tourney.logoUrl || undefined}
+              src={tourney.logoUrl ?? ""}
             />
           </div>
           <div className="font-varela text-2xl font-bold sm:text-3xl md:text-4xl">

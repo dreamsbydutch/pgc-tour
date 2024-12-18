@@ -30,9 +30,9 @@ export default async function Home() {
           <TourCardOutput
             {...{
               name: tourCard.displayName,
-              tourName: tours.filter((obj) => obj.id === tourCard.tourId)[0]
+              tourName: tours.find((obj) => obj.id === tourCard.tourId)
                 ?.name,
-              pictureUrl: tours.filter((obj) => obj.id === tourCard.tourId)[0]
+              pictureUrl: tours.find((obj) => obj.id === tourCard.tourId)
                 ?.logoUrl,
               tourCard: tourCard,
               memberId: data.user?.id,

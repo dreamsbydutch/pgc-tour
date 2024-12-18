@@ -19,6 +19,7 @@ export async function seedCourses() {
         console.log(obj);
       }
     }
+    return;
   });
 }
 

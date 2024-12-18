@@ -2,25 +2,24 @@
 import { cn, formatMoney, formatNumber, formatRank } from "@/lib/utils";
 import { api } from "@/src/trpc/react";
 import { ChevronDownIcon, ChevronUpIcon, Loader2 } from "lucide-react";
-import Image from "next/image";
 import { useState } from "react";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "../_components/ui/table";
-import { Tier } from "@prisma/client";
+import { type Tier } from "@prisma/client";
 
 export default function RulebookPage() {
   const season = api.season.getCurrent.useQuery();
   const tiers = api.tier.getBySeason.useQuery({
     seasonId: season.data?.id || "",
   });
-  if (!tiers.data || !season.data) return <Loader2 />;
+  if (!tiers.data) return <Loader2 />;
+  if (!season.data) return <Loader2 />;
   return (
     <>
       <div className="pb-4 pt-2 text-center font-yellowtail text-7xl lg:text-[5.5rem]">
@@ -261,7 +260,7 @@ function PayoutsTable({ tiers }: { tiers: Tier[] }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tiers[0]?.payouts.slice(0, 15).map((obj, i) => (
+          {tiers[0]?.payouts.slice(0, 15).map((_obj, i) => (
             <TableRow>
               <TableCell className="text-sm font-bold">
                 {formatRank(i + 1)}
@@ -271,7 +270,7 @@ function PayoutsTable({ tiers }: { tiers: Tier[] }) {
                   className="text-center text-xs"
                   key={`payouts-${tier.id}`}
                 >
-                  {formatMoney(tier.payouts[i] || 0)}
+                  {formatMoney(tier.payouts[i] ?? 0)}
                 </TableCell>
               ))}
             </TableRow>
@@ -305,7 +304,7 @@ function PointsTable({ tiers }: { tiers: Tier[] }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tiers[0]?.points.slice(0, 35).map((obj, i) => (
+          {tiers[0]?.points.slice(0, 35).map((_obj, i) => (
             <TableRow>
               <TableCell className="text-sm font-bold">
                 {formatRank(i + 1)}
@@ -315,7 +314,7 @@ function PointsTable({ tiers }: { tiers: Tier[] }) {
                   className="text-center text-xs"
                   key={`points-${tier.id}`}
                 >
-                  {formatNumber(tier.points[i] || 0)}
+                  {formatNumber(tier.points[i] ?? 0)}
                 </TableCell>
               ))}
             </TableRow>

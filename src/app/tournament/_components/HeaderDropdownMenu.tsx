@@ -1,8 +1,8 @@
 "use client";
 
-import { Tournament } from "@prisma/client";
+import { type Tournament } from "@prisma/client";
 import { ChevronDown, Loader2 } from "lucide-react";
-import { Dispatch, SetStateAction, useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +14,7 @@ import {
 } from "../../_components/ui/dropdown-menu";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  TournamentData,
-} from "@/src/types/prisma_include";
+import { type TournamentData } from "@/src/types/prisma_include";
 import { api } from "@/src/trpc/react";
 import { cn } from "@/lib/utils";
 
@@ -84,7 +82,7 @@ export default function HeaderDropdown({
                   {leaderboardToggle === "Tier"
                     ? groupedTourneys.length === 4 && i === 0
                       ? "Live"
-                      : tiers.filter((a) => a.id === group[0]?.tierId)[0]?.name
+                      : tiers.find((a) => a.id === group[0]?.tierId)?.name
                     : ""}
                 </DropdownMenuLabel>
                 {group.map((tourney) => {
@@ -202,16 +200,17 @@ function useLeaderboardHeaderInfo({
 
   const { data: season } = api.season.getByYear.useQuery({ year });
   const { data: tiers } = api.tier.getBySeason.useQuery({
-    seasonId: season?.id || "",
+    seasonId: season?.id ?? "",
   });
   const { data: tournaments } = api.tournament.getBySeason.useQuery({
     seasonId: seasonId ?? season?.id,
   });
-  if (!tiers || !tournaments) return null;
+  if (!tiers) return null;
+  if (!tournaments) return null;
 
-  const currentTourneyID = tournaments.filter(
+  const currentTourneyID = tournaments.find(
     (tourney) => tourney.startDate < date && tourney.endDate > date,
-  )[0]?.id;
+  )?.id;
 
   console.log(tournaments);
 
@@ -219,30 +218,24 @@ function useLeaderboardHeaderInfo({
     ? [
         tournaments.filter((obj) => obj.id === currentTourneyID),
         tournaments.filter(
-          (obj) =>
-            obj.tierId === tiers.filter((a) => a.name === "Major")[0]?.id,
+          (obj) => obj.tierId === tiers.find((a) => a.name === "Major")?.id,
         ),
         tournaments.filter(
-          (obj) =>
-            obj.tierId === tiers.filter((a) => a.name === "Mid")[0]?.id,
+          (obj) => obj.tierId === tiers.find((a) => a.name === "Mid")?.id,
         ),
         tournaments.filter(
-          (obj) =>
-            obj.tierId === tiers.filter((a) => a.name === "Bottom")[0]?.id,
+          (obj) => obj.tierId === tiers.find((a) => a.name === "Bottom")?.id,
         ),
       ]
     : [
         tournaments.filter(
-          (obj) =>
-            obj.tierId === tiers.filter((a) => a.name === "Major")[0]?.id,
+          (obj) => obj.tierId === tiers.find((a) => a.name === "Major")?.id,
         ),
         tournaments.filter(
-          (obj) =>
-            obj.tierId === tiers.filter((a) => a.name === "Mid")[0]?.id,
+          (obj) => obj.tierId === tiers.find((a) => a.name === "Mid")?.id,
         ),
         tournaments.filter(
-          (obj) =>
-            obj.tierId === tiers.filter((a) => a.name === "Bottom")[0]?.id,
+          (obj) => obj.tierId === tiers.find((a) => a.name === "Bottom")?.id,
         ),
       ];
 
