@@ -1,7 +1,7 @@
 "use client";
 import { cn, formatMoney, formatNumber, formatRank } from "@/lib/utils";
 import { api } from "@/src/trpc/react";
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronUpIcon, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import {
@@ -20,7 +20,7 @@ export default function RulebookPage() {
   const tiers = api.tier.getBySeason.useQuery({
     seasonId: season.data?.id || "",
   });
-  if (!tiers.data || !season.data) return <div>Error</div>;
+  if (!tiers.data || !season.data) return <Loader2 />;
   return (
     <>
       <div className="pb-4 pt-2 text-center font-yellowtail text-7xl lg:text-[5.5rem]">

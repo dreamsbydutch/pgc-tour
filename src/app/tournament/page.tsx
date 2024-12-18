@@ -5,12 +5,12 @@ import { Suspense } from "react";
 import { LeaderboardListSkeleton } from "./_components/skeletons/LeaderboardListSkeleton";
 import TournamentCountdown from "./_components/TournamentCountdown";
 import { cn, formatMoney, formatScore } from "@/src/lib/utils";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/src/server/db";
 import {
   teamDataInclude,
   tournamentDataInclude,
 } from "@/src/types/prisma_include";
+import { createClient } from "@/src/lib/supabase/server";
 
 export default async function Page({
   searchParams,
@@ -53,13 +53,14 @@ export async function LeaderboardListing({
 }: {
   searchParams?: { [key: string]: string | undefined };
 }) {
-  const session = await auth();
-  const data = await fetchLeaderboardListingInfo({
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
+  const leaderboardData = await fetchLeaderboardListingInfo({
     activeTourID: searchParams?.tour,
   });
-  if (!data)
+  if (!leaderboardData || error)
     throw new Error("Error fetching leaderboard data. LeaderboardListing:6");
-  const { focusTourney, teams, toursInPlay } = data;
+  const { focusTourney, teams, toursInPlay } = leaderboardData;
   const activeTour = toursInPlay.filter(
     (obj) => obj.shortForm === searchParams?.tour,
   )[0];
@@ -67,7 +68,7 @@ export async function LeaderboardListing({
     <>
       <TournamentCountdown tourney={focusTourney} />
       {teams?.map((obj) => {
-        const user = obj.tourCard.userId === session.userId;
+        const user = obj.tourCard.memberId === data.user?.id;
         return (
           <div
             className={cn(
