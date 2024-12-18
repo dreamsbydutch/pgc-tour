@@ -6,11 +6,9 @@ import { LeaderboardHeaderSkeleton } from "../_components/skeletons/LeaderboardH
 import { LeaderboardListSkeleton } from "../_components/skeletons/LeaderboardListSkeleton";
 
 export default async function Page({
-  children,
   params,
   searchParams,
 }: {
-  children: React.ReactNode;
   params: { tournamentId: string };
   searchParams?: { [key: string]: string | undefined };
 }) {
