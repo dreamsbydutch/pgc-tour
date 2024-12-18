@@ -16,7 +16,7 @@ export const tourCardRouter = createTRPCRouter({
   getByUserId: publicProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.tourCard.findMany({ where: { userId: input.userId } });
+      return await ctx.db.tourCard.findMany({ where: { memberId: input.userId } });
     }),
 
   create: publicProcedure
@@ -34,11 +34,9 @@ export const tourCardRouter = createTRPCRouter({
       return await ctx.db.tourCard.create({
         data: {
           seasonId: input.seasonId,
-          email: input.email,
           displayName: input.displayName,
-          fullName: input.fullName,
           tourId: input.tourId,
-          userId: input.userId,
+          memberId: input.userId,
         },
       });
     }),
