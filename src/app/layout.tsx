@@ -4,7 +4,6 @@ import { type Metadata } from "next";
 import { Barlow_Condensed, Varela, Yellowtail } from "next/font/google";
 
 import { TRPCReactProvider } from "@/trpcLocal/react";
-import { ClerkProvider } from "@clerk/nextjs";
 import MenuBar from "@/components/nav/MenuBar";
 import { cn } from "../lib/utils";
 
@@ -37,25 +36,23 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body
-          className={cn(
-            varela.variable,
-            yellowtail.variable,
-            barlow.variable,
-            "font-sans",
-          )}
-        >
-          <TRPCReactProvider>
-            <main>
-              {children}
-              <div className="mb-20 text-white">.</div>
-            </main>
-            <MenuBar className="shadow-inv fixed bottom-0 z-20 flex w-full items-center justify-evenly bg-gray-200" />
-          </TRPCReactProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={cn(
+          varela.variable,
+          yellowtail.variable,
+          barlow.variable,
+          "font-sans",
+        )}
+      >
+        <TRPCReactProvider>
+          <main>
+            {children}
+            <div className="mb-20 text-white">.</div>
+          </main>
+          <MenuBar className="shadow-inv fixed bottom-0 z-20 flex w-full items-center justify-evenly bg-gray-200" />
+        </TRPCReactProvider>
+      </body>
+    </html>
   );
 }

@@ -6,6 +6,7 @@ import { tierRouter } from "./routers/tier";
 import { tourRouter } from "./routers/tour";
 import { tourCardRouter } from "./routers/tour_card";
 import { tournamentRouter } from "./routers/tournament";
+import { memberRouter } from "./routers/members";
 
 /**
  * This is the primary router for your server.
@@ -13,6 +14,7 @@ import { tournamentRouter } from "./routers/tournament";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
+  member: memberRouter,
   team: teamRouter,
   course: courseRouter,
   season: seasonRouter,

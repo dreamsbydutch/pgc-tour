@@ -8,7 +8,6 @@ import {
   createTourCard,
   deleteTourCard,
 } from "@/src/server/api/actions/tour_card";
-import { useAuth } from "@clerk/clerk-react";
 import { useState } from "react";
 import {
   Dialog,
@@ -20,6 +19,7 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { api } from "@/src/trpc/react";
+import { createClient } from "@/src/lib/supabase/client";
 
 export function TourCardForm({ tours }: { tours: TourData[] }) {
   const utils = api.useUtils();
@@ -68,11 +68,13 @@ export function TourCardOutput({
   tourName,
   pictureUrl,
   tourCard,
+  memberId,
 }: {
   name: string | undefined;
   tourName: string | undefined;
   pictureUrl: string | undefined;
   tourCard: TourCard;
+  memberId: string;
 }) {
   return (
     <div className="mt-8 flex flex-col items-center justify-center">
@@ -91,17 +93,22 @@ export function TourCardOutput({
         <h2 className="text-2xl font-bold text-gray-800">{name}</h2>
         <p className="text-base italic text-gray-600">{tourName}</p>
       </div>
-      <TourCardChangeButton tourCard={tourCard} />
+      <TourCardChangeButton {...{ tourCard, memberId }} />
     </div>
   );
 }
-function TourCardChangeButton({ tourCard }: { tourCard: TourCard }) {
+function TourCardChangeButton({
+  tourCard,
+  memberId,
+}: {
+  tourCard: TourCard;
+  memberId: string;
+}) {
   const [effect, setEffect] = useState(false);
   const [confirmEffect, setConfirmEffect] = useState(false);
-  const user = useAuth();
   const utils = api.useUtils();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  if (user.userId !== tourCard.userId) return null;
+  if (memberId !== tourCard.memberId) return null;
 
   const handleConfirm = () => {
     setConfirmEffect(true);

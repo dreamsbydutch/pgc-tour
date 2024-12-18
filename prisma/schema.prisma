@@ -1,12 +1,25 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("POSTGRES_PRISMA_URL")
-  // directUrl = env("POSTGRES_URL_NON_POOLING")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Member {
+  id        String  @id @unique
+  fullname  String
+  firstname String?
+  lastname  String?
+  email     String  @unique
+  role      String  @default("regular")
+  account   Float   @default(0)
+
+  tourCards TourCard[]
+
+  @@map("members")
 }
 
 model Season {
@@ -139,13 +152,11 @@ model TeamRound {
 
 model TourCard {
   id          String  @id @default(cuid())
-  userId      String
-  fullName    String
   displayName String
-  email       String
-  account     Float   @default(0)
+  earnings    Float   @default(0)
   points      Float?
   position    String?
+  memberId    String
   tourId      String
   seasonId    String
 
@@ -153,10 +164,11 @@ model TourCard {
   updatedAt DateTime @default(now()) @updatedAt
 
   teams  Team[]
+  member Member @relation(fields: [memberId], references: [id])
   season Season @relation(fields: [seasonId], references: [id])
   tour   Tour   @relation(fields: [tourId], references: [id])
 
-  @@unique([userId, seasonId])
+  @@unique([memberId, seasonId])
   @@map("tour_cards")
 }
 

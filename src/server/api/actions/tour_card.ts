@@ -1,9 +1,9 @@
 "use server";
 
-import { currentUser } from "@clerk/nextjs/server";
 import { db } from "../../db";
 import { redirect } from "next/navigation";
-import { api } from "@/src/trpc/react";
+import { createClient } from "@/src/lib/supabase/server";
+import { api } from "@/src/trpc/server";
 
 export async function createTourCard({
   tourId,
@@ -12,15 +12,14 @@ export async function createTourCard({
   tourId: string;
   seasonId: string;
 }) {
-  const user = await currentUser();
-  if (!user || !user.primaryEmailAddress) return;
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  const user = await api.member.getById({ memberId: data.user?.id });
+  if (!user || !data.user || !data.user.email) return;
   await db.tourCard.create({
     data: {
-      displayName:
-        (user?.firstName && user?.firstName[0]) + ". " + user?.lastName,
-      fullName: user?.firstName + " " + user?.lastName,
-      email: user.primaryEmailAddress.emailAddress,
-      userId: user.id,
+      displayName: (user.firstname && user.firstname[0]) + ". " + user.lastname,
+      memberId: data.user.id,
       tourId: tourId,
       seasonId: seasonId,
     },

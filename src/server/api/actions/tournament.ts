@@ -19,22 +19,22 @@ export const seedTournaments = async () => {
       where: { seasonId: season?.id },
     });
 
-    // await db.tournament.create({
-    //   data: {
-    //     name: tourney.Tourney,
-    //     endDate: new Date(tourney.EndDate),
-    //     startDate: new Date(tourney.StartDate),
-    //     logoUrl: tourney.Logo,
-    //     seasonId: season?.id || "",
-    //     courseId: course?.id || "",
-    //     tierId: tier?.id || "",
-    //     livePlay: false,
-    //     tours: {
-    //       connect: tour.map((a) => {
-    //         return { id: a.id };
-    //       }),
-    //     },
-    //   },
-    // });
+    await db.tournament.create({
+      data: {
+        name: tourney.Tourney,
+        endDate: new Date(tourney.EndDate),
+        startDate: new Date(tourney.StartDate),
+        logoUrl: tourney.Logo,
+        seasonId: season?.id || "",
+        courseId: course?.id || "",
+        tierId: tier?.id || "",
+        livePlay: false,
+        tours: {
+          connect: tour.map((a) => {
+            return { id: a.id };
+          }),
+        },
+      },
+    });
   });
 };

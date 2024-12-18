@@ -20,7 +20,7 @@ export default function RulebookPage() {
   const tiers = api.tier.getBySeason.useQuery({
     seasonId: season.data?.id || "",
   });
-  if (!tiers.data || !season.data) return null;
+  if (!tiers.data || !season.data) return <div>Error</div>;
   return (
     <>
       <div className="pb-4 pt-2 text-center font-yellowtail text-7xl lg:text-[5.5rem]">
