@@ -16,7 +16,7 @@ import { type Tier } from "@prisma/client";
 export default function RulebookPage() {
   const season = api.season.getCurrent.useQuery();
   const tiers = api.tier.getBySeason.useQuery({
-    seasonId: season.data?.id || "",
+    seasonId: season.data?.id ?? "",
   });
   if (!tiers.data) return <Loader2 />;
   if (!season.data) return <Loader2 />;
@@ -261,7 +261,7 @@ function PayoutsTable({ tiers }: { tiers: Tier[] }) {
         </TableHeader>
         <TableBody>
           {tiers[0]?.payouts.slice(0, 15).map((_obj, i) => (
-            <TableRow>
+            <TableRow key={i}>
               <TableCell className="text-sm font-bold">
                 {formatRank(i + 1)}
               </TableCell>
@@ -305,7 +305,7 @@ function PointsTable({ tiers }: { tiers: Tier[] }) {
         </TableHeader>
         <TableBody>
           {tiers[0]?.points.slice(0, 35).map((_obj, i) => (
-            <TableRow>
+            <TableRow key={i}>
               <TableCell className="text-sm font-bold">
                 {formatRank(i + 1)}
               </TableCell>

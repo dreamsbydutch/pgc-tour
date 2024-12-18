@@ -5,19 +5,18 @@ import { db } from "../../db";
 
 export async function seedTiers() {
   const seasons = await db.season.findMany({});
-  await seed2021Data(seasons.filter((obj) => obj.year === 2021)[0]);
-  await seed2022Data(seasons.filter((obj) => obj.year === 2022)[0]);
-  await seed2023Data(seasons.filter((obj) => obj.year === 2023)[0]);
-  await seed2024Data(seasons.filter((obj) => obj.year === 2024)[0]);
+  await seed2021Data(seasons.find((obj) => obj.year === 2021));
+  await seed2022Data(seasons.find((obj) => obj.year === 2022));
+  await seed2023Data(seasons.find((obj) => obj.year === 2023));
+  await seed2024Data(seasons.find((obj) => obj.year === 2024));
 }
 
-const convertToArray = (obj: any) => {
-  let i = 1,
-    output: number[] = [];
-  console.log(obj);
+const convertToArray = (obj: Record<string, string | number> | undefined) => {
+  let i = 1;
+  const output: number[] = [];
   while (i <= 75) {
     const x = String(i);
-    output.push(+obj[x]);
+    output.push(obj[x] ? +obj[x] : 0);
     i++;
   }
   return output;
@@ -25,104 +24,73 @@ const convertToArray = (obj: any) => {
 
 const seed2024Data = async (season: Season | undefined) => {
   if (!season) return;
-  const res = await fetch(
+  const output: Record<string, string>[] = await fetch(
     "https://opensheet.elk.sh/1SSk7lg3Ym17lw8Hn-yZvT_erE9umRHPlrZJ8U4faBMY/Distributions",
-  );
-  const output = await res.json();
-
+  ).then((res) => res.json());
   await db.tier.create({
     data: {
       name: "Bottom",
       seasonId: season.id,
-      payouts: convertToArray(
-        output.filter((obj: any) => obj.key === "BottomPayout")[0],
-      ),
-      points: convertToArray(
-        output.filter((obj: any) => obj.key === "BottomPoints")[0],
-      ),
+      payouts: convertToArray(output.find((obj) => obj.key === "BottomPayout")),
+      points: convertToArray(output.find((obj) => obj.key === "BottomPoints")),
     },
   });
   await db.tier.create({
     data: {
       name: "Mid",
       seasonId: season.id,
-      payouts: convertToArray(
-        output.filter((obj: any) => obj.key === "MidPayout")[0],
-      ),
-      points: convertToArray(
-        output.filter((obj: any) => obj.key === "MidPoints")[0],
-      ),
+      payouts: convertToArray(output.find((obj) => obj.key === "MidPayout")),
+      points: convertToArray(output.find((obj) => obj.key === "MidPoints")),
     },
   });
   await db.tier.create({
     data: {
       name: "Major",
       seasonId: season.id,
-      payouts: convertToArray(
-        output.filter((obj: any) => obj.key === "MajorPayout")[0],
-      ),
-      points: convertToArray(
-        output.filter((obj: any) => obj.key === "MajorPoints")[0],
-      ),
+      payouts: convertToArray(output.find((obj) => obj.key === "MajorPayout")),
+      points: convertToArray(output.find((obj) => obj.key === "MajorPoints")),
     },
   });
   await db.tier.create({
     data: {
       name: "Playoff",
       seasonId: season.id,
-      payouts: [...convertToArray(
-        output.filter((obj: any) => obj.key === "GoldPlayoff")[0],
-      ),...convertToArray(
-        output.filter((obj: any) => obj.key === "SilverPlayoff")[0],
-      )],
-      points: convertToArray(
-        output.filter((obj: any) => obj.key === "PlayoffStart")[0],
-      ),
+      payouts: [
+        ...convertToArray(output.find((obj) => obj.key === "GoldPlayoff")),
+        ...convertToArray(output.find((obj) => obj.key === "SilverPlayoff")),
+      ],
+      points: convertToArray(output.find((obj) => obj.key === "PlayoffStart")),
     },
   });
 };
 
 const seed2023Data = async (season: Season | undefined) => {
   if (!season) return;
-  const res = await fetch(
+  const output: Record<string, string>[] = await fetch(
     "https://opensheet.elk.sh/1EhRq77hWT0w_chnNVYhOq5_W_FQ--mPbliDyv3YHWG4/Distributions",
-  );
-  const output = await res.json();
-
+  ).then((res) => res.json());
   await db.tier.create({
     data: {
       name: "Bottom",
       seasonId: season.id,
-      payouts: convertToArray(
-        output.filter((obj: any) => obj.key === "BottomPayout")[0],
-      ),
-      points: convertToArray(
-        output.filter((obj: any) => obj.key === "BottomPoints")[0],
-      ),
+      payouts: convertToArray(output.find((obj) => obj.key === "BottomPayout")),
+      points: convertToArray(output.find((obj) => obj.key === "BottomPoints")),
     },
   });
   await db.tier.create({
     data: {
       name: "Mid",
       seasonId: season.id,
-      payouts: convertToArray(
-        output.filter((obj: any) => obj.key === "MidPayout")[0],
-      ),
-      points: convertToArray(
-        output.filter((obj: any) => obj.key === "MidPoints")[0],
-      ),
+      payouts: convertToArray(output.find((obj) => obj.key === "MidPayout")),
+      points: convertToArray(output.find((obj) => obj.key === "MidPoints")),
     },
   });
   await db.tier.create({
     data: {
       name: "Major",
       seasonId: season.id,
-      payouts: convertToArray(
-        output.filter((obj: any) => obj.key === "MajorPayout")[0],
-      ),
-      points: convertToArray(
-        output.filter((obj: any) => obj.key === "MajorPoints")[0],
-      ),
+      payouts: convertToArray(output.find((obj) => obj.key === "MajorPayout")),
+      points: convertToArray(output.find((obj) => obj.key === "MajorPoints")),
     },
   });
   await db.tier.create({
@@ -130,22 +98,29 @@ const seed2023Data = async (season: Season | undefined) => {
       name: "Playoff",
       seasonId: season.id,
       payouts: convertToArray(
-        output.filter((obj: any) => obj.key === "PlayoffPayout")[0],
+        output.find((obj) => obj.key === "PlayoffPayout"),
       ),
-      points: convertToArray(
-        output.filter((obj: any) => obj.key === "PlayoffStart")[0],
-      ),
+      points: convertToArray(output.find((obj) => obj.key === "PlayoffStart")),
     },
   });
 };
 
 const seed2022Data = async (season: Season | undefined) => {
   if (!season) return;
-  const res = await fetch(
+  const output: {
+    Payout: string;
+    BottomPayout: string;
+    MidPayout: string;
+    MajorPayout: string;
+    PlayoffPayout: string;
+    Points: string;
+    BottomPoints: string;
+    MidPoints: string;
+    MajorPoints: string;
+    PlayoffStart: string;
+  }[] = await fetch(
     "https://opensheet.elk.sh/1ce6c0R9YggvfOxoilnZqqXfcAPxVKyaN0mly5_FOouk/Distributions",
-  );
-  const output = await res.json();
-
+  ).then((res) => res.json());
   const bottomPayout: number[] = Array(75).fill(0),
     midPayout: number[] = Array(75).fill(0),
     majorPayout: number[] = Array(75).fill(0),
@@ -155,7 +130,7 @@ const seed2022Data = async (season: Season | undefined) => {
     majorPoints: number[] = Array(75).fill(0),
     playoffStart: number[] = Array(75).fill(0);
 
-  output.forEach((obj: any) => {
+  output.forEach(obj => {
     bottomPayout[+obj.Points - 1] = +obj.BottomPayout.replace("$", "");
     midPayout[+obj.Points - 1] = +obj.MidPayout.replace("$", "");
     majorPayout[+obj.Points - 1] = +obj.MajorPayout.replace("$", "");
@@ -202,11 +177,20 @@ const seed2022Data = async (season: Season | undefined) => {
 
 const seed2021Data = async (season: Season | undefined) => {
   if (!season) return;
-  const res = await fetch(
+  const output: {
+    Payout: string;
+    BottomPayout: string;
+    MidPayout: string;
+    MajorPayout: string;
+    PlayoffPayout: string;
+    Points: string;
+    BottomPoints: string;
+    MidPoints: string;
+    MajorPoints: string;
+    PlayoffStart: string;
+  }[] = await fetch(
     "https://opensheet.elk.sh/1LUjmZDiECBoAfBC7UM0iwKJy8Im2TRn0mjqm4wBfMyM/Distributions",
-  );
-  const output = await res.json();
-
+  ).then((res) => res.json());
   const bottomPayout: number[] = Array(75).fill(0),
     midPayout: number[] = Array(75).fill(0),
     majorPayout: number[] = Array(75).fill(0),
@@ -216,7 +200,7 @@ const seed2021Data = async (season: Season | undefined) => {
     majorPoints: number[] = Array(75).fill(0),
     playoffStart: number[] = Array(75).fill(0);
 
-  output.forEach((obj: any) => {
+  output.forEach((obj) => {
     bottomPayout[+obj.Points - 1] = +obj.BottomPayout.replace("$", "");
     midPayout[+obj.Points - 1] = +obj.MidPayout.replace("$", "");
     majorPayout[+obj.Points - 1] = +obj.MajorPayout.replace("$", "");

@@ -28,7 +28,7 @@ export function TourCardForm({ tours }: { tours: TourData[] }) {
       </h2>
       <div className="flex h-full flex-col gap-2 sm:flex-row">
         {tours.map((tour) => (
-          <TourCardFormButton {...{ key: tour.id, tour }} />
+          <TourCardFormButton key={tour.id} {...{ tour }} />
         ))}
       </div>
     </div>
@@ -56,7 +56,7 @@ export function TourCardOutput({
       </h2>
       <div className="mx-auto my-4 flex w-[12rem] min-w-fit flex-col items-center justify-center rounded-lg border-2 border-gray-400 bg-gray-300 p-4 text-center shadow-2xl 2xs:w-[18rem] sm:w-[22rem]">
         <Image
-          src={pictureUrl || ""}
+          src={pictureUrl ?? ""}
           alt="Tour Logo"
           width={75}
           height={75}
@@ -77,10 +77,10 @@ function TourCardFormButton({ tour }: { tour: TourData }) {
     <Button
       variant="secondary"
       size="xl"
-      onClick={() => {
+      onClick={async () => {
         setEffect(true);
-        utils.tour.invalidate();
-        createTourCard({ tourId: tour.id, seasonId: tour.seasonId });
+        await utils.tour.invalidate();
+        await createTourCard({ tourId: tour.id, seasonId: tour.seasonId });
       }}
       className={`${effect && "animate-toggleClick"} flex h-fit flex-col border-2 p-2 text-lg shadow-lg`}
       onAnimationEnd={() => setEffect(false)}
@@ -110,13 +110,13 @@ function TourCardChangeButton({
   const [effect, setEffect] = useState(false);
   const [confirmEffect, setConfirmEffect] = useState(false);
   const utils = api.useUtils();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [_isModalOpen, setIsModalOpen] = useState(false);
   if (memberId !== tourCard.memberId) return null;
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setConfirmEffect(true);
-    utils.tour.invalidate();
-    deleteTourCard({ tourCardId: tourCard.id });
+    await utils.tour.invalidate();
+    await deleteTourCard({ tourCardId: tourCard.id });
     console.log("Server action executed");
     setIsModalOpen(false);
   };

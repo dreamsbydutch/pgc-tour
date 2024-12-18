@@ -6,21 +6,17 @@ export async function seedCourses() {
   courses.forEach(async (obj: SeedCourse) => {
     const existingCourse = await api.course.getByName({ name: obj.name });
     if (!existingCourse) {
-      try {
-        await api.course.create({
-          apiId: obj.apiId,
-          name: obj.name,
-          location: obj.location,
-          par: +obj.par,
-          front: +obj.front,
-          back: +obj.back,
-        });
-      } catch {
-        console.log(obj);
-      }
+      await api.course.create({
+        apiId: obj.apiId,
+        name: obj.name,
+        location: obj.location,
+        par: +obj.par,
+        front: +obj.front,
+        back: +obj.back,
+      });
     }
-    return;
   });
+  return null;
 }
 
 type SeedCourse = {

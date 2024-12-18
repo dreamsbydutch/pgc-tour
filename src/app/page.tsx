@@ -2,6 +2,7 @@ import { TourCardForm, TourCardOutput } from "./_components/TourCardForm";
 import { db } from "../server/db";
 import Link from "next/link";
 import { createClient } from "../lib/supabase/server";
+import { seedTiers } from "../server/api/actions/tier";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -30,8 +31,7 @@ export default async function Home() {
           <TourCardOutput
             {...{
               name: tourCard.displayName,
-              tourName: tours.find((obj) => obj.id === tourCard.tourId)
-                ?.name,
+              tourName: tours.find((obj) => obj.id === tourCard.tourId)?.name,
               pictureUrl: tours.find((obj) => obj.id === tourCard.tourId)
                 ?.logoUrl,
               tourCard: tourCard,
