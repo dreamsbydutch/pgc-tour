@@ -2,7 +2,6 @@ import { TourCardForm, TourCardOutput } from "./_components/TourCardForm";
 import { db } from "../server/db";
 import Link from "next/link";
 import { createClient } from "../lib/supabase/server";
-import { seedTiers } from "../server/api/actions/tier";
 
 export default async function Home() {
   const supabase = await createClient();

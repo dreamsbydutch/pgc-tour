@@ -16,7 +16,7 @@ const convertToArray = (obj: Record<string, string | number> | undefined) => {
   const output: number[] = [];
   while (i <= 75) {
     const x = String(i);
-    output.push(obj[x] ? +obj[x] : 0);
+    output.push(obj && obj[x] ? +obj[x] : 0);
     i++;
   }
   return output;
@@ -130,7 +130,7 @@ const seed2022Data = async (season: Season | undefined) => {
     majorPoints: number[] = Array(75).fill(0),
     playoffStart: number[] = Array(75).fill(0);
 
-  output.forEach(obj => {
+  output.forEach((obj) => {
     bottomPayout[+obj.Points - 1] = +obj.BottomPayout.replace("$", "");
     midPayout[+obj.Points - 1] = +obj.MidPayout.replace("$", "");
     majorPayout[+obj.Points - 1] = +obj.MajorPayout.replace("$", "");
