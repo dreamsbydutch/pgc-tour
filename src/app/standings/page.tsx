@@ -62,7 +62,7 @@ export default function PGCStandings() {
               {tourCard.points}
             </div>
             <div className="place-self-center font-varela text-xs xs:text-sm sm:text-base">
-              {tourCard.account}
+              {tourCard.earnings}
             </div>
           </div>
         ))}
