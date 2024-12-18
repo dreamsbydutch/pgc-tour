@@ -26,7 +26,7 @@ const seed2024Data = async (season: Season | undefined) => {
   if (!season) return;
   const output: Record<string, string>[] = await fetch(
     "https://opensheet.elk.sh/1SSk7lg3Ym17lw8Hn-yZvT_erE9umRHPlrZJ8U4faBMY/Distributions",
-  ).then((res) => res.json());
+  ).then((res) => res.json() as unknown as Record<string, string>[]);
   await db.tier.create({
     data: {
       name: "Bottom",
@@ -68,7 +68,7 @@ const seed2023Data = async (season: Season | undefined) => {
   if (!season) return;
   const output: Record<string, string>[] = await fetch(
     "https://opensheet.elk.sh/1EhRq77hWT0w_chnNVYhOq5_W_FQ--mPbliDyv3YHWG4/Distributions",
-  ).then((res) => res.json());
+  ).then((res) => res.json() as unknown as Record<string, string>[]);
   await db.tier.create({
     data: {
       name: "Bottom",
@@ -107,20 +107,9 @@ const seed2023Data = async (season: Season | undefined) => {
 
 const seed2022Data = async (season: Season | undefined) => {
   if (!season) return;
-  const output: {
-    Payout: string;
-    BottomPayout: string;
-    MidPayout: string;
-    MajorPayout: string;
-    PlayoffPayout: string;
-    Points: string;
-    BottomPoints: string;
-    MidPoints: string;
-    MajorPoints: string;
-    PlayoffStart: string;
-  }[] = await fetch(
+  const output: TierInputData[] = await fetch(
     "https://opensheet.elk.sh/1ce6c0R9YggvfOxoilnZqqXfcAPxVKyaN0mly5_FOouk/Distributions",
-  ).then((res) => res.json());
+  ).then((res) => res.json() as unknown as TierInputData[]);
   const bottomPayout: number[] = Array(75).fill(0),
     midPayout: number[] = Array(75).fill(0),
     majorPayout: number[] = Array(75).fill(0),
@@ -177,20 +166,9 @@ const seed2022Data = async (season: Season | undefined) => {
 
 const seed2021Data = async (season: Season | undefined) => {
   if (!season) return;
-  const output: {
-    Payout: string;
-    BottomPayout: string;
-    MidPayout: string;
-    MajorPayout: string;
-    PlayoffPayout: string;
-    Points: string;
-    BottomPoints: string;
-    MidPoints: string;
-    MajorPoints: string;
-    PlayoffStart: string;
-  }[] = await fetch(
+  const output: TierInputData[] = await fetch(
     "https://opensheet.elk.sh/1LUjmZDiECBoAfBC7UM0iwKJy8Im2TRn0mjqm4wBfMyM/Distributions",
-  ).then((res) => res.json());
+  ).then((res) => res.json() as unknown as TierInputData[]);
   const bottomPayout: number[] = Array(75).fill(0),
     midPayout: number[] = Array(75).fill(0),
     majorPayout: number[] = Array(75).fill(0),
@@ -244,3 +222,17 @@ const seed2021Data = async (season: Season | undefined) => {
     },
   });
 };
+
+
+type TierInputData = {
+  Payout: string;
+  BottomPayout: string;
+  MidPayout: string;
+  MajorPayout: string;
+  PlayoffPayout: string;
+  Points: string;
+  BottomPoints: string;
+  MidPoints: string;
+  MajorPoints: string;
+  PlayoffStart: string;
+}
