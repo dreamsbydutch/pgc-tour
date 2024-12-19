@@ -37,6 +37,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+      <meta name="google-site-verification" content="k_L19BEXJjcWOM7cHFMPMpK9MBdcv2uQ6qFt3HGPEbc" />
+      </head>
       <body
         className={cn(
           varela.variable,
