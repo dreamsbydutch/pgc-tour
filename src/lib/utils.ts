@@ -95,3 +95,10 @@ export function formatRank(number: number) {
     }
   }
 }
+
+export function formatName(name: string,type:'display'|'full') {
+    const splitName = name.split(" ")
+    const firstName = String(splitName[0]).charAt(0).toUpperCase() + String(splitName[0]).slice(1);
+    const lastName = String(splitName.slice(1).toString()).charAt(0).toUpperCase() + String(splitName.slice(1).toString()).slice(1);
+    return type === 'full' ? firstName+" "+lastName:firstName.charAt(0).toUpperCase() + ". "+lastName
+}
