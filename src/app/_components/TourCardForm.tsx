@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { api } from "@/src/trpc/react";
-import TournamentCountdown from "../tournament/_components/TournamentCountdown";
+import LoadingSpinner from "./LoadingSpinner";
 
 export function TourCardForm({ tours }: { tours: TourData[] }) {
   return (
@@ -38,24 +38,25 @@ export function TourCardForm({ tours }: { tours: TourData[] }) {
 
 export function TourCardOutput({
   name,
-  tourName,
+  tour,
   pictureUrl,
   tourCard,
   memberId,
 }: {
   name: string | undefined;
-  tourName: string | undefined;
+  tour: TourData | undefined;
   pictureUrl: string | undefined;
   tourCard: TourCard;
   memberId: string;
 }) {
+  if (!tour) return <LoadingSpinner />
   return (
     <div className="mt-8 flex flex-col items-center justify-center">
       <h2 className="max-w-xl text-center font-varela text-lg text-slate-600">
         Thank you for joining season 5 of the PGC Tour. More info will come
         leading up to the 2025 Waste Managment Open.
       </h2>
-      <div className="mx-auto my-4 flex w-[12rem] min-w-fit flex-col items-center justify-center rounded-lg border-2 border-gray-400 bg-gray-300 p-4 text-center shadow-2xl 2xs:w-[18rem] sm:w-[22rem]">
+      <div className="mx-auto mt-4 flex w-[12rem] min-w-fit flex-col items-center justify-center rounded-lg border-2 border-gray-400 bg-gray-300 p-4 text-center shadow-2xl 2xs:w-[18rem] sm:w-[22rem]">
         <Image
           src={pictureUrl ?? ""}
           alt="Tour Logo"
@@ -64,7 +65,10 @@ export function TourCardOutput({
           className="h-3/4 max-h-32 w-3/4 max-w-32"
         />
         <h2 className="text-2xl font-bold text-gray-800">{name}</h2>
-        <p className="text-base italic text-gray-600">{tourName}</p>
+        <p className="text-base italic text-gray-600">{tour.name}</p>
+      </div>
+      <div className="text-xs text-slate-600 mb-4">
+        {75 - tour.tourCards.length} spots remaining
       </div>
       <TourCardChangeButton {...{ tourCard, memberId }} />
     </div>
