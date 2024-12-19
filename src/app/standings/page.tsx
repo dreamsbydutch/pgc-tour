@@ -1,5 +1,6 @@
 "use client";
 
+import { formatMoney } from "@/src/lib/utils";
 import { api } from "@/src/trpc/react";
 import { type Tour } from "@prisma/client";
 import { type Dispatch, type SetStateAction, useState } from "react";
@@ -62,7 +63,7 @@ export default function PGCStandings() {
               {tourCard.points}
             </div>
             <div className="place-self-center font-varela text-xs xs:text-sm sm:text-base">
-              {tourCard.earnings}
+              {formatMoney(tourCard.earnings)}
             </div>
           </div>
         ))}

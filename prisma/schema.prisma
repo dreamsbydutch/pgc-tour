@@ -94,6 +94,7 @@ model Tournament {
   season       Season   @relation(fields: [seasonId], references: [id])
   tier         Tier     @relation(fields: [tierId], references: [id])
 
+  @@unique([name, startDate, tierId])
   @@map("tournaments")
 }
 

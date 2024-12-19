@@ -16,7 +16,7 @@ export default function ToursToggle({
   searchParams,
 }: {
   children: ReactNode;
-  searchParams?: Record<string,string | undefined>;
+  searchParams?: Record<string, string | undefined>;
 }) {
   const date = new Date();
   const year = date.getFullYear();
@@ -41,7 +41,7 @@ export default function ToursToggle({
 
   const focusTourney = focusTourneyId
     ? tournaments?.find((obj) => obj.id === focusTourneyId)
-    : tournaments?.find((obj) => obj.endDate < date)
+    : tournaments?.find((obj) => obj.endDate < date);
 
   if (!season || !focusTourney) return <LoadingSpinner />;
 
@@ -130,7 +130,7 @@ function ToggleButton({
       }}
     >
       {activeTourLoading && tour.shortForm === activeTourShortForm ? (
-        <LoadingSpinner className="h-7 w-7" />
+        <LoadingSpinner className="my-0 h-7 w-7" />
       ) : (
         tour?.shortForm
       )}

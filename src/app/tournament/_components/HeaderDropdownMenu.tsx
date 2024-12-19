@@ -36,7 +36,7 @@ export default function HeaderDropdown({
         className="inline-flex w-full items-center justify-center rounded-lg bg-slate-600 px-5 py-0.5 text-slate-100 shadow-lg md:px-5 md:py-1"
         aria-label="Customise options"
       >
-        <LoadingSpinner className="h-[1.5rem] w-[1.5rem] border-gray-100 border-t-gray-800" />
+        <LoadingSpinner className="my-0 h-[1.5rem] w-[1.5rem] border-gray-100 border-t-gray-800" />
       </div>
     );
   const { tiers, tournaments, tournamentsByTier } = data;

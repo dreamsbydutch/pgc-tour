@@ -20,8 +20,8 @@ export default async function Home() {
   if (!tours || !season || !data.user) return <div>Error</div>;
 
   return (
-    <div className="mx-1 my-4 flex h-[100vh] flex-col">
-      <h1 className="py-3 text-center font-yellowtail text-5xl">
+    <div className="flex h-[100vh] flex-col">
+      <h1 className="py-4 text-center font-yellowtail text-5xl md:text-7xl">
         Welcome to the PGC Tour
       </h1>
 
@@ -43,16 +43,6 @@ export default async function Home() {
         </>
       )}
       {!tourCard && <TourCardForm {...{ tours }} />}
-
-      <div className="mx-auto w-5/6 max-w-xl flex-wrap text-center font-varela text-sm">
-        The PGC Tour is an elite fantasy golf experience. Both tours are
-        identical and run in parallel, coordinate with your friends to ensure
-        you sign up for the same tour. For more info on how the tour operates
-        throughout the season check out the{" "}
-        <Link href="/rulebook" className="underline">
-          PGC Tour Rulebook
-        </Link>
-      </div>
     </div>
   );
 }

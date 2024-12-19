@@ -22,6 +22,9 @@ export async function createTourCard({
       memberId: data.user.id,
       tourId: tourId,
       seasonId: seasonId,
+      earnings: 0,
+      points: 0,
+      position: "T1",
     },
   });
   redirect("/");
