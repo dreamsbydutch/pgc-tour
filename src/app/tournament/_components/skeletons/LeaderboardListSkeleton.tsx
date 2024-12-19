@@ -4,7 +4,7 @@ export function LeaderboardListSkeleton() {
   const list = new Array(75).fill(1);
   return (
     <>
-      {list.map((obj, i) => (
+      {list.map((_obj, i) => (
         <LeaderboardListSkeletonItem key={i} />
       ))}
     </>

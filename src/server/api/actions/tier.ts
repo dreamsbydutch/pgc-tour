@@ -1,6 +1,6 @@
 "use server";
 
-import { Season } from "@prisma/client";
+import type { Season } from "@prisma/client";
 import { db } from "../../db";
 
 export async function seedTiers() {
@@ -16,7 +16,7 @@ const convertToArray = (obj: Record<string, string | number> | undefined) => {
   const output: number[] = [];
   while (i <= 75) {
     const x = String(i);
-    output.push(obj && obj[x] ? +obj[x] : 0);
+    if (obj && obj[x]) output.push(+obj[x]);
     i++;
   }
   return output;
@@ -110,14 +110,14 @@ const seed2022Data = async (season: Season | undefined) => {
   const output: TierInputData[] = await fetch(
     "https://opensheet.elk.sh/1ce6c0R9YggvfOxoilnZqqXfcAPxVKyaN0mly5_FOouk/Distributions",
   ).then((res) => res.json() as unknown as TierInputData[]);
-  const bottomPayout: number[] = Array(75).fill(0),
-    midPayout: number[] = Array(75).fill(0),
-    majorPayout: number[] = Array(75).fill(0),
-    playoffPayout: number[] = Array(75).fill(0),
-    bottomPoints: number[] = Array(75).fill(0),
-    midPoints: number[] = Array(75).fill(0),
-    majorPoints: number[] = Array(75).fill(0),
-    playoffStart: number[] = Array(75).fill(0);
+  const bottomPayout: number[] = Array(75).fill(0) as number[],
+    midPayout: number[] = Array(75).fill(0) as number[],
+    majorPayout: number[] = Array(75).fill(0) as number[],
+    playoffPayout: number[] = Array(75).fill(0) as number[],
+    bottomPoints: number[] = Array(75).fill(0) as number[],
+    midPoints: number[] = Array(75).fill(0) as number[],
+    majorPoints: number[] = Array(75).fill(0) as number[],
+    playoffStart: number[] = Array(75).fill(0) as number[];
 
   output.forEach((obj) => {
     bottomPayout[+obj.Points - 1] = +obj.BottomPayout.replace("$", "");
@@ -169,14 +169,14 @@ const seed2021Data = async (season: Season | undefined) => {
   const output: TierInputData[] = await fetch(
     "https://opensheet.elk.sh/1LUjmZDiECBoAfBC7UM0iwKJy8Im2TRn0mjqm4wBfMyM/Distributions",
   ).then((res) => res.json() as unknown as TierInputData[]);
-  const bottomPayout: number[] = Array(75).fill(0),
-    midPayout: number[] = Array(75).fill(0),
-    majorPayout: number[] = Array(75).fill(0),
-    playoffPayout: number[] = Array(75).fill(0),
-    bottomPoints: number[] = Array(75).fill(0),
-    midPoints: number[] = Array(75).fill(0),
-    majorPoints: number[] = Array(75).fill(0),
-    playoffStart: number[] = Array(75).fill(0);
+  const bottomPayout: number[] = Array(75).fill(0) as number[],
+    midPayout: number[] = Array(75).fill(0) as number[],
+    majorPayout: number[] = Array(75).fill(0) as number[],
+    playoffPayout: number[] = Array(75).fill(0) as number[],
+    bottomPoints: number[] = Array(75).fill(0) as number[],
+    midPoints: number[] = Array(75).fill(0) as number[],
+    majorPoints: number[] = Array(75).fill(0) as number[],
+    playoffStart: number[] = Array(75).fill(0) as number[];
 
   output.forEach((obj) => {
     bottomPayout[+obj.Points - 1] = +obj.BottomPayout.replace("$", "");
@@ -223,7 +223,6 @@ const seed2021Data = async (season: Season | undefined) => {
   });
 };
 
-
 type TierInputData = {
   Payout: string;
   BottomPayout: string;
@@ -235,4 +234,4 @@ type TierInputData = {
   MidPoints: string;
   MajorPoints: string;
   PlayoffStart: string;
-}
+};
