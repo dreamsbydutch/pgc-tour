@@ -19,7 +19,7 @@ export function UserAccountNav({ user }: { user: User | null }) {
         <DropdownMenuTrigger className="flex items-center space-x-1">
           <Image
             className="grid place-items-center rounded-full bg-border"
-            src={user?.user_metadata.avatar_url}
+            src={user?.user_metadata.avatar_url as string}
             alt=""
             width={30}
             height={30}
@@ -31,7 +31,7 @@ export function UserAccountNav({ user }: { user: User | null }) {
               {user?.user_metadata && (
                 <>
                   <p className="w-[200px] truncate text-sm text-muted-foreground">
-                    {user.user_metadata.name}
+                    {user.user_metadata.name as string}
                   </p>
                   <p className="w-[200px] truncate text-sm text-muted-foreground">
                     {user.email}
