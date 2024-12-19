@@ -49,10 +49,6 @@ export function TourCardOutput({
   tourCard: TourCard;
   memberId: string;
 }) {
-  const season = api.season.getCurrent.useQuery();
-  const tourney = api.tournament.getBySeason.useQuery({
-    seasonId: season.data?.id,
-  });
   return (
     <div className="mt-8 flex flex-col items-center justify-center">
       <h2 className="max-w-xl text-center font-varela text-lg text-slate-600">
@@ -71,9 +67,6 @@ export function TourCardOutput({
         <p className="text-base italic text-gray-600">{tourName}</p>
       </div>
       <TourCardChangeButton {...{ tourCard, memberId }} />
-      {tourney.data && tourney.data[0] && (
-        <TournamentCountdown key={1} tourney={tourney.data[0]} />
-      )}
     </div>
   );
 }

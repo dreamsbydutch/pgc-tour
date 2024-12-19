@@ -2,12 +2,14 @@ import { TourCardForm, TourCardOutput } from "./_components/TourCardForm";
 import { db } from "../server/db";
 import Link from "next/link";
 import { createClient } from "../lib/supabase/server";
+import { seedTournaments } from "../server/api/actions/tournament";
+import { seedCourses } from "../server/api/actions/course";
+import TournamentCountdown from "./tournament/_components/TournamentCountdown";
 
 export default async function Home() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
 
-  // seedDatabase();
   const season = await db.season.findUnique({ where: { year: 2025 } });
   const tourCard = await db.tourCard.findFirst({
     where: { seasonId: season?.id, memberId: data.user?.id },
@@ -17,7 +19,14 @@ export default async function Home() {
     include: { tourCards: true },
   });
 
-  if (!tours || !season || !data.user) return <div>Error</div>;
+  const seasonAlt = await db.season.findUnique({ where: { year: 2024 } });
+  const tourney = await db.tournament.findFirst({
+    where: {
+      seasonId: seasonAlt?.id,
+    },
+    orderBy: { startDate: "asc" },
+  });
+  if (!tours || !season || !data.user || !tourney) return <div>Error</div>;
 
   return (
     <div className="flex h-[100vh] flex-col">
@@ -40,6 +49,7 @@ export default async function Home() {
           <p className="mx-auto mb-8 w-5/6 text-center text-sm italic text-red-600">
             Payment info to come
           </p>
+          <TournamentCountdown tourney={tourney} />
         </>
       )}
       {!tourCard && <TourCardForm {...{ tours }} />}

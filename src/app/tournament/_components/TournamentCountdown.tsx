@@ -62,8 +62,8 @@ const CountdownTimer = ({
               className="max-h-32 w-full md:max-h-40"
               alt="Tourney Logo"
               src={tourney.logoUrl ?? ""}
-              width={50}
-              height={50}
+              width={80}
+              height={80}
             />
           </div>
           <div className="font-varela text-2xl font-bold sm:text-3xl md:text-4xl">

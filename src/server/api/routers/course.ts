@@ -20,7 +20,7 @@ export const courseRouter = createTRPCRouter({
   create: publicProcedure
     .input(
       z.object({
-        apiId: z.string().min(1),
+        apiId: z.string(),
         name: z.string().min(1),
         location: z.string().min(1),
         par: z.number(),

@@ -46,7 +46,7 @@ export default function RootLayout({
         )}
       >
         <TRPCReactProvider>
-          <main className="mx-1 my-4">
+          <main className="mx-2 my-4">
             {children}
             <div className="mb-20 text-white">.</div>
           </main>
