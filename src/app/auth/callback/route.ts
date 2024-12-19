@@ -28,9 +28,11 @@ export async function GET(request: Request) {
       });
       if (!prismaUser) return;
       if (!prismaUser?.firstname || !prismaUser?.lastname) {
-        const splitName = formatName(prismaUser.fullname,'full').split(" ");
+        const fullName = formatName(prismaUser.fullname,'full')
+        const splitName = fullName.split(" ");
         await api.member.update({
           id: prismaUser.id,
+          fullName: fullName,
           firstname: splitName[0],
           lastname: splitName.slice(1).toString(),
         });

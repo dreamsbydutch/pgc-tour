@@ -17,6 +17,7 @@ export const memberRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         email: z.string().optional(),
+        fullName: z.string().optional(),
         firstname: z.string().optional(),
         lastname: z.string().optional(),
         account: z.number().optional(),
@@ -27,6 +28,7 @@ export const memberRouter = createTRPCRouter({
         where: { id: input.id },
         data: {
           account: input.account,
+          fullname: input.fullName,
           email: input.email,
           firstname: input.firstname,
           lastname: input.lastname,
