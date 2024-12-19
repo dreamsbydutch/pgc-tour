@@ -52,7 +52,7 @@ function RuleCategory({
   return (
     <div className="mx-auto border-b-2 border-slate-500">
       <div
-        className="py-5 text-center font-varela text-2xl font-extrabold md:text-3xl"
+        className="py-5 text-center font-varela text-2xl font-extrabold xs:text-3xl md:text-4xl"
         onClick={() => setShowState(!showState)}
       >
         {ruleData.category}
@@ -64,7 +64,7 @@ function RuleCategory({
         {ruleData.rules.map((rule, j) => {
           return (
             <div key={i + "." + j} className="py-2">
-              <div className="text-center font-varela text-sm sm:text-base md:text-lg lg:text-xl">
+              <div className="text-center font-varela text-base xs:text-lg md:text-xl">
                 {rule.ruleText}
               </div>
               {rule.details && (
@@ -73,7 +73,7 @@ function RuleCategory({
                     return (
                       <li
                         key={`${i + 1}.${j + 1}.${k + 1}`}
-                        className="py-1 text-center font-barlow text-xs sm:text-sm md:text-base lg:text-lg"
+                        className="py-1 text-center font-barlow text-sm xs:text-base md:text-base"
                       >
                         {subrule}
                       </li>
@@ -84,8 +84,16 @@ function RuleCategory({
             </div>
           );
         })}
-        {ruleData.category === "Payouts" && <PayoutsTable tiers={tiers} />}
-        {ruleData.category === "Scoring" && <PointsTable tiers={tiers} />}
+        {ruleData.category === "Payouts" && (
+          <div className="text-center font-varela text-base italic xs:text-lg md:text-xl">
+            Payout distributions will be finalized shortly
+          </div>
+        )}
+        {ruleData.category === "Scoring" && (
+          <div className="italictext-base text-center font-varela xs:text-lg md:text-xl">
+            Point distributions will be finalized shortly
+          </div>
+        )}
       </div>
     </div>
   );
@@ -268,7 +276,7 @@ function PayoutsTable({ tiers }: { tiers: Tier[] }) {
               </TableCell>
               {tiers.map((tier) => (
                 <TableCell
-                  className="text-center text-xs"
+                  className="border-l text-center text-xs"
                   key={`payouts-${tier.id}`}
                 >
                   {formatMoney(tier.payouts[i] ?? 0)}
@@ -312,7 +320,7 @@ function PointsTable({ tiers }: { tiers: Tier[] }) {
               </TableCell>
               {tiers.map((tier) => (
                 <TableCell
-                  className="text-center text-xs"
+                  className="border-l text-center text-xs"
                   key={`points-${tier.id}`}
                 >
                   {formatNumber(tier.points[i] ?? 0)}

@@ -13,9 +13,6 @@ interface MenuBarProps {
 
 export default function MenuBar({ className }: MenuBarProps) {
   const { user, loading } = useUser();
-  console.log(loading);
-  console.log(user);
-  console.log(user);
   return (
     <div className={cn(className, "h-14")}>
       <NavItem href={"/"}>
