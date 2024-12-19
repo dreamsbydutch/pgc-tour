@@ -129,9 +129,7 @@ export default function PrivacyPolicy() {
         </p>
         <ul className="mt-2 text-lg text-gray-700">
           <li><strong>PGC Tour</strong></li>
-          <li>[Your Company Address]</li>
-          <li>Email: [your contact email]</li>
-          <li>Phone: [your contact number]</li>
+          puregolfcollectivetour@gmail.com<br />
         </ul>
       </section>
     </div>
