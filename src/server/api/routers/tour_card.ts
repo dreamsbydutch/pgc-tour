@@ -16,7 +16,9 @@ export const tourCardRouter = createTRPCRouter({
   getByUserId: publicProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.tourCard.findMany({ where: { memberId: input.userId } });
+      return await ctx.db.tourCard.findMany({
+        where: { memberId: input.userId },
+      });
     }),
 
   create: publicProcedure
@@ -26,17 +28,35 @@ export const tourCardRouter = createTRPCRouter({
         email: z.string().min(1),
         displayName: z.string().min(1),
         fullName: z.string().min(1),
+        buyin: z.number().min(1),
         tourId: z.string().min(1),
-        userId: z.string().min(1),
+        memberId: z.string().min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.tourCard.create({
+      const existingMember = await ctx.db.member.findUnique({
+        where: { id: input.memberId },
+      });
+      if (!existingMember) return;
+      await ctx.db.transactions.create({
+        data: {
+          amount: input.buyin,
+          seasonId: input.seasonId,
+          transactionType: "TourCardFee",
+          userId: input.memberId,
+          description: input.fullName + "'s Tour Card Fee",
+        },
+      });
+      await ctx.db.member.update({
+        where: { id: input.memberId },
+        data: { account: existingMember.account + input.buyin },
+      });
+      await ctx.db.tourCard.create({
         data: {
           seasonId: input.seasonId,
           displayName: input.displayName,
           tourId: input.tourId,
-          memberId: input.userId,
+          memberId: input.memberId,
         },
       });
     }),

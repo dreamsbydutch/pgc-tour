@@ -2,8 +2,6 @@ import { TourCardForm, TourCardOutput } from "./_components/TourCardForm";
 import { db } from "../server/db";
 import Link from "next/link";
 import { createClient } from "../lib/supabase/server";
-import { seedTournaments } from "../server/api/actions/tournament";
-import { seedCourses } from "../server/api/actions/course";
 import TournamentCountdown from "./tournament/_components/TournamentCountdown";
 
 export default async function Home() {
@@ -30,9 +28,12 @@ export default async function Home() {
 
   return (
     <div className="flex h-[100vh] flex-col">
-      <h1 className="py-4 text-center font-yellowtail text-5xl md:text-7xl">
+      <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         Welcome to the PGC Tour
       </h1>
+      <p className="mb-4 max-w-xl text-center font-varela text-base text-slate-500 md:text-lg">
+        An elite fantasy golf experience
+      </p>
 
       {tourCard && (
         <>
@@ -53,7 +54,12 @@ export default async function Home() {
         </>
       )}
       {!tourCard && <TourCardForm {...{ tours }} />}
-      <Link href={'/privacy'} className="text-xs">Privacy Policy</Link>
+      <Link href={"/privacy"} className="text-xs">
+        Privacy Policy
+      </Link>
+      <Link href={"/terms"} className="text-xs">
+        Terms of Service
+      </Link>
     </div>
   );
 }

@@ -36,25 +36,28 @@ export default function SignInPage() {
 
   return (
     <div className="flex h-[100vh] flex-col">
-      <h1 className="py-4 text-center font-yellowtail text-5xl md:text-7xl">
+      <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         Welcome to the PGC Tour
       </h1>
-      <h2 className="max-w-xl text-center font-varela text-xl text-slate-600 mt-2">
-        Please create an account below to access the clubhouse.
+      <p className="mb-4 max-w-xl text-center font-varela text-base text-slate-500 md:text-lg">
+        An elite fantasy golf experience
+      </p>
+      <h2 className="mt-2 max-w-xl text-center font-varela text-xl text-slate-600">
+        Create an account below to access the PGC clubhouse.
       </h2>
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         onClick={signInWithGoogle}
         disabled={isGoogleLoading}
-        className="w-[15rem] h-[5rem] mt-6"
+        className="mx-auto mt-6 h-[3.5rem] w-[15rem] border-2"
       >
         {isGoogleLoading ? (
           <Icons.loaderCircle className="mr-2 size-4 animate-spin" />
         ) : (
-          <Icons.google className="mr-2 size-6" />
-        )}{" "}
-        Sign in with Google
+          <Icons.google className="size-6" />
+        )}
+        <div className="text-lg">Sign in with Google</div>
       </Button>
     </div>
   );
