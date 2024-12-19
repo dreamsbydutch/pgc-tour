@@ -7,7 +7,7 @@ export default function PrivacyPolicy() {
       <section className="mt-8">
         <h2 className="text-2xl font-semibold text-gray-900">Introduction</h2>
         <p className="mt-4 text-lg text-gray-700">
-          Welcome to <strong>PGC Tour</strong> (\"we\", \"our\", \"us\"). We are committed to protecting your privacy
+          Welcome to <strong>PGC Tour</strong> (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;). We are committed to protecting your privacy
           and ensuring a safe online experience. This Privacy Policy explains how we collect, use, disclose, and
           protect your information when you use our web app, <strong>PGC Tour</strong> (\"Service\").
         </p>
