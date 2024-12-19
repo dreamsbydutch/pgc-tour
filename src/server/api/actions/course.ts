@@ -2,7 +2,7 @@
 
 import { api } from "@/trpcLocal/server";
 
-export async function seedCourses() {
+export function seedCourses() {
   courses.forEach((course) => {
     const createCourse = async (obj: SeedCourse) => {
       const existingCourse = await api.course.getByName({ name: obj.name });
