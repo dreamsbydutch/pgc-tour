@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
@@ -13,11 +13,10 @@ type NavItemProps = {
 export function NavItem({ href, children }: NavItemProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
-  const searchParamString = "?" + useSearchParams().toString();
 
   return (
     <Link
-      href={href + searchParamString}
+      href={href}
       className={cn("text-sm text-muted-foreground", {
         "text-secondary-foreground": isActive,
       })}

@@ -2,14 +2,10 @@
 
 import { api } from "@/src/trpc/react";
 import { type Tour } from "@prisma/client";
-import { useSearchParams } from "next/navigation";
 import { type Dispatch, type SetStateAction, useState } from "react";
 
 export default function PGCStandings() {
-  const searchParams = useSearchParams();
-  const [standingsToggle, setStandingsToggle] = useState(
-    searchParams.get("tour") ?? "",
-  );
+  const [standingsToggle, setStandingsToggle] = useState("DbyD");
   const tours = api.tour.getActive.useQuery();
 
   if (!tours.data) return null;
