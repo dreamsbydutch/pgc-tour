@@ -1,7 +1,14 @@
+import { Loader2 } from "lucide-react";
+import { Suspense } from "react";
+
 export const metadata = {
-  title: 'Admin',
-}
+  title: "Admin",
+};
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto flex flex-col">{children}</div>
+  return (
+    <Suspense fallback={<Loader2 />}>
+      <div className="mx-auto flex flex-col">{children}</div>
+    </Suspense>
+  );
 }

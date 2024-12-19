@@ -2,7 +2,7 @@ import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "Rulebook",
+  title: "Sign In",
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
