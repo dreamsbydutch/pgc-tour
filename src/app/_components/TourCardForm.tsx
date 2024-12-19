@@ -67,7 +67,7 @@ export function TourCardOutput({
         <h2 className="text-2xl font-bold text-gray-800">{name}</h2>
         <p className="text-base italic text-gray-600">{tour.name}</p>
       </div>
-      <div className="text-xs text-slate-600 mb-4">
+      <div className="text-xs text-slate-600 mt-2 mb-4">
         {75 - tour.tourCards.length} spots remaining
       </div>
       <TourCardChangeButton {...{ tourCard, memberId }} />
