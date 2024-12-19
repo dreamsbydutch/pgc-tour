@@ -35,18 +35,27 @@ export default function SignInPage() {
   }
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      onClick={signInWithGoogle}
-      disabled={isGoogleLoading}
-    >
-      {isGoogleLoading ? (
-        <Icons.loaderCircle className="mr-2 size-4 animate-spin" />
-      ) : (
-        <Icons.google className="mr-2 size-6" />
-      )}{" "}
-      Sign in with Google
-    </Button>
+    <div className="flex h-[100vh] flex-col">
+      <h1 className="py-4 text-center font-yellowtail text-5xl md:text-7xl">
+        Welcome to the PGC Tour
+      </h1>
+      <h2 className="max-w-xl text-center font-varela text-xl text-slate-600 mt-2">
+        Please create an account below to access the clubhouse.
+      </h2>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={signInWithGoogle}
+        disabled={isGoogleLoading}
+        className="w-[15rem] h-[5rem] mt-6"
+      >
+        {isGoogleLoading ? (
+          <Icons.loaderCircle className="mr-2 size-4 animate-spin" />
+        ) : (
+          <Icons.google className="mr-2 size-6" />
+        )}{" "}
+        Sign in with Google
+      </Button>
+    </div>
   );
 }
