@@ -120,7 +120,7 @@ export default function TermsOfService() {
         <h2 className="text-2xl font-semibold text-gray-900">13. Indemnification</h2>
         <p>
           You agree to indemnify and hold harmless PGC Tour and its affiliates, officers, employees, and agents from any
-          claims, damages, losses, and expenses (including reasonable attorneys' fees) arising from your violation of these
+          claims, damages, losses, and expenses (including reasonable attorneys&lsquo; fees) arising from your violation of these
           Terms or your use of the Service.
         </p>
 
