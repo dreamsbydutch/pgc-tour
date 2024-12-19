@@ -53,8 +53,8 @@ export function TourCardOutput({
   return (
     <div className="mt-8 flex flex-col items-center justify-center">
       <h2 className="max-w-xl text-center font-varela text-lg text-slate-600">
-        Thank you for joining season 5 of the PGC Tour. More info will come
-        leading up to the 2025 Waste Managment Open.
+        {`Thank you for joining season 5 of the PGC Tour. You have secured your spot on the 2025 ${tour.name}. More info will come
+        leading up to the 2025 Waste Managment Open.`}
       </h2>
       <div className="mx-auto mt-4 flex w-[12rem] min-w-fit flex-col items-center justify-center rounded-lg border-2 border-gray-400 bg-gray-300 p-4 text-center shadow-2xl 2xs:w-[18rem] sm:w-[22rem]">
         <Image
