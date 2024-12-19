@@ -1,11 +1,10 @@
 import { db } from "../../db";
 
 export const seedTournaments = async () => {
-  const res = await fetch(
+  const output = await fetch(
     "https://opensheet.elk.sh/1SSk7lg3Ym17lw8Hn-yZvT_erE9umRHPlrZJ8U4faBMY/Tournaments",
-  );
-  const output = await res.json();
-  output.map(async (tourney: any) => {
+  ).then(res => res.json() as unknown as Tournament[])
+  output.map(async (tourney) => {
     const season = await db.season.findUnique({
       where: { year: +tourney.year },
     });
@@ -38,3 +37,24 @@ export const seedTournaments = async () => {
     });
   });
 };
+
+
+type Tournament = {
+  year:string
+  tourneyID:string
+  dg_id:string
+  Tourney:string
+  StartDate:string
+  EndDate:string
+  Dates:string
+  Class:string
+  PointsPurse:string
+  MoneyPurse:string
+  Par:string
+  ShowPar:string
+  Course:string
+  Location:string
+  Logo:string
+  FormID:string
+  FormLink:string
+}
