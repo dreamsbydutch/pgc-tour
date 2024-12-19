@@ -3,18 +3,21 @@
 import { api } from "@/trpcLocal/server";
 
 export async function seedCourses() {
-  courses.forEach(async (obj: SeedCourse) => {
-    const existingCourse = await api.course.getByName({ name: obj.name });
-    if (!existingCourse) {
-      await api.course.create({
-        apiId: obj.apiId,
-        name: obj.name,
-        location: obj.location,
-        par: +obj.par,
-        front: +obj.front,
-        back: +obj.back,
-      });
-    }
+  courses.forEach((course) => {
+    const createCourse = async (obj: SeedCourse) => {
+      const existingCourse = await api.course.getByName({ name: obj.name });
+      if (!existingCourse) {
+        await api.course.create({
+          apiId: obj.apiId,
+          name: obj.name,
+          location: obj.location,
+          par: +obj.par,
+          front: +obj.front,
+          back: +obj.back,
+        });
+      }
+    };
+    createCourse(course);
   });
   return null;
 }

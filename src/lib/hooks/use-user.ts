@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import type { AuthError, Session, User } from "@supabase/supabase-js";
 import { jwtDecode } from "jwt-decode";
@@ -20,7 +22,7 @@ export function useUser() {
   const supabase = createClient();
 
   useEffect(() => {
-    async function fetchUser() {
+    const fetchUser = async () => {
       try {
         const {
           data: { session },
@@ -41,12 +43,8 @@ export function useUser() {
       } finally {
         setLoading(false);
       }
-    }
-    fetchUser()
-      .catch((err) => console.log(err))
-      .then(() => {
-        return;
-      });
+    };
+    fetchUser().catch(console.error);
   }, [supabase.auth]);
 
   return { loading, error, session, user, role };
