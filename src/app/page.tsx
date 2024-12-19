@@ -3,6 +3,7 @@ import { db } from "../server/db";
 import Link from "next/link";
 import { createClient } from "../lib/supabase/server";
 import TournamentCountdown from "./tournament/_components/TournamentCountdown";
+import { formatMoney } from "../lib/utils";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -16,6 +17,7 @@ export default async function Home() {
     where: { seasonId: season?.id },
     include: { tourCards: true },
   });
+  const member = await db.member.findUnique({ where: { id: data.user?.id } });
 
   const seasonAlt = await db.season.findUnique({ where: { year: 2024 } });
   const tourney = await db.tournament.findFirst({
@@ -48,7 +50,10 @@ export default async function Home() {
             }}
           />
           <p className="mx-auto mb-8 w-5/6 text-center text-sm italic text-red-600">
-            Payment info to come
+            {member &&
+              (member.account > 0
+                ? `Please pay your ${formatMoney(member.account)} buy-in to puregolfcollectivetour@gmail.com. Buy-ins must be paid prior to the Feb. 1st, 2025.`
+                : null)}
           </p>
           <TournamentCountdown tourney={tourney} />
         </>
