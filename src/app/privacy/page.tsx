@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
         <p className="mt-4 text-lg text-gray-700">
           Welcome to <strong>PGC Tour</strong> (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;). We are committed to protecting your privacy
           and ensuring a safe online experience. This Privacy Policy explains how we collect, use, disclose, and
-          protect your information when you use our web app, <strong>PGC Tour</strong> (\"Service\").
+          protect your information when you use our web app, <strong>PGC Tour</strong> (&ldquo;Service&rdquo;).
         </p>
         <p className="mt-4 text-lg text-gray-700">
           By accessing or using our Service, you agree to the collection and use of information in accordance with
