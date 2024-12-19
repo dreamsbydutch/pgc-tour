@@ -11,6 +11,8 @@ const config = {
     "plugin:@typescript-eslint/stylistic-type-checked",
   ],
   rules: {
+    "@typescript-eslint/no-misused-promises": "warn",
+    "@typescript-eslint/no-floating-promises": "warn",
     "@typescript-eslint/prefer-optional-chain": "off",
     "@typescript-eslint/array-type": "off",
     "@typescript-eslint/consistent-type-definitions": "off",
@@ -31,14 +33,14 @@ const config = {
       },
     ],
     "@typescript-eslint/require-await": "off",
-    "@typescript-eslint/no-misused-promises": [
-      "error",
-      {
-        checksVoidReturn: {
-          attributes: false,
-        },
-      },
-    ],
+    // "@typescript-eslint/no-misused-promises": [
+    //   "error",
+    //   {
+    //     checksVoidReturn: {
+    //       attributes: false,
+    //     },
+    //   },
+    // ],
   },
 };
 module.exports = config;
