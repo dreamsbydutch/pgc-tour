@@ -8,20 +8,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SignInButton } from "../SignInButton";
 import { SignOutButton } from "../SignOutButton";
-import { createClient } from "@/src/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
-export async function UserAccountNav() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return <SignInButton />;
-  }
-
+export function UserAccountNav({ user }: { user: User | null }) {
   return (
     <div className="w-max space-x-2">
       <DropdownMenu>
@@ -33,7 +23,7 @@ export async function UserAccountNav() {
         <DropdownMenuContent align="end">
           <div className="flex items-center justify-start gap-2 p-2">
             <div className="flex flex-col space-y-1 leading-none">
-              {user.email && (
+              {user?.email && (
                 <p className="w-[200px] truncate text-sm text-muted-foreground">
                   {user.email}
                 </p>

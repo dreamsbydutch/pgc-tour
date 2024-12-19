@@ -1,7 +1,6 @@
 "use client";
 
 import { api } from "@/src/trpc/react";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   type Dispatch,
@@ -10,6 +9,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import LoadingSpinner from "../../_components/LoadingSpinner";
 
 export default function ToursToggle({
   children,
@@ -43,7 +43,7 @@ export default function ToursToggle({
     ? tournaments?.find((obj) => obj.id === focusTourneyId)
     : tournaments?.find((obj) => obj.endDate < date)
 
-  if (!season || !focusTourney) return <Loader2 />;
+  if (!season || !focusTourney) return <LoadingSpinner />;
 
   const toursInPlay = [
     ...focusTourney.tours,
@@ -58,7 +58,7 @@ export default function ToursToggle({
     },
   ];
 
-  if (!toursInPlay) return <Loader2 />;
+  if (!toursInPlay) return <LoadingSpinner />;
   return (
     <div className="mt-2">
       <div className="mx-auto my-4 flex w-11/12 max-w-xl justify-around text-center">
@@ -130,7 +130,7 @@ function ToggleButton({
       }}
     >
       {activeTourLoading && tour.shortForm === activeTourShortForm ? (
-        <Loader2 className="h-7 w-7" />
+        <LoadingSpinner className="h-7 w-7" />
       ) : (
         tour?.shortForm
       )}

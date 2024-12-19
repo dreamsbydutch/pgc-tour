@@ -1,7 +1,7 @@
 "use client";
 import { cn, formatMoney, formatNumber, formatRank } from "@/lib/utils";
 import { api } from "@/src/trpc/react";
-import { ChevronDownIcon, ChevronUpIcon, Loader2 } from "lucide-react";
+import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
 import {
   Table,
@@ -12,14 +12,15 @@ import {
   TableRow,
 } from "../_components/ui/table";
 import { type Tier } from "@prisma/client";
+import LoadingSpinner from "../_components/LoadingSpinner";
 
 export default function RulebookPage() {
   const season = api.season.getCurrent.useQuery();
   const tiers = api.tier.getBySeason.useQuery({
     seasonId: season.data?.id ?? "",
   });
-  if (!tiers.data) return <Loader2 />;
-  if (!season.data) return <Loader2 />;
+  if (!tiers.data) return <LoadingSpinner />;
+  if (!season.data) return <LoadingSpinner />;
   return (
     <>
       <div className="pb-4 pt-2 text-center font-yellowtail text-7xl lg:text-[5.5rem]">
