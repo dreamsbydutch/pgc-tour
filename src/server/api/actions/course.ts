@@ -2,22 +2,22 @@
 
 import { api } from "@/trpcLocal/server";
 
-export function seedCourses() {
-  
-  courses.forEach(async (course) => {
-    const existingCourse = await api.course.getByName({ name: course.name });
-    if (!existingCourse) {
-      await api.course.create({
-        apiId: course.apiId,
-        name: course.name,
-        location: course.location,
-        par: +course.par,
-        front: +course.front,
-        back: +course.back,
-      });
-    }
-  });
+export async function seedCourses() {
+  courses.forEach(addCourseToDB);
 }
+
+const addCourseToDB = async (course: SeedCourse) => {
+  const existingCourse = await api.course.getByName({ name: course.name });
+  if (existingCourse) return;
+  await api.course.create({
+    apiId: course.apiId,
+    name: course.name,
+    location: course.location,
+    par: +course.par,
+    front: +course.front,
+    back: +course.back,
+  });
+};
 
 type SeedCourse = {
   apiId: string;

@@ -5,7 +5,7 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 export const tourCardRouter = createTRPCRouter({
   getAll: publicProcedure
     .input(z.object({ tournamentID: z.string() }))
-    .query(async ({ ctx, input }) => {
+    .query(() => {
       return {};
     }),
   // getById: publicProcedure
