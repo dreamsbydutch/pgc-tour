@@ -220,6 +220,8 @@ model Transactions {
   description     String
   amount          Float
   transactionType TransactionType
+
+  @@map("transactions")
 }
 
 enum TransactionType {
