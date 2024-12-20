@@ -158,7 +158,7 @@ export function UserAccountNav({ user }: { user: User | null }) {
           </div>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer">
-            <Button className="w-full" onClick={() => handleLogout}>
+            <Button className="w-full" onClick={() => handleLogout()}>
               Sign out
             </Button>
           </DropdownMenuItem>

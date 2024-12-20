@@ -68,7 +68,7 @@ function TourCardChangeButton({
   const [_isModalOpen, setIsModalOpen] = useState(false);
   if (memberId !== tourCard.memberId) return null;
 
-  const handleConfirm = async () => {
+  const handleDelete = async () => {
     setConfirmEffect(true);
     await utils.tour.invalidate();
     await deleteTourCard({ tourCard: tourCard });
@@ -104,7 +104,7 @@ function TourCardChangeButton({
         <DialogFooter>
           <Button
             type="submit"
-            onClick={() => handleConfirm}
+            onClick={() => handleDelete()}
             className={confirmEffect ? "animate-toggleClick" : ""}
             onAnimationEnd={() => setConfirmEffect(false)}
           >

@@ -31,11 +31,12 @@ function TourCardFormButton({ tour }: { tour: TourData }) {
     await utils.tour.invalidate();
     return
   }
+  
   return (
     <Button
       variant="secondary"
       size="xl"
-      onClick={() => handleSubmit}
+      onClick={() => handleSubmit()}
       className={`${effect && "animate-toggleClick"} flex h-fit flex-col border-2 p-2 text-lg shadow-lg`}
       onAnimationEnd={() => setEffect(false)}
     >
