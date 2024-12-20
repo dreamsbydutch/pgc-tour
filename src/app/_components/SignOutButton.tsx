@@ -1,23 +1,26 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { api } from "@/src/trpc/react";
+import { useState } from "react";
+import LoadingSpinner from "./LoadingSpinner";
 
 export function SignOutButton() {
   const supabase = createClient();
-  const router = useRouter();
   const utils = api.useUtils();
 
+  const [isLoading,setIsLoading] = useState(false)
+
   async function handleLogout() {
+    setIsLoading(true)
     await supabase.auth.signOut();
     await utils.invalidate();
-    router.push("/signin");
-    router.refresh()
+    redirect("/signin")
   }
-
+  if (isLoading) <LoadingSpinner className="h-full" />
   return (
     <Button className="w-full" onClick={() => handleLogout()}>
       Sign out
