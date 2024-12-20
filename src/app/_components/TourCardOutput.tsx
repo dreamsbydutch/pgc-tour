@@ -82,6 +82,7 @@ function TourCardChangeButton({
     router.push("/")
     setIsModalOpen(false);
     setIsLoading(false)
+    router.refresh()
   };
 
   const handleButtonClick = () => {
