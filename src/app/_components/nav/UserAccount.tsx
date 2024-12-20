@@ -19,6 +19,8 @@ import { Button } from "../ui/button";
 import { createClient } from "@/src/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
+import LoadingSpinner from "../LoadingSpinner";
 // import type { FormEvent } from "react";
 
 // const emptyMember = {
@@ -35,6 +37,9 @@ export function UserAccountNav({ user }: { user: User | null }) {
   const supabase = createClient();
   const router = useRouter();
   const utils = api.useUtils();
+
+  const [isSigningOut,setIsSigningOut] = useState(false)
+
   const member = api.member.getById.useQuery({ memberId: user?.id }).data;
   // const updateMutation = api.member.update.useMutation();
   // const form = useForm({
@@ -48,17 +53,19 @@ export function UserAccountNav({ user }: { user: User | null }) {
   //   validators: { onChange: memberSchema },
   // });
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    await utils.invalidate();
-    router.push("/signin");
-  }
   // const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
   //   e.preventDefault();
   //   e.stopPropagation();
   //   await form.handleSubmit();
   //   return
   // }
+
+  async function handleLogout() {
+    setIsSigningOut(true)
+    await supabase.auth.signOut();
+    await utils.invalidate();
+    router.push("/signin");
+  }
 
   return (
     <div className="w-fit space-x-2">
@@ -157,9 +164,9 @@ export function UserAccountNav({ user }: { user: User | null }) {
           </div>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer">
-            <Button className="w-full" onClick={() => handleLogout()}>
+            {isSigningOut ? <LoadingSpinner className="w-full"/>:<Button className="w-full" onClick={() => handleLogout()}>
               Sign out
-            </Button>
+            </Button>}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
