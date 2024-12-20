@@ -19,7 +19,7 @@ export function SignOutButton() {
   }
 
   return (
-    <Button className="w-full" onClick={() => handleLogout}>
+    <Button className="w-full" onClick={() => handleLogout()}>
       Sign out
     </Button>
   );
