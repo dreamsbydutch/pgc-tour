@@ -6,7 +6,7 @@ import { tierRouter } from "./routers/tier";
 import { tourRouter } from "./routers/tour";
 import { tourCardRouter } from "./routers/tour_card";
 import { tournamentRouter } from "./routers/tournament";
-import { memberRouter } from "./routers/members";
+import { memberRouter } from "./routers/member";
 import { transactionRouter } from "./routers/transaction";
 
 /**
