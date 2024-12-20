@@ -44,6 +44,7 @@ export async function createTourCard({
       position: "T1",
     },
   });
+  redirect("/")
 }
 
 export async function deleteTourCard({ tourCard }: { tourCard: TourCard }) {
@@ -73,4 +74,5 @@ export async function deleteTourCard({ tourCard }: { tourCard: TourCard }) {
       id: tourCard.id,
     },
   });
+  redirect("/")
 }

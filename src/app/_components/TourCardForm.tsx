@@ -32,8 +32,6 @@ function TourCardFormButton({ tour }: { tour: TourData }) {
     setEffect(true);
     await createTourCard({ tour: tour, seasonId: tour.seasonId });
     await utils.tour.invalidate();
-    setIsLoading(false);
-    return
   }
 
   return (
