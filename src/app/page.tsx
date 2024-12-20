@@ -4,6 +4,7 @@ import { createClient } from "../lib/supabase/server";
 import TournamentCountdown from "./tournament/_components/TournamentCountdown";
 import { formatMoney, formatName } from "../lib/utils";
 import { TourCardOutput } from "./_components/TourCardOutput";
+import Link from "next/link";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -71,6 +72,12 @@ export default async function Home() {
         </>
       )}
       {!tourCard && <TourCardForm {...{ tours }} />}
+                    <Link href={"/privacy"} className="text-xs text-slate-400">
+                      Privacy Policy
+                    </Link>
+                    <Link href={"/terms"} className="text-xs text-slate-400">
+                      Terms of Service
+                    </Link>
     </div>
   );
 }
