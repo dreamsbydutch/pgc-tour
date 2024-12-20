@@ -38,10 +38,10 @@ export function UserAccountNav({ user }: { user: User | null }) {
   const updateMutation = api.member.update.useMutation();
   const form = useForm({
     defaultValues: member ?? emptyMember,
-    onSubmit: ({ value }) => {
+    onSubmit: async ({ value }) => {
       value.fullname = value.firstname + " " + value.lastname;
       updateMutation.mutate(value);
-      utils.member.invalidate();
+      await utils.member.invalidate();
     },
     validatorAdapter: zodValidator(),
     validators: { onChange: memberSchema },
@@ -60,7 +60,7 @@ export function UserAccountNav({ user }: { user: User | null }) {
         <DropdownMenuTrigger className="flex items-center space-x-1">
           <Image
             className="grid place-items-center rounded-full bg-border"
-            src={user?.user_metadata.avatar_url as string}
+            src={user?.user_metadata.avatar_url}
             alt=""
             width={30}
             height={30}
@@ -70,16 +70,17 @@ export function UserAccountNav({ user }: { user: User | null }) {
           <div className="flex items-center justify-start gap-2 p-2">
             <div className="flex flex-col gap-1 space-y-1 leading-none">
               <p className="w-[200px] truncate text-base font-bold text-slate-800">
-                {member?.fullname as string}
+                {member?.fullname}
               </p>
               <p className="w-[200px] truncate text-sm text-slate-800">
-                {member?.email as string}
+                {member?.email}
               </p>
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  form.handleSubmit();
+                  await form.handleSubmit();
+                  return
                 }}
               >
                 <div className="flex flex-col gap-2">
@@ -155,7 +156,7 @@ export function UserAccountNav({ user }: { user: User | null }) {
           </div>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer">
-            <Button className="w-full" onClick={handleLogout}>
+            <Button className="w-full" onClick={() => handleLogout}>
               Sign out
             </Button>
           </DropdownMenuItem>

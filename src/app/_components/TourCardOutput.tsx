@@ -104,7 +104,7 @@ function TourCardChangeButton({
         <DialogFooter>
           <Button
             type="submit"
-            onClick={handleConfirm}
+            onClick={() => handleConfirm}
             className={confirmEffect ? "animate-toggleClick" : ""}
             onAnimationEnd={() => setConfirmEffect(false)}
           >

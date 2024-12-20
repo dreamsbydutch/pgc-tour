@@ -29,7 +29,7 @@ export async function GET(request: Request) {
           memberId: supabaseUser.data.user.id,
         });
         if (!prismaUser) {
-          const fullName = formatName(supabaseUser.data.user.user_metadata.name, "full");
+          const fullName = formatName(supabaseUser.data.user.user_metadata.name as string, "full");
           const splitName = fullName.split(" ");
           await api.member.create({
             id: supabaseUser.data.user.id,

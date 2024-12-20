@@ -13,13 +13,13 @@ export function SignOutButton() {
 
   async function handleLogout() {
     await supabase.auth.signOut();
-    utils.invalidate();
+    await utils.invalidate();
     router.push("/signin");
     router.refresh();
   }
 
   return (
-    <Button className="w-full" onClick={handleLogout}>
+    <Button className="w-full" onClick={() => handleLogout}>
       Sign out
     </Button>
   );

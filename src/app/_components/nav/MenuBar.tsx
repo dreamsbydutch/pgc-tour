@@ -64,7 +64,7 @@ export default function MenuBar({ className }: MenuBarProps) {
             <UserAccountNav user={user} />
           </>
         ) : (
-          <div onClick={signInWithGoogle}>
+          <div onClick={() => signInWithGoogle}>
             {isGoogleLoading ? (
               <LoadingSpinner />
             ) : (

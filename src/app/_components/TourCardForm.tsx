@@ -33,6 +33,7 @@ function TourCardFormButton({ tour }: { tour: TourData }) {
         setEffect(true);
         await utils.tour.invalidate();
         await createTourCard({ tour: tour, seasonId: tour.seasonId });
+        return
       }}
       className={`${effect && "animate-toggleClick"} flex h-fit flex-col border-2 p-2 text-lg shadow-lg`}
       onAnimationEnd={() => setEffect(false)}

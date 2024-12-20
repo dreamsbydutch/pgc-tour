@@ -1,6 +1,5 @@
 import { TourCardForm } from "./_components/TourCardForm";
 import { db } from "../server/db";
-import Link from "next/link";
 import { createClient } from "../lib/supabase/server";
 import TournamentCountdown from "./tournament/_components/TournamentCountdown";
 import { formatMoney, formatName } from "../lib/utils";
@@ -20,7 +19,7 @@ export default async function Home() {
   });
   const member = await db.member.findUnique({ where: { id: data.user?.id } });
   if (!member && data.user) {
-    const fullName = formatName(data.user?.user_metadata.name, "full");
+    const fullName = formatName(data.user?.user_metadata.name as string, "full");
     const splitName = fullName.split(" ");
     await db.member.create({
       data: {
