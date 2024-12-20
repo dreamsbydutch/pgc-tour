@@ -4,11 +4,12 @@ import { Button } from "./ui/button";
 import Image from "next/image";
 import { type TourData } from "@/src/types/prisma_include";
 import { createTourCard } from "@/src/server/api/actions/tour_card";
-import { useState } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 import { api } from "@/src/trpc/react";
 import LoadingSpinner from "./LoadingSpinner";
 
 export function TourCardForm({ tours }: { tours: TourData[] }) {
+  const [isCreatingTourCard, setIsCreatingTourCard] = useState(false);
   return (
     <div className="my-4 flex flex-col items-center justify-center gap-4">
       <h2 className="text-center font-varela text-lg text-slate-600">
@@ -16,18 +17,19 @@ export function TourCardForm({ tours }: { tours: TourData[] }) {
       </h2>
       <div className="flex h-full flex-col gap-2 sm:flex-row">
         {tours.map((tour) => (
-          <TourCardFormButton key={tour.id} {...{ tour }} />
+          <TourCardFormButton key={tour.id} {...{ tour,isCreatingTourCard,setIsCreatingTourCard }} />
         ))}
       </div>
     </div>
   );
 }
 
-function TourCardFormButton({ tour }: { tour: TourData }) {
+function TourCardFormButton({ tour,isCreatingTourCard,setIsCreatingTourCard }: { tour: TourData,isCreatingTourCard:boolean,setIsCreatingTourCard:Dispatch<SetStateAction<boolean>> }) {
   const utils = api.useUtils();
   const [isLoading, setIsLoading] = useState(false);
   const [effect, setEffect] = useState(false);
   const handleSubmit = async () => {
+    setIsCreatingTourCard(true)
     setIsLoading(true);
     setEffect(true);
     await createTourCard({ tour: tour, seasonId: tour.seasonId });
@@ -39,10 +41,11 @@ function TourCardFormButton({ tour }: { tour: TourData }) {
       variant="secondary"
       size="xl"
       onClick={() => handleSubmit()}
+      disabled={isCreatingTourCard}
       className={`${effect && "animate-toggleClick"} flex h-fit flex-col border-2 p-2 text-lg shadow-lg`}
       onAnimationEnd={() => setEffect(false)}
     >
-      {isLoading ? <LoadingSpinner className="w-full" /> : <>
+      {isLoading ? <LoadingSpinner className="h-full w-full" /> : <>
         <Image
           src={tour.logoUrl}
           alt="Tour Logo"
