@@ -42,6 +42,7 @@ export const tourRouter = createTRPCRouter({
         logoUrl: z.string(),
         seasonYear: z.number(),
         shortForm: z.string(),
+        buyIn: z.number(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -55,6 +56,7 @@ export const tourRouter = createTRPCRouter({
           logoUrl: input.logoUrl,
           seasonId: tourSeason.id,
           shortForm: input.shortForm,
+          buyIn: input.buyIn,
         },
       });
     }),
