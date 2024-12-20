@@ -62,6 +62,7 @@ function TourCardChangeButton({
   tourCard: TourCard;
   memberId: string;
 }) {
+  const [isLoading, setIsLoading] = useState(false);
   const [effect, setEffect] = useState(false);
   const [confirmEffect, setConfirmEffect] = useState(false);
   const utils = api.useUtils();
@@ -69,10 +70,12 @@ function TourCardChangeButton({
   if (memberId !== tourCard.memberId) return null;
 
   const handleDelete = async () => {
+    setIsLoading(true)
     setConfirmEffect(true);
     await utils.tour.invalidate();
     await deleteTourCard({ tourCard: tourCard });
     console.log("Server action executed");
+    setIsLoading(false)
     setIsModalOpen(false);
   };
 
@@ -94,23 +97,24 @@ function TourCardChangeButton({
         </Button>
       </DialogTrigger>
       <DialogContent className="w-3/4 sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Delete Tour Card</DialogTitle>
-          <DialogDescription>
-            This will delete your current Tour Card and allow you to re-sign up
-            if spots are available.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button
-            type="submit"
-            onClick={() => handleDelete()}
-            className={confirmEffect ? "animate-toggleClick" : ""}
-            onAnimationEnd={() => setConfirmEffect(false)}
-          >
-            Continue
-          </Button>
-        </DialogFooter>
+        {isLoading ? <LoadingSpinner className="w-full h-full"/> : <>
+          <DialogHeader>
+            <DialogTitle>Delete Tour Card</DialogTitle>
+            <DialogDescription>
+              This will delete your current Tour Card and allow you to re-sign up
+              if spots are available.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="submit"
+              onClick={() => handleDelete()}
+              className={confirmEffect ? "animate-toggleClick" : ""}
+              onAnimationEnd={() => setConfirmEffect(false)}
+            >
+              Continue
+            </Button>
+          </DialogFooter></>}
       </DialogContent>
     </Dialog>
   );
