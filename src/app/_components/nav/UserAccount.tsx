@@ -7,46 +7,46 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useForm } from "@tanstack/react-form";
+// import { useForm } from "@tanstack/react-form";
 import type { User } from "@supabase/supabase-js";
 import Image from "next/image";
-import { zodValidator } from "@tanstack/zod-form-adapter";
+// import { zodValidator } from "@tanstack/zod-form-adapter";
 import { api } from "@/src/trpc/react";
-import { memberSchema } from "@/src/lib/validators";
-import { z } from "zod";
-import { FieldInfo } from "../FieldInfo";
+// import { memberSchema } from "@/src/lib/validators";
+// import { z } from "zod";
+// import { FieldInfo } from "../FieldInfo";
 import { Button } from "../ui/button";
 import { createClient } from "@/src/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { FormEvent } from "react";
+// import type { FormEvent } from "react";
 
-const emptyMember = {
-  id: "",
-  email: "",
-  fullname: "",
-  firstname: "",
-  lastname: "",
-  account: 0,
-  role: "",
-};
+// const emptyMember = {
+//   id: "",
+//   email: "",
+//   fullname: "",
+//   firstname: "",
+//   lastname: "",
+//   account: 0,
+//   role: "",
+// };
 
 export function UserAccountNav({ user }: { user: User | null }) {
   const supabase = createClient();
   const router = useRouter();
   const utils = api.useUtils();
   const member = api.member.getById.useQuery({ memberId: user?.id }).data;
-  const updateMutation = api.member.update.useMutation();
-  const form = useForm({
-    defaultValues: member ?? emptyMember,
-    onSubmit: async ({ value }) => {
-      value.fullname = value.firstname + " " + value.lastname;
-      updateMutation.mutate(value);
-      await utils.member.invalidate();
-    },
-    validatorAdapter: zodValidator(),
-    validators: { onChange: memberSchema },
-  });
+  // const updateMutation = api.member.update.useMutation();
+  // const form = useForm({
+  //   defaultValues: member ?? emptyMember,
+  //   onSubmit: async ({ value }) => {
+  //     value.fullname = value.firstname + " " + value.lastname;
+  //     updateMutation.mutate(value);
+  //     await utils.member.invalidate();
+  //   },
+  //   validatorAdapter: zodValidator(),
+  //   validators: { onChange: memberSchema },
+  // });
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -54,12 +54,12 @@ export function UserAccountNav({ user }: { user: User | null }) {
     router.push("/signin");
     router.refresh();
   }
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    await form.handleSubmit();
-    return
-  }
+  // const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+  //   await form.handleSubmit();
+  //   return
+  // }
 
   return (
     <div className="w-fit space-x-2">
@@ -82,7 +82,7 @@ export function UserAccountNav({ user }: { user: User | null }) {
               <p className="w-[200px] truncate text-sm text-slate-800">
                 {member?.email}
               </p>
-              <form
+              {/* <form
                 onSubmit={() => handleSubmit}
               >
                 <div className="flex flex-col gap-2">
@@ -147,7 +147,7 @@ export function UserAccountNav({ user }: { user: User | null }) {
                     Update
                   </Button>
                 </div>
-              </form>
+              </form> */}
               <Link href={"/privacy"} className="text-xs text-slate-700">
                 Privacy Policy
               </Link>
