@@ -75,8 +75,8 @@ function TourCardChangeButton({
     await utils.tour.invalidate();
     await deleteTourCard({ tourCard: tourCard });
     console.log("Server action executed");
-    setIsLoading(false)
     setIsModalOpen(false);
+    setIsLoading(false)
   };
 
   const handleButtonClick = () => {
@@ -97,7 +97,7 @@ function TourCardChangeButton({
         </Button>
       </DialogTrigger>
       <DialogContent className="w-3/4 sm:max-w-[425px]">
-        {isLoading ? <LoadingSpinner className="w-full h-full"/> : <>
+        {isLoading ? <LoadingSpinner className="h-fit"/> : <>
           <DialogHeader>
             <DialogTitle>Delete Tour Card</DialogTitle>
             <DialogDescription>
