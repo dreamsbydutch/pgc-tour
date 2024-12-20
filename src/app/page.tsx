@@ -1,9 +1,10 @@
-import { TourCardForm, TourCardOutput } from "./_components/TourCardForm";
+import { TourCardForm } from "./_components/TourCardForm";
 import { db } from "../server/db";
 import Link from "next/link";
 import { createClient } from "../lib/supabase/server";
 import TournamentCountdown from "./tournament/_components/TournamentCountdown";
 import { formatMoney } from "../lib/utils";
+import { TourCardOutput } from "./_components/TourCardOutput";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -18,11 +19,9 @@ export default async function Home() {
     include: { tourCards: true },
   });
   const member = await db.member.findUnique({ where: { id: data.user?.id } });
-
-  const seasonAlt = await db.season.findUnique({ where: { year: 2024 } });
   const tourney = await db.tournament.findFirst({
     where: {
-      seasonId: seasonAlt?.id,
+      seasonId: season?.id,
     },
     orderBy: { startDate: "asc" },
   });
@@ -55,14 +54,14 @@ export default async function Home() {
                 ? `Please pay your ${formatMoney(member.account)} buy-in to puregolfcollectivetour@gmail.com. Buy-ins must be paid prior to the Feb. 1st, 2025.`
                 : null)}
           </p>
-          <TournamentCountdown tourney={tourney} />
+          {tourney && <TournamentCountdown tourney={tourney} />}
         </>
       )}
       {!tourCard && <TourCardForm {...{ tours }} />}
-      <Link href={"/privacy"} className="text-xs">
+      <Link href={"/privacy"} className="text-xs text-white">
         Privacy Policy
       </Link>
-      <Link href={"/terms"} className="text-xs">
+      <Link href={"/terms"} className="text-xs text-white">
         Terms of Service
       </Link>
     </div>

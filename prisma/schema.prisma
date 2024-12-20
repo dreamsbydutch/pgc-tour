@@ -42,7 +42,7 @@ model Tour {
   logoUrl   String
   seasonId  String
   shortForm String
-  buyIn     Int?
+  buyIn     Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -4,23 +4,35 @@ import { db } from "../../db";
 import { redirect } from "next/navigation";
 import { createClient } from "@/src/lib/supabase/server";
 import { api } from "@/src/trpc/server";
+import { TourData } from "@/src/types/prisma_include";
+import { Member } from "@prisma/client";
 
 export async function createTourCard({
-  tourId,
+  tour,
   seasonId,
 }: {
-  tourId: string;
+  tour: TourData;
   seasonId: string;
 }) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
-  const user = await api.member.getById({ memberId: data.user?.id });
+  const user: Member = await api.member.getById({ memberId: data.user?.id });
   if (!user || !data.user || !data.user.email) return;
+  await db.transactions.create({
+    data: {
+      amount: tour.buyIn,
+      description: "Tour Card fee for " + user.fullname,
+      seasonId: seasonId,
+      transactionType: "TourCardFee",
+      userId: user.id,
+    },
+  });
+  await db.member.update({where:{id:user.id},data:{account:user.account+tour.buyIn}})
   await db.tourCard.create({
     data: {
       displayName: (user.firstname && user.firstname[0]) + ". " + user.lastname,
       memberId: data.user.id,
-      tourId: tourId,
+      tourId: tour.id,
       seasonId: seasonId,
       earnings: 0,
       points: 0,

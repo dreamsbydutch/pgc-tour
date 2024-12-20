@@ -34,24 +34,7 @@ export const tourCardRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const existingMember = await ctx.db.member.findUnique({
-        where: { id: input.memberId },
-      });
-      if (!existingMember) return;
-      await ctx.db.transactions.create({
-        data: {
-          amount: input.buyin,
-          seasonId: input.seasonId,
-          transactionType: "TourCardFee",
-          userId: input.memberId,
-          description: input.fullName + "'s Tour Card Fee",
-        },
-      });
-      await ctx.db.member.update({
-        where: { id: input.memberId },
-        data: { account: existingMember.account + input.buyin },
-      });
-      await ctx.db.tourCard.create({
+      return await ctx.db.tourCard.create({
         data: {
           seasonId: input.seasonId,
           displayName: input.displayName,
