@@ -72,12 +72,6 @@ export default async function Home() {
         </>
       )}
       {!tourCard && <TourCardForm {...{ tours }} />}
-      <Link href={"/privacy"} className="text-xs text-white">
-        Privacy Policy
-      </Link>
-      <Link href={"/terms"} className="text-xs text-white">
-        Terms of Service
-      </Link>
     </div>
   );
 }

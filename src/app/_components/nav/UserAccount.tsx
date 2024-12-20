@@ -18,6 +18,7 @@ import { FieldInfo } from "../FieldInfo";
 import { Button } from "../ui/button";
 import { createClient } from "@/src/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const emptyMember = {
   id: "",
@@ -68,10 +69,10 @@ export function UserAccountNav({ user }: { user: User | null }) {
         <DropdownMenuContent align="end">
           <div className="flex items-center justify-start gap-2 p-2">
             <div className="flex flex-col gap-1 space-y-1 leading-none">
-              <p className="w-[200px] truncate text-sm text-muted-foreground">
+              <p className="w-[200px] truncate text-base font-bold text-slate-800">
                 {member?.fullname as string}
               </p>
-              <p className="w-[200px] truncate text-sm text-muted-foreground">
+              <p className="w-[200px] truncate text-sm text-slate-800">
                 {member?.email as string}
               </p>
               <form
@@ -136,17 +137,20 @@ export function UserAccountNav({ user }: { user: User | null }) {
                       );
                     }}
                   />
-                  <form.Subscribe
-                    selector={(state) => [state.canSubmit, state.isSubmitting]}
-                    children={([canSubmit, isSubmitting]) => (
-                      <Button type="submit" disabled={!canSubmit}>
-                        {isSubmitting ? "..." : "Submit"}
-                      </Button>
-                    )}
-                  />
+                  <Button
+                    type="submit"
+                    className="h-[1.5rem] w-2/5 items-center self-end"
+                  >
+                    Update
+                  </Button>
                 </div>
               </form>
-              <p className="w-[200px] truncate text-sm text-muted-foreground"></p>
+              <Link href={"/privacy"} className="text-xs text-slate-700">
+                Privacy Policy
+              </Link>
+              <Link href={"/terms"} className="text-xs text-slate-700">
+                Terms of Service
+              </Link>
             </div>
           </div>
           <DropdownMenuSeparator />

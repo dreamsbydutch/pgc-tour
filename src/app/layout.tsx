@@ -38,7 +38,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-      <meta name="google-site-verification" content="k_L19BEXJjcWOM7cHFMPMpK9MBdcv2uQ6qFt3HGPEbc" />
+        <meta
+          name="google-site-verification"
+          content="k_L19BEXJjcWOM7cHFMPMpK9MBdcv2uQ6qFt3HGPEbc"
+        />
       </head>
       <body
         className={cn(
@@ -49,10 +52,7 @@ export default function RootLayout({
         )}
       >
         <TRPCReactProvider>
-          <main className="mx-2 my-4">
-            {children}
-            <div className="mb-20 text-white">.</div>
-          </main>
+          <main className="mx-2 my-4">{children}</main>
           <MenuBar className="shadow-inv fixed bottom-0 z-20 flex w-full items-center justify-evenly bg-gray-200" />
         </TRPCReactProvider>
       </body>
