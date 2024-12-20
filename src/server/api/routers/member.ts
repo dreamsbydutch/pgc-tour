@@ -12,12 +12,34 @@ export const memberRouter = createTRPCRouter({
       if (!input.memberId) return null;
       return await ctx.db.member.findUnique({ where: { id: input.memberId } });
     }),
+  create: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        email: z.string(),
+        fullname: z.string(),
+        firstname: z.string(),
+        lastname: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const updatedUser = await ctx.db.member.create({
+        data: {
+          id: input.id,
+          fullname: input.fullname,
+          email: input.email,
+          firstname: input.firstname,
+          lastname: input.lastname,
+        },
+      });
+      return updatedUser;
+    }),
   update: publicProcedure
     .input(
       z.object({
         id: z.string(),
         email: z.string().optional(),
-        fullName: z.string().optional(),
+        fullname: z.string().optional(),
         firstname: z.string().optional(),
         lastname: z.string().optional(),
         account: z.number().optional(),
@@ -28,7 +50,7 @@ export const memberRouter = createTRPCRouter({
         where: { id: input.id },
         data: {
           account: input.account,
-          fullname: input.fullName,
+          fullname: input.fullname,
           email: input.email,
           firstname: input.firstname,
           lastname: input.lastname,

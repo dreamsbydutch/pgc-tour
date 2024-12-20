@@ -13,6 +13,7 @@ export async function GET(request: Request) {
   // Get the authorization code and the 'next' redirect path
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/";
+  console.log(code);
 
   if (code) {
     // Create a Supabase client
@@ -23,23 +24,34 @@ export async function GET(request: Request) {
 
     if (!error) {
       const supabaseUser = await supabase.auth.getUser();
-      const prismaUser = await api.member.getById({
-        memberId: supabaseUser.data.user?.id,
-      });
-      if (!prismaUser) return;
-      if (!prismaUser?.firstname || !prismaUser?.lastname) {
-        const fullName = formatName(prismaUser.fullname,'full')
-        const splitName = fullName.split(" ");
-        await api.member.update({
-          id: prismaUser.id,
-          fullName: fullName,
-          firstname: splitName[0],
-          lastname: splitName.slice(1).toString(),
+      if (supabaseUser.data.user) {
+        const prismaUser = await api.member.getById({
+          memberId: supabaseUser.data.user.id,
         });
-      }
+        if (!prismaUser) {
+          const fullName = formatName(supabaseUser.data.user.user_metadata.name, "full");
+          const splitName = fullName.split(" ");
+          await api.member.create({
+            id: supabaseUser.data.user.id,
+            fullname: fullName,
+            firstname: splitName[0] ?? "N/A",
+            lastname: splitName.slice(1).toString(),
+            email: supabaseUser.data.user.email ?? "N/A",
+          });
+        } else if (!prismaUser?.firstname || !prismaUser?.lastname) {
+          const fullName = formatName(prismaUser.fullname, "full");
+          const splitName = fullName.split(" ");
+          await api.member.update({
+            id: prismaUser.id,
+            fullname: fullName,
+            firstname: splitName[0],
+            lastname: splitName.slice(1).toString(),
+          });
+        }
 
-      // If successful, redirect to the 'next' path or home
-      return NextResponse.redirect(`${origin}${next}`);
+        // If successful, redirect to the 'next' path or home
+        return NextResponse.redirect(`${origin}${next}`);
+      }
     }
   }
 

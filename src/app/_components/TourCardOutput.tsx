@@ -33,10 +33,9 @@ export function TourCardOutput({
 }) {
   if (!tour) return <LoadingSpinner />;
   return (
-    <div className="mt-8 flex flex-col items-center justify-center">
+    <div className="mt-2 flex flex-col items-center justify-center">
       <h2 className="max-w-xl text-center font-varela text-lg text-slate-600">
-        {`Thank you for joining season 5 of the PGC Tour. You have secured your spot on the 2025 ${tour.name}. More info will come
-          leading up to the 2025 Waste Managment Open.`}
+        {`You have secured your spot on the ${tour.name}. The 2025 season will begin with the Waste Management Open on Feb 6th.`}
       </h2>
       <div className="mx-auto mt-4 flex w-[12rem] min-w-fit flex-col items-center justify-center rounded-lg border-2 border-gray-400 bg-gray-300 p-4 text-center shadow-2xl 2xs:w-[18rem] sm:w-[22rem]">
         <Image
@@ -49,7 +48,7 @@ export function TourCardOutput({
         <h2 className="text-2xl font-bold text-gray-800">{name}</h2>
         <p className="text-base italic text-gray-600">{tour.name}</p>
       </div>
-      <div className="mb-4 mt-2 text-xs text-slate-600">
+      <div className="mb-2 mt-2 text-xs text-slate-600">
         {75 - tour.tourCards.length} spots remaining
       </div>
       <TourCardChangeButton {...{ tourCard, memberId }} />
@@ -86,10 +85,9 @@ function TourCardChangeButton({
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          className={`${effect && "animate-toggleClick"} mx-auto mt-6 w-1/2 xs:w-2/5 sm:w-1/3`}
+          className={`${effect && "animate-toggleClick"} mx-auto my-2 h-[1.5rem] w-1/2 xs:w-2/5 sm:w-1/3`}
           onAnimationEnd={() => setEffect(false)}
           variant="destructive"
-          size="xs"
           onClick={handleButtonClick}
         >
           Switch Tours

@@ -3,8 +3,9 @@ import { db } from "../server/db";
 import Link from "next/link";
 import { createClient } from "../lib/supabase/server";
 import TournamentCountdown from "./tournament/_components/TournamentCountdown";
-import { formatMoney } from "../lib/utils";
+import { formatMoney, formatName } from "../lib/utils";
 import { TourCardOutput } from "./_components/TourCardOutput";
+import seedDatabase from "../server/api/seed";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -19,6 +20,20 @@ export default async function Home() {
     include: { tourCards: true },
   });
   const member = await db.member.findUnique({ where: { id: data.user?.id } });
+  if (!member && data.user) {
+    const fullName = formatName(data.user?.user_metadata.name, "full");
+    const splitName = fullName.split(" ");
+    await db.member.create({
+      data: {
+        id: data.user.id,
+        email: data.user.email ?? (data.user.user_metadata.email as string),
+        role: "regular",
+        fullname: fullName,
+        firstname: splitName[0],
+        lastname: splitName.slice(1).toString(),
+      },
+    });
+  }
   const tourney = await db.tournament.findFirst({
     where: {
       seasonId: season?.id,
