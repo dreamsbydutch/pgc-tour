@@ -230,4 +230,5 @@ enum TransactionType {
   Withdrawal
   LeagueDonation
   CharityDonation
+  Payment
 }

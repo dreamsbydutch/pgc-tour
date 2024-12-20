@@ -5,7 +5,6 @@ import { createClient } from "../lib/supabase/server";
 import TournamentCountdown from "./tournament/_components/TournamentCountdown";
 import { formatMoney, formatName } from "../lib/utils";
 import { TourCardOutput } from "./_components/TourCardOutput";
-import seedDatabase from "../server/api/seed";
 
 export default async function Home() {
   const supabase = await createClient();

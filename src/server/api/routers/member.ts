@@ -40,8 +40,8 @@ export const memberRouter = createTRPCRouter({
         id: z.string(),
         email: z.string().optional(),
         fullname: z.string().optional(),
-        firstname: z.string().optional(),
-        lastname: z.string().optional(),
+        firstname: z.string().nullable().optional(),
+        lastname: z.string().nullable().optional(),
         account: z.number().optional(),
       }),
     )

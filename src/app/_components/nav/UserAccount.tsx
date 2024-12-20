@@ -1,5 +1,4 @@
-import React from "react";
-import { FaUser } from "react-icons/fa6";
+"use client";
 
 import {
   DropdownMenu,
@@ -8,11 +7,52 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SignOutButton } from "../SignOutButton";
+import { useForm } from "@tanstack/react-form";
 import type { User } from "@supabase/supabase-js";
 import Image from "next/image";
+import { zodValidator } from "@tanstack/zod-form-adapter";
+import { api } from "@/src/trpc/react";
+import { memberSchema } from "@/src/lib/validators";
+import { z } from "zod";
+import { FieldInfo } from "../FieldInfo";
+import { Button } from "../ui/button";
+import { createClient } from "@/src/lib/supabase/client";
+import { useRouter } from "next/navigation";
+
+const emptyMember = {
+  id: "",
+  email: "",
+  fullname: "",
+  firstname: "",
+  lastname: "",
+  account: 0,
+  role: "",
+};
 
 export function UserAccountNav({ user }: { user: User | null }) {
+  const supabase = createClient();
+  const router = useRouter();
+  const utils = api.useUtils();
+  const member = api.member.getById.useQuery({ memberId: user?.id }).data;
+  const updateMutation = api.member.update.useMutation();
+  const form = useForm({
+    defaultValues: member ?? emptyMember,
+    onSubmit: ({ value }) => {
+      value.fullname = value.firstname + " " + value.lastname;
+      updateMutation.mutate(value);
+      utils.member.invalidate();
+    },
+    validatorAdapter: zodValidator(),
+    validators: { onChange: memberSchema },
+  });
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    await utils.invalidate();
+    router.push("/signin");
+    router.refresh();
+  }
+
   return (
     <div className="w-fit space-x-2">
       <DropdownMenu>
@@ -27,22 +67,93 @@ export function UserAccountNav({ user }: { user: User | null }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <div className="flex items-center justify-start gap-2 p-2">
-            <div className="flex flex-col gap-4 space-y-1 leading-none">
-              {user?.user_metadata && (
-                <>
-                  <p className="w-[200px] truncate text-sm text-muted-foreground">
-                    {user.user_metadata.name as string}
-                  </p>
-                  <p className="w-[200px] truncate text-sm text-muted-foreground">
-                    {user.email}
-                  </p>
-                </>
-              )}
+            <div className="flex flex-col gap-1 space-y-1 leading-none">
+              <p className="w-[200px] truncate text-sm text-muted-foreground">
+                {member?.fullname as string}
+              </p>
+              <p className="w-[200px] truncate text-sm text-muted-foreground">
+                {member?.email as string}
+              </p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  form.handleSubmit();
+                }}
+              >
+                <div className="flex flex-col gap-2">
+                  <form.Field
+                    name="firstname"
+                    validators={{
+                      onChange: z
+                        .string()
+                        .min(3, "First name must be at least 3 characters"),
+                    }}
+                    children={(field) => {
+                      // Avoid hasty abstractions. Render props are great!
+                      return (
+                        <div className="flex flex-row">
+                          <label htmlFor={field.name} className="my-auto">
+                            First Name:
+                          </label>
+                          <input
+                            className="ml-2 h-[1.5rem] border-2 px-0.5"
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value ?? undefined}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                          />
+                          <FieldInfo field={field} />
+                        </div>
+                      );
+                    }}
+                  />
+                  <form.Field
+                    name="lastname"
+                    validators={{
+                      onChange: z
+                        .string()
+                        .min(3, "Last name must be at least 3 characters"),
+                    }}
+                    children={(field) => {
+                      // Avoid hasty abstractions. Render props are great!
+                      return (
+                        <div className="flex flex-row">
+                          <label htmlFor={field.name} className="my-auto">
+                            Last Name:
+                          </label>
+                          <input
+                            className="ml-2 h-[1.5rem] border-2 px-0.5"
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value ?? undefined}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                          />
+                          <FieldInfo field={field} />
+                        </div>
+                      );
+                    }}
+                  />
+                  <form.Subscribe
+                    selector={(state) => [state.canSubmit, state.isSubmitting]}
+                    children={([canSubmit, isSubmitting]) => (
+                      <Button type="submit" disabled={!canSubmit}>
+                        {isSubmitting ? "..." : "Submit"}
+                      </Button>
+                    )}
+                  />
+                </div>
+              </form>
+              <p className="w-[200px] truncate text-sm text-muted-foreground"></p>
             </div>
           </div>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer">
-            <SignOutButton />
+            <Button className="w-full" onClick={handleLogout}>
+              Sign out
+            </Button>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
