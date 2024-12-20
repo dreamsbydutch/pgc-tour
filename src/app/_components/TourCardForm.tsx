@@ -25,16 +25,17 @@ export function TourCardForm({ tours }: { tours: TourData[] }) {
 function TourCardFormButton({ tour }: { tour: TourData }) {
   const utils = api.useUtils();
   const [effect, setEffect] = useState(false);
+  const handleSubmit = async () => {
+    setEffect(true);
+    await createTourCard({ tour: tour, seasonId: tour.seasonId });
+    await utils.tour.invalidate();
+    return
+  }
   return (
     <Button
       variant="secondary"
       size="xl"
-      onClick={async () => {
-        setEffect(true);
-        await utils.tour.invalidate();
-        await createTourCard({ tour: tour, seasonId: tour.seasonId });
-        return
-      }}
+      onClick={() => handleSubmit}
       className={`${effect && "animate-toggleClick"} flex h-fit flex-col border-2 p-2 text-lg shadow-lg`}
       onAnimationEnd={() => setEffect(false)}
     >

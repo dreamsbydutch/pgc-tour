@@ -19,6 +19,7 @@ import { Button } from "../ui/button";
 import { createClient } from "@/src/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import type { FormEvent } from "react";
 
 const emptyMember = {
   id: "",
@@ -53,6 +54,12 @@ export function UserAccountNav({ user }: { user: User | null }) {
     router.push("/signin");
     router.refresh();
   }
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await form.handleSubmit();
+    return
+  }
 
   return (
     <div className="w-fit space-x-2">
@@ -60,7 +67,7 @@ export function UserAccountNav({ user }: { user: User | null }) {
         <DropdownMenuTrigger className="flex items-center space-x-1">
           <Image
             className="grid place-items-center rounded-full bg-border"
-            src={user?.user_metadata.avatar_url}
+            src={user?.user_metadata.avatar_url as string}
             alt=""
             width={30}
             height={30}
@@ -76,12 +83,7 @@ export function UserAccountNav({ user }: { user: User | null }) {
                 {member?.email}
               </p>
               <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  await form.handleSubmit();
-                  return
-                }}
+                onSubmit={() => handleSubmit}
               >
                 <div className="flex flex-col gap-2">
                   <form.Field
