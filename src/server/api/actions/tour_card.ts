@@ -62,11 +62,13 @@ export async function deleteTourCard({ tourCard }: { tourCard: TourCard }) {
       userId: user.id,
     },
   });
-  await db.transactions.delete({ where: { id: transaction?.id } });
-  await db.member.update({
-    where: { id: user.id },
-    data: { account: user.account - tour.buyIn },
-  });
+  if (transaction) {
+    await db.transactions.delete({ where: { id: transaction?.id } });
+    await db.member.update({
+      where: { id: user.id },
+      data: { account: user.account - tour.buyIn },
+    });
+  }
   await db.tourCard.delete({
     where: {
       id: tourCard.id,
