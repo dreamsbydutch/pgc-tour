@@ -51,7 +51,7 @@ export default async function Home() {
           <p className="mx-auto mb-8 w-5/6 text-center text-sm italic text-red-600">
             {member &&
               (member.account > 0
-                ? `Please pay your ${formatMoney(member.account)} buy-in to puregolfcollectivetour@gmail.com. Buy-ins must be paid prior to the Feb. 1st, 2025.`
+                ? `Please pay your ${formatMoney(member.account)} buy-in to puregolfcollectivetour@gmail.com. Buy-in must be paid prior to Feb. 1st, 2025.`
                 : null)}
           </p>
           {tourney && <TournamentCountdown tourney={tourney} />}
