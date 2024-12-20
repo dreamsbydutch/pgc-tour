@@ -11,7 +11,7 @@ const config = {
     "plugin:@typescript-eslint/stylistic-type-checked",
   ],
   rules: {
-    "react/no-children-props": "warn",
+    "@eslint-react/no-children-prop": "warn",
     "@typescript-eslint/no-misused-promises": "warn",
     "@typescript-eslint/no-floating-promises": "warn",
     "@typescript-eslint/prefer-optional-chain": "off",
