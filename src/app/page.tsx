@@ -25,7 +25,7 @@ export default async function Home() {
     },
     orderBy: { startDate: "asc" },
   });
-  if (!tours || !season || !data.user || !tourney) return <div>Error</div>;
+  if (!tours || !season || !data.user) return <div>Error</div>;
 
   return (
     <div className="flex h-[100vh] flex-col">
