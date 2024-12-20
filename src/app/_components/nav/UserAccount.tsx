@@ -52,7 +52,6 @@ export function UserAccountNav({ user }: { user: User | null }) {
     await supabase.auth.signOut();
     await utils.invalidate();
     router.push("/signin");
-    router.refresh();
   }
   // const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
   //   e.preventDefault();

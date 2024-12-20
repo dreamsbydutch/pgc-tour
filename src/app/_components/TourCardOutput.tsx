@@ -17,6 +17,7 @@ import {
 } from "./ui/dialog";
 import { api } from "@/src/trpc/react";
 import LoadingSpinner from "./LoadingSpinner";
+import { useRouter } from "next/navigation";
 
 export function TourCardOutput({
   name,
@@ -62,11 +63,14 @@ function TourCardChangeButton({
   tourCard: TourCard;
   memberId: string;
 }) {
+  const router = useRouter()
+  const utils = api.useUtils();
+
   const [isLoading, setIsLoading] = useState(false);
   const [effect, setEffect] = useState(false);
   const [confirmEffect, setConfirmEffect] = useState(false);
-  const utils = api.useUtils();
   const [_isModalOpen, setIsModalOpen] = useState(false);
+
   if (memberId !== tourCard.memberId) return null;
 
   const handleDelete = async () => {
@@ -75,6 +79,7 @@ function TourCardChangeButton({
     await utils.tour.invalidate();
     await deleteTourCard({ tourCard: tourCard });
     console.log("Server action executed");
+    router.push("/")
     setIsModalOpen(false);
     setIsLoading(false)
   };

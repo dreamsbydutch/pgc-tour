@@ -22,7 +22,7 @@ export async function createTourCard({
   if (!user || !data.user || !data.user.email) return;
   await db.transactions.create({
     data: {
-      amount: tour.buyIn,
+      amount: tour.buyIn??0,
       description: "Tour Card fee for " + user.fullname,
       seasonId: seasonId,
       transactionType: "TourCardFee",
@@ -31,7 +31,7 @@ export async function createTourCard({
   });
   await db.member.update({
     where: { id: user.id },
-    data: { account: user.account + tour.buyIn },
+    data: { account: user.account + (tour.buyIn??0) },
   });
   await db.tourCard.create({
     data: {
@@ -44,7 +44,6 @@ export async function createTourCard({
       position: "T1",
     },
   });
-  redirect("/");
 }
 
 export async function deleteTourCard({ tourCard }: { tourCard: TourCard }) {
@@ -66,7 +65,7 @@ export async function deleteTourCard({ tourCard }: { tourCard: TourCard }) {
     await db.transactions.delete({ where: { id: transaction?.id } });
     await db.member.update({
       where: { id: user.id },
-      data: { account: user.account - tour.buyIn },
+      data: { account: user.account - (tour.buyIn??0) },
     });
   }
   await db.tourCard.delete({
@@ -74,5 +73,4 @@ export async function deleteTourCard({ tourCard }: { tourCard: TourCard }) {
       id: tourCard.id,
     },
   });
-  redirect("/");
 }

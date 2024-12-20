@@ -28,9 +28,11 @@ function TourCardFormButton({ tour }: { tour: TourData }) {
   const [isLoading, setIsLoading] = useState(false);
   const [effect, setEffect] = useState(false);
   const handleSubmit = async () => {
+    setIsLoading(true);
     setEffect(true);
     await createTourCard({ tour: tour, seasonId: tour.seasonId });
     await utils.tour.invalidate();
+    setIsLoading(false);
     return
   }
 
