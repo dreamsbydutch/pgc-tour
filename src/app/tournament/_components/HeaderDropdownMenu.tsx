@@ -82,7 +82,7 @@ export default function HeaderDropdown({
                 {leaderboardToggle === "Tier" ? (
                   groupedTourneys.length === 4 && i === 0 ? (
                     <DropdownMenuLabel className="pb-1 text-center font-bold xs:text-lg lg:text-xl">
-                      "Live"
+                      &ldquo;Live&rdquo;
                     </DropdownMenuLabel>
                   ) : (
                     <DropdownMenuLabel className="pb-1 text-center font-bold xs:text-lg lg:text-xl">
