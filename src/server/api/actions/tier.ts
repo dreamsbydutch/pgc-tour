@@ -9,6 +9,7 @@ export async function seedTiers() {
   await seed2022Data(seasons.find((obj) => obj.year === 2022));
   await seed2023Data(seasons.find((obj) => obj.year === 2023));
   await seed2024Data(seasons.find((obj) => obj.year === 2024));
+  await seed2024Data(seasons.find((obj) => obj.year === 2025));
 }
 
 const convertToArray = (obj: Record<string, string | number> | undefined) => {
@@ -29,7 +30,7 @@ const seed2024Data = async (season: Season | undefined) => {
   ).then((res) => res.json() as unknown as Record<string, string>[]);
   await db.tier.create({
     data: {
-      name: "Bottom",
+      name: "Standard",
       seasonId: season.id,
       payouts: convertToArray(output.find((obj) => obj.key === "BottomPayout")),
       points: convertToArray(output.find((obj) => obj.key === "BottomPoints")),
@@ -37,7 +38,7 @@ const seed2024Data = async (season: Season | undefined) => {
   });
   await db.tier.create({
     data: {
-      name: "Mid",
+      name: "Elevated",
       seasonId: season.id,
       payouts: convertToArray(output.find((obj) => obj.key === "MidPayout")),
       points: convertToArray(output.find((obj) => obj.key === "MidPoints")),

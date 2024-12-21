@@ -6,6 +6,7 @@ import { Barlow_Condensed, Varela, Yellowtail } from "next/font/google";
 import { TRPCReactProvider } from "@/trpcLocal/react";
 import MenuBar from "@/components/nav/MenuBar";
 import { cn } from "../lib/utils";
+import Link from "next/link";
 
 const varela = Varela({
   weight: ["400"],
@@ -52,7 +53,9 @@ export default function RootLayout({
         )}
       >
         <TRPCReactProvider>
-          <main className="mx-2 my-4">{children}</main>
+          <main className="mx-2 mb-16 mt-2">
+            {children}
+          </main>
           <MenuBar className="shadow-inv fixed bottom-0 z-20 flex w-full items-center justify-evenly bg-gray-200" />
         </TRPCReactProvider>
       </body>

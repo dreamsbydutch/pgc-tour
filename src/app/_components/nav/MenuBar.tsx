@@ -6,42 +6,48 @@ import { NavItem } from "./NavItem";
 import { useUser } from "@/src/lib/hooks/use-user";
 import { Skeleton } from "../ui/skeleton";
 import { UserAccountNav } from "./UserAccount";
-import { createClient } from "@/src/lib/supabase/client";
-import { useState } from "react";
-import { toast } from "@/src/lib/hooks/use-toast";
+import { type Dispatch, type SetStateAction, useState } from "react";
 import LoadingSpinner from "../LoadingSpinner";
+import { signInWithGoogle } from "../../signin/actions";
+import { User } from "@supabase/supabase-js";
 
-interface MenuBarProps {
-  className?: string;
-}
-
-export default function MenuBar({ className }: MenuBarProps) {
+export default function MenuBar({ className }: { className?: string }) {
   const { user, loading } = useUser();
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
-  const supabase = createClient();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  
+  return (
+    <Navbar
+      {...{
+        className,
+        user,
+        loading,
+        isSigningOut,
+        setIsSigningOut,
+        isGoogleLoading,
+        setIsGoogleLoading,
+      }}
+    />
+  );
+}
 
-  async function signInWithGoogle() {
-    setIsGoogleLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-    } catch (_error) {
-      toast({
-        title: "Please try again.",
-        description: "There was an error logging in with Google.",
-        variant: "destructive",
-      });
-      setIsGoogleLoading(false);
-    }
-  }
+function Navbar({
+  className,
+  user,
+  loading,
+  isSigningOut,
+  setIsSigningOut,
+  isGoogleLoading,
+  setIsGoogleLoading,
+}: {
+  className?: string;
+  user: User | null;
+  loading: boolean;
+  isSigningOut: boolean;
+  setIsSigningOut: Dispatch<SetStateAction<boolean>>;
+  isGoogleLoading: boolean;
+  setIsGoogleLoading: Dispatch<SetStateAction<boolean>>;
+}) {
   return (
     <div className={cn(className, "h-14")}>
       <NavItem href={"/"}>
@@ -57,14 +63,14 @@ export default function MenuBar({ className }: MenuBarProps) {
         <BookText size={"2.25rem"} />
       </NavItem>
       <div className="flex min-w-[2.25rem] items-center justify-center">
-        {loading ? (
+        {loading || isSigningOut ? (
           <Skeleton className="h-[2.25rem] w-[2.25rem] rounded-full" />
         ) : user ? (
           <>
-            <UserAccountNav user={user} />
+            <UserAccountNav {...{ user, setIsSigningOut }} />
           </>
         ) : (
-          <div onClick={() => signInWithGoogle()}>
+          <div onClick={() => signInWithGoogle({ setIsGoogleLoading })}>
             {isGoogleLoading ? (
               <LoadingSpinner />
             ) : (

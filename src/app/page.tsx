@@ -20,7 +20,10 @@ export default async function Home() {
   });
   const member = await db.member.findUnique({ where: { id: data.user?.id } });
   if (!member && data.user) {
-    const fullName = formatName(data.user?.user_metadata.name as string, "full");
+    const fullName = formatName(
+      data.user?.user_metadata.name as string,
+      "full",
+    );
     const splitName = fullName.split(" ");
     await db.member.create({
       data: {
@@ -42,7 +45,7 @@ export default async function Home() {
   if (!tours || !season || !data.user) return <div>Error</div>;
 
   return (
-    <div className="flex h-[100vh] flex-col">
+    <div className="flex flex-col">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         Welcome to the PGC Tour
       </h1>
@@ -72,12 +75,14 @@ export default async function Home() {
         </>
       )}
       {!tourCard && <TourCardForm {...{ tours }} />}
-                    <Link href={"/privacy"} className="text-xs text-slate-400">
-                      Privacy Policy
-                    </Link>
-                    <Link href={"/terms"} className="text-xs text-slate-400">
-                      Terms of Service
-                    </Link>
+      <div className="mt-4 flex flex-col justify-start">
+        <Link href={"/privacy"} className="text-xs text-slate-400">
+          Privacy Policy
+        </Link>
+        <Link href={"/terms"} className="text-xs text-slate-400">
+          Terms of Service
+        </Link>
+      </div>
     </div>
   );
 }

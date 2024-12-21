@@ -16,11 +16,10 @@ import { api } from "@/src/trpc/react";
 // import { z } from "zod";
 // import { FieldInfo } from "../FieldInfo";
 import { Button } from "../ui/button";
-import { createClient } from "@/src/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
-import LoadingSpinner from "../LoadingSpinner";
+import { handleLogout } from "../../signin/actions";
+import type { Dispatch, SetStateAction } from "react";
+import { useRouter } from "next/navigation";
 // import type { FormEvent } from "react";
 
 // const emptyMember = {
@@ -33,13 +32,14 @@ import LoadingSpinner from "../LoadingSpinner";
 //   role: "",
 // };
 
-export function UserAccountNav({ user }: { user: User | null }) {
-  const supabase = createClient();
+export function UserAccountNav({
+  user,
+  setIsSigningOut,
+}: {
+  user: User | null;
+  setIsSigningOut: Dispatch<SetStateAction<boolean>>;
+}) {
   const router = useRouter();
-  const utils = api.useUtils();
-
-  const [isSigningOut,setIsSigningOut] = useState(false)
-
   const member = api.member.getById.useQuery({ memberId: user?.id }).data;
   // const updateMutation = api.member.update.useMutation();
   // const form = useForm({
@@ -59,13 +59,6 @@ export function UserAccountNav({ user }: { user: User | null }) {
   //   await form.handleSubmit();
   //   return
   // }
-
-  async function handleLogout() {
-    setIsSigningOut(true)
-    await supabase.auth.signOut();
-    await utils.invalidate();
-    router.push("/signin");
-  }
 
   return (
     <div className="w-fit space-x-2">
@@ -164,9 +157,12 @@ export function UserAccountNav({ user }: { user: User | null }) {
           </div>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer">
-            {isSigningOut ? <LoadingSpinner className="w-full"/>:<Button className="w-full" onClick={() => handleLogout()}>
+            <Button
+              className="w-full"
+              onClick={() => handleLogout({ router, setIsSigningOut })}
+            >
               Sign out
-            </Button>}
+            </Button>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
