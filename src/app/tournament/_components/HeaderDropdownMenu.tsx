@@ -57,7 +57,7 @@ export default function HeaderDropdown({
 
       <DropdownMenuPortal>
         <DropdownMenuContent
-          className="max-h-[70vh] overflow-y-scroll rounded-lg bg-white shadow-lg"
+          className="max-h-[70vh] overflow-y-scroll rounded-lg bg-white p-0 shadow-lg"
           sideOffset={5}
         >
           <DropdownToggle
@@ -76,26 +76,32 @@ export default function HeaderDropdown({
                 {i !== 0 && (
                   <DropdownMenuSeparator
                     key={`sep-${i}`}
-                    className="m-1 h-[1px] bg-slate-700"
+                    className="h-[1px] bg-slate-700"
                   />
                 )}
-                <DropdownMenuLabel className="pb-2 text-center font-bold xs:text-lg lg:text-xl">
-                  {leaderboardToggle === "Tier"
-                    ? groupedTourneys.length === 4 && i === 0
-                      ? "Live"
-                      : tiers.find((a) => a.id === group[0]?.tierId)?.name
-                    : ""}
-                </DropdownMenuLabel>
+                {leaderboardToggle === "Tier" ? (
+                  groupedTourneys.length === 4 && i === 0 ? (
+                    <DropdownMenuLabel className="pb-1 text-center font-bold xs:text-lg lg:text-xl">
+                      "Live"
+                    </DropdownMenuLabel>
+                  ) : (
+                    <DropdownMenuLabel className="pb-1 text-center font-bold xs:text-lg lg:text-xl">
+                      {tiers.find((a) => a.id === group[0]?.tierId)?.name}
+                    </DropdownMenuLabel>
+                  )
+                ) : (
+                  ""
+                )}
                 {group.map((tourney) => {
                   return (
                     <DropdownMenuItem key={tourney.id} asChild>
                       <Link
-                        className="outline-none"
+                        className="py-0 outline-none"
                         href={`/tournament/${leaderboardToggle === "Tier" && groupedTourneys.length === 4 && i === 0 ? "" : tourney.id}`}
                       >
                         <div
                           className={cn(
-                            "select-none flex-row items-center justify-center px-2 py-1 text-xs outline-none xs:text-sm sm:text-lg",
+                            "w-full select-none flex-row items-center justify-center px-2 py-1.5 text-xs outline-none xs:text-sm sm:text-lg",
                             activeTourney?.id === tourney.id &&
                               "rounded-lg bg-slate-200",
                           )}
@@ -222,10 +228,10 @@ function useLeaderboardHeaderInfo({
           (obj) => obj.tierId === tiers.find((a) => a.name === "Major")?.id,
         ),
         tournaments.filter(
-          (obj) => obj.tierId === tiers.find((a) => a.name === "Mid")?.id,
+          (obj) => obj.tierId === tiers.find((a) => a.name === "Elevated")?.id,
         ),
         tournaments.filter(
-          (obj) => obj.tierId === tiers.find((a) => a.name === "Bottom")?.id,
+          (obj) => obj.tierId === tiers.find((a) => a.name === "Standard")?.id,
         ),
       ]
     : [
@@ -233,10 +239,10 @@ function useLeaderboardHeaderInfo({
           (obj) => obj.tierId === tiers.find((a) => a.name === "Major")?.id,
         ),
         tournaments.filter(
-          (obj) => obj.tierId === tiers.find((a) => a.name === "Mid")?.id,
+          (obj) => obj.tierId === tiers.find((a) => a.name === "Elevated")?.id,
         ),
         tournaments.filter(
-          (obj) => obj.tierId === tiers.find((a) => a.name === "Bottom")?.id,
+          (obj) => obj.tierId === tiers.find((a) => a.name === "Standard")?.id,
         ),
       ];
 
