@@ -10,9 +10,9 @@ export const FieldInfo = ({
   return (
     <>
       {field.state.meta.errors ? (
-        <small className="font-mono text-xs italic text-red-400">
+        <div className="font-mono text-xs italic text-red-400">
           {field.state.meta.errors}
-        </small>
+        </div>
       ) : null}
       {field.state.meta.isValidating ? "Validating..." : null}
     </>

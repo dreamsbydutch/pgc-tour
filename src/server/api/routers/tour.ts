@@ -9,8 +9,9 @@ export const tourRouter = createTRPCRouter({
   }),
 
   getById: publicProcedure
-    .input(z.object({ tourID: z.string() }))
+    .input(z.object({ tourID: z.string().optional() }))
     .query(async ({ ctx, input }) => {
+      if (!input.tourID) return;
       return await ctx.db.tour.findUnique({
         where: { id: input.tourID },
         include: tourDataIncludeTourCard,

@@ -10,6 +10,7 @@ import { FieldInfo } from "./FieldInfo";
 import { Button } from "./ui/button";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
+import { memberUpdateFormOnSubmit } from "@/src/server/api/actions/member";
 
 const emptyMember = {
   id: "",
@@ -25,13 +26,11 @@ export default function MemberUpdateForm({ user }: { user: User | null }) {
   const router = useRouter();
   const utils = api.useUtils();
   const member = api.member.getById.useQuery({ memberId: user?.id }).data;
-  const updateMutation = api.member.update.useMutation();
 
   const form = useForm({
     defaultValues: member ?? emptyMember,
     onSubmit: async ({ value }) => {
-      value.fullname = value.firstname + " " + value.lastname;
-      updateMutation.mutate(value);
+      await memberUpdateFormOnSubmit({ value, user });
       utils.invalidate();
       router.refresh();
       return;
@@ -61,18 +60,20 @@ export default function MemberUpdateForm({ user }: { user: User | null }) {
           {(field) => {
             // Avoid hasty abstractions. Render props are great!
             return (
-              <div className="flex flex-row">
-                <label htmlFor={field.name} className="my-auto">
-                  First Name:
-                </label>
-                <input
-                  className="ml-2 h-[1.5rem] border-2 px-0.5"
-                  id={field.name}
-                  name={field.name}
-                  value={field.state.value ?? undefined}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
+              <div className="flex flex-col">
+                <div className="flex flex-row">
+                  <label htmlFor={field.name} className="my-auto">
+                    First Name:
+                  </label>
+                  <input
+                    className="ml-2 h-[1.5rem] border-2 px-0.5"
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value ?? undefined}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                </div>
                 <FieldInfo field={field} />
               </div>
             );
@@ -89,18 +90,20 @@ export default function MemberUpdateForm({ user }: { user: User | null }) {
           {(field) => {
             // Avoid hasty abstractions. Render props are great!
             return (
-              <div className="flex flex-row">
-                <label htmlFor={field.name} className="my-auto">
-                  Last Name:
-                </label>
-                <input
-                  className="ml-2 h-[1.5rem] border-2 px-0.5"
-                  id={field.name}
-                  name={field.name}
-                  value={field.state.value ?? undefined}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
+              <div className="flex flex-col">
+                <div className="flex flex-row">
+                  <label htmlFor={field.name} className="my-auto">
+                    Last Name:
+                  </label>
+                  <input
+                    className="ml-2 h-[1.5rem] border-2 px-0.5"
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value ?? undefined}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                </div>
                 <FieldInfo field={field} />
               </div>
             );

@@ -22,7 +22,7 @@ export async function createTourCard({
   if (!user || !data.user || !data.user.email) return;
   await db.transactions.create({
     data: {
-      amount: tour.buyIn??0,
+      amount: tour.buyIn ?? 0,
       description: "Tour Card fee for " + user.fullname,
       seasonId: seasonId,
       transactionType: "TourCardFee",
@@ -31,9 +31,9 @@ export async function createTourCard({
   });
   await db.member.update({
     where: { id: user.id },
-    data: { account: user.account + (tour.buyIn??0) },
+    data: { account: user.account + (tour.buyIn ?? 0) },
   });
-  await db.tourCard.create({
+  const tourCard = await db.tourCard.create({
     data: {
       displayName: (user.firstname && user.firstname[0]) + ". " + user.lastname,
       memberId: data.user.id,
@@ -44,7 +44,8 @@ export async function createTourCard({
       position: "T1",
     },
   });
-  redirect("/")
+  updateTourCardNames({ tour, tourCard });
+  redirect("/");
 }
 
 export async function deleteTourCard({ tourCard }: { tourCard: TourCard }) {
@@ -66,7 +67,7 @@ export async function deleteTourCard({ tourCard }: { tourCard: TourCard }) {
     await db.transactions.delete({ where: { id: transaction?.id } });
     await db.member.update({
       where: { id: user.id },
-      data: { account: user.account - (tour.buyIn??0) },
+      data: { account: user.account - (tour.buyIn ?? 0) },
     });
   }
   await db.tourCard.delete({
@@ -74,5 +75,129 @@ export async function deleteTourCard({ tourCard }: { tourCard: TourCard }) {
       id: tourCard.id,
     },
   });
-  redirect("/")
+  redirect("/");
+}
+
+export async function updateTourCardNames({
+  tour,
+  tourCard,
+}: {
+  tour: TourData;
+  tourCard: TourCard;
+}) {
+  console.log(
+    tour.tourCards[0]?.id, tourCard.id,tour.tourCards[0]?.displayName[0], tourCard.displayName[0],tour.tourCards[0]?.displayName.split(". ")[1], tourCard.displayName.split(". ")[1])
+  const otherMatches = tour.tourCards.filter(
+    (obj) =>
+      obj.id !== tourCard.id &&
+      obj.displayName[0] === tourCard.displayName[0] &&
+      obj.displayName.split(". ")[1] === tourCard.displayName.split(". ")[1],
+  );
+  if (!otherMatches) return;
+  const member = await db.member.findUnique({
+    where: { id: tourCard.memberId },
+  });
+  const otherMembers = await Promise.all(
+    otherMatches.map(async (obj) => {
+      return await db.member.findUnique({
+        where: { id: obj.memberId },
+      });
+    }),
+  );
+  let matchLevel = 0;
+
+  console.log(matchLevel);
+  console.log(otherMembers);
+  console.log(member);
+  otherMembers.forEach(async (otherMember) => {
+    if (
+      member?.firstname?.slice(0, 1) !== otherMember?.firstname?.slice(0, 1)
+    ) {
+      matchLevel = 1;
+    } else if (
+      member?.firstname?.slice(0, 2) !== otherMember?.firstname?.slice(0, 2)
+    ) {
+      matchLevel = 2;
+      const otherMatch = otherMatches.find(
+        (obj) => obj.memberId === otherMember?.id,
+      );
+      await db.tourCard.update({
+        where: { id: otherMatch?.id },
+        data: {
+          displayName:
+            (otherMember?.firstname && otherMember?.firstname.slice(0, 2)) +
+            ". " +
+            otherMember?.lastname,
+        },
+      });
+    } else if (
+      member?.firstname?.slice(0, 3) !== otherMember?.firstname?.slice(0, 3)
+    ) {
+      matchLevel = 3;
+      const otherMatch = otherMatches.find(
+        (obj) => obj.memberId === otherMember?.id,
+      );
+      await db.tourCard.update({
+        where: { id: otherMatch?.id },
+        data: {
+          displayName:
+            (otherMember?.firstname && otherMember?.firstname.slice(0, 3)) +
+            ". " +
+            otherMember?.lastname,
+        },
+      });
+    } else {
+      matchLevel = 4;
+      const otherMatch = otherMatches.find(
+        (obj) => obj.memberId === otherMember?.id,
+      );
+      await db.tourCard.update({
+        where: { id: otherMatch?.id },
+        data: {
+          displayName: otherMember?.firstname + " " + otherMember?.lastname,
+        },
+      });
+    }
+  });
+
+  console.log(matchLevel);
+  console.log(otherMembers);
+  console.log(member);
+  if (matchLevel === 0) {
+    return;
+  } else if (matchLevel === 1) {
+    await db.tourCard.update({
+      where: { id: tourCard.id },
+      data: {
+        displayName:
+          (member?.firstname && member?.firstname[0]) + ". " + member?.lastname,
+      },
+    });
+  } else if (matchLevel === 2) {
+    await db.tourCard.update({
+      where: { id: tourCard.id },
+      data: {
+        displayName:
+          (member?.firstname && member?.firstname.slice(0, 2)) +
+          ". " +
+          member?.lastname,
+      },
+    });
+  } else if (matchLevel === 3) {
+    await db.tourCard.update({
+      where: { id: tourCard.id },
+      data: {
+        displayName:
+          (member?.firstname && member?.firstname.slice(0, 3)) +
+          ". " +
+          member?.lastname,
+      },
+    });
+  } else {
+    await db.tourCard.update({
+      where: { id: tourCard.id },
+      data: { displayName: member?.firstname + " " + member?.lastname },
+    });
+  }
+  return;
 }

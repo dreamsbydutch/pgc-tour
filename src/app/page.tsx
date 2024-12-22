@@ -5,7 +5,8 @@ import TournamentCountdown from "./tournament/_components/TournamentCountdown";
 import { formatMoney, formatName } from "../lib/utils";
 import { TourCardOutput } from "./_components/TourCardOutput";
 import Link from "next/link";
-import MemberUpdateForm from "./_components/MemberUpdateForm";
+import { tourDataIncludeTourCard } from "../types/prisma_include";
+import { updateTourCardNames } from "../server/api/actions/tour_card";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -17,7 +18,7 @@ export default async function Home() {
   });
   const tours = await db.tour.findMany({
     where: { seasonId: season?.id },
-    include: { tourCards: true },
+    include: tourDataIncludeTourCard
   });
   const member = await db.member.findUnique({ where: { id: data.user?.id } });
   if (!member && data.user) {
