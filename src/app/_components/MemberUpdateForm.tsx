@@ -8,7 +8,7 @@ import type { FormEvent } from "react";
 import { z } from "zod";
 import { FieldInfo } from "./FieldInfo";
 import { Button } from "./ui/button";
-import { User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { memberUpdateFormOnSubmit } from "@/src/server/api/actions/member";
 
@@ -31,7 +31,7 @@ export default function MemberUpdateForm({ user }: { user: User | null }) {
     defaultValues: member ?? emptyMember,
     onSubmit: async ({ value }) => {
       await memberUpdateFormOnSubmit({ value, user });
-      utils.invalidate();
+      await utils.invalidate();
       router.refresh();
       return;
     },
@@ -47,7 +47,7 @@ export default function MemberUpdateForm({ user }: { user: User | null }) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={(e) => handleSubmit(e)}>
       <div className="flex flex-col gap-2">
         <form.Field
           name="firstname"

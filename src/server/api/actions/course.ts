@@ -17,6 +17,7 @@ const addCourseToDB = async (course: SeedCourse) => {
     front: +course.front,
     back: +course.back,
   });
+  return;
 };
 
 type SeedCourse = {

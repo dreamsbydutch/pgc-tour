@@ -29,6 +29,7 @@ export async function signInWithGoogle({
     });
     setIsGoogleLoading(false);
   }
+  return;
 }
 
 export async function handleLogout({
@@ -44,4 +45,5 @@ export async function handleLogout({
   await supabase.auth.signOut();
   router.push("/signin");
   router.refresh();
+  return;
 }

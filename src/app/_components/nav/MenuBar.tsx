@@ -9,7 +9,7 @@ import { UserAccountNav } from "./UserAccount";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import LoadingSpinner from "../LoadingSpinner";
 import { signInWithGoogle } from "../../signin/actions";
-import { User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 
 export default function MenuBar({ className }: { className?: string }) {
   const { user, loading } = useUser();

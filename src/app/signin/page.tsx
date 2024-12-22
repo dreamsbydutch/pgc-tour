@@ -5,13 +5,11 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Icons } from "../_components/Icons";
-import { toast } from "@/src/lib/hooks/use-toast";
 import { signInWithGoogle } from "./actions";
 import Link from "next/link";
 
 export default function SignInPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
-  const supabase = createClient();
 
   return (
     <div className="flex h-[100vh] flex-col">

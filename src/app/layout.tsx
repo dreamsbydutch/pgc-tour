@@ -6,7 +6,6 @@ import { Barlow_Condensed, Varela, Yellowtail } from "next/font/google";
 import { TRPCReactProvider } from "@/trpcLocal/react";
 import MenuBar from "@/components/nav/MenuBar";
 import { cn } from "../lib/utils";
-import Link from "next/link";
 import Script from "next/script";
 
 const varela = Varela({
@@ -55,7 +54,7 @@ export default function RootLayout({
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', ${'${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}'});
+              gtag('config', ${"${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}"});
           `}
         </Script>
       </head>
@@ -68,9 +67,7 @@ export default function RootLayout({
         )}
       >
         <TRPCReactProvider>
-          <main className="mx-2 mb-16 mt-2">
-            {children}
-          </main>
+          <main className="mx-2 mb-16 mt-2">{children}</main>
           <MenuBar className="shadow-inv fixed bottom-0 z-20 flex w-full items-center justify-evenly bg-gray-200" />
         </TRPCReactProvider>
       </body>

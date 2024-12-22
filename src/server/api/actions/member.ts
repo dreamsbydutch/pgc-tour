@@ -13,7 +13,6 @@ export async function memberUpdateFormOnSubmit({
   user: User | null;
 }) {
   const season = await api.season.getByYear({ year: 2025 });
-  const member = await api.member.getById({ memberId: user?.id });
   let tourCard = await api.tourCard.getByUserSeason({
     userId: user?.id,
     seasonId: season?.id,
@@ -25,6 +24,6 @@ export async function memberUpdateFormOnSubmit({
   await api.member.update(value);
   tourCard =
     tourCard && (await api.tourCard.update({ id: tourCard.id, displayName }));
-  tour && tourCard && updateTourCardNames({ tour: tour, tourCard: tourCard });
+  if (tour && tourCard) updateTourCardNames({ tour: tour, tourCard: tourCard });
   return;
 }

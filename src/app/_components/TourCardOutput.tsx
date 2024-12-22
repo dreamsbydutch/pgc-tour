@@ -63,7 +63,6 @@ function TourCardChangeButton({
   tourCard: TourCard;
   memberId: string;
 }) {
-  const router = useRouter()
   const utils = api.useUtils();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -74,12 +73,13 @@ function TourCardChangeButton({
   if (memberId !== tourCard.memberId) return null;
 
   const handleDelete = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     setConfirmEffect(true);
     await utils.tour.invalidate();
     await deleteTourCard({ tourCard: tourCard });
     console.log("Server action executed");
     setIsModalOpen(false);
+    return;
   };
 
   const handleButtonClick = () => {
@@ -100,24 +100,29 @@ function TourCardChangeButton({
         </Button>
       </DialogTrigger>
       <DialogContent className="w-3/4 sm:max-w-[425px]">
-        {isLoading ? <LoadingSpinner className="h-fit"/> : <>
-          <DialogHeader>
-            <DialogTitle>Delete Tour Card</DialogTitle>
-            <DialogDescription>
-              This will delete your current Tour Card and allow you to re-sign up
-              if spots are available.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              type="submit"
-              onClick={() => handleDelete()}
-              className={confirmEffect ? "animate-toggleClick" : ""}
-              onAnimationEnd={() => setConfirmEffect(false)}
-            >
-              Continue
-            </Button>
-          </DialogFooter></>}
+        {isLoading ? (
+          <LoadingSpinner className="h-fit" />
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Delete Tour Card</DialogTitle>
+              <DialogDescription>
+                This will delete your current Tour Card and allow you to re-sign
+                up if spots are available.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                type="submit"
+                onClick={() => handleDelete()}
+                className={confirmEffect ? "animate-toggleClick" : ""}
+                onAnimationEnd={() => setConfirmEffect(false)}
+              >
+                Continue
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

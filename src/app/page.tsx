@@ -6,7 +6,6 @@ import { formatMoney, formatName } from "../lib/utils";
 import { TourCardOutput } from "./_components/TourCardOutput";
 import Link from "next/link";
 import { tourDataIncludeTourCard } from "../types/prisma_include";
-import { updateTourCardNames } from "../server/api/actions/tour_card";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -18,7 +17,7 @@ export default async function Home() {
   });
   const tours = await db.tour.findMany({
     where: { seasonId: season?.id },
-    include: tourDataIncludeTourCard
+    include: tourDataIncludeTourCard,
   });
   const member = await db.member.findUnique({ where: { id: data.user?.id } });
   if (!member && data.user) {
