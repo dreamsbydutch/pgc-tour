@@ -58,14 +58,6 @@ export default function RootLayout({
               gtag('config', ${'${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}'});
           `}
         </Script>
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-GN6YJK2E0Q"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments)}
-          gtag('js', new Date());
-        
-          gtag('config', 'G-GN6YJK2E0Q');
-        </script>
       </head>
       <body
         className={cn(
