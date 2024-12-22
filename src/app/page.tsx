@@ -58,7 +58,7 @@ export default async function Home() {
         <>
           <TourCardOutput
             {...{
-              name: tourCard.displayName,
+              name: member?.fullname,
               tour: tours.find((obj) => obj.id === tourCard.tourId),
               pictureUrl: tours.find((obj) => obj.id === tourCard.tourId)
                 ?.logoUrl,

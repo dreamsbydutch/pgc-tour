@@ -52,13 +52,17 @@ function RuleCategory({
   return (
     <div className="mx-auto border-b-2 border-slate-500">
       <div
-        className="py-5 text-center font-varela text-2xl font-extrabold xs:text-3xl md:text-4xl"
+        className="flex flex-row justify-center gap-2 py-5 text-center font-varela text-2xl font-extrabold xs:text-3xl md:text-4xl"
         onClick={() => setShowState(!showState)}
       >
-        {ruleData.category}
-        <span className="inline-flex pl-2">
-          {showState ? <ChevronUpIcon /> : <ChevronDownIcon />}
-        </span>
+        <div>{ruleData.category}</div>
+        <div className="self-center">
+          {showState ? (
+            <ChevronUpIcon className="self-center" />
+          ) : (
+            <ChevronDownIcon className="self-center" />
+          )}
+        </div>
       </div>
       <div className={cn("hidden pb-8", showState && "block")}>
         {ruleData.rules.map((rule, j) => {

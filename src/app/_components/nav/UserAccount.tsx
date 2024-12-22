@@ -49,12 +49,6 @@ export function UserAccountNav({
                 {member?.email}
               </p>
               <MemberUpdateForm {...{ user }} />
-              <Link href={"/privacy"} className="text-xs text-slate-700">
-                Privacy Policy
-              </Link>
-              <Link href={"/terms"} className="text-xs text-slate-700">
-                Terms of Service
-              </Link>
             </div>
           </div>
           <DropdownMenuSeparator />
