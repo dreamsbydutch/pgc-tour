@@ -112,7 +112,7 @@ export async function updateTourCardNames({
   );
   let matchLevel = 0;
 
-  // eslint-disable-next-line no-misused-promises
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   otherMembers.forEach(async (otherMember) => {
     if (
       member?.firstname?.slice(0, 1) !== otherMember?.firstname?.slice(0, 1)
