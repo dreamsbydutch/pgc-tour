@@ -5,6 +5,7 @@ import TournamentCountdown from "./tournament/_components/TournamentCountdown";
 import { formatMoney, formatName } from "../lib/utils";
 import { TourCardOutput } from "./_components/TourCardOutput";
 import Link from "next/link";
+import MemberUpdateForm from "./_components/MemberUpdateForm";
 
 export default async function Home() {
   const supabase = await createClient();

@@ -7,30 +7,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-// import { useForm } from "@tanstack/react-form";
 import type { User } from "@supabase/supabase-js";
 import Image from "next/image";
-// import { zodValidator } from "@tanstack/zod-form-adapter";
-import { api } from "@/src/trpc/react";
-// import { memberSchema } from "@/src/lib/validators";
-// import { z } from "zod";
-// import { FieldInfo } from "../FieldInfo";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { handleLogout } from "../../signin/actions";
 import type { Dispatch, SetStateAction } from "react";
 import { useRouter } from "next/navigation";
-// import type { FormEvent } from "react";
-
-// const emptyMember = {
-//   id: "",
-//   email: "",
-//   fullname: "",
-//   firstname: "",
-//   lastname: "",
-//   account: 0,
-//   role: "",
-// };
+import { api } from "@/src/trpc/react";
+import MemberUpdateForm from "../MemberUpdateForm";
 
 export function UserAccountNav({
   user,
@@ -41,24 +26,6 @@ export function UserAccountNav({
 }) {
   const router = useRouter();
   const member = api.member.getById.useQuery({ memberId: user?.id }).data;
-  // const updateMutation = api.member.update.useMutation();
-  // const form = useForm({
-  //   defaultValues: member ?? emptyMember,
-  //   onSubmit: async ({ value }) => {
-  //     value.fullname = value.firstname + " " + value.lastname;
-  //     updateMutation.mutate(value);
-  //     await utils.member.invalidate();
-  //   },
-  //   validatorAdapter: zodValidator(),
-  //   validators: { onChange: memberSchema },
-  // });
-
-  // const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   e.stopPropagation();
-  //   await form.handleSubmit();
-  //   return
-  // }
 
   return (
     <div className="w-fit space-x-2">
@@ -81,72 +48,7 @@ export function UserAccountNav({
               <p className="w-[200px] truncate text-sm text-slate-800">
                 {member?.email}
               </p>
-              {/* <form
-                onSubmit={() => handleSubmit}
-              >
-                <div className="flex flex-col gap-2">
-                  <form.Field
-                    name="firstname"
-                    validators={{
-                      onChange: z
-                        .string()
-                        .min(3, "First name must be at least 3 characters"),
-                    }}
-                    children={(field) => {
-                      // Avoid hasty abstractions. Render props are great!
-                      return (
-                        <div className="flex flex-row">
-                          <label htmlFor={field.name} className="my-auto">
-                            First Name:
-                          </label>
-                          <input
-                            className="ml-2 h-[1.5rem] border-2 px-0.5"
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value ?? undefined}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                          />
-                          <FieldInfo field={field} />
-                        </div>
-                      );
-                    }}
-                  />
-                  <form.Field
-                    name="lastname"
-                    validators={{
-                      onChange: z
-                        .string()
-                        .min(3, "Last name must be at least 3 characters"),
-                    }}
-                    children={(field) => {
-                      // Avoid hasty abstractions. Render props are great!
-                      return (
-                        <div className="flex flex-row">
-                          <label htmlFor={field.name} className="my-auto">
-                            Last Name:
-                          </label>
-                          <input
-                            className="ml-2 h-[1.5rem] border-2 px-0.5"
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value ?? undefined}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                          />
-                          <FieldInfo field={field} />
-                        </div>
-                      );
-                    }}
-                  />
-                  <Button
-                    type="submit"
-                    className="h-[1.5rem] w-2/5 items-center self-end"
-                  >
-                    Update
-                  </Button>
-                </div>
-              </form> */}
+              <MemberUpdateForm {...{ user }} />
               <Link href={"/privacy"} className="text-xs text-slate-700">
                 Privacy Policy
               </Link>

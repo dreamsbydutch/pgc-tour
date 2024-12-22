@@ -7,6 +7,7 @@ import { TRPCReactProvider } from "@/trpcLocal/react";
 import MenuBar from "@/components/nav/MenuBar";
 import { cn } from "../lib/utils";
 import Link from "next/link";
+import Script from "next/script";
 
 const varela = Varela({
   weight: ["400"],
@@ -43,6 +44,28 @@ export default function RootLayout({
           name="google-site-verification"
           content="k_L19BEXJjcWOM7cHFMPMpK9MBdcv2uQ6qFt3HGPEbc"
         />
+
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-E7NY2W59JZ"
+        />
+
+        <Script id="google-analytics">
+          {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', ${'${process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS}'});
+          `}
+        </Script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-GN6YJK2E0Q"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments)}
+          gtag('js', new Date());
+        
+          gtag('config', 'G-GN6YJK2E0Q');
+        </script>
       </head>
       <body
         className={cn(

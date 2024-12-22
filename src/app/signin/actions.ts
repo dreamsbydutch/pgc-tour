@@ -1,8 +1,6 @@
 import { toast } from "@/src/lib/hooks/use-toast";
 import { createClient } from "@/src/lib/supabase/client";
-import { api } from "@/src/trpc/server";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { useRouter } from "next/navigation";
 import type { Dispatch, SetStateAction } from "react";
 
 export async function signInWithGoogle({

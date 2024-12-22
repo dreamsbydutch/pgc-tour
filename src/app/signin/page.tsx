@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "../_components/Icons";
 import { toast } from "@/src/lib/hooks/use-toast";
 import { signInWithGoogle } from "./actions";
+import Link from "next/link";
 
 export default function SignInPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
@@ -37,6 +38,14 @@ export default function SignInPage() {
         )}
         <div className="text-lg">Sign in with Google</div>
       </Button>
+      <div className="mt-4 flex flex-col justify-start">
+        <Link href={"/privacy"} className="text-xs text-slate-400">
+          Privacy Policy
+        </Link>
+        <Link href={"/terms"} className="text-xs text-slate-400">
+          Terms of Service
+        </Link>
+      </div>
     </div>
   );
 }
