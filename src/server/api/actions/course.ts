@@ -3,7 +3,7 @@
 import { api } from "@/trpcLocal/server";
 
 export async function seedCourses() {
-  courses.forEach(addCourseToDB);
+  courses.forEach(async (obj) => await addCourseToDB(obj));
 }
 
 const addCourseToDB = async (course: SeedCourse) => {

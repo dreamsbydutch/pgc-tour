@@ -24,6 +24,6 @@ export async function memberUpdateFormOnSubmit({
   await api.member.update(value);
   tourCard =
     tourCard && (await api.tourCard.update({ id: tourCard.id, displayName }));
-  if (tour && tourCard) updateTourCardNames({ tour: tour, tourCard: tourCard });
+  if (tour && tourCard) await updateTourCardNames({ tour: tour, tourCard: tourCard });
   return;
 }

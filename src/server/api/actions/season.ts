@@ -26,4 +26,5 @@ const addSeasonToDB = async (season: { year: number; number: number }) => {
       console.log(season);
     }
   }
+  return
 };

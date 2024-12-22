@@ -70,13 +70,15 @@ type TourDataType = {
 };
 
 export async function seedTours() {
-  seedData.map(async (tourData: TourDataType) => {
-    return await api.tour.create({
-      name: tourData.name,
-      logoUrl: tourData.logoUrl,
-      seasonYear: tourData.seasonYear,
-      shortForm: tourData.shortForm,
-      buyIn: tourData.buyIn,
-    });
-  });
+  return Promise.all(
+    seedData.map(async (tourData: TourDataType) => {
+      return await api.tour.create({
+        name: tourData.name,
+        logoUrl: tourData.logoUrl,
+        seasonYear: tourData.seasonYear,
+        shortForm: tourData.shortForm,
+        buyIn: tourData.buyIn,
+      });
+    }),
+  );
 }

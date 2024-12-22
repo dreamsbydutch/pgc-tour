@@ -17,7 +17,6 @@ import {
 } from "./ui/dialog";
 import { api } from "@/src/trpc/react";
 import LoadingSpinner from "./LoadingSpinner";
-import { useRouter } from "next/navigation";
 
 export function TourCardOutput({
   name,

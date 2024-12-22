@@ -47,7 +47,7 @@ export default function MemberUpdateForm({ user }: { user: User | null }) {
   };
 
   return (
-    <form onSubmit={async (e) => await handleSubmit(e)}>
+    <form onSubmit={(e) => handleSubmit(e)}>
       <div className="flex flex-col gap-2">
         <form.Field
           name="firstname"

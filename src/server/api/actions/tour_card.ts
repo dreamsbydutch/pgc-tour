@@ -4,8 +4,8 @@ import { db } from "../../db";
 import { redirect } from "next/navigation";
 import { createClient } from "@/src/lib/supabase/server";
 import { api } from "@/src/trpc/server";
-import { TourData } from "@/src/types/prisma_include";
-import { Member, TourCard } from "@prisma/client";
+import type { TourData } from "@/src/types/prisma_include";
+import type { Member, TourCard } from "@prisma/client";
 
 export async function createTourCard({
   tour,
@@ -44,7 +44,7 @@ export async function createTourCard({
       position: "T1",
     },
   });
-  updateTourCardNames({ tour, tourCard });
+  await updateTourCardNames({ tour, tourCard });
   redirect("/");
 }
 
@@ -86,11 +86,17 @@ export async function updateTourCardNames({
   tourCard: TourCard;
 }) {
   console.log(
-    tour.tourCards[0]?.id, tourCard.id,tour.tourCards[0]?.displayName[0], tourCard.displayName[0],tour.tourCards[0]?.displayName.split(". ")[1], tourCard.displayName.split(". ")[1])
+    tour.tourCards[0]?.id,
+    tourCard.id,
+    tour.tourCards[0]?.displayName[0],
+    tourCard.displayName[0],
+    tour.tourCards[0]?.displayName.split(". ")[1],
+    tourCard.displayName.split(". ")[1],
+  );
   const otherMatches = tour.tourCards.filter(
     (obj) =>
       obj.id !== tourCard.id &&
-      obj.displayName[0] === tourCard.displayName[0] &&
+      obj.displayName.startsWith(tourCard.displayName[0] ?? "") &&
       obj.displayName.split(". ")[1] === tourCard.displayName.split(". ")[1],
   );
   if (!otherMatches) return;
@@ -106,9 +112,7 @@ export async function updateTourCardNames({
   );
   let matchLevel = 0;
 
-  console.log(matchLevel);
-  console.log(otherMembers);
-  console.log(member);
+  
   otherMembers.forEach(async (otherMember) => {
     if (
       member?.firstname?.slice(0, 1) !== otherMember?.firstname?.slice(0, 1)
@@ -158,6 +162,7 @@ export async function updateTourCardNames({
         },
       });
     }
+    return
   });
 
   console.log(matchLevel);
