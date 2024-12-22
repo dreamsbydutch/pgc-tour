@@ -11,7 +11,14 @@ const config = {
     "plugin:@typescript-eslint/stylistic-type-checked",
   ],
   rules: {
-    "@typescript-eslint/no-misused-promises": "warn",
+    "@typescript-eslint/no-misused-promises": [
+      2,
+      {
+        checksVoidReturn: {
+          attributes: false,
+        },
+      },
+    ],
     "@typescript-eslint/no-floating-promises": "warn",
     "@typescript-eslint/prefer-optional-chain": "off",
     "@typescript-eslint/array-type": "off",
