@@ -11,6 +11,7 @@ const seasons = [
 ];
 
 export async function seedSeasons() {
+  // eslint-disable-next-line no-misused-promises
   seasons.forEach(addSeasonToDB);
 }
 

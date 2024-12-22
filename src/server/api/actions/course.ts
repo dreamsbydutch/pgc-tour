@@ -3,7 +3,8 @@
 import { api } from "@/trpcLocal/server";
 
 export async function seedCourses() {
-  courses.forEach(async (obj) => await addCourseToDB(obj));
+  // eslint-disable-next-line no-misused-promises
+  courses.forEach(addCourseToDB);
 }
 
 const addCourseToDB = async (course: SeedCourse) => {

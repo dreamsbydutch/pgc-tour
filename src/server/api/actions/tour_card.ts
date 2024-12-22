@@ -112,7 +112,7 @@ export async function updateTourCardNames({
   );
   let matchLevel = 0;
 
-  
+  // eslint-disable-next-line no-misused-promises
   otherMembers.forEach(async (otherMember) => {
     if (
       member?.firstname?.slice(0, 1) !== otherMember?.firstname?.slice(0, 1)
@@ -162,7 +162,7 @@ export async function updateTourCardNames({
         },
       });
     }
-    return
+    return;
   });
 
   console.log(matchLevel);

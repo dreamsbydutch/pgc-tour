@@ -6,7 +6,7 @@ export const seedTournaments = async () => {
   const output = await fetch(
     "https://opensheet.elk.sh/1SSk7lg3Ym17lw8Hn-yZvT_erE9umRHPlrZJ8U4faBMY/Tournaments",
   ).then((res) => res.json() as unknown as Tournament[]);
-  Promise.all(
+  await Promise.all(
     output
       .filter((obj) => obj.year === "2025")
       .map(async (tourney) => {
