@@ -50,17 +50,6 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect unauthenticated users to sign-in page
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/signin") &&
-    !request.nextUrl.pathname.startsWith("/auth")
-  ) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/signin";
-    url.searchParams.set("next", request.nextUrl.pathname);
-    return NextResponse.redirect(url);
-  }
 
   // Redirect authenticated users attempting to access the sign-in page to the home page
   if (user && request.nextUrl.pathname.startsWith("/signin")) {

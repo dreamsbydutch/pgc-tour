@@ -6,7 +6,6 @@ import { formatMoney, formatName } from "../lib/utils";
 import { TourCardOutput } from "./_components/TourCardOutput";
 import Link from "next/link";
 import { tourDataIncludeTourCard } from "../types/prisma_include";
-import SignInPage from "./signin/page";
 
 export default async function Home() {
   const supabase = await createClient();
