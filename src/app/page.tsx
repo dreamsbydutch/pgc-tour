@@ -47,7 +47,7 @@ export default async function Home() {
   });
   if (!tours || !season) return <div>Error</div>;
 
-  if (!data.user) return <SignInPage />;
+  if (!member) return <SignInPage />;
 
   return (
     <div className="flex flex-col">
