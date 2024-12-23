@@ -47,8 +47,6 @@ export default async function Home() {
   });
   if (!tours || !season) return <div>Error</div>;
 
-  if (!member) return <SignInPage />;
-
   return (
     <div className="flex flex-col">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
@@ -58,7 +56,7 @@ export default async function Home() {
         An elite fantasy golf experience
       </p>
 
-      {tourCard && (
+      {tourCard && data.user && (
         <>
           <TourCardOutput
             {...{
@@ -67,7 +65,7 @@ export default async function Home() {
               pictureUrl: tours.find((obj) => obj.id === tourCard.tourId)
                 ?.logoUrl,
               tourCard: tourCard,
-              memberId: data.user?.id,
+              memberId: data.user.id,
             }}
           />
           <p className="mx-auto mb-8 w-5/6 text-center text-sm italic text-red-600">
@@ -79,7 +77,7 @@ export default async function Home() {
           {tourney && <TournamentCountdown tourney={tourney} />}
         </>
       )}
-      {!tourCard && <TourCardForm {...{ tours }} />}
+      {!tourCard && data.user && <TourCardForm {...{ tours }} />}
       <div className="mt-4 flex flex-col justify-start">
         <Link href={"/privacy"} className="text-xs text-slate-400">
           Privacy Policy
