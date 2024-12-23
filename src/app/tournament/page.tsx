@@ -58,7 +58,7 @@ export async function LeaderboardListing({
   const leaderboardData = await fetchLeaderboardListingInfo({
     activeTourID: searchParams?.tour,
   });
-  if (!leaderboardData || error)
+  if (!leaderboardData)
     throw new Error("Error fetching leaderboard data. LeaderboardListing:6");
   const { focusTourney, teams, toursInPlay } = leaderboardData;
   const activeTour = toursInPlay.find(

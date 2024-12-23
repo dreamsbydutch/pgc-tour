@@ -6,6 +6,7 @@ import { formatMoney, formatName } from "../lib/utils";
 import { TourCardOutput } from "./_components/TourCardOutput";
 import Link from "next/link";
 import { tourDataIncludeTourCard } from "../types/prisma_include";
+import SignInPage from "./signin/page";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -19,7 +20,8 @@ export default async function Home() {
     where: { seasonId: season?.id },
     include: tourDataIncludeTourCard,
   });
-  const member = await db.member.findUnique({ where: { id: data.user?.id } });
+  const member =
+    data.user && (await db.member.findUnique({ where: { id: data.user.id } }));
   if (!member && data.user) {
     const fullName = formatName(
       data.user?.user_metadata.name as string,
@@ -43,7 +45,9 @@ export default async function Home() {
     },
     orderBy: { startDate: "asc" },
   });
-  if (!tours || !season || !data.user) return <div>Error</div>;
+  if (!tours || !season) return <div>Error</div>;
+
+  if (!data.user) return <SignInPage />;
 
   return (
     <div className="flex flex-col">
