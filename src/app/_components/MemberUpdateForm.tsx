@@ -4,7 +4,7 @@ import { memberSchema } from "@/src/lib/validators";
 import { api } from "@/src/trpc/react";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
-import type { FormEvent } from "react";
+import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { z } from "zod";
 import { FieldInfo } from "./FieldInfo";
 import { Button } from "./ui/button";
@@ -22,7 +22,13 @@ const emptyMember = {
   role: "",
 };
 
-export default function MemberUpdateForm({ user }: { user: User | null }) {
+export default function MemberUpdateForm({
+  user,
+  setIsEditing,
+}: {
+  user: User | null;
+  setIsEditing: Dispatch<SetStateAction<boolean>>;
+}) {
   const router = useRouter();
   const utils = api.useUtils();
   const member = api.member.getById.useQuery({ memberId: user?.id }).data;
@@ -43,6 +49,7 @@ export default function MemberUpdateForm({ user }: { user: User | null }) {
     e.preventDefault();
     e.stopPropagation();
     await form.handleSubmit();
+    setIsEditing(false);
     return;
   };
 
@@ -52,9 +59,7 @@ export default function MemberUpdateForm({ user }: { user: User | null }) {
         <form.Field
           name="email"
           validators={{
-            onChange: z
-              .string()
-              .min(3, "Emails must be at least 3 characters"),
+            onChange: z.string().min(3, "Emails must be at least 3 characters"),
           }}
         >
           {(field) => {
@@ -143,13 +148,21 @@ export default function MemberUpdateForm({ user }: { user: User | null }) {
           selector={(state) => [state.canSubmit, state.isSubmitting]}
         >
           {([canSubmit, isSubmitting]) => (
-            <Button
-              type="submit"
-              disabled={!canSubmit}
-              className="h-[1.5rem] w-2/5 items-center self-end"
-            >
-              {isSubmitting ? "..." : "Update"}
-            </Button>
+            <div className="flex justify-between">
+              <div
+                onClick={() => setIsEditing(false)}
+                className="flex gap-2 text-sm underline"
+              >
+                Stop editing
+              </div>
+              <Button
+                type="submit"
+                disabled={!canSubmit}
+                className="h-[1.5rem] w-2/5 items-center self-end"
+              >
+                {isSubmitting ? "..." : "Update"}
+              </Button>
+            </div>
           )}
         </form.Subscribe>
       </div>

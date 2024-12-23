@@ -12,7 +12,7 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { handleLogout } from "../../signin/actions";
-import type { Dispatch, SetStateAction } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/src/trpc/react";
 import MemberUpdateForm from "../MemberUpdateForm";
@@ -24,6 +24,7 @@ export function UserAccountNav({
   user: User | null;
   setIsSigningOut: Dispatch<SetStateAction<boolean>>;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
   const member = api.member.getById.useQuery({ memberId: user?.id }).data;
 
@@ -48,14 +49,26 @@ export function UserAccountNav({
               <p className="w-[200px] truncate text-sm text-slate-800">
                 {member?.email}
               </p>
-              <MemberUpdateForm {...{ user }} />
+              {!isEditing && (
+                <div
+                  onClick={() => setIsEditing(true)}
+                  className="flex gap-2 text-sm underline"
+                >
+                  Edit user info
+                </div>
+              )}
+              {isEditing && (
+                <>
+                  <MemberUpdateForm {...{ user, setIsEditing }} />
+                </>
+              )}
             </div>
           </div>
 
           {member?.role === "admin" && (
             <>
               <DropdownMenuSeparator />
-              <Link href="/admin" className="mx-4 text-center">
+              <Link href="/admin" className="ml-3 text-center underline">
                 Admin
               </Link>
             </>
