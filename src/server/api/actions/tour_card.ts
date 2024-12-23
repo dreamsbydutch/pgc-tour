@@ -20,6 +20,22 @@ export async function createTourCard({
     memberId: data.user?.id,
   });
   if (!user || !data.user || !data.user.email) return;
+  const discount = discountArry.find(
+    (obj) =>
+      obj.email === user.email ||
+      obj.name === (user.firstname && user.firstname[0]) + ". " + user.lastname,
+  );
+  if (discount) {
+    await db.transactions.create({
+    data: {
+      amount: discount?.discount ?? 0,
+      description: "Season 4 earnings discount for " + user.fullname,
+      seasonId: seasonId,
+      transactionType: "Payment",
+      userId: user.id,
+    },
+  });
+}
   await db.transactions.create({
     data: {
       amount: tour.buyIn ?? 0,
@@ -31,7 +47,9 @@ export async function createTourCard({
   });
   await db.member.update({
     where: { id: user.id },
-    data: { account: user.account + (tour.buyIn ?? 0) },
+    data: {
+      account: user.account + (tour.buyIn ?? 0) - (discount?.discount ?? 0),
+    },
   });
   const tourCard = await db.tourCard.create({
     data: {
@@ -206,3 +224,33 @@ export async function updateTourCardNames({
   }
   return;
 }
+
+const discountArry = [
+  { email: "infusino.louie@gmail.com", name: "L. Infusino", discount: 100 },
+  { email: "am@collecdev.com", name: "A. McQueen", discount: 100 },
+  { email: "tristan_neely@hotmail.ca", name: "T. Neely", discount: 100 },
+  { email: "b.m.wilkinson4@gmail.com", name: "B. Wilkinson", discount: 100 },
+  { email: "cfmbennett4@rogers.com", name: "C. Bennett", discount: 100 },
+  { email: "paluzzi.mike@gmail.com", name: "M. Paluzzi", discount: 50 },
+  { email: "louiepolyzois@gmail.com", name: "L. Polyzois", discount: 50 },
+  { email: "philip.brown7@hotmail.com", name: "P. Brown", discount: 50 },
+  { email: "samjwolman@gmail.com", name: "S. Wolman", discount: 40 },
+  { email: "jason.lacombe@veratrak.com", name: "J. Lacombe", discount: 40 },
+  { email: "dmac@busys.ca", name: "D. MacKinnon", discount: 30 },
+  { email: "a.brophywlu@gmail.com", name: "A. Brophy", discount: 30 },
+  {
+    email: "robert.wolfer@taylormadegolf.com",
+    name: "R. Wolfer",
+    discount: 30,
+  },
+  { email: "mack.graham9@hotmail.com", name: "M. Graham", discount: 30 },
+  { email: "jon@golfperformancecoaches.com", name: "J. Roy", discount: 25 },
+  { email: "mohamadelbinni@gmail.com", name: "M. Binni", discount: 25 },
+  { email: "ajhaystead@gmail.com", name: "A. Haystead", discount: 20 },
+  { email: "tylertomie1991@gmail.com", name: "T. Tomie", discount: 20 },
+  { email: "m_norris2@hotmail.com", name: "M. Norris", discount: 20 },
+  { email: "eric.m.hubert@gmail.com", name: "E. Hubert", discount: 20 },
+  { email: "coyledrew91@gmail.com", name: "D. Coyle", discount: 20 },
+  { email: "matt.z.wowk@gmail.com", name: "M. Wowk", discount: 20 },
+  { email: "sterling.m.emery91@gmail.com", name: "S. Emery", discount: 20 },
+];

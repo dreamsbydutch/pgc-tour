@@ -6,6 +6,7 @@ import { formatMoney, formatName } from "../lib/utils";
 import { TourCardOutput } from "./_components/TourCardOutput";
 import Link from "next/link";
 import { tourDataIncludeTourCard } from "../types/prisma_include";
+import SignInPage from "./signin/page";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -46,6 +47,8 @@ export default async function Home() {
   });
   if (!tours || !season) return <div>Error</div>;
 
+  if (!member) return <SignInPage />;
+
   return (
     <div className="flex flex-col">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
@@ -67,11 +70,13 @@ export default async function Home() {
               memberId: data.user.id,
             }}
           />
-          <p className="mx-auto mb-8 w-5/6 text-center text-sm italic text-red-600">
+          <p
+            className={`mx-auto mb-8 w-5/6 text-center text-sm italic ${member.account > 0 ? "text-red-600" : "text-slate-700"}`}
+          >
             {member &&
               (member.account > 0
-                ? `Please pay your ${formatMoney(member.account)} buy-in to puregolfcollectivetour@gmail.com. Buy-in must be paid prior to Feb. 1st, 2025.`
-                : null)}
+                ? `Please pay your ${formatMoney(member.account)} tour fee to puregolfcollectivetour@gmail.com. Buy-in must be paid prior to Feb. 1st, 2025.`
+                : "Your tour fee has been paid, thank you.")}
           </p>
           {tourney && <TournamentCountdown tourney={tourney} />}
         </>

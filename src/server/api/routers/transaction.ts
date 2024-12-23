@@ -23,6 +23,7 @@ export const transactionRouter = createTRPCRouter({
           "Withdrawal",
           "LeagueDonation",
           "CharityDonation",
+          "Payment",
         ]),
         userId: z.string(),
       }),

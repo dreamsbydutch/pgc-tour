@@ -50,6 +50,36 @@ export default function MemberUpdateForm({ user }: { user: User | null }) {
     <form onSubmit={(e) => handleSubmit(e)}>
       <div className="flex flex-col gap-2">
         <form.Field
+          name="email"
+          validators={{
+            onChange: z
+              .string()
+              .min(3, "Emails must be at least 3 characters"),
+          }}
+        >
+          {(field) => {
+            // Avoid hasty abstractions. Render props are great!
+            return (
+              <div className="flex flex-col">
+                <div className="flex flex-row">
+                  <label htmlFor={field.name} className="my-auto">
+                    Email:
+                  </label>
+                  <input
+                    className="ml-2 h-[1.5rem] border-2 px-0.5"
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value ?? undefined}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                </div>
+                <FieldInfo field={field} />
+              </div>
+            );
+          }}
+        </form.Field>
+        <form.Field
           name="firstname"
           validators={{
             onChange: z

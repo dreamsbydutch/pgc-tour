@@ -51,6 +51,15 @@ export function UserAccountNav({
               <MemberUpdateForm {...{ user }} />
             </div>
           </div>
+
+          {member?.role === "admin" && (
+            <>
+              <DropdownMenuSeparator />
+              <Link href="/admin" className="mx-4 text-center">
+                Admin
+              </Link>
+            </>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer">
             <Button

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { getUserRole } from "../get-user-role";
+import { api } from "@/src/trpc/server";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -37,19 +37,19 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Get the user's role using the custom getUserRole function
-  const role = await getUserRole();
+  // const member = await api.member.getById({ memberId: user?.id });
 
   // Redirect non-admin users trying to access admin pages to the home page
   if (
-    user &&
-    role !== "admin" &&
-    request.nextUrl.pathname.startsWith("/admin")
+    !user ||
+    (user &&
+      user.email !== "chough14@gmail.com" &&
+      request.nextUrl.pathname.startsWith("/admin"))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
   }
-
 
   // Redirect authenticated users attempting to access the sign-in page to the home page
   if (user && request.nextUrl.pathname.startsWith("/signin")) {
