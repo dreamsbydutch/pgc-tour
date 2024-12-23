@@ -11,7 +11,7 @@ export default async function LeaderboardHeader({
   seasonId?: string;
 }) {
   const date = new Date();
-  const year = date.getFullYear();
+  const year = 2025;
 
   const season = await db.season.findUnique({ where: { year } });
   const tournaments = await db.tournament.findMany({
@@ -22,8 +22,8 @@ export default async function LeaderboardHeader({
 
   const focusTourney = focusTourneyId
     ? tournaments?.find((obj) => obj.id === focusTourneyId)
-    : tournaments?.find((obj) => obj.endDate < date);
-
+    : tournaments?.find((obj) => obj.startDate > date);
+  console.log(focusTourneyId);
   if (!focusTourney)
     throw new Error(
       "Error fetching tournament to focus on for leaderboard list",

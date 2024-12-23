@@ -36,7 +36,9 @@ export default async function Page({
           </div>
         </div>
         <Suspense fallback={<LeaderboardListSkeleton />}>
-          <LeaderboardListing {...{ searchParams }} />
+          <LeaderboardListing
+            {...{ searchParams, tournamentId: params.tournamentId }}
+          />
         </Suspense>
       </ToursToggle>
     </div>

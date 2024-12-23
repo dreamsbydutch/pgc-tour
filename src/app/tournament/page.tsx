@@ -13,10 +13,13 @@ import {
 import { createClient } from "@/src/lib/supabase/server";
 
 export default async function Page({
+  params,
   searchParams,
 }: {
+  params: { tournamentId: string };
   searchParams?: Record<string, string | undefined>;
 }) {
+  console.log("params", params);
   return (
     <div className="flex w-full flex-col">
       <Suspense fallback={<LeaderboardHeaderSkeleton />}>
@@ -49,14 +52,17 @@ export default async function Page({
 }
 
 export async function LeaderboardListing({
+  tournamentId,
   searchParams,
 }: {
+  tournamentId?: string;
   searchParams?: Record<string, string | undefined>;
 }) {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   const leaderboardData = await fetchLeaderboardListingInfo({
     activeTourID: searchParams?.tour,
+    activeTourneyID: tournamentId,
   });
   if (!leaderboardData)
     throw new Error("Error fetching leaderboard data. LeaderboardListing:6");
@@ -117,7 +123,7 @@ async function fetchLeaderboardListingInfo({
   seasonId?: string;
 }) {
   const date = new Date();
-  const year = date.getFullYear();
+  const year = 2025;
 
   const season = await db.season.findUnique({ where: { year } });
   const tournaments = await db.tournament.findMany({
@@ -128,7 +134,7 @@ async function fetchLeaderboardListingInfo({
 
   const focusTourney = activeTourneyID
     ? tournaments?.find((obj) => obj.id === activeTourneyID)
-    : tournaments?.find((obj) => obj.endDate < date);
+    : tournaments?.find((obj) => obj.startDate > date);
 
   let teams = await db.team.findMany({
     where: { tournamentId: focusTourney?.id },

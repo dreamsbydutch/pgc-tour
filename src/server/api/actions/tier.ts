@@ -5,11 +5,11 @@ import { db } from "../../db";
 
 export async function seedTiers() {
   const seasons = await db.season.findMany({});
-  await seed2021Data(seasons.find((obj) => obj.year === 2021));
-  await seed2022Data(seasons.find((obj) => obj.year === 2022));
-  await seed2023Data(seasons.find((obj) => obj.year === 2023));
-  await seed2024Data(seasons.find((obj) => obj.year === 2024));
-  await seed2024Data(seasons.find((obj) => obj.year === 2025));
+  // await seed2021Data(seasons.find((obj) => obj.year === 2021));
+  // await seed2022Data(seasons.find((obj) => obj.year === 2022));
+  // await seed2023Data(seasons.find((obj) => obj.year === 2023));
+  // await seed2024Data(seasons.find((obj) => obj.year === 2024));
+  await seed2025Data(seasons.find((obj) => obj.year === 2025));
 }
 
 const convertToArray = (obj: Record<string, string | number> | undefined) => {
@@ -21,6 +21,48 @@ const convertToArray = (obj: Record<string, string | number> | undefined) => {
     i++;
   }
   return output;
+};
+
+const seed2025Data = async (season: Season | undefined) => {
+  if (!season) return;
+  const output: Record<string, string>[] = await fetch(
+    "https://opensheet.elk.sh/1SSk7lg3Ym17lw8Hn-yZvT_erE9umRHPlrZJ8U4faBMY/TestDistributions",
+  ).then((res) => res.json() as unknown as Record<string, string>[]);
+  // await db.tier.create({
+  //   data: {
+  //     name: "Standard",
+  //     seasonId: season.id,
+  //     payouts: convertToArray(output.find((obj) => obj.key === "BottomPayout")),
+  //     points: convertToArray(output.find((obj) => obj.key === "BottomPoints")),
+  //   },
+  // });
+  // await db.tier.create({
+  //   data: {
+  //     name: "Elevated",
+  //     seasonId: season.id,
+  //     payouts: convertToArray(output.find((obj) => obj.key === "MidPayout")),
+  //     points: convertToArray(output.find((obj) => obj.key === "MidPoints")),
+  //   },
+  // });
+  // await db.tier.create({
+  //   data: {
+  //     name: "Major",
+  //     seasonId: season.id,
+  //     payouts: convertToArray(output.find((obj) => obj.key === "MajorPayout")),
+  //     points: convertToArray(output.find((obj) => obj.key === "MajorPoints")),
+  //   },
+  // });
+  await db.tier.create({
+    data: {
+      name: "Playoff",
+      seasonId: season.id,
+      payouts: [
+        ...convertToArray(output.find((obj) => obj.key === "GoldPlayoff")),
+        ...convertToArray(output.find((obj) => obj.key === "SilverPlayoff")),
+      ],
+      points: convertToArray(output.find((obj) => obj.key === "PlayoffStart")),
+    },
+  });
 };
 
 const seed2024Data = async (season: Season | undefined) => {

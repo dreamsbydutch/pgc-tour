@@ -15,7 +15,7 @@ export const seasonRouter = createTRPCRouter({
 
   getCurrent: publicProcedure.query(async ({ ctx }) => {
     return await ctx.db.season.findUnique({
-      where: { year: new Date().getFullYear() },
+      where: { year: 2025 },
     });
   }),
 

@@ -203,7 +203,7 @@ function useLeaderboardHeaderInfo({
   seasonId: string | undefined;
 }) {
   const date = new Date();
-  const year = date.getFullYear();
+  const year = 2025;
 
   const { data: season } = api.season.getByYear.useQuery({ year });
   const { data: tiers } = api.tier.getBySeason.useQuery({

@@ -31,7 +31,13 @@ export default function RulebookPage() {
         <>
           <RuleCategory
             key={i}
-            {...{ ruleData: section, i, tiers: tiers.data }}
+            {...{
+              ruleData: section,
+              i,
+              tiers: tiers.data.sort(
+                (a, b) => (a.payouts[0] ?? 0) - (b.payouts[0] ?? 0),
+              ),
+            }}
           />
         </>
       ))}
@@ -88,16 +94,8 @@ function RuleCategory({
             </div>
           );
         })}
-        {ruleData.category === "Payouts" && (
-          <div className="text-center font-varela text-base italic xs:text-lg md:text-xl">
-            Payout distributions will be finalized shortly
-          </div>
-        )}
-        {ruleData.category === "Scoring" && (
-          <div className="italictext-base text-center font-varela xs:text-lg md:text-xl">
-            Point distributions will be finalized shortly
-          </div>
-        )}
+        {ruleData.category === "Payouts" && <PayoutsTable tiers={tiers} />}
+        {ruleData.category === "Scoring" && <PointsTable tiers={tiers} />}
       </div>
     </div>
   );
