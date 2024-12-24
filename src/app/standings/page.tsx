@@ -1,11 +1,13 @@
 "use client";
 
+import { useUser } from "@/src/lib/hooks/use-user";
 import { formatMoney } from "@/src/lib/utils";
 import { api } from "@/src/trpc/react";
 import { type Tour } from "@prisma/client";
 import { type Dispatch, type SetStateAction, useState } from "react";
 
 export default function PGCStandings() {
+  const { user } = useUser();
   const [standingsToggle, setStandingsToggle] = useState("DbyD");
   const tours = api.tour.getActive.useQuery();
 
@@ -53,7 +55,7 @@ export default function PGCStandings() {
           .map((tourCard) => (
             <div
               key={tourCard.id}
-              className="grid grid-flow-row grid-cols-8 text-center"
+              className={`grid grid-flow-row grid-cols-8 rounded-lg text-center ${user?.id === tourCard.memberId ? "bg-gray-200 font-bold" : ""}`}
             >
               <div className="place-self-center font-varela text-sm sm:text-base">
                 {tourCard.position}
