@@ -9,13 +9,14 @@ datasource db {
 }
 
 model Member {
-  id        String  @id @unique
+  id        String   @id @unique
   fullname  String
   firstname String?
   lastname  String?
-  email     String  @unique
-  role      String  @default("regular")
-  account   Float   @default(0)
+  email     String   @unique
+  role      String   @default("regular")
+  account   Float    @default(0)
+  friends   String[]
 
   tourCards TourCard[]
 
