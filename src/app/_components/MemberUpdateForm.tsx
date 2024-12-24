@@ -20,6 +20,7 @@ const emptyMember = {
   lastname: "",
   account: 0,
   role: "",
+  friends: [],
 };
 
 export default function MemberUpdateForm({
@@ -36,7 +37,7 @@ export default function MemberUpdateForm({
   const form = useForm({
     defaultValues: member ?? emptyMember,
     onSubmit: async ({ value }) => {
-      await memberUpdateFormOnSubmit({ value, userId:user?.id });
+      await memberUpdateFormOnSubmit({ value, userId: user?.id });
       await utils.invalidate();
       router.refresh();
       return;
