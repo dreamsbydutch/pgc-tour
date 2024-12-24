@@ -6,14 +6,12 @@ import type { Member } from "@prisma/client";
 
 export async function memberUpdateFormOnSubmit({
   value,
-  userId,
 }: {
   value: Member;
-  userId: string | undefined;
 }) {
   const season = await api.season.getByYear({ year: 2025 });
   let tourCard = await api.tourCard.getByUserSeason({
-    userId,
+    userId: value.id,
     seasonId: season?.id,
   });
   const tour = await api.tour.getById({ tourID: tourCard?.tourId });

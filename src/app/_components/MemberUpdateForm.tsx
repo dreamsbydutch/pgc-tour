@@ -38,7 +38,7 @@ export default function MemberUpdateForm({
   const form = useForm({
     defaultValues: member ?? emptyMember,
     onSubmit: async ({ value }) => {
-      await memberUpdateFormOnSubmit({ value, userId: user?.id });
+      await memberUpdateFormOnSubmit({ value });
       await utils.invalidate();
       router.refresh();
       return;
