@@ -32,6 +32,7 @@ export default function MemberUpdateForm({
 }) {
   const router = useRouter();
   const utils = api.useUtils();
+  const allMembers = api.member.getAll.useQuery().data;
   const member = api.member.getById.useQuery({ memberId: user?.id }).data;
 
   const form = useForm({
@@ -57,6 +58,60 @@ export default function MemberUpdateForm({
   return (
     <form onSubmit={(e) => handleSubmit(e)}>
       <div className="flex flex-col gap-2">
+        {member?.role === "admin" && (
+          <form.Field name="id">
+            {(field) => {
+              // Avoid hasty abstractions. Render props are great!
+              return (
+                <div className="flex flex-col">
+                  <div className="flex flex-row">
+                    <label
+                      htmlFor="member"
+                      style={{ display: "block", marginBottom: ".5rem" }}
+                    >
+                      Select Member
+                    </label>
+                    <select
+                      className="ml-2 h-[1.5rem] border-2 px-0.5"
+                      id={field.name}
+                      name={field.name}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => {
+                        form.setFieldValue(
+                          "email",
+                          allMembers?.find(
+                            (member) => member.id === e.target.value,
+                          )?.email ?? "",
+                        );
+                        form.setFieldValue(
+                          "firstname",
+                          allMembers?.find(
+                            (member) => member.id === e.target.value,
+                          )?.firstname ?? "",
+                        );
+                        form.setFieldValue(
+                          "lastname",
+                          allMembers?.find(
+                            (member) => member.id === e.target.value,
+                          )?.lastname ?? "",
+                        );
+                        field.handleChange(e.target.value);
+                      }}
+                    >
+                      <option value="">-- Select a Member --</option>
+                      {allMembers?.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.fullname}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <FieldInfo field={field} />
+                </div>
+              );
+            }}
+          </form.Field>
+        )}
         <form.Field
           name="email"
           validators={{
