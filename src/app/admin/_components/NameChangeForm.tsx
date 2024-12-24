@@ -19,6 +19,7 @@ const emptyMember = {
   lastname: "",
   account: 0,
   role: "",
+  friends:[],
 };
 
 export default function AdminNameChangeForm() {
