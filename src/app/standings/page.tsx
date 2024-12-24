@@ -48,25 +48,27 @@ export default function PGCStandings() {
             Earnings
           </div>
         </div>
-        {activeTour?.tourCards.map((tourCard) => (
-          <div
-            key={tourCard.id}
-            className="grid grid-flow-row grid-cols-8 text-center"
-          >
-            <div className="place-self-center font-varela text-sm sm:text-base">
-              {tourCard.position}
+        {activeTour?.tourCards
+          .sort((a, b) => +a.createdAt - +b.createdAt)
+          .map((tourCard) => (
+            <div
+              key={tourCard.id}
+              className="grid grid-flow-row grid-cols-8 text-center"
+            >
+              <div className="place-self-center font-varela text-sm sm:text-base">
+                {tourCard.position}
+              </div>
+              <div className="col-span-4 place-self-center font-varela text-lg sm:text-xl">
+                {tourCard.displayName}
+              </div>
+              <div className="col-span-2 place-self-center font-varela text-sm xs:text-base sm:text-lg">
+                {tourCard.points}
+              </div>
+              <div className="place-self-center font-varela text-xs xs:text-sm sm:text-base">
+                {formatMoney(tourCard.earnings)}
+              </div>
             </div>
-            <div className="col-span-4 place-self-center font-varela text-lg sm:text-xl">
-              {tourCard.displayName}
-            </div>
-            <div className="col-span-2 place-self-center font-varela text-sm xs:text-base sm:text-lg">
-              {tourCard.points}
-            </div>
-            <div className="place-self-center font-varela text-xs xs:text-sm sm:text-base">
-              {formatMoney(tourCard.earnings)}
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
     </>
   );
