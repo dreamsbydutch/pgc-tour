@@ -8,17 +8,22 @@ import { type Dispatch, type SetStateAction, useState } from "react";
 
 export default function PGCStandings() {
   const { user } = useUser();
-  const [standingsToggle, setStandingsToggle] = useState("DbyD");
-  const tours = api.tour.getActive.useQuery();
+  const [standingsToggle, setStandingsToggle] = useState("");
+  const tours = api.tour.getActive.useQuery().data;
+  const member = api.member.getById.useQuery({ memberId: user?.id }).data;
+  const tourCard = api.tourCard.getByUserSeason.useQuery({
+    userId: user?.id,
+  }).data;
+  console.log(member);
 
-  if (!tours.data) return null;
-  if (!tours.data[0]) return null;
+  if (!tours) return null;
+  if (!tours[0]) return null;
   if (standingsToggle === "") {
-    setStandingsToggle(tours.data[0].shortForm);
+    setStandingsToggle(
+      tours.find((obj) => obj.id === tourCard?.seasonId)?.shortForm ?? "DbyD",
+    );
   }
-  const activeTour = tours.data?.find(
-    (tour) => tour.shortForm === standingsToggle,
-  );
+  const activeTour = tours?.find((tour) => tour.shortForm === standingsToggle);
   return (
     <>
       <div className="mb-4 pb-2 text-center font-yellowtail text-5xl sm:text-6xl md:text-7xl">
@@ -28,12 +33,14 @@ export default function PGCStandings() {
         Tap on a tour player to view their stats and tournament history.
       </div>
       <div className="mx-auto my-4 text-center">
-        {tours.data?.map((tour) => (
-          <StandingsToggleButton
-            key={"toggle-" + tour.id}
-            {...{ tour, standingsToggle, setStandingsToggle }}
-          />
-        ))}
+        {tours
+          ?.sort((a, b) => a.shortForm.localeCompare(b.shortForm))
+          .map((tour) => (
+            <StandingsToggleButton
+              key={"toggle-" + tour.id}
+              {...{ tour, standingsToggle, setStandingsToggle }}
+            />
+          ))}
       </div>
       <div id="my-4">
         <div className="grid grid-flow-row grid-cols-8 text-center">
@@ -55,7 +62,7 @@ export default function PGCStandings() {
           .map((tourCard) => (
             <div
               key={tourCard.id}
-              className={`grid grid-flow-row grid-cols-8 rounded-lg text-center ${user?.id === tourCard.memberId ? "bg-gray-200 font-bold" : ""}`}
+              className={`grid grid-flow-row grid-cols-8 rounded-lg text-center ${member?.friends && member?.friends.includes(tourCard.memberId) ? "bg-slate-100" : ""} ${user?.id === tourCard.memberId ? "bg-slate-200" : ""}`}
             >
               <div className="place-self-center font-varela text-sm sm:text-base">
                 {tourCard.position}

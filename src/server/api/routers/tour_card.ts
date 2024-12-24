@@ -50,9 +50,13 @@ export const tourCardRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      if (!input.userId || !input.seasonId) return;
+      if (!input.userId) return;
+      const season = await ctx.db.season.findUnique({ where: { year: 2025 } });
       return await ctx.db.tourCard.findFirst({
-        where: { seasonId: input.seasonId, memberId: input.userId },
+        where: {
+          seasonId: input.seasonId ?? season?.id,
+          memberId: input.userId,
+        },
       });
     }),
 
