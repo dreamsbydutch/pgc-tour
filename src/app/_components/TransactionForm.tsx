@@ -81,11 +81,13 @@ export default function PaymentForm() {
                     onChange={(e) => field.handleChange(e.target.value)}
                   >
                     <option value="">-- Select a Member --</option>
-                    {allMembers.map((member) => (
-                      <option key={member.id} value={member.id}>
-                        {member.fullname}
-                      </option>
-                    ))}
+                    {allMembers
+                      .filter((obj) => obj.account > 0)
+                      .map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.fullname}
+                        </option>
+                      ))}
                   </select>
                 </div>
                 <FieldInfo field={field} />
