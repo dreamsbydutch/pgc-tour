@@ -1,15 +1,14 @@
 "use client";
 
-import { memberSchema } from "@/src/lib/validators";
 import { api } from "@/src/trpc/react";
 import { useForm } from "@tanstack/react-form";
-import { zodValidator } from "@tanstack/zod-form-adapter";
-import type { Dispatch, FormEvent, SetStateAction } from "react";
-import { z } from "zod";
-import { FieldInfo } from "./FieldInfo";
-import { Button } from "./ui/button";
-import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
+import { FieldInfo } from "../../_components/FieldInfo";
+import { z } from "zod";
+import { zodValidator } from "@tanstack/zod-form-adapter";
+import { memberSchema } from "@/src/lib/validators";
+import type { FormEvent } from "react";
+import { Button } from "../../_components/ui/button";
 import { memberUpdateFormOnSubmit } from "@/src/server/api/actions/member";
 
 const emptyMember = {
@@ -22,21 +21,15 @@ const emptyMember = {
   role: "",
 };
 
-export default function MemberUpdateForm({
-  user,
-  setIsEditing,
-}: {
-  user: User | null;
-  setIsEditing: Dispatch<SetStateAction<boolean>>;
-}) {
+export default function AdminNameChangeForm() {
   const router = useRouter();
   const utils = api.useUtils();
-  const member = api.member.getById.useQuery({ memberId: user?.id }).data;
+  const allMembers = api.member.getAll.useQuery().data;
 
   const form = useForm({
-    defaultValues: member ?? emptyMember,
+    defaultValues: emptyMember,
     onSubmit: async ({ value }) => {
-      await memberUpdateFormOnSubmit({ value, userId:user?.id });
+      await memberUpdateFormOnSubmit({ value, userId: value.id });
       await utils.invalidate();
       router.refresh();
       return;
@@ -49,13 +42,63 @@ export default function MemberUpdateForm({
     e.preventDefault();
     e.stopPropagation();
     await form.handleSubmit();
-    setIsEditing(false);
     return;
   };
-
   return (
-    <form onSubmit={(e) => handleSubmit(e)}>
+    <form onSubmit={(e) => handleSubmit(e)} className="mb-8">
       <div className="flex flex-col gap-2">
+        <form.Field name="id">
+          {(field) => {
+            // Avoid hasty abstractions. Render props are great!
+            return (
+              <div className="flex flex-col">
+                <div className="flex flex-row">
+                  <label
+                    htmlFor="member"
+                    style={{ display: "block", marginBottom: ".5rem" }}
+                  >
+                    Select Member
+                  </label>
+                  <select
+                    className="ml-2 h-[1.5rem] border-2 px-0.5"
+                    id={field.name}
+                    name={field.name}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => {
+                      form.setFieldValue(
+                        "email",
+                        allMembers?.find(
+                          (member) => member.id === e.target.value,
+                        )?.email ?? "",
+                      );
+                      form.setFieldValue(
+                        "firstname",
+                        allMembers?.find(
+                          (member) => member.id === e.target.value,
+                        )?.firstname ?? "",
+                      );
+                      form.setFieldValue(
+                        "lastname",
+                        allMembers?.find(
+                          (member) => member.id === e.target.value,
+                        )?.lastname ?? "",
+                      );
+                      field.handleChange(e.target.value);
+                    }}
+                  >
+                    <option value="">-- Select a Member --</option>
+                    {allMembers?.map((member) => (
+                      <option key={member.id} value={member.id}>
+                        {member.fullname}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <FieldInfo field={field} />
+              </div>
+            );
+          }}
+        </form.Field>
         <form.Field
           name="email"
           validators={{
@@ -149,12 +192,6 @@ export default function MemberUpdateForm({
         >
           {([canSubmit, isSubmitting]) => (
             <div className="flex justify-between">
-              <div
-                onClick={() => setIsEditing(false)}
-                className="flex gap-2 text-sm underline"
-              >
-                Stop editing
-              </div>
               <Button
                 type="submit"
                 disabled={!canSubmit}

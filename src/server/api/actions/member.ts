@@ -2,19 +2,18 @@
 
 import { api } from "@/src/trpc/server";
 import { updateTourCardNames } from "./tour_card";
-import type { User } from "@supabase/supabase-js";
 import type { Member } from "@prisma/client";
 
 export async function memberUpdateFormOnSubmit({
   value,
-  user,
+  userId,
 }: {
   value: Member;
-  user: User | null;
+  userId: string | undefined;
 }) {
   const season = await api.season.getByYear({ year: 2025 });
   let tourCard = await api.tourCard.getByUserSeason({
-    userId: user?.id,
+    userId,
     seasonId: season?.id,
   });
   const tour = await api.tour.getById({ tourID: tourCard?.tourId });
@@ -24,6 +23,7 @@ export async function memberUpdateFormOnSubmit({
   await api.member.update(value);
   tourCard =
     tourCard && (await api.tourCard.update({ id: tourCard.id, displayName }));
-  if (tour && tourCard) await updateTourCardNames({ tour: tour, tourCard: tourCard });
+  if (tour && tourCard)
+    await updateTourCardNames({ tour: tour, tourCard: tourCard });
   return;
 }

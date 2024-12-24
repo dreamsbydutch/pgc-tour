@@ -6,7 +6,7 @@ import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import type { FormEvent } from "react";
 import { z } from "zod";
-import { FieldInfo } from "./FieldInfo";
+import { FieldInfo } from "../../_components/FieldInfo";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -15,11 +15,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
+} from "../../_components/ui/table";
 import { formatMoney } from "@/src/lib/utils";
 import { processPayment } from "@/src/server/api/actions/transaction";
 import type { TransactionType } from "@prisma/client";
-import { Button } from "./ui/button";
+import { Button } from "../../_components/ui/button";
 
 const emptyTransaction = {
   id: "",
