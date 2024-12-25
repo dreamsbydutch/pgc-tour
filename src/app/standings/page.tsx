@@ -7,11 +7,11 @@ import {
   removeFriendsFromMember,
 } from "@/src/server/api/actions/member";
 import { api } from "@/src/trpc/react";
-import { Member, TourCard, type Tour } from "@prisma/client";
+import type { Member, TourCard, Tour } from "@prisma/client";
 import { Star } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import LoadingSpinner from "../_components/LoadingSpinner";
-import { User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 
 export default function PGCStandings() {
   const { user } = useUser();
@@ -70,6 +70,7 @@ export default function PGCStandings() {
             .sort((a, b) => +a.createdAt - +b.createdAt)
             .map((tourCard) => (
               <StandingsListing
+                key={tourCard.id}
                 {...{
                   tourCard,
                   member,
@@ -156,11 +157,12 @@ function StandingsListing({
             if (addingToFriends) return;
             setAddingToFriends(true);
             setIsFriendChanging(true);
-            member &&
-              (await removeFriendsFromMember({
+            if (member) {
+              await removeFriendsFromMember({
                 member,
                 friendId: tourCard.memberId,
-              }));
+              });
+            }
             await utils.invalidate();
             setIsFriendChanging(false);
             setAddingToFriends(false);
@@ -177,11 +179,12 @@ function StandingsListing({
             if (addingToFriends) return;
             setAddingToFriends(true);
             setIsFriendChanging(true);
-            member &&
-              (await addFriendsToMember({
+            if (member) {
+              await addFriendsToMember({
                 member,
                 friendId: tourCard.memberId,
-              }));
+              });
+            }
             await utils.invalidate();
             setIsFriendChanging(false);
             setAddingToFriends(false);
