@@ -43,6 +43,7 @@ export const memberRouter = createTRPCRouter({
         firstname: z.string().nullable().optional(),
         lastname: z.string().nullable().optional(),
         account: z.number().optional(),
+        friends: z.string().array().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -54,6 +55,7 @@ export const memberRouter = createTRPCRouter({
           email: input.email,
           firstname: input.firstname,
           lastname: input.lastname,
+          friends: input.friends,
         },
       });
       return updatedUser;

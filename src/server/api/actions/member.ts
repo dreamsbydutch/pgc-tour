@@ -4,11 +4,7 @@ import { api } from "@/src/trpc/server";
 import { updateTourCardNames } from "./tour_card";
 import type { Member } from "@prisma/client";
 
-export async function memberUpdateFormOnSubmit({
-  value,
-}: {
-  value: Member;
-}) {
+export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {
   const season = await api.season.getByYear({ year: 2025 });
   let tourCard = await api.tourCard.getByUserSeason({
     userId: value.id,
@@ -23,5 +19,29 @@ export async function memberUpdateFormOnSubmit({
     tourCard && (await api.tourCard.update({ id: tourCard.id, displayName }));
   if (tour && tourCard)
     await updateTourCardNames({ tour: tour, tourCard: tourCard });
+  return;
+}
+
+export async function addFriendsToMember({
+  member,
+  friendId,
+}: {
+  member: Member;
+  friendId: string;
+}) {
+  const friends: string[] = [...member.friends, friendId];
+  await api.member.update({ id: member.id, friends: friends });
+  return;
+}
+
+export async function removeFriendsFromMember({
+  member,
+  friendId,
+}: {
+  member: Member;
+  friendId: string;
+}) {
+  const friends = member.friends.filter((id) => id !== friendId);
+  await api.member.update({ id: member.id, friends: friends });
   return;
 }

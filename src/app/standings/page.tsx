@@ -2,9 +2,16 @@
 
 import { useUser } from "@/src/lib/hooks/use-user";
 import { formatMoney } from "@/src/lib/utils";
+import {
+  addFriendsToMember,
+  removeFriendsFromMember,
+} from "@/src/server/api/actions/member";
 import { api } from "@/src/trpc/react";
-import { type Tour } from "@prisma/client";
+import { Member, TourCard, type Tour } from "@prisma/client";
+import { Star } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
+import LoadingSpinner from "../_components/LoadingSpinner";
+import { User } from "@supabase/supabase-js";
 
 export default function PGCStandings() {
   const { user } = useUser();
@@ -14,7 +21,7 @@ export default function PGCStandings() {
   const tourCard = api.tourCard.getByUserSeason.useQuery({
     userId: user?.id,
   }).data;
-  console.log(member);
+  const [addingToFriends, setAddingToFriends] = useState(false);
 
   if (!tours) return null;
   if (!tours[0]) return null;
@@ -43,41 +50,35 @@ export default function PGCStandings() {
           ))}
       </div>
       <div id="my-4">
-        <div className="grid grid-flow-row grid-cols-8 text-center">
-          <div className="place-self-center font-varela text-xs font-bold sm:text-sm">
+        <div className="grid-cols-17 grid grid-flow-row text-center">
+          <div className="col-span-2 place-self-center font-varela text-xs font-bold sm:text-sm">
             Rank
           </div>
-          <div className="col-span-4 place-self-center font-varela text-base font-bold sm:text-lg">
+          <div className="col-span-8 place-self-center font-varela text-base font-bold sm:text-lg">
             Name
           </div>
-          <div className="col-span-2 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
+          <div className="col-span-4 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
             Cup Points
           </div>
-          <div className="place-self-center font-varela text-2xs xs:text-xs sm:text-sm">
+          <div className="col-span-2 place-self-center font-varela text-2xs xs:text-xs sm:text-sm">
             Earnings
           </div>
         </div>
-        {activeTour?.tourCards
-          .sort((a, b) => +a.createdAt - +b.createdAt)
-          .map((tourCard) => (
-            <div
-              key={tourCard.id}
-              className={`grid grid-flow-row grid-cols-8 rounded-lg text-center ${member?.friends && member?.friends.includes(tourCard.memberId) ? "bg-slate-100" : ""} ${user?.id === tourCard.memberId ? "bg-slate-200" : ""}`}
-            >
-              <div className="place-self-center font-varela text-sm sm:text-base">
-                {tourCard.position}
-              </div>
-              <div className="col-span-4 place-self-center font-varela text-lg sm:text-xl">
-                {tourCard.displayName}
-              </div>
-              <div className="col-span-2 place-self-center font-varela text-sm xs:text-base sm:text-lg">
-                {tourCard.points}
-              </div>
-              <div className="place-self-center font-varela text-xs xs:text-sm sm:text-base">
-                {formatMoney(tourCard.earnings)}
-              </div>
-            </div>
-          ))}
+        {member &&
+          user &&
+          activeTour?.tourCards
+            .sort((a, b) => +a.createdAt - +b.createdAt)
+            .map((tourCard) => (
+              <StandingsListing
+                {...{
+                  tourCard,
+                  member,
+                  user,
+                  addingToFriends,
+                  setAddingToFriends,
+                }}
+              />
+            ))}
       </div>
     </>
   );
@@ -108,5 +109,86 @@ function StandingsToggleButton({
     >
       {tour.shortForm}
     </button>
+  );
+}
+
+function StandingsListing({
+  tourCard,
+  member,
+  user,
+  addingToFriends,
+  setAddingToFriends,
+}: {
+  tourCard: TourCard;
+  member: Member;
+  user: User;
+  addingToFriends: boolean;
+  setAddingToFriends: Dispatch<SetStateAction<boolean>>;
+}) {
+  const utils = api.useUtils();
+  const [isfriendChanging, setIsFriendChanging] = useState(false);
+  return (
+    <div
+      key={tourCard.id}
+      className={`grid-cols-17 grid grid-flow-row rounded-lg text-center ${member?.friends && member?.friends.includes(tourCard.memberId) ? "bg-slate-100" : ""} ${user?.id === tourCard.memberId ? "bg-slate-200 font-bold" : ""}`}
+    >
+      <div className="col-span-2 place-self-center font-varela text-sm sm:text-base">
+        {tourCard.position}
+      </div>
+      <div className="col-span-8 place-self-center font-varela text-lg sm:text-xl">
+        {tourCard.displayName}
+      </div>
+      <div className="col-span-4 place-self-center font-varela text-sm xs:text-base sm:text-lg">
+        {tourCard.points}
+      </div>
+      <div className="col-span-2 place-self-center font-varela text-xs xs:text-sm sm:text-base">
+        {formatMoney(tourCard.earnings)}
+      </div>
+      {isfriendChanging ? (
+        <LoadingSpinner className="h-3 w-3" />
+      ) : member?.friends && member?.friends.includes(tourCard.memberId) ? (
+        <Star
+          aria-disabled={isfriendChanging}
+          fill="#111"
+          size={12}
+          className="m-auto"
+          onClick={async () => {
+            if (addingToFriends) return;
+            setAddingToFriends(true);
+            setIsFriendChanging(true);
+            member &&
+              (await removeFriendsFromMember({
+                member,
+                friendId: tourCard.memberId,
+              }));
+            await utils.invalidate();
+            setIsFriendChanging(false);
+            setAddingToFriends(false);
+            return;
+          }}
+        />
+      ) : user?.id === tourCard.memberId ? (
+        <></>
+      ) : (
+        <Star
+          size={12}
+          className="m-auto"
+          onClick={async () => {
+            if (addingToFriends) return;
+            setAddingToFriends(true);
+            setIsFriendChanging(true);
+            member &&
+              (await addFriendsToMember({
+                member,
+                friendId: tourCard.memberId,
+              }));
+            await utils.invalidate();
+            setIsFriendChanging(false);
+            setAddingToFriends(false);
+            return;
+          }}
+        />
+      )}
+    </div>
   );
 }

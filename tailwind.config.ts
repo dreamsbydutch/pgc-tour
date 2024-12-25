@@ -17,6 +17,9 @@ const config = {
       padding: "2rem",
     },
     extend: {
+      gridTemplateColumns: {
+        "17": "repeat(17, minmax(0, 1fr))",
+      },
       screens: {
         "2xs": "365px",
         xs: "425px",
