@@ -29,7 +29,12 @@ export async function addFriendsToMember({
   member: Member;
   friendId: string;
 }) {
-  const friends: string[] = [...member.friends, friendId];
+  let friends: string[] = [];
+  if (!member.friends) {
+    friends = [friendId];
+  } else {
+    friends = [...member.friends, friendId];
+  }
   await api.member.update({ id: member.id, friends: friends });
   return;
 }
