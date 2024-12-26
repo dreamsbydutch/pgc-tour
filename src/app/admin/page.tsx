@@ -8,7 +8,9 @@ export default async function AdminDashboard() {
     <>
       <div className="mb-8">
         {tours.map((tour) => (
-          <div>{`${tour.name} - ${tour.tourCards.length} sign ups (${75 - tour.tourCards.length} left)`}</div>
+          <div
+            key={tour.id}
+          >{`${tour.name} - ${tour.tourCards.length} sign ups (${75 - tour.tourCards.length} left)`}</div>
         ))}
       </div>
       <PaymentForm />
