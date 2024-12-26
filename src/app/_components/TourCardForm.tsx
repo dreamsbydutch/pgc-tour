@@ -78,7 +78,7 @@ function TourCardFormButton({
           />
           {tour.name}
           <div className="text-xs text-slate-600">
-            {75 - tour.tourCards.length} spots remaining
+            {65 - tour.tourCards.length} spots remaining
           </div>
           <div className="text-xs text-slate-600">Buy-in: $100</div>
         </>

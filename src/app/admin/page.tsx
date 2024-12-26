@@ -10,7 +10,7 @@ export default async function AdminDashboard() {
         {tours.map((tour) => (
           <div
             key={tour.id}
-          >{`${tour.name} - ${tour.tourCards.length} sign ups (${75 - tour.tourCards.length} left)`}</div>
+          >{`${tour.name} - ${tour.tourCards.length} sign ups (${65 - tour.tourCards.length} left)`}</div>
         ))}
       </div>
       <PaymentForm />
