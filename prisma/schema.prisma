@@ -175,7 +175,7 @@ model TourCard {
 }
 
 model Golfer {
-  apiId        String        @id @unique
+  apiId        Int        @id @unique
   position     String?
   playerName   String
   score        Int?
@@ -184,6 +184,8 @@ model Golfer {
   win          Float?
   round        Int?
   group        Int?
+  worldRank    Int?
+  rating       Float?
   usage        Float?
   earnings     Float?
   tournamentId String
@@ -192,7 +194,7 @@ model Golfer {
   rounds       GolferRound[]
   tournament   Tournament    @relation(fields: [tournamentId], references: [id])
 
-  @@unique([playerName, tournamentId])
+  @@unique([apiId, tournamentId])
   @@map("golfers")
 }
 
@@ -206,7 +208,7 @@ model GolferRound {
   teeTime   DateTime?
   front     Float?
   back      Float?
-  golferId  String
+  golferId  Int
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   golfer    Golfer    @relation(fields: [golferId], references: [apiId])
