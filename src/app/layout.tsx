@@ -43,7 +43,16 @@ export default function RootLayout({
           name="google-site-verification"
           content="k_L19BEXJjcWOM7cHFMPMpK9MBdcv2uQ6qFt3HGPEbc"
         />
+        <meta name="mobile-web-app-capable" content="yes"></meta>
+        <meta name="apple-mobile-web-app-capable" content="yes"></meta>
+        {/* <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black"
+        ></meta> */}
         <link rel="apple-touch-icon" href="/favicon.ico"></link>
+        <link rel="apple-touch-startup-image" href="/favicon.ico"></link>
+        <meta name="mobile-web-app-title" content="PGC Clubhouse"></meta>
+        <meta name="apple-mobile-web-app-title" content="PGC Clubhouse"></meta>
 
         <Script
           async
