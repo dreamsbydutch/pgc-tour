@@ -43,6 +43,7 @@ export default function RootLayout({
           name="google-site-verification"
           content="k_L19BEXJjcWOM7cHFMPMpK9MBdcv2uQ6qFt3HGPEbc"
         />
+        <link rel="apple-touch-icon" href="/favicon.ico"></link>
 
         <Script
           async
