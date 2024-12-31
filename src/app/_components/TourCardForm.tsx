@@ -61,7 +61,7 @@ function TourCardFormButton({
       variant="secondary"
       size="xl"
       onClick={() => handleSubmit()}
-      disabled={isCreatingTourCard}
+      disabled={isCreatingTourCard || tour.tourCards.length >= 65}
       className={`${effect && "animate-toggleClick"} flex h-[16rem] w-[14rem] flex-col border-2 p-2 text-lg shadow-lg`}
       onAnimationEnd={() => setEffect(false)}
     >
