@@ -4,7 +4,13 @@ import { api } from "@/src/trpc/server";
 import { updateTourCardNames } from "./tour_card";
 import type { Member } from "@prisma/client";
 
-export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {
+export async function memberUpdateFormOnSubmit({
+  value,
+  isAdmin,
+}: {
+  value: Member;
+  isAdmin: boolean;
+}) {
   const season = await api.season.getByYear({ year: 2025 });
   let tourCard = await api.tourCard.getByUserSeason({
     userId: value.id,
@@ -14,7 +20,13 @@ export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {
   const displayName =
     (value.firstname && value.firstname[0]) + ". " + value.lastname;
   value.fullname = value.firstname + " " + value.lastname;
-  await api.member.update(value);
+  await api.member.update({
+    id: value.id,
+    email: value.email,
+    fullname: value.fullname,
+    firstname: value.firstname,
+    lastname: value.lastname,
+  });
   tourCard =
     tourCard && (await api.tourCard.update({ id: tourCard.id, displayName }));
   if (tour && tourCard)
