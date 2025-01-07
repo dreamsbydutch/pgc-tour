@@ -1,10 +1,17 @@
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { createClient } from "@/src/lib/supabase/server";
 
 export const memberRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
     return await ctx.db.member.findMany({});
+  }),
+  getSelf: publicProcedure.query(async ({ ctx }) => {
+    const supabase = await createClient();
+    const user = await supabase.auth.getUser();
+    if (!user || !user.data.user) return null;
+    return await ctx.db.member.findUnique({ where: { id: user.data.user.id } });
   }),
   getById: publicProcedure
     .input(z.object({ memberId: z.string().optional() }))
