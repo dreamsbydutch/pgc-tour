@@ -175,7 +175,7 @@ model TourCard {
 }
 
 model Golfer {
-  apiId        Int        @id @unique
+  apiId        Int           @id
   position     String?
   playerName   String
   score        Int?
