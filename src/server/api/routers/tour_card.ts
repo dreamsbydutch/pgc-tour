@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { createClient } from "@/src/lib/supabase/server";
 
 export const tourCardRouter = createTRPCRouter({
   getAll: publicProcedure
@@ -39,6 +40,24 @@ export const tourCardRouter = createTRPCRouter({
       if (!input.tourId) return;
       return await ctx.db.tourCard.findMany({
         where: { tourId: input.tourId },
+      });
+    }),
+  getOwnBySeason: publicProcedure
+    .input(
+      z.object({
+        seasonId: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const supabase = await createClient();
+      const user = await supabase.auth.getUser();
+      if (!user) return null;
+      const season = await ctx.db.season.findUnique({ where: { year: 2025 } });
+      return await ctx.db.tourCard.findFirst({
+        where: {
+          seasonId: input.seasonId ?? season?.id,
+          memberId: user.data.user?.id,
+        },
       });
     }),
 
