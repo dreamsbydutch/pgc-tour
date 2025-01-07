@@ -1,4 +1,3 @@
-
 export type DatagolfTournament = {
   course: string;
   course_key: string;
@@ -33,6 +32,7 @@ type DatagolfFieldGolfer = {
   unofficial: number;
   yh_id: string;
   yh_salary: number;
+  ranking_data: DataGolfRankingGolfer | undefined;
 };
 
 export type DatagolfRankingInput = {
