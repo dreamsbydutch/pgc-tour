@@ -13,7 +13,6 @@ export async function GET(request: Request) {
   // Get the authorization code and the 'next' redirect path
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/";
-  console.log(code);
 
   if (code) {
     // Create a Supabase client
