@@ -96,9 +96,45 @@ export function formatRank(number: number) {
   }
 }
 
-export function formatName(name: string,type:'display'|'full') {
-    const splitName = name.split(" ")
-    const firstName = String(splitName[0]).charAt(0).toUpperCase() + String(splitName[0]).slice(1);
-    const lastName = String(splitName.slice(1).toString()).charAt(0).toUpperCase() + String(splitName.slice(1).toString()).slice(1);
-    return type === 'full' ? firstName+" "+lastName:firstName.charAt(0).toUpperCase() + ". "+lastName
+export function formatName(name: string, type: "display" | "full") {
+  const splitName = name.split(" ");
+  const firstName =
+    String(splitName[0]).charAt(0).toUpperCase() +
+    String(splitName[0]).slice(1);
+  const lastName =
+    String(splitName.slice(1).toString()).charAt(0).toUpperCase() +
+    String(splitName.slice(1).toString()).slice(1);
+  return type === "full"
+    ? firstName + " " + lastName
+    : firstName.charAt(0).toUpperCase() + ". " + lastName;
 }
+
+export async function fetchDataGolf(
+  queryType: DataGolfExports,
+  queryParameters: Record<string, string> | null,
+) {
+  let fetchUrl = "";
+  if (!queryParameters) {
+    fetchUrl =
+      process.env.EXTERNAL_DATA_API_URL +
+      queryType +
+      "?key=" +
+      process.env.EXTERNAL_DATA_API_KEY;
+  } else {
+    const queryParametersString = Object.keys(queryParameters).map(
+      (key) => key + "=" + queryParameters[key] + "&",
+    );
+    fetchUrl =
+      process.env.EXTERNAL_DATA_API_URL +
+      queryType +
+      "?" +
+      queryParametersString +
+      "key=" +
+      process.env.EXTERNAL_DATA_API_KEY;
+  }
+  const request = await fetch(fetchUrl);
+  const data = await request.json();
+  return data;
+}
+
+type DataGolfExports = "field-updates" | "preds/get-dg-rankings";
