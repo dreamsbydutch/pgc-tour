@@ -13,4 +13,17 @@ export const tournamentRouter = createTRPCRouter({
         orderBy: { startDate: "asc" },
       });
     }),
+  getById: publicProcedure
+    .input(z.object({ tournamentId: z.string().optional() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.tournament.findUnique({
+        where: { id: input.tournamentId },
+      });
+    }),
+  getCurrent: publicProcedure.query(async ({ ctx, input }) => {
+    const today = new Date();
+    const tournaments = await ctx.db.tournament.findMany();
+
+    return tournaments.find((obj) => obj.endDate > today);
+  }),
 });
