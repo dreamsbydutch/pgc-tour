@@ -15,10 +15,12 @@ export async function GET(request: Request) {
   // Get the authorization code and the 'next' redirect path
   const next = searchParams.get("next") ?? "/";
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const rankingsData: DatagolfRankingInput = await fetchDataGolf(
     "preds/get-dg-rankings",
     null,
   );
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const fieldData: DatagolfFieldInput = await fetchDataGolf(
     "field-updates",
     null,
@@ -47,9 +49,9 @@ export async function GET(request: Request) {
 
   fieldData.field = fieldData.field
     .map((golfer) => {
-      golfer.ranking_data = rankingsData.rankings.filter(
+      golfer.ranking_data = rankingsData.rankings.find(
         (obj) => obj.dg_id === golfer.dg_id,
-      )[0];
+      );
       return golfer;
     })
     .sort(
@@ -109,7 +111,7 @@ export async function GET(request: Request) {
       const name = golfer.player_name.split(", ");
       if (currentTourney && currentTourney.id) {
         await api.golfer.create({
-          apiId: golfer.dg_id,
+          apiId: golfer.dg_id.toString(),
           playerName: name[1] + " " + name[0],
           group: i + 1,
           worldRank: golfer.ranking_data?.owgr_rank,
