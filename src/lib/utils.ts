@@ -121,9 +121,9 @@ export async function fetchDataGolf(
       "?key=" +
       process.env.EXTERNAL_DATA_API_KEY;
   } else {
-    const queryParametersString = Object.keys(queryParameters).map(
-      (key) => key + "=" + queryParameters[key] + "&",
-    );
+    const queryParametersString = Object.keys(queryParameters)
+      .map((key) => key + "=" + queryParameters[key] + "&")
+      .toString();
     fetchUrl =
       process.env.EXTERNAL_DATA_API_URL +
       queryType +
@@ -133,7 +133,9 @@ export async function fetchDataGolf(
       process.env.EXTERNAL_DATA_API_KEY;
   }
   const request = await fetch(fetchUrl);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const data = await request.json();
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return data;
 }
 
