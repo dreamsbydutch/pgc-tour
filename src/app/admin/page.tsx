@@ -10,13 +10,13 @@ export default function AdminDashboard() {
     // Ensure this code runs only on the client side
     if (typeof window !== "undefined") {
       OneSignal.init({
-        appId: "e13d2829-191f-493b-8688-486b4520740c",
+        appId: "17356a4c-0fff-4bbe-8c36-1156e7d9e2fa",
         // You can add other initialization options here
         notifyButton: {
           enable: true,
         },
         // Uncomment the below line to run on localhost. See: https://documentation.onesignal.com/docs/local-testing
-        allowLocalhostAsSecureOrigin: true,
+        // allowLocalhostAsSecureOrigin: true,
       });
     }
   }, []);
