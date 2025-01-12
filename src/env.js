@@ -26,6 +26,7 @@ export const env = createEnv({
     // POSTGRES_DATABASE: z.string(),
     EXTERNAL_DATA_API_URL: z.string(),
     EXTERNAL_DATA_API_KEY: z.string(),
+    TOUR_MAX_SIZE: z.string(),
   },
 
   /**
@@ -51,6 +52,7 @@ export const env = createEnv({
     BASE_URL: process.env.BASE_URL,
     DATABASE_URL: process.env.DATABASE_URL,
     DIRECT_URL: process.env.DIRECT_URL,
+    TOUR_MAX_SIZE: process.env.TOUR_MAX_SIZE,
     SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
     // POSTGRES_URL: process.env.POSTGRES_URL,
     // POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,

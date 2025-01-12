@@ -175,7 +175,7 @@ model TourCard {
 }
 
 model Golfer {
-  apiId        Int           @id
+  apiId        String        @id
   position     String?
   playerName   String
   score        Int?
@@ -208,7 +208,7 @@ model GolferRound {
   teeTime   DateTime?
   front     Float?
   back      Float?
-  golferId  Int
+  golferId  String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   golfer    Golfer    @relation(fields: [golferId], references: [apiId])
