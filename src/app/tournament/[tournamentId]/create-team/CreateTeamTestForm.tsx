@@ -97,10 +97,12 @@ export default function CreateTeamForm({
     mode: "onSubmit",
   });
 
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onSubmit = (data: any) => {
     console.log(data);
     alert("Team submitted successfully!");
   };
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onError = (errors: any) => {
     console.log("Validation Errors:", errors);
     alert("You must pick 2 golfers from each group.");
@@ -127,7 +129,7 @@ export default function CreateTeamForm({
                 {group.golfers.map((golfer) => {
                   const selectedGolfers = watch(
                     fieldPath as `groups.${number}.golfers`,
-                  ) as string[];
+                  )
 
                   const isChecked = selectedGolfers.includes(golfer.apiId);
                   const isDisabled = !isChecked && selectedGolfers.length >= 2;
