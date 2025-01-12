@@ -4,11 +4,9 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { createClient } from "@/src/lib/supabase/server";
 
 export const tourCardRouter = createTRPCRouter({
-  getAll: publicProcedure
-    .input(z.object({ tournamentID: z.string() }))
-    .query(() => {
-      return {};
-    }),
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.tourCard.findMany();
+  }),
 
   getById: publicProcedure
     .input(z.object({ tourCardId: z.string() }))
