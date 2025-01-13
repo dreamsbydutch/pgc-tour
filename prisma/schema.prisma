@@ -131,6 +131,7 @@ model Team {
   tourCard     TourCard    @relation(fields: [tourCardId], references: [id])
   tournament   Tournament  @relation(fields: [tournamentId], references: [id])
 
+  @@unique([tournamentId, tourCardId])
   @@map("teams")
 }
 
