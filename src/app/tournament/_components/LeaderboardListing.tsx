@@ -1,6 +1,6 @@
 "use server";
 
-import { formatMoney, formatScore } from "@/src/lib/utils";
+import { cn, formatMoney, formatScore } from "@/src/lib/utils";
 import { db } from "@/src/server/db";
 import {
   teamDataInclude,
