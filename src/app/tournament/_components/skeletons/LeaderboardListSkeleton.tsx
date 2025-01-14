@@ -1,18 +1,20 @@
+import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { Skeleton, SVGSkeleton } from "@/ui/skeleton";
 
 export function LeaderboardListSkeleton() {
   const list = new Array(75).fill(1);
   return (
-    <div className="flex flex-col">
-      <div className="mb-2 mt-6 flex flex-row items-center justify-around">
-        <SVGSkeleton className="h-[1.5rem] w-1/5 rounded-3xl pb-3 pt-4" />
-        <SVGSkeleton className="h-[1.5rem] w-1/5 rounded-3xl pb-3 pt-4" />
-        <SVGSkeleton className="h-[1.5rem] w-1/5 rounded-3xl pb-3 pt-4" />
-      </div>
-      {list.map((_obj, i) => (
-        <LeaderboardListSkeletonItem key={i} />
-      ))}
-    </div>
+    <LoadingSpinner />
+    // <div className="flex flex-col">
+    //   <div className="mb-2 mt-6 flex flex-row items-center justify-around">
+    //     <SVGSkeleton className="h-[1.5rem] w-1/5 rounded-3xl pb-3 pt-4" />
+    //     <SVGSkeleton className="h-[1.5rem] w-1/5 rounded-3xl pb-3 pt-4" />
+    //     <SVGSkeleton className="h-[1.5rem] w-1/5 rounded-3xl pb-3 pt-4" />
+    //   </div>
+    //   {list.map((_obj, i) => (
+    //     <LeaderboardListSkeletonItem key={i} />
+    //   ))}
+    // </div>
   );
 }
 

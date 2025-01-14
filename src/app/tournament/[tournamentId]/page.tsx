@@ -1,9 +1,9 @@
 import LeaderboardHeader from "@/src/app/tournament/_components/LeaderboardHeader";
 import { Suspense } from "react";
 import ToursToggle from "@/src/app/tournament/_components/ToursToggle";
-import { LeaderboardListing } from "../page";
 import { LeaderboardHeaderSkeleton } from "../_components/skeletons/LeaderboardHeaderSkeleton";
 import { LeaderboardListSkeleton } from "../_components/skeletons/LeaderboardListSkeleton";
+import { LeaderboardListing } from "../_components/LeaderboardListing";
 
 export default async function Page({
   params,
@@ -18,28 +18,28 @@ export default async function Page({
         <LeaderboardHeader focusTourneyId={params.tournamentId} />
       </Suspense>
       <Suspense fallback={<LeaderboardListSkeleton />}>
-        <ToursToggle {...{ searchParams }}>
-          <div className="mx-auto grid max-w-xl grid-flow-row grid-cols-10 text-center">
-            <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-              Rank
-            </div>
-            <div className="col-span-4 place-self-center font-varela text-base font-bold">
-              Name
-            </div>
-            <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-              Score
-            </div>
-            <div className="col-span-1 place-self-center font-varela text-2xs">
-              Today
-            </div>
-            <div className="col-span-1 place-self-center font-varela text-2xs">
-              Thru
-            </div>
+        {/* <ToursToggle {...{ searchParams }}> */}
+        <div className="mx-auto grid max-w-xl grid-flow-row grid-cols-10 text-center">
+          <div className="col-span-2 place-self-center font-varela text-sm font-bold">
+            Rank
           </div>
-          <LeaderboardListing
-            {...{ searchParams, tournamentId: params.tournamentId }}
-          />
-        </ToursToggle>
+          <div className="col-span-4 place-self-center font-varela text-base font-bold">
+            Name
+          </div>
+          <div className="col-span-2 place-self-center font-varela text-sm font-bold">
+            Score
+          </div>
+          <div className="col-span-1 place-self-center font-varela text-2xs">
+            Today
+          </div>
+          <div className="col-span-1 place-self-center font-varela text-2xs">
+            Thru
+          </div>
+        </div>
+        <LeaderboardListing
+          {...{ searchParams, tournamentId: params.tournamentId }}
+        />
+        {/* </ToursToggle> */}
       </Suspense>
     </div>
   );
