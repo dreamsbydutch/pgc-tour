@@ -4,7 +4,7 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 
 export const courseRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.course.findMany({});
+    return await ctx.db.course.findMany();
   }),
   // getById: publicProcedure
   //   .input(z.object({ courseID: z.string() }))

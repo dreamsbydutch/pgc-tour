@@ -115,7 +115,7 @@ model Course {
 }
 
 model Team {
-  id           String      @id @default(cuid())
+  id           Int      @id @default(autoincrement())
   golferIds    String[]
   tournamentId String
   createdAt    DateTime    @default(now())
@@ -136,7 +136,7 @@ model Team {
 }
 
 model TeamRound {
-  id        String    @id @default(cuid())
+  id        Int    @id @default(autoincrement())
   position  String?
   score     Float?
   strokes   Float?
@@ -145,7 +145,7 @@ model TeamRound {
   teeTime   DateTime?
   front     Float?
   back      Float?
-  teamId    String
+  teamId    Int
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now()) @updatedAt
   team      Team      @relation(fields: [teamId], references: [id])
@@ -176,7 +176,8 @@ model TourCard {
 }
 
 model Golfer {
-  apiId        String        @id
+  id           Int           @id @default(autoincrement())
+  apiId        String
   position     String?
   playerName   String
   score        Int?
@@ -200,7 +201,7 @@ model Golfer {
 }
 
 model GolferRound {
-  id        String    @id @default(cuid())
+  id        Int       @id @default(autoincrement())
   position  String?
   score     Float?
   strokes   Float?
@@ -209,16 +210,16 @@ model GolferRound {
   teeTime   DateTime?
   front     Float?
   back      Float?
-  golferId  String
+  golferId  Int
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  golfer    Golfer    @relation(fields: [golferId], references: [apiId])
+  golfer    Golfer    @relation(fields: [golferId], references: [id])
 
   @@map("golfer_rounds")
 }
 
 model Transactions {
-  id              String          @id @default(cuid())
+  id              Int             @id @default(autoincrement())
   userId          String
   seasonId        String
   description     String

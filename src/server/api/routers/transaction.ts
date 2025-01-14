@@ -3,6 +3,9 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 
 export const transactionRouter = createTRPCRouter({
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    return await ctx.db.transactions.findMany();
+  }),
   getByMember: publicProcedure
     .input(z.object({ memberId: z.string() }))
     .query(async ({ ctx, input }) => {
