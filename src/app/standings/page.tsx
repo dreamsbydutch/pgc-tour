@@ -33,13 +33,13 @@ export default function PGCStandings() {
   const activeTour = tours?.find((tour) => tour.shortForm === standingsToggle);
   return (
     <>
-      <div className="mb-4 pb-2 text-center font-yellowtail text-5xl sm:text-6xl md:text-7xl">
+      <div className="mb-4 mt-2 pb-2 text-center font-yellowtail text-5xl sm:text-6xl md:text-7xl">
         {activeTour?.name} Standings
       </div>
-      <div className="mb-2 text-center text-sm text-gray-400 md:text-base">
+      {/* <div className="mb-2 text-center text-sm text-gray-400 md:text-base">
         Tap on a tour player to view their stats and tournament history.
-      </div>
-      <div className="mx-auto my-4 text-center">
+      </div> */}
+      {/* <div className="mx-auto my-4 text-center">
         {tours
           ?.sort((a, b) => a.shortForm.localeCompare(b.shortForm))
           .map((tour) => (
@@ -48,9 +48,9 @@ export default function PGCStandings() {
               {...{ tour, standingsToggle, setStandingsToggle }}
             />
           ))}
-      </div>
+      </div> */}
       <div id="my-4">
-        <div className="grid-cols-17 grid grid-flow-row text-center">
+        <div className="grid grid-flow-row grid-cols-17 text-center">
           <div className="col-span-2 place-self-center font-varela text-xs font-bold sm:text-sm">
             Rank
           </div>
@@ -131,7 +131,7 @@ function StandingsListing({
   return (
     <div
       key={tourCard.id}
-      className={`grid-cols-17 grid grid-flow-row rounded-lg text-center ${member?.friends && member?.friends.includes(tourCard.memberId) ? "bg-slate-100" : ""} ${user?.id === tourCard.memberId ? "bg-slate-200 font-bold" : ""}`}
+      className={`grid grid-flow-row grid-cols-17 rounded-lg text-center ${member?.friends && member?.friends.includes(tourCard.memberId) ? "bg-slate-100" : ""} ${user?.id === tourCard.memberId ? "bg-slate-200 font-bold" : ""}`}
     >
       <div className="col-span-2 place-self-center font-varela text-sm sm:text-base">
         {tourCard.position}

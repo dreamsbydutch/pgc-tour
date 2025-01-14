@@ -32,7 +32,7 @@ export async function GET(request: Request) {
   const tournament = await api.tournament.getBySeason({ seasonId: season?.id });
   const currentTourney = tournament.sort(
     (a, b) => +a.startDate - +b.startDate,
-  )[0];
+  )[1];
   const golfers = await api.golfer.getByTournament({
     tournamentId: currentTourney?.id ?? "",
   });

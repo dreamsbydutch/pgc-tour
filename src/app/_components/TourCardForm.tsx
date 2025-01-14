@@ -61,7 +61,10 @@ function TourCardFormButton({
       variant="secondary"
       size="xl"
       onClick={() => handleSubmit()}
-      disabled={isCreatingTourCard || tour.tourCards.length >= 65}
+      disabled={
+        isCreatingTourCard ||
+        tour.tourCards.length >= +(process.env.TOUR_MAX_SIZE ?? 75)
+      }
       className={`${effect && "animate-toggleClick"} flex h-[16rem] w-[14rem] flex-col border-2 p-2 text-lg shadow-lg`}
       onAnimationEnd={() => setEffect(false)}
     >
@@ -78,7 +81,8 @@ function TourCardFormButton({
           />
           {tour.name}
           <div className="text-xs text-slate-600">
-            {65 - tour.tourCards.length} spots remaining
+            {+(process.env.TOUR_MAX_SIZE ?? 75) - tour.tourCards.length} spots
+            remaining
           </div>
           <div className="text-xs text-slate-600">Buy-in: $100</div>
         </>

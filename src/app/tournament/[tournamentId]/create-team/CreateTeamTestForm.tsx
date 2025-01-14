@@ -1,12 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
 import { api } from "@/src/trpc/react";
-import { Golfer, Tournament } from "@prisma/client";
+import { Golfer, Team, TourCard, Tournament } from "@prisma/client";
+import { teamCreateOnFormSubmit } from "@/src/server/api/actions/team";
+import { useRouter } from "next/navigation";
 
 // Define Zod schema
 const golferSchema = z.object({
@@ -30,23 +32,23 @@ const emptyGroups: InputGroups = [
 
 type InputGroups = {
   key: string;
-  golfers: string[];
+  golfers: Golfer[];
 }[];
 
 export default function CreateTeamForm({
   tournament,
+  tourCard,
+  existingTeam,
 }: {
   tournament: Tournament;
+  tourCard: TourCard;
+  existingTeam: Team | null;
 }) {
+  const router = useRouter();
   const golfers = api.golfer.getByTournament.useQuery({
     tournamentId: tournament.id,
   });
-  const groups:
-    | {
-        key: string;
-        golfers: Golfer[];
-      }[]
-    | undefined = golfers.data && [
+  const groups: InputGroups | undefined = golfers.data && [
     {
       key: "group1",
       golfers: golfers.data
@@ -79,6 +81,20 @@ export default function CreateTeamForm({
     },
   ];
 
+  const initialGroups = existingTeam
+    ? existingTeam.golferIds.reduce(
+        (acc, golferId, index) => {
+          const groupIndex = Math.floor(index / 2);
+          if (!acc[groupIndex]) {
+            acc[groupIndex] = { golfers: [] };
+          }
+          acc[groupIndex].golfers.push(golferId);
+          return acc;
+        },
+        [] as { golfers: string[] }[],
+      )
+    : emptyGroups.map(() => ({ golfers: [] }));
+
   const {
     control,
     handleSubmit,
@@ -89,18 +105,22 @@ export default function CreateTeamForm({
     groups: { golfers: string[] }[];
   }>({
     defaultValues: {
-      groups:
-        groups?.map(() => ({ golfers: [] })) ??
-        emptyGroups.map(() => ({ golfers: [] })),
+      groups: initialGroups,
     },
     resolver: zodResolver(golferSchema),
     mode: "onSubmit",
   });
 
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: { groups: { golfers: string[] }[] }) => {
     console.log(data);
+    await teamCreateOnFormSubmit({
+      tourCardId: tourCard.id,
+      tournamentId: tournament.id,
+      value: data,
+    });
     alert("Team submitted successfully!");
+    router.push(`/tournament/${tournament.id}`);
   };
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onError = (errors: any) => {
@@ -129,7 +149,7 @@ export default function CreateTeamForm({
                 {group.golfers.map((golfer) => {
                   const selectedGolfers = watch(
                     fieldPath as `groups.${number}.golfers`,
-                  )
+                  );
 
                   const isChecked = selectedGolfers.includes(golfer.apiId);
                   const isDisabled = !isChecked && selectedGolfers.length >= 2;

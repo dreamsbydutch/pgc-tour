@@ -18,6 +18,10 @@ export default async function CreateTeamPage({
   const tournament = await api.tournament.getById({
     tournamentId: params.tournamentId,
   });
+  const existingTeam = await api.team.getByUserTournament({
+    tourCardId: tourCard?.id ?? "",
+    tournamentId: params.tournamentId,
+  });
 
   if (!tournament) return <LoadingSpinner />;
   return (
@@ -39,7 +43,7 @@ export default async function CreateTeamPage({
         {!tourCard ? (
           <div>You need a Tour Card to pick a team.</div>
         ) : (
-          <CreateTeamForm tournament={tournament} />
+          <CreateTeamForm {...{tournament,tourCard,existingTeam}} />
         )}
       </div>
     </>

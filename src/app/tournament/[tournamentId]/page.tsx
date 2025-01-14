@@ -17,30 +17,30 @@ export default async function Page({
       <Suspense fallback={<LeaderboardHeaderSkeleton />}>
         <LeaderboardHeader focusTourneyId={params.tournamentId} />
       </Suspense>
-      <ToursToggle {...{ searchParams }}>
-        <div className="mx-auto grid max-w-xl grid-flow-row grid-cols-10 text-center">
-          <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-            Rank
+      <Suspense fallback={<LeaderboardListSkeleton />}>
+        <ToursToggle {...{ searchParams }}>
+          <div className="mx-auto grid max-w-xl grid-flow-row grid-cols-10 text-center">
+            <div className="col-span-2 place-self-center font-varela text-sm font-bold">
+              Rank
+            </div>
+            <div className="col-span-4 place-self-center font-varela text-base font-bold">
+              Name
+            </div>
+            <div className="col-span-2 place-self-center font-varela text-sm font-bold">
+              Score
+            </div>
+            <div className="col-span-1 place-self-center font-varela text-2xs">
+              Today
+            </div>
+            <div className="col-span-1 place-self-center font-varela text-2xs">
+              Thru
+            </div>
           </div>
-          <div className="col-span-4 place-self-center font-varela text-base font-bold">
-            Name
-          </div>
-          <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-            Score
-          </div>
-          <div className="col-span-1 place-self-center font-varela text-2xs">
-            Today
-          </div>
-          <div className="col-span-1 place-self-center font-varela text-2xs">
-            Thru
-          </div>
-        </div>
-        <Suspense fallback={<LeaderboardListSkeleton />}>
           <LeaderboardListing
             {...{ searchParams, tournamentId: params.tournamentId }}
           />
-        </Suspense>
-      </ToursToggle>
+        </ToursToggle>
+      </Suspense>
     </div>
   );
 }

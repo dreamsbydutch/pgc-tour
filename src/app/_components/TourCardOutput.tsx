@@ -49,7 +49,7 @@ export function TourCardOutput({
         <p className="text-base italic text-gray-600">{tour.name}</p>
       </div>
       <div className="mb-2 mt-2 text-xs text-slate-600">
-        {65 - tour.tourCards.length} spots remaining
+        {+(process.env.TOUR_MAX_SIZE ?? 75) - tour.tourCards.length} spots remaining
       </div>
       <TourCardChangeButton {...{ tourCard, memberId }} />
     </div>

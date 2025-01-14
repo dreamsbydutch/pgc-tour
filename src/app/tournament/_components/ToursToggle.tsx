@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import LoadingSpinner from "../../_components/LoadingSpinner";
+import { LeaderboardListSkeleton } from "./skeletons/LeaderboardListSkeleton";
 
 export default function ToursToggle({
   children,
@@ -43,7 +44,7 @@ export default function ToursToggle({
     ? tournaments?.find((obj) => obj.id === focusTourneyId)
     : tournaments?.find((obj) => obj.endDate < date);
 
-  if (!season || !focusTourney) return <LoadingSpinner />;
+  if (!season || !focusTourney) return <LeaderboardListSkeleton />;
 
   const toursInPlay = [
     ...focusTourney.tours,
@@ -58,7 +59,7 @@ export default function ToursToggle({
     },
   ];
 
-  if (!toursInPlay) return <LoadingSpinner />;
+  if (!toursInPlay) return <LeaderboardListSkeleton />;
   return (
     <div className="mt-2">
       <div className="mx-auto my-4 flex w-11/12 max-w-xl justify-around text-center">
