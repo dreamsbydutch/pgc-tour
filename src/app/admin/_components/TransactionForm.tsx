@@ -22,7 +22,7 @@ import type { TransactionType } from "@prisma/client";
 import { Button } from "../../_components/ui/button";
 
 const emptyTransaction = {
-  id: "",
+  id: 0,
   userId: "",
   seasonId: "cm4w910jz000gdx9k30u3ihpb",
   description: "",
