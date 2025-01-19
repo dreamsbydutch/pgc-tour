@@ -139,4 +139,4 @@ export async function fetchDataGolf(
   return data;
 }
 
-type DataGolfExports = "field-updates" | "preds/get-dg-rankings";
+type DataGolfExports = "field-updates" | "preds/get-dg-rankings" | "preds/in-play";

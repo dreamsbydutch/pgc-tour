@@ -30,7 +30,7 @@ export const teamRouter = createTRPCRouter({
   create: publicProcedure
     .input(
       z.object({
-        golferIds: z.array(z.string()),
+        golferIds: z.array(z.number()),
         tourCardId: z.string(),
         tournamentId: z.string(),
       }),

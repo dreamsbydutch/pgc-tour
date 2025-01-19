@@ -115,8 +115,8 @@ model Course {
 }
 
 model Team {
-  id           Int      @id @default(autoincrement())
-  golferIds    String[]
+  id           Int         @id @default(autoincrement())
+  golferIds    Int[]
   tournamentId String
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @default(now()) @updatedAt
@@ -136,7 +136,7 @@ model Team {
 }
 
 model TeamRound {
-  id        Int    @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   position  String?
   score     Float?
   strokes   Float?
@@ -177,7 +177,7 @@ model TourCard {
 
 model Golfer {
   id           Int           @id @default(autoincrement())
-  apiId        String
+  apiId        Int
   position     String?
   playerName   String
   score        Int?

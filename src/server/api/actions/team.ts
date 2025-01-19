@@ -8,7 +8,7 @@ export async function teamCreateOnFormSubmit({
   tourCardId,
 }: {
   value: {
-    groups: { golfers: string[] }[];
+    groups: { golfers: number[] }[];
   };
   tournamentId: string;
   tourCardId: string;

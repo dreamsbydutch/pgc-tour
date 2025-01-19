@@ -9,13 +9,14 @@ import { api } from "@/src/trpc/react";
 import { Golfer, Team, TourCard, Tournament } from "@prisma/client";
 import { teamCreateOnFormSubmit } from "@/src/server/api/actions/team";
 import { useRouter } from "next/navigation";
+import { Button } from "@/src/app/_components/ui/button";
 
 // Define Zod schema
 const golferSchema = z.object({
   groups: z.array(
     z.object({
       golfers: z
-        .array(z.string())
+        .array(z.number())
         .min(2, "You must select exactly 2 golfers.")
         .max(2, "You must select exactly 2 golfers."),
     }),
@@ -91,7 +92,7 @@ export default function CreateTeamForm({
           acc[groupIndex].golfers.push(golferId);
           return acc;
         },
-        [] as { golfers: string[] }[],
+        [] as { golfers: number[] }[],
       )
     : emptyGroups.map(() => ({ golfers: [] }));
 
@@ -102,7 +103,7 @@ export default function CreateTeamForm({
     setValue,
     formState: { errors },
   } = useForm<{
-    groups: { golfers: string[] }[];
+    groups: { golfers: number[] }[];
   }>({
     defaultValues: {
       groups: initialGroups,
@@ -112,7 +113,7 @@ export default function CreateTeamForm({
   });
 
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onSubmit = async (data: { groups: { golfers: string[] }[] }) => {
+  const onSubmit = async (data: { groups: { golfers: number[] }[] }) => {
     await teamCreateOnFormSubmit({
       tourCardId: tourCard.id,
       tournamentId: tournament.id,
@@ -178,13 +179,13 @@ export default function CreateTeamForm({
                             onChange={() => {
                               const updatedGolfers = isChecked
                                 ? selectedGolfers.filter(
-                                    (name) => name !== golfer?.apiId,
+                                    (id) => id !== golfer?.apiId,
                                   )
                                 : [...selectedGolfers, golfer?.apiId];
                               setValue(
                                 fieldPath as `groups.${number}.golfers`,
                                 updatedGolfers.filter(
-                                  (name): name is string => !!name,
+                                  (id): id is number => !!id,
                                 ),
                               );
                             }}
@@ -204,13 +205,16 @@ export default function CreateTeamForm({
             </div>
           );
         })}
-
-        <button
-          type="submit"
-          className="w-full rounded-lg bg-blue-500 px-4 py-2 text-white transition hover:bg-blue-600"
-        >
-          Submit Team
-        </button>
+        <div className="flex">
+          <Button
+            type="submit"
+            variant="action"
+            className="mx-auto w-2/3 text-xl"
+            size="xl"
+          >
+            Submit Team
+          </Button>
+        </div>
       </form>
     </div>
   );

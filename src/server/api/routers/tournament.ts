@@ -18,6 +18,7 @@ export const tournamentRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.tournament.findUnique({
         where: { id: input.tournamentId },
+        include: tournamentDataInclude,
       });
     }),
   getCurrent: publicProcedure.query(async ({ ctx, input }) => {

@@ -27,7 +27,7 @@ export const golferRouter = createTRPCRouter({
   create: publicProcedure
     .input(
       z.object({
-        apiId: z.string(),
+        apiId: z.number(),
         playerName: z.string().min(1),
         tournamentId: z.string().min(1),
         group: z.number(),
