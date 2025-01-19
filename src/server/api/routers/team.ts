@@ -1,8 +1,21 @@
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { teamDataInclude } from "@/src/types/prisma_include";
 
 export const teamRouter = createTRPCRouter({
+  getByTournament: publicProcedure
+    .input(z.object({ tournamentId: z.string().optional() }))
+    .query(
+      async ({ ctx, input }) =>
+        await ctx.db.team.findMany({
+          where: {
+            tournamentId: input.tournamentId,
+          },
+          include: teamDataInclude,
+          orderBy: { score: "asc" },
+        }),
+    ),
   getByUserTournament: publicProcedure
     .input(z.object({ tourCardId: z.string(), tournamentId: z.string() }))
     .query(

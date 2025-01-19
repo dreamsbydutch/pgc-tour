@@ -18,28 +18,28 @@ export default async function Page({
         <LeaderboardHeader focusTourneyId={params.tournamentId} />
       </Suspense>
       <Suspense fallback={<LeaderboardListSkeleton />}>
-        {/* <ToursToggle {...{ searchParams }}> */}
-        <div className="mx-auto grid max-w-xl grid-flow-row grid-cols-10 text-center">
-          <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-            Rank
+        <ToursToggle {...{ searchParams, tournamentId: params.tournamentId }}>
+          <div className="mx-auto grid max-w-xl grid-flow-row grid-cols-10 text-center">
+            <div className="col-span-2 place-self-center font-varela text-sm font-bold">
+              Rank
+            </div>
+            <div className="col-span-4 place-self-center font-varela text-base font-bold">
+              Name
+            </div>
+            <div className="col-span-2 place-self-center font-varela text-sm font-bold">
+              Score
+            </div>
+            <div className="col-span-1 place-self-center font-varela text-2xs">
+              Today
+            </div>
+            <div className="col-span-1 place-self-center font-varela text-2xs">
+              Thru
+            </div>
           </div>
-          <div className="col-span-4 place-self-center font-varela text-base font-bold">
-            Name
-          </div>
-          <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-            Score
-          </div>
-          <div className="col-span-1 place-self-center font-varela text-2xs">
-            Today
-          </div>
-          <div className="col-span-1 place-self-center font-varela text-2xs">
-            Thru
-          </div>
-        </div>
-        <LeaderboardListing
-          {...{ searchParams, tournamentId: params.tournamentId }}
-        />
-        {/* </ToursToggle> */}
+          <LeaderboardListing
+            {...{ searchParams, tournamentId: params.tournamentId }}
+          />
+        </ToursToggle>
       </Suspense>
     </div>
   );

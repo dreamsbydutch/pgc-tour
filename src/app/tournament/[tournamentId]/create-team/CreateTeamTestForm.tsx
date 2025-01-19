@@ -113,7 +113,6 @@ export default function CreateTeamForm({
 
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onSubmit = async (data: { groups: { golfers: string[] }[] }) => {
-    console.log(data);
     await teamCreateOnFormSubmit({
       tourCardId: tourCard.id,
       tournamentId: tournament.id,

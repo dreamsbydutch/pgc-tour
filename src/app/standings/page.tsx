@@ -39,7 +39,7 @@ export default function PGCStandings() {
       {/* <div className="mb-2 text-center text-sm text-gray-400 md:text-base">
         Tap on a tour player to view their stats and tournament history.
       </div> */}
-      {/* <div className="mx-auto my-4 text-center">
+      <div className="mx-auto my-4 text-center">
         {tours
           ?.sort((a, b) => a.shortForm.localeCompare(b.shortForm))
           .map((tour) => (
@@ -48,7 +48,7 @@ export default function PGCStandings() {
               {...{ tour, standingsToggle, setStandingsToggle }}
             />
           ))}
-      </div> */}
+      </div>
       <div id="my-4">
         <div className="grid grid-flow-row grid-cols-17 text-center">
           <div className="col-span-2 place-self-center font-varela text-xs font-bold sm:text-sm">

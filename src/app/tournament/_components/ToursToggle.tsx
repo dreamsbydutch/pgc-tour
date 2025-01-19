@@ -14,15 +14,15 @@ import { LeaderboardListSkeleton } from "./skeletons/LeaderboardListSkeleton";
 
 export default function ToursToggle({
   children,
+  tournamentId,
   searchParams,
 }: {
   children: ReactNode;
+  tournamentId: string;
   searchParams?: Record<string, string | undefined>;
 }) {
   const date = new Date();
   const year = date.getFullYear();
-  const seasonId = searchParams?.seasonId;
-  const focusTourneyId = searchParams?.focusTourneyId;
   const [activeTourLoading, setActiveTourLoading] = useState<
     boolean | undefined
   >(false);
@@ -35,19 +35,17 @@ export default function ToursToggle({
     }
   }, [activeTourLoading, activeTourShortForm, searchParams?.tour]);
 
-  const { data: season } = api.season.getByYear.useQuery({ year });
-  const { data: tournaments } = api.tournament.getBySeason.useQuery({
-    seasonId: seasonId ?? season?.id,
+  const { data: tournament } = api.tournament.getById.useQuery({
+    tournamentId: tournamentId,
+  });
+  const { data: tours } = api.tour.getBySeason.useQuery({
+    seasonID: tournament?.seasonId,
   });
 
-  const focusTourney = focusTourneyId
-    ? tournaments?.find((obj) => obj.id === focusTourneyId)
-    : tournaments?.find((obj) => obj.endDate < date);
+  if (!tournament) return <LeaderboardListSkeleton />;
 
-  if (!season || !focusTourney) return <LeaderboardListSkeleton />;
-
-  const toursInPlay = [
-    ...focusTourney.tours,
+  const toursInPlay = tours && [
+    ...tours,
     {
       id: "1",
       createdAt: new Date(),
@@ -55,7 +53,7 @@ export default function ToursToggle({
       name: "PGA Tour",
       shortForm: "PGA",
       logoUrl: "",
-      seasonId: seasonId ?? season.id,
+      seasonId: tournament.seasonId,
     },
   ];
 

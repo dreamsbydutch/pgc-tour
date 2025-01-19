@@ -15,7 +15,7 @@ export type DatagolfFieldInput = {
   event_name: string;
   field: DatagolfFieldGolfer[];
 };
-type DatagolfFieldGolfer = {
+export type DatagolfFieldGolfer = {
   am: number;
   country: string;
   dg_id: number;
