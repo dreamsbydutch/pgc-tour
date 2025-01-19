@@ -47,7 +47,7 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     return NextResponse.json(
-      { error: "Error fetching emails", details: (error as any).message },
+      { error: "Error fetching emails" },
       { status: 500 },
     );
   }
