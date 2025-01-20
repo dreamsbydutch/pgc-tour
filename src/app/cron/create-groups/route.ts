@@ -111,7 +111,7 @@ export async function GET(request: Request) {
       const name = golfer.player_name.split(", ");
       if (currentTourney && currentTourney.id) {
         await api.golfer.create({
-          apiId: golfer.dg_id.toString(),
+          apiId: golfer.dg_id,
           playerName: name[1] + " " + name[0],
           group: i + 1,
           worldRank: golfer.ranking_data?.owgr_rank,
