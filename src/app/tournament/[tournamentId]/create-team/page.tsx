@@ -3,7 +3,7 @@
 import { api } from "@/src/trpc/server";
 import TournamentCountdown from "../../_components/TournamentCountdown";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
-import { formatMoney } from "@/src/lib/utils";
+import { cn, formatMoney } from "@/src/lib/utils";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import CreateTeamForm from "./CreateTeamTestForm";
@@ -22,6 +22,9 @@ export default async function CreateTeamPage({
     tourCardId: tourCard?.id ?? "",
     tournamentId: params.tournamentId,
   });
+  const golfers = await api.golfer.getByTournament({
+    tournamentId: params.tournamentId,
+  });
 
   if (!tournament) return <LoadingSpinner />;
   return (
@@ -35,15 +38,14 @@ export default async function CreateTeamPage({
         >
           <ArrowLeftIcon size={15} /> Back To Tournament
         </Link>
-        <div className="text-2xl font-bold">{member?.fullname}</div>
-        <div className="text-xl font-bold">{`${tourCard?.position} - ${tourCard?.points} pts${tourCard?.earnings ? " - " + formatMoney(tourCard?.earnings ?? 0) : ""}`}</div>
+
         <div className="mt-6 flex flex-row items-center text-sm text-gray-500">
           {`Pick your team for the ${tournament.name}`}
         </div>
         {!tourCard ? (
           <div>You need a Tour Card to pick a team.</div>
         ) : (
-          <CreateTeamForm {...{tournament,tourCard,existingTeam}} />
+          <CreateTeamForm {...{ tournament, tourCard, existingTeam }} />
         )}
       </div>
     </>

@@ -1,13 +1,13 @@
 "use server";
 
 import { cn, formatMoney, formatScore } from "@/src/lib/utils";
-import { db } from "@/src/server/db";
 import {
   teamDataInclude,
   tournamentDataInclude,
 } from "@/src/types/prisma_include";
 import TournamentCountdown from "./TournamentCountdown";
 import { createClient } from "@/src/lib/supabase/server";
+import { api } from "@/src/trpc/server";
 
 export async function LeaderboardListing({
   tournamentId,
@@ -83,22 +83,14 @@ async function fetchLeaderboardListingInfo({
   const date = new Date();
   const year = 2025;
 
-  const season = await db.season.findUnique({ where: { year } });
-  const tournaments = await db.tournament.findMany({
-    where: { seasonId: seasonId ?? season?.id },
-    include: tournamentDataInclude,
-    orderBy: { startDate: "asc" },
-  });
+  const season = await api.season.getByYear({ year });
+  const tournaments = await api.tournament.getBySeason({ seasonId: seasonId ?? season?.id });
 
   const focusTourney = activeTourneyID
     ? tournaments?.find((obj) => obj.id === activeTourneyID)
     : tournaments?.find((obj) => obj.startDate > date);
 
-  let teams = await db.team.findMany({
-    where: { tournamentId: focusTourney?.id },
-    include: teamDataInclude,
-    orderBy: { score: "asc" },
-  });
+  let teams = await api.team.getByTournament({ tournamentId: focusTourney?.id });
   const activeTour = focusTourney?.tours.find(
     (obj) => obj.shortForm === activeTourID,
   );

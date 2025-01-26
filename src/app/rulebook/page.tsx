@@ -11,8 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from "../_components/ui/table";
-import { type Tier } from "@prisma/client";
+import { Season, type Tier } from "@prisma/client";
 import LoadingSpinner from "../_components/LoadingSpinner";
+import Image from "next/image";
 
 export default function RulebookPage() {
   const season = api.season.getCurrent.useQuery();
@@ -34,6 +35,7 @@ export default function RulebookPage() {
             {...{
               ruleData: section,
               i,
+              season: season.data,
               tiers: tiers.data.sort(
                 (a, b) => (a.payouts[0] ?? 0) - (b.payouts[0] ?? 0),
               ),
@@ -48,10 +50,12 @@ export default function RulebookPage() {
 function RuleCategory({
   ruleData,
   i,
+  season,
   tiers,
 }: {
   ruleData: RuleCategory;
   i: number;
+  season: Season | null;
   tiers: Tier[];
 }) {
   const [showState, setShowState] = useState(false);
@@ -94,6 +98,7 @@ function RuleCategory({
             </div>
           );
         })}
+        {ruleData.category === "Schedule" && <Schedule season={season} />}
         {ruleData.category === "Payouts" && <PayoutsTable tiers={tiers} />}
         {ruleData.category === "Scoring" && <PointsTable tiers={tiers} />}
       </div>
@@ -248,13 +253,24 @@ const rulebook: RuleCategory[] = [
 ];
 
 function PayoutsTable({ tiers }: { tiers: Tier[] }) {
+  tiers = [
+    ...tiers,
+    {
+      payouts: tiers[3]?.payouts.slice(75) ?? [],
+      points: tiers[3]?.points.slice(75) ?? [],
+      name: "Silver",
+      seasonId: tiers[3]?.seasonId ?? "",
+      id: "silver",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ];
   return (
     <>
       <div className="mt-4 text-center font-varela font-bold">
         Payouts Distributions
       </div>
       <Table className="mx-auto w-3/4 text-center font-varela">
-        {/* <TableCaption>A list of your recent invoices.</TableCaption> */}
         <TableHeader>
           <TableRow>
             <TableHead className="text-center text-xs font-bold">
@@ -262,23 +278,33 @@ function PayoutsTable({ tiers }: { tiers: Tier[] }) {
             </TableHead>
             {tiers.map((tier) => (
               <TableHead
-                className="text-center text-xs font-bold"
+                className={cn(
+                  "text-center text-xs font-bold",
+                  tier.name === "Playoff" &&
+                    "border-l border-l-slate-500 bg-yellow-50 bg-opacity-50",
+                  tier.name === "Silver" && "bg-gray-100 bg-opacity-50",
+                )}
                 key={`payouts-${tier.id}`}
               >
-                {tier.name}
+                {tier.name === "Playoff" ? "Gold" : tier.name}
               </TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tiers[0]?.payouts.slice(0, 15).map((_obj, i) => (
+          {tiers[0]?.payouts.slice(0, 30).map((_obj, i) => (
             <TableRow key={i}>
               <TableCell className="text-sm font-bold">
                 {formatRank(i + 1)}
               </TableCell>
               {tiers.map((tier) => (
                 <TableCell
-                  className="border-l text-center text-xs"
+                  className={cn(
+                    "border-l text-center text-xs",
+                    tier.name === "Playoff" &&
+                      "border-l-slate-500 bg-yellow-50 bg-opacity-50",
+                    tier.name === "Silver" && "bg-gray-100 bg-opacity-50",
+                  )}
                   key={`payouts-${tier.id}`}
                 >
                   {formatMoney(tier.payouts[i] ?? 0)}
@@ -325,9 +351,96 @@ function PointsTable({ tiers }: { tiers: Tier[] }) {
                   className="border-l text-center text-xs"
                   key={`points-${tier.id}`}
                 >
-                  {formatNumber(tier.points[i] ?? 0)}
+                  {i >= 30 && tier.name === "Playoff"
+                    ? "-"
+                    : formatNumber(tier.points[i] ?? 0)}
                 </TableCell>
               ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </>
+  );
+}
+
+function Schedule({ season }: { season: Season | null }) {
+  if (!season) return <></>;
+  const tournaments = api.tournament.getBySeason.useQuery({
+    seasonId: season.id,
+  }).data;
+  if (!tournaments) return <></>;
+  return (
+    <>
+      <div className="mt-4 text-center font-varela font-bold">
+        2025 Schedule
+      </div>
+      <Table className="mx-auto w-3/4 text-center font-varela">
+        <TableHeader>
+          <TableRow>
+            <TableHead className="border-l text-center text-xs font-bold"></TableHead>
+            <TableHead className="span text-center text-xs font-bold">
+              Tournament
+            </TableHead>
+            <TableHead className="border-l text-center text-xs font-bold">
+              Dates
+            </TableHead>
+            <TableHead className="border-l text-center text-xs font-bold">
+              Tier
+            </TableHead>
+            <TableHead className="border-l text-center text-xs font-bold">
+              Course
+            </TableHead>
+            <TableHead className="border-l text-center text-xs font-bold">
+              Location
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {tournaments.map((tourney, i) => (
+            <TableRow
+              key={tourney.id}
+              className={cn(
+                i === 16 ? "border-t-2 border-t-slate-500" : "",
+                i >= 16 ? "bg-yellow-50" : "",
+                tourney.tier.name === "Major" ? "bg-blue-50" : "",
+              )}
+            >
+              <TableCell className="whitespace-nowrap text-center text-xs">
+                <Image
+                  src={tourney.logoUrl ?? ""}
+                  alt={tourney.name}
+                  width={25}
+                  height={25}
+                />
+              </TableCell>
+              <TableCell className="whitespace-nowrap text-center text-xs">
+                {tourney.name}
+              </TableCell>
+              <TableCell className="whitespace-nowrap border-l text-center text-xs">
+                {`${tourney.startDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })} - ${
+                  tourney.startDate.getMonth() === tourney.endDate.getMonth()
+                    ? tourney.endDate.toLocaleDateString("en-US", {
+                        day: "numeric",
+                      })
+                    : tourney.endDate.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })
+                }`}
+              </TableCell>
+              <TableCell className="whitespace-nowrap border-l text-center text-xs">
+                {tourney.tier.name}
+              </TableCell>
+              <TableCell className="whitespace-nowrap border-l text-center text-xs">
+                {tourney.course.name}
+              </TableCell>
+              <TableCell className="whitespace-nowrap border-l text-center text-xs">
+                {tourney.course.location}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

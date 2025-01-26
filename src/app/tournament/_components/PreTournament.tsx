@@ -1,0 +1,63 @@
+"use client";
+
+import TournamentCountdown from "./TournamentCountdown";
+import { TournamentData } from "@/src/types/prisma_include";
+import { cn, formatMoney } from "@/src/lib/utils";
+import { Button } from "../../_components/ui/button";
+import { useRouter } from "next/navigation";
+import { api } from "@/src/trpc/react";
+
+export default function PreTournamentPage({
+  tournament,
+}: {
+  tournament: TournamentData;
+}) {
+  const router = useRouter();
+  const member = api.member.getSelf.useQuery().data;
+  const tourCard = api.tourCard.getOwnBySeason.useQuery({}).data;
+  const existingTeam = api.team.getByUserTournament.useQuery({
+    tourCardId: tourCard?.id ?? "",
+    tournamentId: tournament.id,
+  }).data;
+  const golfers = api.golfer.getByTournament.useQuery({
+    tournamentId: tournament.id,
+  }).data;
+  if (!member || !tourCard || !golfers)
+    return <TournamentCountdown tourney={tournament} key={tournament.id} />;
+  return (
+    <div>
+      <TournamentCountdown tourney={tournament} key={tournament.id} />
+      <div className="mx-auto mb-4 w-fit max-w-4xl rounded-lg border border-slate-400 bg-slate-100 px-6 py-2 text-center shadow-xl">
+        <div className="text-2xl font-bold">{member?.fullname}</div>
+        <div className="text-xl font-bold">{`${tourCard?.position} - ${tourCard?.points} pts${tourCard?.earnings ? " - " + formatMoney(tourCard?.earnings ?? 0) : ""}`}</div>
+        {existingTeam &&
+          existingTeam.golferIds.map((golferId, i) => {
+            const golfer = golfers.find((golfer) => golfer.apiId === golferId);
+            return (
+              <div
+                key={golfer?.id}
+                className={cn(
+                  "py-0.5 text-lg",
+                  i % 2 !== 0 && i < 9 && "border-b border-slate-500",
+                  i === 0 && "mt-2",
+                )}
+              >
+                {`#${golfer?.worldRank} ${golfer?.playerName} (${golfer?.rating})`}
+              </div>
+            );
+          })}
+        <Button
+          key={existingTeam?.id}
+          onClick={() =>
+            router.push(`/tournament/${tournament.id}/create-team`)
+          }
+          variant={"action"}
+          className="mb-4 mt-8 text-xl"
+          size="lg"
+        >
+          {existingTeam ? "Change Your Team" : "Create Your Team"}
+        </Button>
+      </div>
+    </div>
+  );
+}

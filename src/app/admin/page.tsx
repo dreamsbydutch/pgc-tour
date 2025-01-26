@@ -2,9 +2,10 @@
 
 import { api } from "@/src/trpc/server";
 import PaymentForm from "./_components/TransactionForm";
+import createBackupOfTable from "../api/backupTable";
 
 export default async function AdminDashboard() {
-
+  await createBackupOfTable();
   const season = await api.season.getByYear({ year: 2025 });
   const tours = await api.tour.getBySeason({ seasonID: season?.id });
   return (

@@ -1,33 +1,14 @@
 import Image from "next/image";
 import HeaderDropdown from "./HeaderDropdownMenu";
-import { db } from "@/src/server/db";
-import { tournamentDataInclude } from "@/src/types/prisma_include";
+import { TournamentData } from "@/src/types/prisma_include";
 
 export default async function LeaderboardHeader({
-  focusTourneyId,
+  focusTourney,
   seasonId,
 }: {
-  focusTourneyId?: string;
+  focusTourney: TournamentData;
   seasonId?: string;
 }) {
-  const date = new Date();
-  const year = 2025;
-
-  const season = await db.season.findUnique({ where: { year } });
-  const tournaments = await db.tournament.findMany({
-    where: { seasonId: seasonId ?? season?.id },
-    include: tournamentDataInclude,
-    orderBy: { startDate: "asc" },
-  });
-
-  const focusTourney = focusTourneyId
-    ? tournaments?.find((obj) => obj.id === focusTourneyId)
-    : tournaments?.find((obj) => obj.startDate > date);
-  console.log(focusTourneyId);
-  if (!focusTourney)
-    throw new Error(
-      "Error fetching tournament to focus on for leaderboard list",
-    );
   return (
     <div
       id={`leaderboard-header-${focusTourney.id}`}

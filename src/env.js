@@ -27,6 +27,11 @@ export const env = createEnv({
     EXTERNAL_DATA_API_URL: z.string(),
     EXTERNAL_DATA_API_KEY: z.string(),
     TOUR_MAX_SIZE: z.string(),
+    ONESIGNAL_API_KEY: z.string(),
+    GODADDY_EMAIL: z.string(),
+    GODADDY_PASSWORD: z.string(),
+    SMTP_HOST: z.string(),
+    SMTP_PORT: z.string(),
   },
 
   /**
@@ -37,7 +42,7 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.string(),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
-    NEXT_PUBLIC_GOOGLE_ANALYTICS:z.string()
+    NEXT_PUBLIC_GOOGLE_ANALYTICS: z.string(),
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
   },
 
@@ -54,6 +59,11 @@ export const env = createEnv({
     DIRECT_URL: process.env.DIRECT_URL,
     TOUR_MAX_SIZE: process.env.TOUR_MAX_SIZE,
     SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
+    ONESIGNAL_API_KEY: process.env.ONESIGNAL_API_KEY,
+    GODADDY_EMAIL: process.env.GODADDY_EMAIL,
+    GODADDY_PASSWORD: process.env.GODADDY_PASSWORD,
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
     // POSTGRES_URL: process.env.POSTGRES_URL,
     // POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,
     // POSTGRES_URL_NO_SSL: process.env.POSTGRES_URL_NO_SSL,

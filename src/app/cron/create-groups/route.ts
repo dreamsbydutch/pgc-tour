@@ -3,10 +3,12 @@
 import { fetchDataGolf } from "@/src/lib/utils";
 import { api } from "@/src/trpc/server";
 import {
+  DatagolfFieldGolfer,
   DatagolfFieldInput,
   DatagolfRankingInput,
 } from "@/src/types/datagolf_types";
 import { NextResponse } from "next/server";
+import fs from "fs";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL
@@ -41,11 +43,10 @@ export async function GET(request: Request) {
     currentTourney?.name === fieldData.event_name ||
     golfers.length > 0
   ) {
-    console.log(currentTourney);
-    console.log(fieldData.event_name);
-    console.log(golfers.length);
     return NextResponse.redirect(`${origin}/`);
   }
+
+  const groups: DatagolfFieldGolfer[][] = [[], [], [], [], []];
 
   fieldData.field = fieldData.field
     .map((golfer) => {
@@ -58,60 +59,59 @@ export async function GET(request: Request) {
       (a, b) =>
         (b.ranking_data?.dg_skill_estimate ?? -50) -
         (a.ranking_data?.dg_skill_estimate ?? -50),
-    );
-
-  const groupSizes = [
-    Math.round(fieldData.field.length * 0.1),
-    Math.round(fieldData.field.length * 0.25),
-    Math.round(fieldData.field.length * 0.425),
-    Math.round(fieldData.field.length * 0.7),
-    fieldData.field.length,
-  ];
-
-  const groups = [
-    fieldData.field
-      .slice(0, groupSizes[0])
-      .sort(
-        (a, b) =>
-          (a.ranking_data?.owgr_rank ?? 9999) -
-          (b.ranking_data?.owgr_rank ?? 9999),
-      ),
-    fieldData.field
-      .slice(groupSizes[0], groupSizes[1])
-      .sort(
-        (a, b) =>
-          (a.ranking_data?.owgr_rank ?? 9999) -
-          (b.ranking_data?.owgr_rank ?? 9999),
-      ),
-    fieldData.field
-      .slice(groupSizes[1], groupSizes[2])
-      .sort(
-        (a, b) =>
-          (a.ranking_data?.owgr_rank ?? 9999) -
-          (b.ranking_data?.owgr_rank ?? 9999),
-      ),
-    fieldData.field
-      .slice(groupSizes[2], groupSizes[3])
-      .sort(
-        (a, b) =>
-          (a.ranking_data?.owgr_rank ?? 9999) -
-          (b.ranking_data?.owgr_rank ?? 9999),
-      ),
-    fieldData.field
-      .slice(groupSizes[3], groupSizes[4])
-      .sort(
-        (a, b) =>
-          (a.ranking_data?.owgr_rank ?? 9999) -
-          (b.ranking_data?.owgr_rank ?? 9999),
-      ),
-  ];
+    )
+    .map((golfer, i) => {
+      const remainingGolfers = fieldData.field.length - i;
+      if (
+        groups[0] &&
+        groups[0].length <= fieldData.field.length * 0.1 &&
+        groups[0].length < 10
+      ) {
+        groups[0].push(golfer);
+      } else if (
+        groups[1] &&
+        groups[1].length <= fieldData.field.length * 0.175 &&
+        groups[1].length < 16
+      ) {
+        groups[1].push(golfer);
+      } else if (
+        groups[2] &&
+        groups[2].length <= fieldData.field.length * 0.225 &&
+        groups[2].length < 22
+      ) {
+        groups[2].push(golfer);
+      } else if (
+        groups[3] &&
+        groups[3].length <= fieldData.field.length * 0.25 &&
+        groups[3].length < 30
+      ) {
+        groups[3].push(golfer);
+      } else {
+        if (
+          (groups[3] &&
+            groups[4] &&
+            remainingGolfers <= groups[3].length - groups[4].length * 0.5) ||
+          remainingGolfers === 1
+        ) {
+          groups[4]?.push(golfer);
+        } else {
+          if (i % 2) {
+            console.log(i);
+            groups[3]?.push(golfer);
+          } else {
+            groups[4]?.push(golfer);
+          }
+        }
+      }
+      return golfer;
+    });
 
   groups.map((group, i) => {
     group.map(async (golfer) => {
       const name = golfer.player_name.split(", ");
       if (currentTourney && currentTourney.id) {
         await api.golfer.create({
-          apiId: golfer.dg_id.toString(),
+          apiId: golfer.dg_id,
           playerName: name[1] + " " + name[0],
           group: i + 1,
           worldRank: golfer.ranking_data?.owgr_rank,
@@ -124,7 +124,7 @@ export async function GET(request: Request) {
       }
     });
   });
-
+  
   return NextResponse.redirect(`${origin}/`);
 }
 // http://localhost:3000/cron/create-groups
