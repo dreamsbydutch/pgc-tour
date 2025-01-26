@@ -228,7 +228,7 @@ export async function updateTourCardNames({
 const discountArry = [
   { email: "b.m.wilkinson4@gmail.com", name: "B. Wilkinson", discount: 100 },
   { email: "samjwolman@gmail.com", name: "S. Wolman", discount: 40 },
-  { email: "dmac@busys.ca", name: "D. MacKinnon", discount: 30 },
+  { email: "dmac@busys.ca", name: "D. MacKinnon", discount: 42.50 },
   {
     email: "robert.wolfer@taylormadegolf.com",
     name: "R. Wolfer",

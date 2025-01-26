@@ -26,6 +26,7 @@ export async function GET(request: Request) {
         return {
           email: member.email,
           name: member.fullname,
+          account: member.account,
           tour: tourCard?.tourId,
           earnings: tourCard?.earnings,
           points: tourCard?.points,
