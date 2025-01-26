@@ -176,46 +176,38 @@ model TourCard {
 }
 
 model Golfer {
-  id           Int           @id @default(autoincrement())
-  apiId        Int
-  position     String?
-  playerName   String
-  score        Int?
-  makeCut      Float?
-  topTen       Float?
-  win          Float?
-  round        Int?
-  group        Int?
-  worldRank    Int?
-  rating       Float?
-  usage        Float?
-  earnings     Float?
-  tournamentId String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  rounds       GolferRound[]
-  tournament   Tournament    @relation(fields: [tournamentId], references: [id])
+  id                Int        @id @default(autoincrement())
+  apiId             Int
+  country           String?
+  position          String?
+  playerName        String
+  score             Int?
+  makeCut           Float?
+  topTen            Float?
+  win               Float?
+  today             Int?
+  thru              Int?
+  round             Int?
+  roundOneTeeTime   String?
+  roundOne          Int?
+  roundTwoTeeTime   String?
+  roundTwo          Int?
+  roundThreeTeeTime String?
+  roundThree        Int?
+  roundFourTeeTime  String?
+  roundFour         Int?
+  group             Int?
+  worldRank         Int?
+  rating            Float?
+  usage             Float?
+  earnings          Float?
+  tournamentId      String
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  tournament        Tournament @relation(fields: [tournamentId], references: [id])
 
   @@unique([apiId, tournamentId])
   @@map("golfers")
-}
-
-model GolferRound {
-  id        Int       @id @default(autoincrement())
-  position  String?
-  score     Float?
-  strokes   Float?
-  thru      Float?
-  round     Int?
-  teeTime   DateTime?
-  front     Float?
-  back      Float?
-  golferId  Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  golfer    Golfer    @relation(fields: [golferId], references: [id])
-
-  @@map("golfer_rounds")
 }
 
 model Transactions {
