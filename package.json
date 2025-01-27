@@ -35,6 +35,7 @@
     "class-variance-authority": "^0.7.1",
     "client-only": "^0.0.1",
     "clsx": "^2.1.1",
+    "country-flag-icons": "^1.5.14",
     "date-fns": "^4.1.0",
     "geist": "^1.3.0",
     "google-one-tap": "^1.0.6",

@@ -10,6 +10,10 @@ const config = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "www.countryflags.io",
+      },
+      {
+        protocol: "https",
         hostname: "raw.githubusercontent.com",
       },
       {
