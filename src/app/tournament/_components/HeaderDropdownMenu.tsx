@@ -219,8 +219,6 @@ function useLeaderboardHeaderInfo({
     (tourney) => tourney.startDate < date && tourney.endDate > date,
   )?.id;
 
-  console.log(tournaments);
-
   const tournamentsByTier: TournamentData[][] = currentTourneyID
     ? [
         tournaments.filter((obj) => obj.id === currentTourneyID),

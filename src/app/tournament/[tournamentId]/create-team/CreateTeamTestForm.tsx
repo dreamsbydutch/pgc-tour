@@ -119,7 +119,6 @@ export default function CreateTeamForm({
       tournamentId: tournament.id,
       value: data,
     });
-    alert("Team submitted successfully!");
     router.push(`/tournament/${tournament.id}`);
   };
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -158,11 +157,11 @@ export default function CreateTeamForm({
                     <label
                       key={golfer.apiId}
                       className={clsx(
-                        "flex cursor-pointer items-center gap-2 rounded-lg border p-2",
+                        "flex cursor-pointer items-center gap-2 rounded-lg border p-1.5",
                         {
                           "border-green-300 bg-green-100": isChecked,
                           "border-gray-300 bg-white": !isChecked,
-                          "cursor-not-allowed opacity-40":
+                          "h-1 cursor-not-allowed border-none opacity-40":
                             isDisabled && !isChecked,
                         },
                       )}
@@ -192,7 +191,7 @@ export default function CreateTeamForm({
                           />
                         )}
                       />
-                      <span className="text-lg">{`#${golfer.worldRank ?? "N/A"} ${golfer.playerName} (${golfer.rating})`}</span>
+                      <span className="text-base">{`#${golfer.worldRank ?? "N/A"} ${golfer.playerName} (${golfer.rating})`}</span>
                     </label>
                   );
                 })}
