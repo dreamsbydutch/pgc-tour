@@ -23,7 +23,9 @@ export const tournamentRouter = createTRPCRouter({
     }),
   getCurrent: publicProcedure.query(async ({ ctx, input }) => {
     const today = new Date();
-    const tournaments = await ctx.db.tournament.findMany();
+    const tournaments = await ctx.db.tournament.findMany({
+      include: tournamentDataInclude,
+    });
 
     return tournaments.find((obj) => obj.endDate > today);
   }),

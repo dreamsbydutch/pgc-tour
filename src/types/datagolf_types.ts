@@ -28,6 +28,9 @@ export type DatagolfFieldGolfer = {
   pga_number: number;
   player_name: string;
   r1_teetime: string;
+  r2_teetime: string;
+  r3_teetime: string;
+  r4_teetime: string;
   start_hole: number;
   unofficial: number;
   yh_id: string;
@@ -61,36 +64,35 @@ export type DatagolfEventInput = {
   tour: string;
 };
 
-
-export type DataGolfeLiveTournament = {
-  data: DatagolfLiveGolfer[],
-  info:DatagolfLiveInfo
-}
+export type DataGolfLiveTournament = {
+  data: DatagolfLiveGolfer[];
+  info: DatagolfLiveInfo;
+};
 
 type DatagolfLiveInfo = {
-  current_round: number
-  dead_heat_rules: string
-  event_name: string
-  last_update: string
-}
+  current_round: number;
+  dead_heat_rules: string;
+  event_name: string;
+  last_update: string;
+};
 type DatagolfLiveGolfer = {
-    R1: number|null,
-    R2: number|null,
-    R3: number|null,
-    R4: number|null,
-    country: string,
-    course: string,
-    current_pos: string,
-    current_score: number,
-    dg_id: number,
-    end_hole: number,
-    make_cut: number,
-    player_name: string,
-    round: number,
-    thru: number,
-    today: number,
-    top_10: number,
-    top_20: number,
-    top_5: number,
-    win: number
-  }
+  R1: number | null;
+  R2: number | null;
+  R3: number | null;
+  R4: number | null;
+  country: string;
+  course: string;
+  current_pos: string;
+  current_score: number;
+  dg_id: number;
+  end_hole: number;
+  make_cut: number;
+  player_name: string;
+  round: number;
+  thru: number;
+  today: number;
+  top_10: number;
+  top_20: number;
+  top_5: number;
+  win: number;
+};

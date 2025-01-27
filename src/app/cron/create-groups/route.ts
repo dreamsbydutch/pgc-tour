@@ -29,12 +29,9 @@ export async function GET(request: Request) {
   );
 
   const season = await api.season.getByYear({
-    year: new Date().getFullYear() + 1,
+    year: 2025,
   });
-  const tournament = await api.tournament.getBySeason({ seasonId: season?.id });
-  const currentTourney = tournament.sort(
-    (a, b) => +a.startDate - +b.startDate,
-  )[1];
+  const currentTourney = await api.tournament.getCurrent();
   const golfers = await api.golfer.getByTournament({
     tournamentId: currentTourney?.id ?? "",
   });
@@ -124,7 +121,7 @@ export async function GET(request: Request) {
       }
     });
   });
-  
+
   return NextResponse.redirect(`${origin}/`);
 }
 // http://localhost:3000/cron/create-groups
