@@ -115,42 +115,34 @@ model Course {
 }
 
 model Team {
-  id           Int         @id @default(autoincrement())
-  golferIds    Int[]
-  tournamentId String
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @default(now()) @updatedAt
-  earnings     Float?
-  makeCut      Float?
-  points       Float?
-  tourCardId   String
-  position     String?
-  score        Float?
-  strokes      Float?
-  teamRounds   TeamRound[]
-  tourCard     TourCard    @relation(fields: [tourCardId], references: [id])
-  tournament   Tournament  @relation(fields: [tournamentId], references: [id])
+  id                Int        @id @default(autoincrement())
+  golferIds         Int[]
+  tournamentId      String
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @default(now()) @updatedAt
+  earnings          Float?
+  makeCut           Float?
+  points            Float?
+  tourCardId        String
+  today             Float?
+  thru              Float?
+  round             Int?
+  roundOneTeeTime   String?
+  roundOne          Float?
+  roundTwoTeeTime   String?
+  roundTwo          Float?
+  roundThreeTeeTime String?
+  roundThree        Float?
+  roundFourTeeTime  String?
+  roundFour         Float?
+  position          String?
+  score             Float?
+  strokes           Float?
+  tourCard          TourCard   @relation(fields: [tourCardId], references: [id])
+  tournament        Tournament @relation(fields: [tournamentId], references: [id])
 
   @@unique([tournamentId, tourCardId])
   @@map("teams")
-}
-
-model TeamRound {
-  id        Int       @id @default(autoincrement())
-  position  String?
-  score     Float?
-  strokes   Float?
-  thru      Float?
-  round     Int?
-  teeTime   DateTime?
-  front     Float?
-  back      Float?
-  teamId    Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
-  team      Team      @relation(fields: [teamId], references: [id])
-
-  @@map("team_rounds")
 }
 
 model TourCard {
