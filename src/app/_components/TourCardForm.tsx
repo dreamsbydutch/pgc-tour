@@ -81,8 +81,11 @@ function TourCardFormButton({
           />
           {tour.name}
           <div className="text-xs text-slate-600">
-            {+(process.env.TOUR_MAX_SIZE ?? 75) - tour.tourCards.length} spots
-            remaining
+            {+(process.env.TOUR_MAX_SIZE ?? 75) - tour.tourCards.length === 0
+              ? tour.name + " is full!"
+              : +(process.env.TOUR_MAX_SIZE ?? 75) -
+                tour.tourCards.length +
+                " spots remaining"}
           </div>
           <div className="text-xs text-slate-600">Buy-in: $100</div>
         </>
