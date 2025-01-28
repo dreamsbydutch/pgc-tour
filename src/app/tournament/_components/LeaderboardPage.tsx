@@ -1,6 +1,6 @@
 "use client";
 
-import type { Golfer, Member, TourCard, Tournament } from "@prisma/client";
+import type { Golfer, TourCard } from "@prisma/client";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import type { TeamData, TourData } from "@/src/types/prisma_include";
 import { useRouter } from "next/navigation";
@@ -75,7 +75,7 @@ export default function LeaderboardPage({
                       ? 444 + (b.score ?? 999)
                       : (b.score ?? 999)),
             )
-            .map((obj) => <PGAListing {...{ golfer: obj }} />)
+            .map((obj) => <PGAListing key={obj.id} {...{ golfer: obj }} />)
         ) : activeTour ===
           tours.find((tour) => tour.shortForm === "DbyD")?.id ? (
           teams
@@ -89,7 +89,7 @@ export default function LeaderboardPage({
                   : (b.score ?? 999)),
             )
             .filter((team) => team.tourCard.tourId === activeTour)
-            .map((obj) => <PGCListing {...{ team: obj, tourCard: tourCard }} />)
+            .map((obj) => <PGCListing key={obj.id} {...{ team: obj }} />)
         ) : activeTour ===
           tours.find((tour) => tour.shortForm === "CCG")?.id ? (
           teams
@@ -103,7 +103,7 @@ export default function LeaderboardPage({
                   : (b.score ?? 999)),
             )
             .filter((team) => team.tourCard.tourId === activeTour)
-            .map((obj) => <PGCListing {...{ team: obj, tourCard: tourCard }} />)
+            .map((obj) => <PGCListing key={obj.id} {...{ team: obj }} />)
         ) : (
           <div>Not implemented</div>
         )}

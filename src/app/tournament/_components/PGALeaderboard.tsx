@@ -1,7 +1,7 @@
 "use client";
 
 import { cn, formatScore } from "@/src/lib/utils";
-import { Golfer } from "@prisma/client";
+import type { Golfer } from "@prisma/client";
 import { useState } from "react";
 import {
   US,

@@ -1,17 +1,10 @@
 "use client";
 
 import { cn, formatScore } from "@/src/lib/utils";
-import { TeamData } from "@/src/types/prisma_include";
-import { TourCard } from "@prisma/client";
+import type { TeamData } from "@/src/types/prisma_include";
 import { useState } from "react";
 
-export function PGCListing({
-  team,
-  tourCard,
-}: {
-  team: TeamData;
-  tourCard: TourCard;
-}) {
+export function PGCListing({ team }: { team: TeamData }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div

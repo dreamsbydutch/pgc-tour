@@ -100,8 +100,8 @@ export async function GET(request: Request) {
       return golfer;
     });
 
-  groups.forEach((group, i) => {
-    group.map(async (golfer) => {
+  await Promise.all(groups.map(async (group, i) => {
+    await Promise.all(group.map(async (golfer) => {
       const name = golfer.player_name.split(", ");
       if (currentTourney && currentTourney.id) {
         await api.golfer.create({
@@ -116,8 +116,8 @@ export async function GET(request: Request) {
           tournamentId: currentTourney.id,
         });
       }
-    });
-  });
+    }));
+  }));
 
   return NextResponse.redirect(`${origin}${next}`);
 }
