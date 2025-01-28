@@ -3,7 +3,6 @@
 import { api } from "@/src/trpc/server";
 import TournamentCountdown from "../../_components/TournamentCountdown";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
-import { cn, formatMoney } from "@/src/lib/utils";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import CreateTeamForm from "./CreateTeamTestForm";
@@ -13,16 +12,12 @@ export default async function CreateTeamPage({
 }: {
   params: { tournamentId: string };
 }) {
-  const member = await api.member.getSelf();
   const tourCard = await api.tourCard.getOwnBySeason({});
   const tournament = await api.tournament.getById({
     tournamentId: params.tournamentId,
   });
   const existingTeam = await api.team.getByUserTournament({
     tourCardId: tourCard?.id ?? "",
-    tournamentId: params.tournamentId,
-  });
-  const golfers = await api.golfer.getByTournament({
     tournamentId: params.tournamentId,
   });
 

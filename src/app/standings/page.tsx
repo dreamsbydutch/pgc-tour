@@ -23,6 +23,6 @@ export default async function Page() {
     updatedAt: new Date(),
     tourCards: [],
   };
-  if (!tours || !member || !tourCard) return <LoadingSpinner />;
+  if (!tours || !member || !tourCard || !pgaTour) return <LoadingSpinner />;
   return <PGCStandings {...{ tours, member, tourCard }} />;
 }

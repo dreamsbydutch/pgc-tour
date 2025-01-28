@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "../_components/ui/table";
-import { Season, type Tier } from "@prisma/client";
+import type { Season, Tier } from "@prisma/client";
 import LoadingSpinner from "../_components/LoadingSpinner";
 import Image from "next/image";
 

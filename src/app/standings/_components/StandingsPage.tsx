@@ -12,7 +12,7 @@ import { Star } from "lucide-react";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import LoadingSpinner from "../../_components/LoadingSpinner";
-import { TourData } from "@/src/types/prisma_include";
+import type { TourData } from "@/src/types/prisma_include";
 
 export default function PGCStandings({tours,member,tourCard}:{tours:TourData[],member:Member,tourCard:TourCard}) {
   const { user } = useUser();

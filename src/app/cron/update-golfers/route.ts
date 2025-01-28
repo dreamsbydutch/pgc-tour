@@ -15,10 +15,12 @@ export async function GET(request: Request) {
   // Get the authorization code and the 'next' redirect path
   const next = searchParams.get("next") ?? "/";
 
+  //es-lint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const liveData: DataGolfLiveTournament = await fetchDataGolf(
     "preds/in-play",
     null,
   );
+  //es-lint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const fieldData: DatagolfFieldInput = await fetchDataGolf(
     "field-updates",
     null,
@@ -32,7 +34,7 @@ export async function GET(request: Request) {
   });
   const teams = await api.team.getByTournament({ tournamentId: tournament.id });
 
-  golfers.map(async (golfer, i) => {
+  golfers.forEach(async (golfer) => {
     const data: {
       id: number;
       country?: string | undefined;
@@ -158,6 +160,6 @@ export async function GET(request: Request) {
     await api.golfer.update(data);
   });
 
-  return NextResponse.redirect(`${origin}/`);
+  return NextResponse.redirect(`${origin}${next}`);
 }
 // http://localhost:3000/cron/update-golfers

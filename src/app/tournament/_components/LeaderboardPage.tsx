@@ -1,29 +1,28 @@
 "use client";
 
-import { Member, TourCard, Tournament } from "@prisma/client";
-import { LeaderboardListing } from "./LeaderboardListing";
-import ToursToggle from "./ToursToggle";
+import type { Golfer, Member, TourCard, Tournament } from "@prisma/client";
 import { type Dispatch, type SetStateAction, useState } from "react";
-import { TourData } from "@/src/types/prisma_include";
+import type { TeamData, TourData } from "@/src/types/prisma_include";
 import { useRouter } from "next/navigation";
-import LoadingSpinner from "../../_components/LoadingSpinner";
+import { PGAListing } from "./PGALeaderboard";
+import { PGCListing } from "./PGCLeaderboard";
 
 export default function LeaderboardPage({
-  tournament,
+  // tournament,
   tours,
-  member,
+  // member,
   tourCard,
+  golfers,
+  teams,
 }: {
-  tournament: Tournament;
+  // tournament: Tournament;
   tours: TourData[];
-  member: Member;
+  // member: Member;
   tourCard: TourCard;
+  golfers: Golfer[];
+  teams: TeamData[];
 }) {
-  const [activeTourLoading, setActiveTourLoading] = useState<
-    boolean | undefined
-  >(false);
   const [activeTour, setActiveTour] = useState<string>(tourCard.tourId);
-  
 
   return (
     <div className="mt-2">
@@ -34,8 +33,6 @@ export default function LeaderboardPage({
               tour,
               activeTour,
               setActiveTour,
-              activeTourLoading,
-              setActiveTourLoading,
             }}
             key={tour.id}
           />
@@ -59,7 +56,57 @@ export default function LeaderboardPage({
             Thru
           </div>
         </div>
-        {/* <LeaderboardListing {...{ tournament }} /> */}
+        {activeTour === tours.find((tour) => tour.shortForm === "PGA")?.id ? (
+          golfers
+            .sort(
+              (a, b) =>
+                (a.position === "DQ"
+                  ? 999 + (a.score ?? 999)
+                  : a.position === "WD"
+                    ? 888 + (a.score ?? 999)
+                    : a.position === "CUT"
+                      ? 444 + (a.score ?? 999)
+                      : (a.score ?? 999)) -
+                (b.position === "DQ"
+                  ? 999 + (b.score ?? 999)
+                  : b.position === "WD"
+                    ? 888 + (b.score ?? 999)
+                    : b.position === "CUT"
+                      ? 444 + (b.score ?? 999)
+                      : (b.score ?? 999)),
+            )
+            .map((obj) => <PGAListing {...{ golfer: obj }} />)
+        ) : activeTour ===
+          tours.find((tour) => tour.shortForm === "DbyD")?.id ? (
+          teams
+            .sort(
+              (a, b) =>
+                (a.position === "CUT"
+                  ? 444 + (a.score ?? 999)
+                  : (a.score ?? 999)) -
+                (b.position === "CUT"
+                  ? 444 + (b.score ?? 999)
+                  : (b.score ?? 999)),
+            )
+            .filter((team) => team.tourCard.tourId === activeTour)
+            .map((obj) => <PGCListing {...{ team: obj, tourCard: tourCard }} />)
+        ) : activeTour ===
+          tours.find((tour) => tour.shortForm === "CCG")?.id ? (
+          teams
+            .sort(
+              (a, b) =>
+                (a.position === "CUT"
+                  ? 444 + (a.score ?? 999)
+                  : (a.score ?? 999)) -
+                (b.position === "CUT"
+                  ? 444 + (b.score ?? 999)
+                  : (b.score ?? 999)),
+            )
+            .filter((team) => team.tourCard.tourId === activeTour)
+            .map((obj) => <PGCListing {...{ team: obj, tourCard: tourCard }} />)
+        ) : (
+          <div>Not implemented</div>
+        )}
       </div>
     </div>
   );
@@ -69,8 +116,6 @@ function ToggleButton({
   tour,
   activeTour,
   setActiveTour,
-  activeTourLoading,
-  setActiveTourLoading,
 }: {
   tour:
     | {
@@ -91,8 +136,6 @@ function ToggleButton({
       };
   activeTour: string;
   setActiveTour: Dispatch<SetStateAction<string>>;
-  activeTourLoading: boolean | undefined;
-  setActiveTourLoading: Dispatch<SetStateAction<boolean | undefined>>;
 }) {
   const [effect, setEffect] = useState(false);
   const router = useRouter();
@@ -102,7 +145,6 @@ function ToggleButton({
       onClick={() => {
         router.push("?tour=" + tour.shortForm);
         setActiveTour(tour.id);
-        setActiveTourLoading(true);
         setEffect(true);
       }}
       className={`${effect && "animate-toggleClick"} rounded-lg px-6 py-1 text-lg font-bold sm:px-8 md:text-xl ${
@@ -114,11 +156,7 @@ function ToggleButton({
         setEffect(false);
       }}
     >
-      {activeTourLoading && tour.id === activeTour ? (
-        <LoadingSpinner className="my-0 h-7 w-7" />
-      ) : (
-        tour?.shortForm
-      )}
+      {tour?.shortForm}
     </button>
   );
 }

@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
 import { api } from "@/src/trpc/react";
-import { Golfer, Team, TourCard, Tournament } from "@prisma/client";
+import type { Golfer, Team, TourCard, Tournament } from "@prisma/client";
 import { teamCreateOnFormSubmit } from "@/src/server/api/actions/team";
 import { useRouter } from "next/navigation";
 import { Button } from "@/src/app/_components/ui/button";
@@ -169,7 +168,7 @@ export default function CreateTeamForm({
                       <Controller
                         name={fieldPath as `groups.${number}.golfers`}
                         control={control}
-                        render={({ field }) => (
+                        render={() => (
                           <input
                             type="checkbox"
                             className="hidden"

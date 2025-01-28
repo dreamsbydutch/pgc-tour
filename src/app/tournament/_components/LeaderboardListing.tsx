@@ -3,9 +3,8 @@
 import { cn, formatMoney, formatScore } from "@/src/lib/utils";
 import { createClient } from "@/src/lib/supabase/server";
 import { api } from "@/src/trpc/server";
-import { Golfer, Tournament } from "@prisma/client";
-import { User } from "@supabase/supabase-js";
-import { PGAListing } from "./LeaderboardListItem";
+import type { Tournament } from "@prisma/client";
+import { PGAListing } from "./PGALeaderboard";
 
 export async function LeaderboardListing({
   tournament,
@@ -15,7 +14,7 @@ export async function LeaderboardListing({
   searchParams?: Record<string, string | undefined>;
 }) {
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getUser();
   const leaderboardData = await fetchLeaderboardListingInfo({
     activeTourID: searchParams?.tour,
     tournament,
@@ -47,7 +46,7 @@ export async function LeaderboardListing({
                       ? 444 + (b.score ?? 999)
                       : (b.score ?? 999)),
             )
-            .map((obj) => <PGAListing {...{ golfer: obj }} />)
+            .map((obj) => <PGAListing key={obj.id} {...{ golfer: obj }} />)
         : teams?.map((obj) => {
             const user = obj.tourCard.memberId === data.user?.id;
             return (
@@ -97,10 +96,7 @@ async function fetchLeaderboardListingInfo({
   activeTourID?: string;
   seasonId?: string;
 }) {
-  const date = new Date();
-  const year = 2025;
-
-  const season = await api.season.getByYear({ year });
+  const season = await api.season.getCurrent();
 
   let teams = await api.team.getByTournament({
     tournamentId: tournament.id,

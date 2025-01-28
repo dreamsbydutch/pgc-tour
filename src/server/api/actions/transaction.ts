@@ -1,7 +1,7 @@
 "use server";
 
 import { api } from "@/src/trpc/server";
-import { Transactions } from "@prisma/client";
+import type { Transactions } from "@prisma/client";
 
 export async function processPayment(transaction: Transactions) {
   if (transaction.transactionType !== "Payment") return;

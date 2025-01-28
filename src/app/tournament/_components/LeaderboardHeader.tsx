@@ -1,6 +1,6 @@
 import Image from "next/image";
 import HeaderDropdown from "./HeaderDropdownMenu";
-import { TournamentData } from "@/src/types/prisma_include";
+import type { TournamentData } from "@/src/types/prisma_include";
 
 export default async function LeaderboardHeader({
   focusTourney,

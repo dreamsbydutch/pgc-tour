@@ -1,8 +1,8 @@
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
-import { Skeleton, SVGSkeleton } from "@/ui/skeleton";
+// import { SVGSkeleton } from "@/ui/skeleton";
 
 export function LeaderboardListSkeleton() {
-  const list = new Array(75).fill(1);
+  // const list = new Array(75).fill(1);
   return (
     <LoadingSpinner />
     // <div className="flex flex-col">
@@ -18,24 +18,24 @@ export function LeaderboardListSkeleton() {
   );
 }
 
-function LeaderboardListSkeletonItem() {
-  return (
-    <div className="grid grid-flow-row grid-cols-10 py-1 text-center">
-      <div className="col-span-2 mx-1 place-self-center font-varela text-sm">
-        <SVGSkeleton className="h-[1.5rem] w-full rounded-3xl" />
-      </div>
-      <div className="col-span-4 mx-1 place-self-center font-varela text-base">
-        <SVGSkeleton className="h-[1.5rem] w-full rounded-3xl" />
-      </div>
-      <div className="col-span-2 mx-1 place-self-center font-varela text-sm">
-        <SVGSkeleton className="h-[1.5rem] w-full rounded-3xl" />
-      </div>
-      <div className="col-span-1 mx-1 place-self-center font-varela text-2xs">
-        <SVGSkeleton className="h-[1.5rem] w-full rounded-3xl" />
-      </div>
-      <div className="col-span-1 mx-1 place-self-center whitespace-nowrap font-varela text-2xs">
-        <SVGSkeleton className="h-[1.5rem] w-full rounded-3xl" />
-      </div>
-    </div>
-  );
-}
+// function LeaderboardListSkeletonItem() {
+//   return (
+//     <div className="grid grid-flow-row grid-cols-10 py-1 text-center">
+//       <div className="col-span-2 mx-1 place-self-center font-varela text-sm">
+//         <SVGSkeleton className="h-[1.5rem] w-full rounded-3xl" />
+//       </div>
+//       <div className="col-span-4 mx-1 place-self-center font-varela text-base">
+//         <SVGSkeleton className="h-[1.5rem] w-full rounded-3xl" />
+//       </div>
+//       <div className="col-span-2 mx-1 place-self-center font-varela text-sm">
+//         <SVGSkeleton className="h-[1.5rem] w-full rounded-3xl" />
+//       </div>
+//       <div className="col-span-1 mx-1 place-self-center font-varela text-2xs">
+//         <SVGSkeleton className="h-[1.5rem] w-full rounded-3xl" />
+//       </div>
+//       <div className="col-span-1 mx-1 place-self-center whitespace-nowrap font-varela text-2xs">
+//         <SVGSkeleton className="h-[1.5rem] w-full rounded-3xl" />
+//       </div>
+//     </div>
+//   );
+// }

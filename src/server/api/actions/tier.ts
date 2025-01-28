@@ -5,10 +5,10 @@ import { db } from "../../db";
 
 export async function seedTiers() {
   const seasons = await db.season.findMany({});
-  // await seed2021Data(seasons.find((obj) => obj.year === 2021));
-  // await seed2022Data(seasons.find((obj) => obj.year === 2022));
-  // await seed2023Data(seasons.find((obj) => obj.year === 2023));
-  // await seed2024Data(seasons.find((obj) => obj.year === 2024));
+  await seed2021Data(seasons.find((obj) => obj.year === 2021));
+  await seed2022Data(seasons.find((obj) => obj.year === 2022));
+  await seed2023Data(seasons.find((obj) => obj.year === 2023));
+  await seed2024Data(seasons.find((obj) => obj.year === 2024));
   await seed2025Data(seasons.find((obj) => obj.year === 2025));
 }
 

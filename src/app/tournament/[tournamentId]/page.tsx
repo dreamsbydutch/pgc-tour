@@ -2,7 +2,6 @@ import LeaderboardHeader from "@/src/app/tournament/_components/LeaderboardHeade
 import { Suspense } from "react";
 import { LeaderboardHeaderSkeleton } from "../_components/skeletons/LeaderboardHeaderSkeleton";
 import { LeaderboardListSkeleton } from "../_components/skeletons/LeaderboardListSkeleton";
-import PreTournamentPage from "../_components/PreTournament";
 import LoadingSpinner from "../../_components/LoadingSpinner";
 import { api } from "@/src/trpc/server";
 import LeaderboardPage from "../_components/LeaderboardPage";

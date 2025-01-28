@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { api } from "@/src/trpc/server";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -35,9 +34,6 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  // Get the user's role using the custom getUserRole function
-  // const member = await api.member.getById({ memberId: user?.id });
 
   // Redirect non-admin users trying to access admin pages to the home page
   if (

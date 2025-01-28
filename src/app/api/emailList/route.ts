@@ -4,10 +4,10 @@ import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL
-  const { searchParams, origin } = new URL(request.url);
+  // const { searchParams, origin } = new URL(request.url);
 
   // Get the authorization code and the 'next' redirect path
-  const next = searchParams.get("next") ?? "/";
+  // const next = searchParams.get("next") ?? "/";
 
   try {
     const members = await api.member.getAll();
@@ -47,8 +47,10 @@ export async function GET(request: Request) {
       { status: 400 },
     );
   } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Error fetching emails" },
+      { error: "Error fetching emails: " + errorMessage },
       { status: 500 },
     );
   }

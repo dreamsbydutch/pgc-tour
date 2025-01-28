@@ -4,13 +4,7 @@ import { api } from "@/src/trpc/server";
 import { updateTourCardNames } from "./tour_card";
 import type { Member } from "@prisma/client";
 
-export async function memberUpdateFormOnSubmit({
-  value,
-  isAdmin,
-}: {
-  value: Member;
-  isAdmin: boolean;
-}) {
+export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {
   const season = await api.season.getByYear({ year: 2025 });
   let tourCard = await api.tourCard.getByUserSeason({
     userId: value.id,

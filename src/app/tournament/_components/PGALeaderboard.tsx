@@ -40,6 +40,11 @@ export function PGAListing({ golfer }: { golfer: Golfer }) {
     <div
       className={cn(
         "grid grid-flow-row grid-cols-10 border-b border-slate-300 py-1 text-center",
+        golfer.position === "WD" ||
+          golfer.position === "DQ" ||
+          golfer.position === "CUT"
+          ? "text-gray-400"
+          : "",
       )}
       key={golfer.id}
       onClick={() => setIsOpen(!isOpen)}
@@ -49,11 +54,11 @@ export function PGAListing({ golfer }: { golfer: Golfer }) {
       </div>
       <div className="col-span-4 place-self-center font-varela text-lg">
         {golfer.playerName}
-        <div className="w-4">
+        {/* <div className="w-4">
           {countryFlags.find((obj) => obj.key === golfer.country)
             ? null
             : golfer.country}
-        </div>
+        </div> */}
       </div>
       <div className="col-span-2 place-self-center font-varela text-base">
         {formatScore(golfer.score)}
@@ -67,7 +72,18 @@ export function PGAListing({ golfer }: { golfer: Golfer }) {
       {isOpen && (
         <div className="col-span-10 mt-2 grid grid-cols-12">
           <div className="col-span-3 row-span-2 flex items-center justify-center text-sm font-bold">
-            <div className="w-6">{countryFlag(golfer.country)}</div>
+            <div
+              className={cn(
+                "w-6",
+                golfer.position === "WD" ||
+                  golfer.position === "DQ" ||
+                  golfer.position === "CUT"
+                  ? "opacity-40"
+                  : "",
+              )}
+            >
+              {countryFlag(golfer.country)}
+            </div>
           </div>
           <div className="col-span-3 text-sm font-bold">Make Cut</div>
           <div className="col-span-2 text-sm font-bold">Top Ten</div>
@@ -85,16 +101,10 @@ export function PGAListing({ golfer }: { golfer: Golfer }) {
           <div className="col-span-2 text-lg">
             {Math.round((golfer.usage ?? 0) * 1000) / 10}%
           </div>
-          <div className="col-span-2 text-sm font-bold">R1</div>
-          <div className="col-span-2 text-sm font-bold">R2</div>
-          <div className="col-span-2 text-sm font-bold">R3</div>
-          <div className="col-span-2 text-sm font-bold">R4</div>
+          <div className="col-span-8 text-sm font-bold">Rounds</div>
           <div className="col-span-2 text-sm font-bold">Tot</div>
           <div className="col-span-2 text-sm font-bold">Group</div>
-          <div className="col-span-2 text-lg">{golfer.roundOne}</div>
-          <div className="col-span-2 text-lg">{golfer.roundTwo}</div>
-          <div className="col-span-2 text-lg">{golfer.roundThree}</div>
-          <div className="col-span-2 text-lg">{golfer.roundFour}</div>
+          <div className="col-span-8 text-lg">{`${golfer.roundOne ? golfer.roundOne : ""}${golfer.roundTwo ? " - " + golfer.roundTwo : ""}${golfer.roundThree ? " - " + golfer.roundThree : ""}${golfer.roundFour ? " - " + golfer.roundFour : ""}`}</div>
           <div className="col-span-2 text-lg">{total}</div>
           <div className="col-span-2 text-lg">{golfer.group}</div>
         </div>

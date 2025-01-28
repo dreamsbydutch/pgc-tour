@@ -21,7 +21,7 @@ export const tournamentRouter = createTRPCRouter({
         include: tournamentDataInclude,
       });
     }),
-  getCurrent: publicProcedure.query(async ({ ctx, input }) => {
+  getCurrent: publicProcedure.query(async ({ ctx }) => {
     const today = new Date();
     const tournaments = await ctx.db.tournament.findMany({
       include: tournamentDataInclude,

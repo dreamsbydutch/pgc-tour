@@ -2,13 +2,13 @@
 
 import { fetchDataGolf } from "@/src/lib/utils";
 import { api } from "@/src/trpc/server";
-import {
+import type {
   DatagolfFieldGolfer,
   DatagolfFieldInput,
   DatagolfRankingInput,
 } from "@/src/types/datagolf_types";
 import { NextResponse } from "next/server";
-import fs from "fs";
+// import fs from "fs";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL
@@ -28,9 +28,6 @@ export async function GET(request: Request) {
     null,
   );
 
-  const season = await api.season.getByYear({
-    year: 2025,
-  });
   const currentTourney = await api.tournament.getCurrent();
   const golfers = await api.golfer.getByTournament({
     tournamentId: currentTourney?.id ?? "",
@@ -103,8 +100,8 @@ export async function GET(request: Request) {
       return golfer;
     });
 
-  groups.map((group, i) => {
-    group.map(async (golfer) => {
+  groups.forEach((group, i) => {
+    group.forEach(async (golfer) => {
       const name = golfer.player_name.split(", ");
       if (currentTourney && currentTourney.id) {
         await api.golfer.create({
@@ -122,6 +119,6 @@ export async function GET(request: Request) {
     });
   });
 
-  return NextResponse.redirect(`${origin}/`);
+  return NextResponse.redirect(`${origin}${next}`);
 }
 // http://localhost:3000/cron/create-groups
