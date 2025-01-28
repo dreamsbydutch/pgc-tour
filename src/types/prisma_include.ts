@@ -36,10 +36,8 @@ export type TournamentData = Prisma.TournamentGetPayload<{
 
 export const teamDataInclude = {
   tourCard: true,
-  teamRounds: true,
   tournament: true,
 } satisfies Prisma.TeamInclude;
 export type TeamData = Prisma.TeamGetPayload<{
   include: typeof teamDataInclude;
 }>;
-

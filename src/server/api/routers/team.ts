@@ -25,6 +25,8 @@ export const teamRouter = createTRPCRouter({
             tourCardId: input.tourCardId,
             tournamentId: input.tournamentId,
           },
+          include: teamDataInclude,
+          orderBy: { score: "asc" },
         }),
     ),
   create: publicProcedure
@@ -41,6 +43,8 @@ export const teamRouter = createTRPCRouter({
           tourCardId: input.tourCardId,
           tournamentId: input.tournamentId,
         },
+        include: teamDataInclude,
+        orderBy: { score: "asc" },
       });
       if (existingTeam) {
         await ctx.db.team.update({
