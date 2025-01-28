@@ -2,7 +2,7 @@
 
 import { fetchDataGolf } from "@/src/lib/utils";
 import { api } from "@/src/trpc/server";
-import {
+import type {
   DataGolfLiveTournament,
   DatagolfFieldInput,
 } from "@/src/types/datagolf_types";
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   });
   const teams = await api.team.getByTournament({ tournamentId: tournament.id });
 
-  golfers.forEach(async (golfer) => {
+  golfers.map(async (golfer) => {
     const data: {
       id: number;
       country?: string | undefined;

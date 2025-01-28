@@ -2,13 +2,7 @@
 import { api } from "@/src/trpc/server";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
-  // Extract search parameters and origin from the request URL
-  // const { searchParams, origin } = new URL(request.url);
-
-  // Get the authorization code and the 'next' redirect path
-  // const next = searchParams.get("next") ?? "/";
-
+export async function GET() {
   try {
     const members = await api.member.getAll();
     const tourCards = await api.tourCard.getAll();

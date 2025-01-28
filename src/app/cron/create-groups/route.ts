@@ -101,7 +101,7 @@ export async function GET(request: Request) {
     });
 
   groups.forEach((group, i) => {
-    group.forEach(async (golfer) => {
+    group.map(async (golfer) => {
       const name = golfer.player_name.split(", ");
       if (currentTourney && currentTourney.id) {
         await api.golfer.create({
