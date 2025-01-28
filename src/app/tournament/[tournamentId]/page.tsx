@@ -1,55 +1,70 @@
 import LeaderboardHeader from "@/src/app/tournament/_components/LeaderboardHeader";
 import { Suspense } from "react";
-import ToursToggle from "@/src/app/tournament/_components/ToursToggle";
 import { LeaderboardHeaderSkeleton } from "../_components/skeletons/LeaderboardHeaderSkeleton";
 import { LeaderboardListSkeleton } from "../_components/skeletons/LeaderboardListSkeleton";
-import { LeaderboardListing } from "../_components/LeaderboardListing";
 import PreTournamentPage from "../_components/PreTournament";
 import LoadingSpinner from "../../_components/LoadingSpinner";
 import { api } from "@/src/trpc/server";
+import LeaderboardPage from "../_components/LeaderboardPage";
+import TournamentCountdown from "../_components/TournamentCountdown";
 
 export default async function Page({
   params,
-  searchParams,
 }: {
   params: { tournamentId: string };
-  searchParams?: Record<string, string | undefined>;
 }) {
+  const member = await api.member.getSelf();
   const tournament = await api.tournament.getById({
     tournamentId: params.tournamentId,
   });
-  if (!tournament) return <LoadingSpinner />;
+  const tours = await api.tour.getBySeason({
+    seasonID: tournament?.seasonId,
+  });
+  const tourCard = await api.tourCard.getByUserSeason({
+    seasonId: tournament?.seasonId,
+    userId: member?.id,
+  });
+  const golfers = await api.golfer.getByTournament({
+    tournamentId: tournament?.id ?? "",
+  });
+  const teams = await api.team.getByTournament({
+    tournamentId: tournament?.id ?? "",
+  });
+  const pgaTour = {
+    id: "1",
+    shortForm: "PGA",
+    name: "PGA Tour",
+    logoUrl: "",
+    seasonId: tournament?.seasonId ?? "",
+    buyIn: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    tourCards: [],
+  };
+  if (!tournament || !tours) return <LoadingSpinner />;
+
   return (
     <div className="flex w-full flex-col">
       <Suspense fallback={<LeaderboardHeaderSkeleton />}>
         <LeaderboardHeader focusTourney={tournament} />
       </Suspense>
-      {tournament.startDate > new Date() ? (
-        <PreTournamentPage {...{ tournament }} />
+      {!member || !tourCard ? (
+        <div>Not a member</div>
+      ) : tournament.startDate > new Date() ? (
+        // <PreTournamentPage {...{ tournament, member, tourCard }} />
+        <TournamentCountdown tourney={tournament} key={tournament.id} />
       ) : (
         <Suspense fallback={<LeaderboardListSkeleton />}>
-          <ToursToggle {...{ searchParams, tournamentId: params.tournamentId }}>
-            <div className="mx-auto grid max-w-xl grid-flow-row grid-cols-10 text-center">
-              <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-                Rank
-              </div>
-              <div className="col-span-4 place-self-center font-varela text-base font-bold">
-                Name
-              </div>
-              <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-                Score
-              </div>
-              <div className="col-span-1 place-self-center font-varela text-2xs">
-                Today
-              </div>
-              <div className="col-span-1 place-self-center font-varela text-2xs">
-                Thru
-              </div>
-            </div>
-            <LeaderboardListing
-              {...{ searchParams, tournamentId: params.tournamentId }}
-            />
-          </ToursToggle>
+          <LeaderboardPage
+            {...{
+              tournament,
+              tours: [...tours, pgaTour],
+              member,
+              tourCard,
+              golfers,
+              teams,
+            }}
+          />
         </Suspense>
       )}
     </div>
