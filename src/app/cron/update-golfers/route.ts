@@ -15,16 +15,14 @@ export async function GET(request: Request) {
   // Get the authorization code and the 'next' redirect path
   const next = searchParams.get("next") ?? "/";
 
-  //es-lint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const liveData: DataGolfLiveTournament = await fetchDataGolf(
+  const liveData = await fetchDataGolf(
     "preds/in-play",
     null,
-  );
-  //es-lint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const fieldData: DatagolfFieldInput = await fetchDataGolf(
+  ) as DataGolfLiveTournament;
+  const fieldData = await fetchDataGolf(
     "field-updates",
     null,
-  );
+  ) as DatagolfFieldInput;
 
   const tournament = await api.tournament.getCurrent();
   if (!tournament) return NextResponse.redirect(`${origin}/`);
@@ -34,7 +32,7 @@ export async function GET(request: Request) {
   });
   const teams = await api.team.getByTournament({ tournamentId: tournament.id });
 
-  golfers.map(async (golfer) => {
+  await Promise.all(golfers.map(async (golfer) => {
     const data: {
       id: number;
       country?: string | undefined;
@@ -158,7 +156,7 @@ export async function GET(request: Request) {
     }
 
     await api.golfer.update(data);
-  });
+  }))
 
   return NextResponse.redirect(`${origin}${next}`);
 }
