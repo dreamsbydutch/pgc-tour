@@ -12,7 +12,7 @@ type NavItemProps = {
 
 export function NavItem({ href, children }: NavItemProps) {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  const isActive = href === "/" ? pathname === href : pathname.startsWith(href);
 
   return (
     <Link

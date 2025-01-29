@@ -13,7 +13,6 @@ export async function teamCreateOnFormSubmit({
   tournamentId: string;
   tourCardId: string;
 }) {
-  console.log(value);
   await api.team.create({
     golferIds: value.groups.flatMap((group) => group.golfers),
     tourCardId: tourCardId,

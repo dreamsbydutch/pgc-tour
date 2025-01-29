@@ -22,8 +22,4 @@ export async function chooseGolfers() {
       rank: rankingOutput.rankings.find((a) => a.dg_id === obj.dg_id),
     };
   });
-  console.log(
-    field,
-    rawOutput.filter((obj) => obj.calendar_year === 2024 && obj.tour === "pga"),
-  );
 }

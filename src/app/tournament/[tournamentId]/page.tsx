@@ -5,7 +5,8 @@ import { LeaderboardListSkeleton } from "../_components/skeletons/LeaderboardLis
 import LoadingSpinner from "../../_components/LoadingSpinner";
 import { api } from "@/src/trpc/server";
 import LeaderboardPage from "../_components/LeaderboardPage";
-import TournamentCountdown from "../_components/TournamentCountdown";
+import PreTournamentPage from "../_components/PreTournament";
+// import TournamentCountdown from "../_components/TournamentCountdown";
 
 export default async function Page({
   params,
@@ -50,8 +51,8 @@ export default async function Page({
       {!member || !tourCard ? (
         <div>Not a member</div>
       ) : tournament.startDate > new Date() ? (
-        // <PreTournamentPage {...{ tournament, member, tourCard }} />
-        <TournamentCountdown tourney={tournament} key={tournament.id} />
+        // <TournamentCountdown tourney={tournament} key={tournament.id} />
+        <PreTournamentPage {...{ tournament, member, tourCard }} />
       ) : (
         <Suspense fallback={<LeaderboardListSkeleton />}>
           <LeaderboardPage

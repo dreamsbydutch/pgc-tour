@@ -7,6 +7,8 @@ import { Button } from "../../_components/ui/button";
 import { useRouter } from "next/navigation";
 import { api } from "@/src/trpc/react";
 import type { Member, TourCard } from "@prisma/client";
+import { useState } from "react";
+import LoadingSpinner from "../../_components/LoadingSpinner";
 
 export default function PreTournamentPage({
   tournament,
@@ -42,6 +44,7 @@ function TeamPickForm({
   const golfers = api.golfer.getByTournament.useQuery({
     tournamentId: tournament.id,
   }).data;
+  const [isOpeningForm, setIsOpeningForm] = useState(false);
 
   if (!golfers || golfers?.length === 0) return <></>;
 
@@ -60,23 +63,44 @@ function TeamPickForm({
           <div
             key={golfer?.id}
             className={cn(
-              "py-0.5 text-lg",
               i % 2 !== 0 && i < 9 && "border-b border-slate-500",
               i === 0 && "mt-2",
+              "py-0.5",
             )}
           >
-            {`#${golfer?.worldRank} ${golfer?.playerName} (${golfer?.rating})`}
+            <div className={cn("text-lg")}>
+              {`#${golfer?.worldRank} ${golfer?.playerName} (${golfer?.rating})`}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {`R1: ${new Date(golfer.roundOneTeeTime ?? "").toLocaleString(
+                "en-US",
+                {
+                  hour: "numeric",
+                  minute: "numeric",
+                  hour12: true,
+                },
+              )}`}
+            </div>
           </div>
         );
       })}
       <Button
         key={existingTeam?.id}
-        onClick={() => router.push(`/tournament/${tournament.id}/create-team`)}
+        onClick={() => {
+          setIsOpeningForm(true);
+          router.push(`/tournament/${tournament.id}/create-team`);
+        }}
         variant={"action"}
         className="mb-4 mt-8 text-xl"
         size="lg"
       >
-        {existingTeam ? "Change Your Team" : "Create Your Team"}
+        {isOpeningForm ? (
+          <LoadingSpinner />
+        ) : existingTeam ? (
+          "Change Your Team"
+        ) : (
+          "Create Your Team"
+        )}
       </Button>
     </div>
   );

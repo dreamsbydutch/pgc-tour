@@ -103,14 +103,6 @@ export async function updateTourCardNames({
   tour: TourData;
   tourCard: TourCard;
 }) {
-  console.log(
-    tour.tourCards[0]?.id,
-    tourCard.id,
-    tour.tourCards[0]?.displayName[0],
-    tourCard.displayName[0],
-    tour.tourCards[0]?.displayName.split(". ")[1],
-    tourCard.displayName.split(". ")[1],
-  );
   const otherMatches = tour.tourCards.filter(
     (obj) =>
       obj.id !== tourCard.id &&
@@ -183,9 +175,6 @@ export async function updateTourCardNames({
     return;
   });
 
-  console.log(matchLevel);
-  console.log(otherMembers);
-  console.log(member);
   if (matchLevel === 0) {
     return;
   } else if (matchLevel === 1) {
@@ -228,7 +217,6 @@ export async function updateTourCardNames({
 const discountArry = [
   { email: "b.m.wilkinson4@gmail.com", name: "B. Wilkinson", discount: 100 },
   { email: "samjwolman@gmail.com", name: "S. Wolman", discount: 40 },
-  { email: "dmac@busys.ca", name: "D. MacKinnon", discount: 42.50 },
   {
     email: "robert.wolfer@taylormadegolf.com",
     name: "R. Wolfer",
@@ -237,7 +225,4 @@ const discountArry = [
   { email: "mack.graham9@hotmail.com", name: "M. Graham", discount: 30 },
   { email: "mohamadelbinni@gmail.com", name: "M. Binni", discount: 25 },
   { email: "eric.m.hubert@gmail.com", name: "E. Hubert", discount: 20 },
-  { email: "coyledrew91@gmail.com", name: "D. Coyle", discount: 20 },
-  { email: "matt.z.wowk@gmail.com", name: "M. Wowk", discount: 20 },
-  { email: "sterling.m.emery91@gmail.com", name: "S. Emery", discount: 20 },
 ];

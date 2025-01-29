@@ -9,6 +9,8 @@ import type { Golfer, Team, TourCard, Tournament } from "@prisma/client";
 import { teamCreateOnFormSubmit } from "@/src/server/api/actions/team";
 import { useRouter } from "next/navigation";
 import { Button } from "@/src/app/_components/ui/button";
+import { useState } from "react";
+import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 
 // Define Zod schema
 const golferSchema = z.object({
@@ -38,12 +40,11 @@ type InputGroups = {
 export default function CreateTeamForm({
   tournament,
   tourCard,
-  existingTeam,
 }: {
   tournament: Tournament;
   tourCard: TourCard;
-  existingTeam: Team | null;
 }) {
+  const utils = api.useUtils();
   const router = useRouter();
   const golfers = api.golfer.getByTournament.useQuery({
     tournamentId: tournament.id,
@@ -80,6 +81,10 @@ export default function CreateTeamForm({
         .sort((a, b) => (a.worldRank ?? 9999) - (b.worldRank ?? 9999)),
     },
   ];
+  const existingTeam = api.team.getByUserTournament.useQuery({
+    tourCardId: tourCard?.id ?? "",
+    tournamentId: tournament.id,
+  }).data;
 
   const initialGroups = existingTeam
     ? existingTeam.golferIds.reduce(
@@ -111,13 +116,16 @@ export default function CreateTeamForm({
     mode: "onSubmit",
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onSubmit = async (data: { groups: { golfers: number[] }[] }) => {
+    setIsSubmitting(true);
     await teamCreateOnFormSubmit({
       tourCardId: tourCard.id,
       tournamentId: tournament.id,
       value: data,
     });
+    await utils.team.invalidate();
     router.push(`/tournament/${tournament.id}`);
   };
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -210,7 +218,7 @@ export default function CreateTeamForm({
             className="mx-auto w-2/3 text-xl"
             size="xl"
           >
-            Submit Team
+            {isSubmitting ? <LoadingSpinner /> : "Submit Team"}
           </Button>
         </div>
       </form>
