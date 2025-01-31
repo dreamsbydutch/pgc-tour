@@ -50,7 +50,7 @@ export default async function Page({
       </Suspense>
       {!member || !tourCard ? (
         <div>Not a member</div>
-      ) : tournament.startDate > new Date() ? (
+      ) : tournament.startDate < new Date() ? (
         // <TournamentCountdown tourney={tournament} key={tournament.id} />
         <PreTournamentPage {...{ tournament, member, tourCard }} />
       ) : (
