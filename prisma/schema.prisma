@@ -188,6 +188,7 @@ model Golfer {
   roundThree        Int?
   roundFourTeeTime  String?
   roundFour         Int?
+  endHole           Int?
   group             Int?
   worldRank         Int?
   rating            Float?
