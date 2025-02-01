@@ -110,7 +110,7 @@ export async function GET(request: Request) {
         fieldGolfer?.r3_teetime &&
         fieldData.current_round > 3
       ) {
-        data.roundThree = fieldData.current_round;
+        data.roundThree = tournament.course.par + 8;
       }
       if (fieldGolfer?.r4_teetime) {
         data.roundFourTeeTime = fieldGolfer.r4_teetime;
