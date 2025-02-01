@@ -55,6 +55,7 @@ export async function GET(request: Request) {
         roundThree?: number | undefined;
         roundFourTeeTime?: string | undefined;
         roundFour?: number | undefined;
+        endHole?: number | undefined;
       } = { id: golfer.id, roundFour: undefined };
       const liveGolfer = liveData.data.find(
         (obj) =>
@@ -81,9 +82,9 @@ export async function GET(request: Request) {
       if (
         !liveGolfer?.R1 &&
         fieldGolfer?.r1_teetime &&
-        liveData.info.current_round >= 1
+        fieldData.current_round > 1
       ) {
-        data.roundOne = liveData.info.current_round
+        data.roundOne = tournament.course.par + 8;
       }
       if (fieldGolfer?.r2_teetime) {
         data.roundTwoTeeTime = fieldGolfer.r2_teetime;
@@ -94,7 +95,7 @@ export async function GET(request: Request) {
       if (
         !liveGolfer?.R2 &&
         fieldGolfer?.r1_teetime &&
-        liveData.info.current_round >= 2
+        fieldData.current_round > 2
       ) {
         data.roundTwo = tournament.course.par + 8;
       }
@@ -107,9 +108,9 @@ export async function GET(request: Request) {
       if (
         !liveGolfer?.R3 &&
         fieldGolfer?.r3_teetime &&
-        (liveGolfer?.round ?? 0) >= 3
+        fieldData.current_round > 3
       ) {
-        data.roundThree = tournament.course.par + 8;
+        data.roundThree = fieldData.current_round;
       }
       if (fieldGolfer?.r4_teetime) {
         data.roundFourTeeTime = fieldGolfer.r4_teetime;
@@ -120,7 +121,7 @@ export async function GET(request: Request) {
       if (
         !liveGolfer?.R4 &&
         fieldGolfer?.r4_teetime &&
-        (liveGolfer?.round ?? 0) >= 4
+        fieldData.current_round > 4
       ) {
         data.roundFour = tournament.course.par + 8;
       }
@@ -165,6 +166,9 @@ export async function GET(request: Request) {
       if (liveGolfer?.country !== undefined && golfer.country === null) {
         data.country = liveGolfer.country;
       }
+      if (liveGolfer?.end_hole !== undefined) {
+        data.endHole = liveGolfer.end_hole;
+      }
 
       await api.golfer.update(data);
     }),
@@ -172,4 +176,5 @@ export async function GET(request: Request) {
 
   return NextResponse.redirect(`${origin}${next}`);
 }
+// https://www.pgctour.ca/cron/update-golfers
 // http://localhost:3000/cron/update-golfers
