@@ -27,6 +27,22 @@ export const tournamentRouter = createTRPCRouter({
       include: tournamentDataInclude,
     });
 
-    return tournaments.find((obj) => obj.endDate > today);
+    return tournaments
+      .sort(
+        (a, b) =>
+          new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+      )
+      .find((obj) => obj.endDate > today);
   }),
+  update: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        livePlay: z.boolean().optional(),
+        currentRound: z.number().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.db.tournament.update({ where: { id: input.id }, data: input });
+    }),
 });
