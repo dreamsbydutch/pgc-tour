@@ -33,7 +33,7 @@ export async function GET(request: Request) {
   const teams = await api.team.getByTournament({ tournamentId: tournament.id });
 
   let liveGolfers = 0;
-  let liveRounds = new Set();
+  const liveRounds = new Set();
 
   await Promise.all(
     golfers.map(async (golfer) => {
