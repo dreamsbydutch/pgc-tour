@@ -1,13 +1,13 @@
 "use client";
 
-import type { Golfer, Member, TourCard } from "@prisma/client";
+import type { Golfer } from "@prisma/client";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import type {
   TeamData,
+  TourCardData,
   TourData,
   TournamentData,
 } from "@/src/types/prisma_include";
-import { useRouter } from "next/navigation";
 import { PGAListing } from "./PGALeaderboard";
 import { PGCListing } from "./PGCLeaderboard";
 import { api } from "@/src/trpc/react";
@@ -15,15 +15,13 @@ import { api } from "@/src/trpc/react";
 export default function LeaderboardPage({
   tournament,
   tours,
-  member,
   tourCard,
 }: {
   tournament: TournamentData;
   tours: TourData[];
-  member: Member;
-  tourCard: TourCard;
+  tourCard: TourCardData | null | undefined;
 }) {
-  const [activeTour, setActiveTour] = useState<string>(tourCard.tourId);
+  const [activeTour, setActiveTour] = useState<string>(tourCard?.tourId ?? "1");
   const golfers = api.golfer.getByTournament.useQuery(
     {
       tournamentId: tournament?.id ?? "",
@@ -36,6 +34,7 @@ export default function LeaderboardPage({
     },
     { staleTime: 30 * 1000 },
   ).data;
+  const userTeam = teams?.find((obj) => obj.tourCardId === tourCard?.id);
 
   return (
     <div className="mt-2">
@@ -55,7 +54,7 @@ export default function LeaderboardPage({
         <LeaderboardHeaderRow />
         {activeTour === tours.find((tour) => tour.shortForm === "PGA")?.id ? (
           sortGolfersForSpecialPostions(golfers ?? []).map((obj) => (
-            <PGAListing key={obj.id} {...{ golfer: obj }} />
+            <PGAListing key={obj.id} {...{ golfer: obj, userTeam }} />
           ))
         ) : activeTour ===
           tours.find((tour) => tour.shortForm === "DbyD")?.id ? (
@@ -63,20 +62,14 @@ export default function LeaderboardPage({
             .filter((team) => team.tourCard.tourId === activeTour)
             .sort((a, b) => (a.score ?? 100) - (b.score ?? 100))
             .map((obj) => (
-              <PGCListing
-                key={obj.id}
-                {...{ tournament, team: obj, golfers, member }}
-              />
+              <PGCListing key={obj.id} {...{ team: obj, golfers, tourCard }} />
             ))
         ) : activeTour ===
           tours.find((tour) => tour.shortForm === "CCG")?.id ? (
           sortTeamsForSpecialPostions(teams ?? [])
             .filter((team) => team.tourCard.tourId === activeTour)
             .map((obj) => (
-              <PGCListing
-                key={obj.id}
-                {...{ tournament, team: obj, golfers, member }}
-              />
+              <PGCListing key={obj.id} {...{ team: obj, golfers, tourCard }} />
             ))
         ) : (
           <div className="py-4 text-center text-lg font-bold">

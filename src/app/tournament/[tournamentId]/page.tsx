@@ -42,17 +42,14 @@ export default async function Page({
       <Suspense fallback={<LeaderboardHeaderSkeleton />}>
         <LeaderboardHeader focusTourney={tournament} />
       </Suspense>
-      {!member || !tourCard ? (
-        <div>Not a member</div>
-      ) : tournament.startDate > new Date() ? (
-        <PreTournamentPage {...{ tournament, member, tourCard }} />
+      {tournament.startDate > new Date() ? (
+        <PreTournamentPage {...{ tournament, tourCard }} />
       ) : (
         <Suspense fallback={<LeaderboardListSkeleton />}>
           <LeaderboardPage
             {...{
               tournament,
               tours: [...tours, pgaTour],
-              member,
               tourCard,
             }}
           />

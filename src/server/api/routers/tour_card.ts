@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { createClient } from "@/src/lib/supabase/server";
+import { tourCardDataInclude } from "@/src/types/prisma_include";
 
 export const tourCardRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -11,7 +12,10 @@ export const tourCardRouter = createTRPCRouter({
   getById: publicProcedure
     .input(z.object({ tourCardId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.tourCard.findUnique({ where: { id: input.tourCardId } });
+      return ctx.db.tourCard.findUnique({
+        where: { id: input.tourCardId },
+        include: tourCardDataInclude,
+      });
     }),
 
   getByUserId: publicProcedure
@@ -20,6 +24,7 @@ export const tourCardRouter = createTRPCRouter({
       if (!input.userId) return;
       return await ctx.db.tourCard.findMany({
         where: { memberId: input.userId },
+        include: tourCardDataInclude,
       });
     }),
 
@@ -29,6 +34,7 @@ export const tourCardRouter = createTRPCRouter({
       if (!input.seasonId) return;
       return await ctx.db.tourCard.findMany({
         where: { seasonId: input.seasonId },
+        include: tourCardDataInclude,
       });
     }),
 
@@ -38,6 +44,7 @@ export const tourCardRouter = createTRPCRouter({
       if (!input.tourId) return;
       return await ctx.db.tourCard.findMany({
         where: { tourId: input.tourId },
+        include: tourCardDataInclude,
       });
     }),
   getOwnBySeason: publicProcedure
@@ -56,6 +63,7 @@ export const tourCardRouter = createTRPCRouter({
           seasonId: input.seasonId ?? season?.id,
           memberId: user.data.user?.id,
         },
+        include: tourCardDataInclude,
       });
     }),
 
@@ -74,6 +82,7 @@ export const tourCardRouter = createTRPCRouter({
           seasonId: input.seasonId ?? season?.id,
           memberId: input.userId,
         },
+        include: tourCardDataInclude,
       });
     }),
 

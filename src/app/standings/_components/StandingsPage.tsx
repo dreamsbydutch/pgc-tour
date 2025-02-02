@@ -19,14 +19,17 @@ export default function PGCStandings({
   tourCard,
 }: {
   tours: TourData[];
-  tourCard: TourCard;
+  tourCard: TourCard | null | undefined;
 }) {
   const { user } = useUser();
-  const [standingsToggle, setStandingsToggle] = useState(tourCard.tourId);
+  const [standingsToggle, setStandingsToggle] = useState<string>(
+    tourCard?.tourId ?? tours[0]?.id ?? "",
+  );
   const [addingToFriends, setAddingToFriends] = useState(false);
   const member = api.member.getSelf.useQuery().data;
 
-  const activeTour = tours.find((tour) => tour.id === standingsToggle);
+  const activeTour =
+    tours.find((tour) => tour.id === standingsToggle) ?? tours[0];
 
   return (
     <>
@@ -128,7 +131,7 @@ function StandingsListing({
   return (
     <div
       key={tourCard.id}
-      className={`grid grid-flow-row grid-cols-17 rounded-lg text-center ${member.friends.includes(tourCard.memberId) ? "bg-slate-100" : ""} ${user.id === tourCard.memberId ? "bg-slate-200 font-bold" : ""}`}
+      className={`grid grid-flow-row grid-cols-17 rounded-lg text-center ${member.friends.includes(tourCard.memberId) ? "bg-slate-100" : ""} ${user.id === tourCard.memberId ? "bg-slate-200 font-semibold" : ""}`}
     >
       <div className="col-span-2 place-self-center font-varela text-sm sm:text-base">
         {tourCard.position}

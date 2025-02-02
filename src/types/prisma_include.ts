@@ -41,3 +41,11 @@ export const teamDataInclude = {
 export type TeamData = Prisma.TeamGetPayload<{
   include: typeof teamDataInclude;
 }>;
+
+export const tourCardDataInclude = {
+  member: true,
+  tour: true,
+} satisfies Prisma.TourCardInclude;
+export type TourCardData = Prisma.TourCardGetPayload<{
+  include: typeof tourCardDataInclude;
+}>;
