@@ -1,3 +1,4 @@
+import { Golfer, Team } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { formatDate, formatDistanceToNowStrict } from "date-fns";
 import { twMerge } from "tailwind-merge";
@@ -107,6 +108,31 @@ export function formatName(name: string, type: "display" | "full") {
   return type === "full"
     ? firstName + " " + lastName
     : firstName.charAt(0).toUpperCase() + ". " + lastName;
+}
+
+export function getGolferTeeTime(golfer: Golfer) {
+  const roundNames = ["One", "Two", "Three", "Four"];
+  if (golfer.round === null) {
+    throw new Error("Golfer round is null");
+  }
+  const teeTimeKey =
+    `round${roundNames[golfer.round - 1]}TeeTime` as keyof Golfer;
+  return formatTime(new Date(golfer[teeTimeKey] ?? ""));
+}
+export function getTeamTeeTime(team: Team) {
+  const roundNames = ["One", "Two", "Three", "Four"];
+  if (team.round === null) {
+    throw new Error("Team round is null");
+  }
+  const teeTimeKey = `round${roundNames[team.round - 1]}TeeTime` as keyof Team;
+  return formatTime(new Date((team[teeTimeKey] as string) ?? ""));
+}
+export function formatTime(time: Date) {
+  return new Date(time ?? "").toLocaleString("en-US", {
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  });
 }
 
 export async function fetchDataGolf(
