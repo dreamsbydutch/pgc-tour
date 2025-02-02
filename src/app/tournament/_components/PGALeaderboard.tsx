@@ -29,8 +29,15 @@ import {
   CA,
   TW,
 } from "country-flag-icons/react/3x2";
+import { TeamData } from "@/src/types/prisma_include";
 
-export function PGAListing({ golfer }: { golfer: Golfer }) {
+export function PGAListing({
+  golfer,
+  userTeam,
+}: {
+  golfer: Golfer;
+  userTeam: TeamData | undefined;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const total =
     (golfer.roundOne ?? 0) +
@@ -39,49 +46,62 @@ export function PGAListing({ golfer }: { golfer: Golfer }) {
     (golfer.roundFour ?? 0);
   return (
     <div
-      className={cn(
-        countryFlag(golfer.country) ? "" : "text-red-300",
-        "grid grid-flow-row grid-cols-10 border-b border-slate-300 py-1 text-center",
-        golfer.position === "WD" ||
-          golfer.position === "DQ" ||
-          golfer.position === "CUT"
-          ? "text-gray-400"
-          : "",
-      )}
       key={golfer.id}
       onClick={() => setIsOpen(!isOpen)}
+      className={cn(
+        "my-1 grid grid-flow-row grid-cols-10 rounded-md text-center",
+      )}
     >
-      <div className="col-span-2 place-self-center font-varela text-base">
-        {golfer.position}
-      </div>
-      <div className="col-span-4 place-self-center font-varela text-lg">
-        {golfer.playerName}
-        {/* <div className="w-4">
+      <div
+        className={cn(
+          "col-span-10 grid grid-flow-row grid-cols-10 py-0.5",
+          userTeam?.golferIds.includes(golfer.apiId) && "bg-slate-100",
+          golfer.position === "WD" ||
+            golfer.position === "DQ" ||
+            golfer.position === "CUT"
+            ? "text-gray-400"
+            : "",
+        )}
+      >
+        <div className="col-span-2 place-self-center font-varela text-base">
+          {golfer.position}
+        </div>
+        <div className="col-span-4 place-self-center font-varela text-lg">
+          {golfer.playerName}
+          {/* <div className="w-4">
           {countryFlags.find((obj) => obj.key === golfer.country)
             ? null
             : golfer.country}
         </div> */}
-      </div>
-      <div className="col-span-2 place-self-center font-varela text-base">
-        {formatScore(golfer.score)}
-      </div>
-      {golfer.thru === 0 ? (
-        <div className="col-span-2 place-self-center font-varela text-xs">
-          {getGolferTeeTime(golfer)}
         </div>
-      ) : (
-        <>
-          <div className="col-span-1 place-self-center font-varela text-sm">
-            {formatScore(golfer.today)}
+        <div className="col-span-2 place-self-center font-varela text-base">
+          {formatScore(golfer.score)}
+        </div>
+        {golfer.thru === 0 ? (
+          <div className="col-span-2 place-self-center font-varela text-xs">
+            {getGolferTeeTime(golfer)}
           </div>
-          <div className="col-span-1 place-self-center whitespace-nowrap font-varela text-sm">
-            {golfer.thru === 18 ? "F" : golfer.thru}
-            {golfer.endHole === 9 ? "*" : ""}
-          </div>
-        </>
-      )}
+        ) : (
+          <>
+            <div className="col-span-1 place-self-center font-varela text-sm">
+              {formatScore(golfer.today)}
+            </div>
+            <div className="col-span-1 place-self-center whitespace-nowrap font-varela text-sm">
+              {golfer.thru === 18 ? "F" : golfer.thru}
+              {golfer.endHole === 9 ? "*" : ""}
+            </div>
+          </>
+        )}
+      </div>
       {isOpen && (
-        <div className="col-span-10 mt-2 grid grid-cols-12">
+        <div
+          className={cn(
+            "col-span-10 mb-2 grid grid-cols-12 pt-1",
+            userTeam?.golferIds.includes(golfer.apiId) && "bg-slate-100",
+            isOpen &&
+              "rounded-lg border-b border-l border-r border-slate-300 p-2 shadow-lg",
+          )}
+        >
           <div className="col-span-3 row-span-2 flex items-center justify-center text-sm font-bold">
             <div
               className={cn(

@@ -6,57 +6,82 @@ import {
   getGolferTeeTime,
   getTeamTeeTime,
 } from "@/src/lib/utils";
-import type { TeamData, TournamentData } from "@/src/types/prisma_include";
-import type { Golfer, Member } from "@prisma/client";
+import type { TeamData, TourCardData } from "@/src/types/prisma_include";
+import type { Golfer } from "@prisma/client";
 import { useState } from "react";
 import { Table, TableRow } from "../../_components/ui/table";
+import { api } from "@/src/trpc/react";
 
 export function PGCListing({
-  tournament,
   team,
   golfers,
-  member,
+  tourCard,
 }: {
-  tournament: TournamentData;
   team: TeamData;
   golfers: Golfer[] | undefined;
-  member: Member;
+  tourCard: TourCardData | null | undefined;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const member = api.member.getSelf.useQuery();
   return (
     <div
-      className={cn(
-        "grid grid-flow-row grid-cols-10 border-b border-slate-300 py-1 text-center",
-      )}
       key={team.id}
       onClick={() => setIsOpen(!isOpen)}
+      className="grid grid-flow-row grid-cols-10 rounded-lg border-b border-slate-300 text-center"
     >
-      <div className="col-span-2 place-self-center font-varela text-base">
-        {team.position}
-      </div>
-      <div className="col-span-4 place-self-center font-varela text-lg">
-        {team.tourCard.displayName}
-      </div>
-      <div className="col-span-2 place-self-center font-varela text-base">
-        {formatScore(team.score)}
-      </div>
-      {team.thru === 0 ? (
-        <div className="col-span-2 place-self-center font-varela text-sm">
-          {getTeamTeeTime(team)}
+      <div
+        className={cn(
+          "col-span-10 grid grid-flow-row grid-cols-10",
+          team.tourCardId === tourCard?.id && "bg-slate-200 font-semibold",
+          tourCard?.member.friends.includes(team.tourCard.memberId) &&
+            "bg-slate-100",
+          member.data?.friends.includes(team.tourCard.memberId) &&
+            "bg-slate-100",
+        )}
+      >
+        <div className="col-span-2 place-self-center font-varela text-base">
+          {team.position}
         </div>
-      ) : (
-        <>
-          <div className="col-span-1 place-self-center font-varela text-sm">
-            {formatScore(team.today)}
+        <div className="col-span-4 place-self-center font-varela text-lg">
+          {team.tourCard.displayName}
+        </div>
+        <div className="col-span-2 place-self-center font-varela text-base">
+          {formatScore(team.score)}
+        </div>
+        {team.thru === 0 ? (
+          <div className="col-span-2 place-self-center font-varela text-sm">
+            {getTeamTeeTime(team)}
           </div>
-          <div className="col-span-1 place-self-center whitespace-nowrap font-varela text-sm">
-            {team.thru === 18 ? "F" : team.thru}
-          </div>
-        </>
-      )}
+        ) : (
+          <>
+            <div className="col-span-1 place-self-center font-varela text-sm">
+              {formatScore(team.today)}
+            </div>
+            <div className="col-span-1 place-self-center whitespace-nowrap font-varela text-sm">
+              {team.thru === 18 ? "F" : team.thru}
+            </div>
+          </>
+        )}
+      </div>
       {isOpen && (
-        <>
-          <div className="col-span-10 mt-2 grid grid-cols-12 items-center justify-center">
+        <div
+          className={cn(
+            "col-span-10",
+            team.tourCardId === tourCard?.id &&
+              "bg-gradient-to-b from-slate-200 via-slate-100 to-slate-100",
+            tourCard?.member.friends.includes(team.tourCard.memberId) &&
+              "bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50",
+            member.data?.friends.includes(team.tourCard.memberId) &&
+              "bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50",
+            isOpen &&
+              "border-b border-l border-r border-slate-300 p-2 shadow-lg",
+          )}
+        >
+          <div
+            className={cn(
+              "col-span-10 grid grid-cols-12 items-center justify-center",
+            )}
+          >
             <div className="col-span-7 text-sm font-bold">Rounds</div>
             {(team.round ?? 0 <= 2) ? (
               <>
@@ -146,7 +171,7 @@ export function PGCListing({
                 ))}
             </Table>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
