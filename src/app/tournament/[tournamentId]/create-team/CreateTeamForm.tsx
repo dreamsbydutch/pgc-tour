@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
 import { api } from "@/src/trpc/react";
-import type { Golfer, Team, TourCard, Tournament } from "@prisma/client";
+import type { Golfer, TourCard, Tournament } from "@prisma/client";
 import { teamCreateOnFormSubmit } from "@/src/server/api/actions/team";
 import { useRouter } from "next/navigation";
 import { Button } from "@/src/app/_components/ui/button";

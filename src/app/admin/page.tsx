@@ -2,7 +2,7 @@
 
 import { api } from "@/src/trpc/server";
 import PaymentForm from "./_components/TransactionForm";
-import {
+import type {
   DatagolfFieldInput,
   DataGolfLiveTournament,
 } from "@/src/types/datagolf_types";

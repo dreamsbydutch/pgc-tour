@@ -58,9 +58,6 @@ function TeamPickForm({
     tourCardId: tourCard?.id ?? "",
     tournamentId: tournament.id,
   }).data;
-  const golfers = api.golfer.getByTournament.useQuery({
-    tournamentId: tournament.id,
-  }).data;
   const [isOpeningForm, setIsOpeningForm] = useState(false);
 
   if (!teamGolfers || teamGolfers?.length === 0) return <></>;
@@ -150,7 +147,10 @@ function TeamTeeTimes({
                 obj.roundOneTeeTime === golfer?.split(" - ")[0],
             );
             return (
-              <div className="w-[10rem] p-2 text-center text-lg font-bold">
+              <div
+                key={i}
+                className="w-[10rem] p-2 text-center text-lg font-bold"
+              >
                 {`${formatTime(time)} - ${wave === 10 ? "Back" : "Front"}`}
                 <div className={cn("text-sm font-normal")}>
                   {group
@@ -160,6 +160,7 @@ function TeamTeeTimes({
                     )
                     .map((obj) => (
                       <div
+                        key={obj.id}
                         className={cn(
                           teamIds?.includes(obj.apiId)
                             ? "font-semibold"

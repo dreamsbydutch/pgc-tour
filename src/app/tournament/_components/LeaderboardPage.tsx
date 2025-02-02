@@ -114,7 +114,6 @@ function ToggleButton({
   setActiveTour: Dispatch<SetStateAction<string>>;
 }) {
   const [effect, setEffect] = useState(false);
-  const router = useRouter();
   return (
     <button
       key={tour.id}

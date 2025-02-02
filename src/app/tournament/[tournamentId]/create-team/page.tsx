@@ -5,7 +5,7 @@ import TournamentCountdown from "../../_components/TournamentCountdown";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
-import CreateTeamForm from "./CreateTeamTestForm";
+import CreateTeamForm from "./CreateTeamForm";
 
 export default async function CreateTeamPage({
   params,
