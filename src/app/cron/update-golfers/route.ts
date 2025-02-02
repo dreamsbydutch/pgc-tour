@@ -32,6 +32,9 @@ export async function GET(request: Request) {
   });
   const teams = await api.team.getByTournament({ tournamentId: tournament.id });
 
+  let liveGolfers = 0;
+  let liveRounds = new Set();
+
   await Promise.all(
     golfers.map(async (golfer) => {
       const data: {
@@ -151,6 +154,9 @@ export async function GET(request: Request) {
         liveGolfer.current_pos !== "CUT"
       ) {
         data.thru = liveGolfer.thru;
+        if (liveGolfer.thru > 0 && liveGolfer.thru < 18) {
+          liveGolfers += 1;
+        }
       }
       if (
         liveGolfer?.today !== undefined &&
@@ -169,12 +175,30 @@ export async function GET(request: Request) {
       if (liveGolfer?.end_hole !== undefined) {
         data.endHole = liveGolfer.end_hole;
       }
+      if (
+        liveGolfer &&
+        liveGolfer.current_pos !== "WD" &&
+        liveGolfer.current_pos !== "DQ" &&
+        liveGolfer.current_pos !== "CUT"
+      ) {
+        liveRounds.add(liveGolfer?.round);
+      }
 
       await api.golfer.update(data);
+
+      return data;
     }),
   );
 
-  return NextResponse.redirect(`${origin}${next}`);
+  await api.tournament.update({
+    id: tournament.id,
+    currentRound: [...liveRounds].sort(
+      (a, b) => (a as number) - (b as number),
+    )[0] as number,
+    livePlay: liveGolfers > 0 ? true : false,
+  });
+
+  return NextResponse.redirect(`${origin}/cron/update-teams`);
 }
 // https://www.pgctour.ca/cron/update-golfers
 // http://localhost:3000/cron/update-golfers
