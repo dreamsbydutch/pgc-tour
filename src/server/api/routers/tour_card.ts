@@ -106,6 +106,7 @@ export const tourCardRouter = createTRPCRouter({
           tourId: input.tourId,
           memberId: input.memberId,
         },
+        include: tourCardDataInclude,
       });
     }),
 
@@ -128,12 +129,16 @@ export const tourCardRouter = createTRPCRouter({
           position: input.position,
           displayName: input.displayName,
         },
+        include: tourCardDataInclude,
       });
     }),
 
   delete: publicProcedure
     .input(z.object({ tourCardId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.tourCard.delete({ where: { id: input.tourCardId } });
+      return await ctx.db.tourCard.delete({
+        where: { id: input.tourCardId },
+        include: tourCardDataInclude,
+      });
     }),
 });
