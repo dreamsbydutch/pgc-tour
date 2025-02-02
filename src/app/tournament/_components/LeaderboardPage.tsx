@@ -28,13 +28,13 @@ export default function LeaderboardPage({
     {
       tournamentId: tournament?.id ?? "",
     },
-    { staleTime: 60 * 1000 },
+    { staleTime: 30 * 1000 },
   ).data;
   const teams = api.team.getByTournament.useQuery(
     {
       tournamentId: tournament?.id ?? "",
     },
-    { staleTime: 60 * 1000 },
+    { staleTime: 30 * 1000 },
   ).data;
 
   return (

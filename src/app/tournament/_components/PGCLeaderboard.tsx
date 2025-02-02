@@ -107,15 +107,13 @@ export function PGCListing({
               </TableRow>
               {golfers
                 ?.filter((g) => team.golferIds.includes(g.apiId))
-                .sort((a, b) => {
-                  const key = tournament.livePlay ? "today" : "score";
-                  return (
-                    (a[key] ?? 100) - (b[key] ?? 100) ||
-                    (a.thru === 0 && b.thru === 0
-                      ? (a.score ?? 100) - (b.score ?? 100)
-                      : 0)
-                  );
-                })
+                .sort(
+                  (a, b) =>
+                    (a.today ?? 0) - (b.today ?? 0) || // Sort by today
+                    (a.thru ?? 0) - (b.thru ?? 0) || // Then sort by thru
+                    (a.score ?? 0) - (b.score ?? 0) || // Then sort by score
+                    (a.group ?? 0) - (b.group ?? 0),
+                )
                 .map((golfer, i) => (
                   <TableRow
                     key={golfer.id}
