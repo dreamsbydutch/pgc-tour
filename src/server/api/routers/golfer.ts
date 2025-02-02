@@ -46,6 +46,7 @@ export const golferRouter = createTRPCRouter({
         roundThree: z.number().optional(),
         roundFourTeeTime: z.string().optional(),
         roundFour: z.number().optional(),
+        endHole: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -71,6 +72,7 @@ export const golferRouter = createTRPCRouter({
           roundThree: input.roundThree,
           roundFourTeeTime: input.roundFourTeeTime,
           roundFour: input.roundFour,
+          endHole: input.endHole,
         },
       });
     }),
