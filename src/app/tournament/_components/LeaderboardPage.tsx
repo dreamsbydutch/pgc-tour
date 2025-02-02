@@ -1,28 +1,41 @@
 "use client";
 
-import type { Golfer, TourCard } from "@prisma/client";
+import type { Golfer, Member, TourCard } from "@prisma/client";
 import { type Dispatch, type SetStateAction, useState } from "react";
-import type { TeamData, TourData } from "@/src/types/prisma_include";
+import type {
+  TeamData,
+  TourData,
+  TournamentData,
+} from "@/src/types/prisma_include";
 import { useRouter } from "next/navigation";
 import { PGAListing } from "./PGALeaderboard";
 import { PGCListing } from "./PGCLeaderboard";
+import { api } from "@/src/trpc/react";
 
 export default function LeaderboardPage({
-  // tournament,
+  tournament,
   tours,
-  // member,
+  member,
   tourCard,
-  golfers,
-  teams,
 }: {
-  // tournament: Tournament;
+  tournament: TournamentData;
   tours: TourData[];
-  // member: Member;
+  member: Member;
   tourCard: TourCard;
-  golfers: Golfer[];
-  teams: TeamData[];
 }) {
   const [activeTour, setActiveTour] = useState<string>(tourCard.tourId);
+  const golfers = api.golfer.getByTournament.useQuery(
+    {
+      tournamentId: tournament?.id ?? "",
+    },
+    { staleTime: 60 * 1000 },
+  ).data;
+  const teams = api.team.getByTournament.useQuery(
+    {
+      tournamentId: tournament?.id ?? "",
+    },
+    { staleTime: 60 * 1000 },
+  ).data;
 
   return (
     <div className="mt-2">
@@ -39,73 +52,36 @@ export default function LeaderboardPage({
         ))}
       </div>
       <div>
-        <div className="mx-auto grid max-w-xl grid-flow-row grid-cols-10 text-center">
-          <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-            Rank
-          </div>
-          <div className="col-span-4 place-self-center font-varela text-base font-bold">
-            Name
-          </div>
-          <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-            Score
-          </div>
-          <div className="col-span-1 place-self-center font-varela text-2xs">
-            Today
-          </div>
-          <div className="col-span-1 place-self-center font-varela text-2xs">
-            Thru
-          </div>
-        </div>
+        <LeaderboardHeaderRow />
         {activeTour === tours.find((tour) => tour.shortForm === "PGA")?.id ? (
-          golfers
-            .sort(
-              (a, b) =>
-                (a.position === "DQ"
-                  ? 999 + (a.score ?? 999)
-                  : a.position === "WD"
-                    ? 888 + (a.score ?? 999)
-                    : a.position === "CUT"
-                      ? 444 + (a.score ?? 999)
-                      : (a.score ?? 999)) -
-                (b.position === "DQ"
-                  ? 999 + (b.score ?? 999)
-                  : b.position === "WD"
-                    ? 888 + (b.score ?? 999)
-                    : b.position === "CUT"
-                      ? 444 + (b.score ?? 999)
-                      : (b.score ?? 999)),
-            )
-            .map((obj) => <PGAListing key={obj.id} {...{ golfer: obj }} />)
+          sortGolfersForSpecialPostions(golfers ?? []).map((obj) => (
+            <PGAListing key={obj.id} {...{ golfer: obj }} />
+          ))
         ) : activeTour ===
           tours.find((tour) => tour.shortForm === "DbyD")?.id ? (
-          teams
-            .sort(
-              (a, b) =>
-                (a.position === "CUT"
-                  ? 444 + (a.score ?? 999)
-                  : (a.score ?? 999)) -
-                (b.position === "CUT"
-                  ? 444 + (b.score ?? 999)
-                  : (b.score ?? 999)),
-            )
+          sortTeamsForSpecialPostions(teams ?? [])
             .filter((team) => team.tourCard.tourId === activeTour)
-            .map((obj) => <PGCListing key={obj.id} {...{ team: obj }} />)
+            .sort((a, b) => (a.score ?? 100) - (b.score ?? 100))
+            .map((obj) => (
+              <PGCListing
+                key={obj.id}
+                {...{ tournament, team: obj, golfers, member }}
+              />
+            ))
         ) : activeTour ===
           tours.find((tour) => tour.shortForm === "CCG")?.id ? (
-          teams
-            .sort(
-              (a, b) =>
-                (a.position === "CUT"
-                  ? 444 + (a.score ?? 999)
-                  : (a.score ?? 999)) -
-                (b.position === "CUT"
-                  ? 444 + (b.score ?? 999)
-                  : (b.score ?? 999)),
-            )
+          sortTeamsForSpecialPostions(teams ?? [])
             .filter((team) => team.tourCard.tourId === activeTour)
-            .map((obj) => <PGCListing key={obj.id} {...{ team: obj }} />)
+            .map((obj) => (
+              <PGCListing
+                key={obj.id}
+                {...{ tournament, team: obj, golfers, member }}
+              />
+            ))
         ) : (
-          <div>Not implemented</div>
+          <div className="py-4 text-center text-lg font-bold">
+            Choose a tour using the toggle buttons
+          </div>
         )}
       </div>
     </div>
@@ -143,7 +119,6 @@ function ToggleButton({
     <button
       key={tour.id}
       onClick={() => {
-        router.push("?tour=" + tour.shortForm);
         setActiveTour(tour.id);
         setEffect(true);
       }}
@@ -158,5 +133,67 @@ function ToggleButton({
     >
       {tour?.shortForm}
     </button>
+  );
+}
+
+function LeaderboardHeaderRow() {
+  return (
+    <div className="mx-auto grid max-w-xl grid-flow-row grid-cols-10 text-center">
+      <div className="col-span-2 place-self-center font-varela text-sm font-bold">
+        Rank
+      </div>
+      <div className="col-span-4 place-self-center font-varela text-base font-bold">
+        Name
+      </div>
+      <div className="col-span-2 place-self-center font-varela text-sm font-bold">
+        Score
+      </div>
+      <div className="col-span-1 place-self-center font-varela text-2xs">
+        Today
+      </div>
+      <div className="col-span-1 place-self-center font-varela text-2xs">
+        Thru
+      </div>
+    </div>
+  );
+}
+
+function sortTeamsForSpecialPostions(teams: TeamData[]) {
+  return teams.sort(
+    (a, b) =>
+      (a.position === "DQ"
+        ? 999 + (a.score ?? 999)
+        : a.position === "WD"
+          ? 888 + (a.score ?? 999)
+          : a.position === "CUT"
+            ? 444 + (a.score ?? 999)
+            : (a.score ?? 999)) -
+      (b.position === "DQ"
+        ? 999 + (b.score ?? 999)
+        : b.position === "WD"
+          ? 888 + (b.score ?? 999)
+          : b.position === "CUT"
+            ? 444 + (b.score ?? 999)
+            : (b.score ?? 999)),
+  );
+}
+
+function sortGolfersForSpecialPostions(golfers: Golfer[]) {
+  return golfers.sort(
+    (a, b) =>
+      (a.position === "DQ"
+        ? 999 + (a.score ?? 999)
+        : a.position === "WD"
+          ? 888 + (a.score ?? 999)
+          : a.position === "CUT"
+            ? 444 + (a.score ?? 999)
+            : (a.score ?? 999)) -
+      (b.position === "DQ"
+        ? 999 + (b.score ?? 999)
+        : b.position === "WD"
+          ? 888 + (b.score ?? 999)
+          : b.position === "CUT"
+            ? 444 + (b.score ?? 999)
+            : (b.score ?? 999)),
   );
 }

@@ -24,5 +24,5 @@ export default async function Page() {
     tourCards: [],
   };
   if (!tours || !member || !tourCard || !pgaTour) return <LoadingSpinner />;
-  return <PGCStandings {...{ tours, member, tourCard }} />;
+  return <PGCStandings {...{ tours, tourCard }} />;
 }

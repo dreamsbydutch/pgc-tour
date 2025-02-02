@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, formatScore } from "@/src/lib/utils";
+import { cn, formatScore, getGolferTeeTime } from "@/src/lib/utils";
 import type { Golfer } from "@prisma/client";
 import { useState } from "react";
 import {
@@ -8,6 +8,7 @@ import {
   SE,
   ZA,
   KR,
+  AT,
   AU,
   AR,
   IT,
@@ -23,7 +24,7 @@ import {
   FI,
   CN,
   JP,
-  NI,
+  NO,
   GB,
   CA,
   TW,
@@ -39,6 +40,7 @@ export function PGAListing({ golfer }: { golfer: Golfer }) {
   return (
     <div
       className={cn(
+        countryFlag(golfer.country) ? "" : "text-red-300",
         "grid grid-flow-row grid-cols-10 border-b border-slate-300 py-1 text-center",
         golfer.position === "WD" ||
           golfer.position === "DQ" ||
@@ -63,12 +65,21 @@ export function PGAListing({ golfer }: { golfer: Golfer }) {
       <div className="col-span-2 place-self-center font-varela text-base">
         {formatScore(golfer.score)}
       </div>
-      <div className="col-span-1 place-self-center font-varela text-sm">
-        {formatScore(golfer.today)}
-      </div>
-      <div className="col-span-1 place-self-center whitespace-nowrap font-varela text-sm">
-        {golfer.thru === 18 ? "F" : golfer.thru}
-      </div>
+      {golfer.thru === 0 ? (
+        <div className="col-span-2 place-self-center font-varela text-xs">
+          {getGolferTeeTime(golfer)}
+        </div>
+      ) : (
+        <>
+          <div className="col-span-1 place-self-center font-varela text-sm">
+            {formatScore(golfer.today)}
+          </div>
+          <div className="col-span-1 place-self-center whitespace-nowrap font-varela text-sm">
+            {golfer.thru === 18 ? "F" : golfer.thru}
+            {golfer.endHole === 9 ? "*" : ""}
+          </div>
+        </>
+      )}
       {isOpen && (
         <div className="col-span-10 mt-2 grid grid-cols-12">
           <div className="col-span-3 row-span-2 flex items-center justify-center text-sm font-bold">
@@ -104,7 +115,7 @@ export function PGAListing({ golfer }: { golfer: Golfer }) {
           <div className="col-span-8 text-sm font-bold">Rounds</div>
           <div className="col-span-2 text-sm font-bold">Tot</div>
           <div className="col-span-2 text-sm font-bold">Group</div>
-          <div className="col-span-8 text-lg">{`${golfer.roundOne ? golfer.roundOne : ""}${golfer.roundTwo ? " - " + golfer.roundTwo : ""}${golfer.roundThree ? " - " + golfer.roundThree : ""}${golfer.roundFour ? " - " + golfer.roundFour : ""}`}</div>
+          <div className="col-span-8 text-lg">{`${golfer.roundOne ? golfer.roundOne : ""}${golfer.roundTwo ? " / " + golfer.roundTwo : ""}${golfer.roundThree ? " / " + golfer.roundThree : ""}${golfer.roundFour ? " / " + golfer.roundFour : ""}`}</div>
           <div className="col-span-2 text-lg">{total}</div>
           <div className="col-span-2 text-lg">{golfer.group}</div>
         </div>
@@ -129,7 +140,7 @@ const countryFlags = [
   { key: "JPN", image: <JP /> },
   { key: "CHI", image: <CN /> },
   { key: "ENG", image: <GB /> },
-  { key: "NOR", image: <NI /> },
+  { key: "NOR", image: <NO /> },
   { key: "ARG", image: <AR /> },
   { key: "VEN", image: <VE /> },
   { key: "DEN", image: <DK /> },
@@ -142,4 +153,7 @@ const countryFlags = [
   { key: "COL", image: <CO /> },
   { key: "PUR", image: <PR /> },
   { key: "PHI", image: <PH /> },
+  { key: "NIR", image: <GB /> }, // Northern Ireland uses the same flag as Great Britain
+  { key: "AUT", image: <AT /> }, // Austria
+  { key: "SCO", image: <GB /> },
 ];

@@ -14,10 +14,17 @@ import type { User } from "@supabase/supabase-js";
 import LoadingSpinner from "../../_components/LoadingSpinner";
 import type { TourData } from "@/src/types/prisma_include";
 
-export default function PGCStandings({tours,member,tourCard}:{tours:TourData[],member:Member,tourCard:TourCard}) {
+export default function PGCStandings({
+  tours,
+  tourCard,
+}: {
+  tours: TourData[];
+  tourCard: TourCard;
+}) {
   const { user } = useUser();
   const [standingsToggle, setStandingsToggle] = useState(tourCard.tourId);
   const [addingToFriends, setAddingToFriends] = useState(false);
+  const member = api.member.getSelf.useQuery().data;
 
   const activeTour = tours.find((tour) => tour.id === standingsToggle);
 
@@ -153,7 +160,7 @@ function StandingsListing({
                 friendId: tourCard.memberId,
               });
             }
-            await utils.invalidate();
+            await utils.member.invalidate();
             setIsFriendChanging(false);
             setAddingToFriends(false);
             return;

@@ -24,12 +24,6 @@ export default async function Page({
     seasonId: tournament?.seasonId,
     userId: member?.id,
   });
-  const golfers = await api.golfer.getByTournament({
-    tournamentId: tournament?.id ?? "",
-  });
-  const teams = await api.team.getByTournament({
-    tournamentId: tournament?.id ?? "",
-  });
   const pgaTour = {
     id: "1",
     shortForm: "PGA",
@@ -60,8 +54,6 @@ export default async function Page({
               tours: [...tours, pgaTour],
               member,
               tourCard,
-              golfers,
-              teams,
             }}
           />
         </Suspense>
