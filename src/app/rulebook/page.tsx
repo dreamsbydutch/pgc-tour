@@ -378,7 +378,6 @@ function Schedule({ season }: { season: Season | null }) {
       <Table className="mx-auto w-3/4 text-center font-varela">
         <TableHeader>
           <TableRow>
-            <TableHead className="border-l text-center text-xs font-bold"></TableHead>
             <TableHead className="span text-center text-xs font-bold">
               Tournament
             </TableHead>
@@ -406,15 +405,14 @@ function Schedule({ season }: { season: Season | null }) {
                 tourney.tier.name === "Major" ? "bg-blue-50" : "",
               )}
             >
-              <TableCell className="whitespace-nowrap text-center text-xs">
+              <TableCell className="flex items-center justify-center whitespace-nowrap text-center text-xs">
                 <Image
                   src={tourney.logoUrl ?? ""}
+                  className="pr-1"
                   alt={tourney.name}
                   width={25}
                   height={25}
                 />
-              </TableCell>
-              <TableCell className="whitespace-nowrap text-center text-xs">
                 {tourney.name}
               </TableCell>
               <TableCell className="whitespace-nowrap border-l text-center text-xs">
