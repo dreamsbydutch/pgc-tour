@@ -43,6 +43,7 @@ export async function GET(request: Request) {
         earnings?: number | undefined;
         makeCut?: number | undefined;
         position?: string | undefined;
+        posChange?: number | undefined;
         win?: number | undefined;
         usage?: number | undefined;
         round?: number | undefined;
@@ -139,6 +140,9 @@ export async function GET(request: Request) {
       }
       if (liveGolfer?.current_pos !== undefined) {
         data.position = liveGolfer.current_pos;
+        data.posChange =
+          Number(liveGolfer.current_pos.replace("T", "")) -
+          Number(golfer.position?.replace("T", "") ?? 0);
       }
       if (
         liveGolfer?.current_score !== undefined &&
@@ -198,7 +202,7 @@ export async function GET(request: Request) {
     livePlay: liveGolfers > 0 ? true : false,
   });
 
-  return NextResponse.redirect(`${origin}/cron/update-teams`);
+  return NextResponse.redirect(`${origin}${next}`);
 }
 // https://www.pgctour.ca/cron/update-golfers
 // http://localhost:3000/cron/update-golfers
