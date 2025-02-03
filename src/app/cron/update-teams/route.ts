@@ -273,7 +273,7 @@ export async function GET(request: Request) {
     golfers,
     updatedTeams,
     tournament.course.par,
-    100000,
+    50000,
   );
 
   updatedTeams = await Promise.all(
