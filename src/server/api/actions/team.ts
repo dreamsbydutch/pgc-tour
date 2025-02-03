@@ -1,7 +1,6 @@
 "use server";
 
 import { api } from "@/src/trpc/server";
-import { Golfer, Team } from "@prisma/client";
 
 export async function teamCreateOnFormSubmit({
   value,
