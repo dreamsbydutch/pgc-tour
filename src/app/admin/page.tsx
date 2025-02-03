@@ -8,6 +8,7 @@ import type {
 } from "@/src/types/datagolf_types";
 import { fetchDataGolf } from "@/src/lib/utils";
 import CreateGroupsButton from "./_components/CreateGroupsButton";
+import HistoryButton from "./_components/HistoryButton";
 
 export default async function AdminDashboard() {
   const season = await api.season.getByYear({ year: 2025 });
@@ -99,6 +100,7 @@ export default async function AdminDashboard() {
           >{`${tour.name} - ${tour.tourCards.length} sign ups (${+(process.env.TOUR_MAX_SIZE ?? 75) - tour.tourCards.length} left)`}</div>
         ))}
       </div>
+      <HistoryButton />
       <PaymentForm />
     </>
   );
