@@ -14,7 +14,7 @@ function simulateRound(golfer: Golfer, roundKey: keyof Golfer, par: number) {
     return Number(golfer[roundKey]) - par;
   }
   // Generate a base random differential between -7 and +5.
-  let baseDiff = Math.random() * (5 - -7) + -7;
+  const baseDiff = Math.random() * (5 - -7) + -7;
 
   // Adjust based on worldRank and rating.
   let adjustment = 0;
@@ -51,7 +51,7 @@ function simulateGolfer(golfer: Golfer, par: number) {
 
   // After rounds 1 & 2, decide if the golfer makes the cut.
   // (Even if these rounds are actual, we simulate the uncertainty of making the cut.)
-  const makeCutProb = golfer.makeCut != null ? golfer.makeCut : 0.9;
+  const makeCutProb = golfer.makeCut ?? 0.9;
   const makesCut = Math.random() < makeCutProb;
 
   let r3, r4;
@@ -74,6 +74,16 @@ function simulateGolfer(golfer: Golfer, par: number) {
     r3r4: r3 === Infinity || r4 === Infinity ? Infinity : r3 + r4,
   };
 }
+type simGolfer = {
+  apiId: number;
+  roundOne: number;
+  roundTwo: number;
+  roundThree: number;
+  roundFour: number;
+  // Combined differentials for convenience.
+  r1r2: number;
+  r3r4: number;
+};
 
 /**
  * Simulate the remainder (or entirety) of the tournament numSimulations times.
@@ -136,7 +146,7 @@ export function simulateTournament(
 
   for (let sim = 0; sim < numSimulations; sim++) {
     // Simulate each golfer’s rounds (using actual scores if available).
-    const simGolferMap = new Map();
+    const simGolferMap = new Map<number, simGolfer>();
     golfers.forEach((g) => {
       simGolferMap.set(g.apiId, simulateGolfer(g, par));
     });
