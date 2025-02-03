@@ -1,7 +1,7 @@
 "use server";
 
+import { simulateTournament } from "@/src/lib/simulator";
 import { fetchDataGolf } from "@/src/lib/utils";
-import { simulateTournament } from "@/src/server/api/actions/team";
 import { api } from "@/src/trpc/server";
 import type {
   DatagolfFieldInput,
