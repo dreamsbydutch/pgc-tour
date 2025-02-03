@@ -138,6 +138,7 @@ model Team {
   roundFourTeeTime  String?
   roundFour         Float?
   position          String?
+  pastPosition      String?
   score             Float?
   topTen            Float?
   topFive           Float?
@@ -177,6 +178,7 @@ model Golfer {
   apiId             Int
   country           String?
   position          String?
+  posChange         Int?
   playerName        String
   score             Int?
   makeCut           Float?
