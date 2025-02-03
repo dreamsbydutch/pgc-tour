@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   });
   if (
     !currentTourney ||
-    currentTourney?.name === fieldData.event_name ||
+    // currentTourney?.name === fieldData.event_name ||
     golfers.length > 0
   ) {
     return NextResponse.redirect(`${origin}/`);

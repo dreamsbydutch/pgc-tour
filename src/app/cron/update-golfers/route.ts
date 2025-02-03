@@ -31,6 +31,7 @@ export async function GET(request: Request) {
     tournamentId: tournament.id,
   });
   const teams = await api.team.getByTournament({ tournamentId: tournament.id });
+  const golferIDs = teams.map((obj) => obj.golferIds).flat();
 
   let liveGolfers = 0;
   const liveRounds = new Set();
@@ -69,13 +70,9 @@ export async function GET(request: Request) {
       const fieldGolfer = fieldData.field.find(
         (obj) => obj.dg_id === golfer.apiId,
       );
-      if (!golfer.usage) {
-        const usage =
-          teams
-            .map((obj) => obj.golferIds)
-            .flat()
-            .filter((obj) => obj === golfer.apiId).length / teams.length;
-        data.usage = usage;
+      if (!golfer.roundOne) {
+        data.usage =
+          golferIDs.filter((obj) => obj === golfer.apiId).length / teams.length;
       }
       if (fieldGolfer?.r1_teetime) {
         data.roundOneTeeTime = fieldGolfer.r1_teetime;
