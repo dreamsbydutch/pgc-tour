@@ -30,6 +30,7 @@ import {
   TW,
 } from "country-flag-icons/react/3x2";
 import { TeamData } from "@/src/types/prisma_include";
+import { MoveDownIcon, MoveUpIcon } from "lucide-react";
 
 export function PGAListing({
   golfer,
@@ -63,8 +64,21 @@ export function PGAListing({
             : "",
         )}
       >
-        <div className="col-span-2 place-self-center font-varela text-base">
+        <div className="col-span-2 flex place-self-center font-varela text-base">
           {golfer.position}
+          {!golfer.posChange ? (
+            <></>
+          ) : golfer.posChange > 0 ? (
+            <span className="ml-0.5 flex items-center justify-center text-xs text-green-900">
+              <MoveUpIcon className="w-3" />
+              {Math.abs(golfer.posChange)}
+            </span>
+          ) : (
+            <span className="ml-0.5 flex items-center justify-center text-2xs text-red-900">
+              <MoveDownIcon className="w-3" />
+              {Math.abs(golfer.posChange)}
+            </span>
+          )}
         </div>
         <div className="col-span-4 place-self-center font-varela text-lg">
           {golfer.playerName}

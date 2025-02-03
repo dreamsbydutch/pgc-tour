@@ -6,32 +6,48 @@ import {
   getGolferTeeTime,
   getTeamTeeTime,
 } from "@/src/lib/utils";
-import type { TeamData, TourCardData } from "@/src/types/prisma_include";
+import type {
+  TeamData,
+  TourCardData,
+  TournamentData,
+} from "@/src/types/prisma_include";
 import type { Golfer } from "@prisma/client";
 import { useState } from "react";
 import { Table, TableRow } from "../../_components/ui/table";
 import { api } from "@/src/trpc/react";
+import { MoveDownIcon, MoveHorizontalIcon, MoveUpIcon } from "lucide-react";
 
 export function PGCListing({
+  tournament,
   team,
   golfers,
   tourCard,
 }: {
+  tournament: TournamentData;
   team: TeamData;
   golfers: Golfer[] | undefined;
   tourCard: TourCardData | null | undefined;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const member = api.member.getSelf.useQuery();
+  const posChange =
+    (team?.pastPosition ? +team.pastPosition.replace("T", "") : 0) -
+    (team?.position ? +team.position.replace("T", "") : 0);
+  const moneyThreshold =
+    tournament.tier.name === "Major"
+      ? "Ten"
+      : tournament.tier.name === "Elevated"
+        ? "Five"
+        : "Three";
   return (
     <div
       key={team.id}
       onClick={() => setIsOpen(!isOpen)}
-      className="grid grid-flow-row grid-cols-10 rounded-lg border-b border-slate-300 text-center"
+      className="my-1 grid grid-flow-row grid-cols-10 rounded-lg border-b border-slate-300 text-center"
     >
       <div
         className={cn(
-          "col-span-10 grid grid-flow-row grid-cols-10",
+          "col-span-10 grid grid-flow-row grid-cols-10 py-0.5",
           team.tourCardId === tourCard?.id && "bg-slate-200 font-semibold",
           tourCard?.member.friends.includes(team.tourCard.memberId) &&
             "bg-slate-100",
@@ -39,8 +55,24 @@ export function PGCListing({
             "bg-slate-100",
         )}
       >
-        <div className="col-span-2 place-self-center font-varela text-base">
+        <div className="col-span-2 flex place-self-center font-varela text-base">
           {team.position}
+          {posChange === 0 ? (
+            // <span className="ml-0.5 flex items-center justify-center text-2xs">
+            //   <MoveHorizontalIcon className="w-2" />
+            // </span>
+            <></>
+          ) : posChange > 0 ? (
+            <span className="ml-0.5 flex items-center justify-center text-xs text-green-900">
+              <MoveUpIcon className="w-3" />
+              {Math.abs(posChange)}
+            </span>
+          ) : (
+            <span className="ml-0.5 flex items-center justify-center text-2xs text-red-900">
+              <MoveDownIcon className="w-3" />
+              {Math.abs(posChange)}
+            </span>
+          )}
         </div>
         <div className="col-span-4 place-self-center font-varela text-lg">
           {team.tourCard.displayName}
@@ -83,14 +115,18 @@ export function PGCListing({
             )}
           >
             <div className="col-span-7 text-sm font-bold">Rounds</div>
-            {(team.round ?? 0 <= 2) ? (
+            {(team.round ?? 0) <= 2 ? (
               <>
                 <div className="col-span-3 text-sm font-bold">Make Cut</div>
-                <div className="col-span-2 text-sm font-bold">Top Ten</div>
+                <div className="col-span-2 text-sm font-bold">
+                  Top {moneyThreshold}
+                </div>
               </>
             ) : (
               <>
-                <div className="col-span-3 text-sm font-bold">Top Ten</div>
+                <div className="col-span-3 text-sm font-bold">
+                  Top {moneyThreshold}
+                </div>
                 <div className="col-span-2 text-sm font-bold">Win</div>
               </>
             )}
@@ -106,16 +142,24 @@ export function PGCListing({
                   {Math.round((team.makeCut ?? 0) * 1000) / 10}%
                 </div>
                 <div className="col-span-2 text-lg">
-                  {Math.round((team.makeCut ?? 0) * 1000) / 10}%
+                  {Math.round(
+                    (Number(team[("top" + moneyThreshold) as keyof TeamData]) ??
+                      0) * 1000,
+                  ) / 10}
+                  %
                 </div>
               </>
             ) : (
               <>
                 <div className="col-span-3 text-lg">
-                  {Math.round((team.makeCut ?? 0) * 1000) / 10}%
+                  {Math.round(
+                    (Number(team[("top" + moneyThreshold) as keyof TeamData]) ??
+                      0) * 1000,
+                  ) / 10}
+                  %
                 </div>
                 <div className="col-span-2 text-lg">
-                  {Math.round((team.makeCut ?? 0) * 1000) / 10}%
+                  {Math.round((team.win ?? 0) * 1000) / 10}%
                 </div>
               </>
             )}
@@ -176,89 +220,3 @@ export function PGCListing({
     </div>
   );
 }
-
-// function simulateTournament(
-//   teams: TeamData[],
-//   teamGolfers: Golfer[],
-//   numSimulations = 10000,
-// ) {
-//   let results = teams.map((team) => ({
-//     teamID: team.id,
-//     wins: 0,
-//     top3: 0,
-//     top5: 0,
-//     top10: 0,
-//   }));
-
-//   function getProjectedScore(golfer: Golfer) {
-//     // Base score expectation centered around talent rating (lower is better)
-//     let talentFactor = (golfer.rating ?? 0 - 50) / 10; // Normalize around 50
-//     let baseScore = -1.5 - talentFactor; // Good golfers shoot lower scores
-
-//     // Adjust for partial round
-//     if (golfer.thru ?? 0 < 18) {
-//       let remainingHoles = 18 - (golfer.thru ?? 0);
-//       let avgHoleScore = baseScore / 18 + (Math.random() - 0.5) * 0.1;
-//       return (golfer.score ?? 0) + remainingHoles * avgHoleScore;
-//     }
-
-//     return golfer.score;
-//   }
-
-//   for (let sim = 0; sim < numSimulations; sim++) {
-//     let finalScores = teams.map((team) => {
-//       let remainingGolfers = teamGolfers
-//         .filter((g) => !["CUT", "WD", "DQ"].includes(g.position ?? ""))
-//         .map((golfer) => ({
-//           ...golfer,
-//           projectedScore: getProjectedScore(golfer),
-//         }));
-
-//       if (remainingGolfers.length < 5) return { team, finalScore: Infinity }; // Team is cut
-
-//       // Simulate Rounds 3 & 4
-//       let simulatedScores = remainingGolfers.map(
-//         (golfer) => golfer.projectedScore ?? 0 + (Math.random() - 0.5) * 3,
-//       );
-
-//       // Use best 5 scores
-//       simulatedScores.sort((a, b) => a - b);
-//       let teamFinalScore =
-//         simulatedScores.slice(0, 5).reduce((sum, score) => sum + score, 0) / 5;
-
-//       return { team, finalScore: teamFinalScore };
-//     });
-
-//     // Sort teams by best (lowest) final score
-//     finalScores.sort((a, b) => a.finalScore - b.finalScore);
-
-//     // Assign placements
-//     const winningTeam =
-//       finalScores[0] && finalScores[0].team
-//         ? results.find((r) => r.teamID === finalScores[0]?.team?.id)
-//         : undefined;
-//     if (winningTeam) {
-//       winningTeam.wins++;
-//     }
-//     finalScores.slice(0, 3).forEach(({ team }) => {
-//       const result = results.find((r) => r.teamID === team.id);
-//       if (result) result.top3++;
-//     });
-//     finalScores.slice(0, 5).forEach(({ team }) => {
-//       const result = results.find((r) => r.teamID === team.id);
-//       if (result) result.top5++;
-//     });
-//     finalScores.slice(0, 10).forEach(({ team }) => {
-//       const result = results.find((r) => r.teamID === team.id);
-//       if (result) result.top10++;
-//     });
-//   }
-
-//   return results.map((r) => ({
-//     teamID: r.teamID,
-//     winPercentage: (r.wins / numSimulations).toFixed(2),
-//     top3Percentage: (r.top3 / numSimulations).toFixed(2),
-//     top5Percentage: (r.top5 / numSimulations).toFixed(2),
-//     top10Percentage: (r.top10 / numSimulations).toFixed(2),
-//   }));
-// }

@@ -62,14 +62,14 @@ export default function LeaderboardPage({
             .filter((team) => team.tourCard.tourId === activeTour)
             .sort((a, b) => (a.score ?? 100) - (b.score ?? 100))
             .map((obj) => (
-              <PGCListing key={obj.id} {...{ team: obj, golfers, tourCard }} />
+              <PGCListing key={obj.id} {...{ tournament, team: obj, golfers, tourCard }} />
             ))
         ) : activeTour ===
           tours.find((tour) => tour.shortForm === "CCG")?.id ? (
           sortTeamsForSpecialPostions(teams ?? [])
             .filter((team) => team.tourCard.tourId === activeTour)
             .map((obj) => (
-              <PGCListing key={obj.id} {...{ team: obj, golfers, tourCard }} />
+              <PGCListing key={obj.id} {...{ tournament, team: obj, golfers, tourCard }} />
             ))
         ) : (
           <div className="py-4 text-center text-lg font-bold">
