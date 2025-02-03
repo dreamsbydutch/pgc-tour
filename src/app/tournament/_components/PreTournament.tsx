@@ -34,7 +34,7 @@ export default function PreTournamentPage({
   return (
     <div>
       <TournamentCountdown tourney={tournament} key={tournament.id} />
-      {!tourCard ? (
+      {!tourCard || !golfers || golfers.length === 0 ? (
         <></>
       ) : (
         <>

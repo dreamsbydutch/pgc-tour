@@ -27,7 +27,7 @@ export default async function AdminDashboard() {
     <>
       <div className="mb-8 font-varela">
         <div className="mb-6 flex w-full flex-col flex-wrap gap-2">
-          <div className="flex w-full flex-row flex-nowrap justify-around overflow-scroll">
+          <div className="scrollbar-hidden flex w-full flex-row flex-nowrap justify-around overflow-scroll">
             <div className="flex max-w-40 flex-col text-center">
               <div className="text-sm font-bold">Current Event</div>
               <div className="text-sm">{currentTourney?.name}</div>
@@ -43,7 +43,7 @@ export default async function AdminDashboard() {
               </div>
             </div>
           </div>
-          <div className="flex w-full flex-row flex-nowrap justify-around overflow-scroll">
+          <div className="scrollbar-hidden flex w-full flex-row flex-nowrap justify-around overflow-scroll">
             <div className="flex max-w-40 flex-col text-center">
               <div className="text-sm font-bold">Field Event</div>
               <div className="text-sm">{fieldData.event_name}</div>
@@ -66,7 +66,7 @@ export default async function AdminDashboard() {
               </div>
             </div>
           </div>
-          <div className="flex w-full flex-row flex-nowrap justify-around overflow-scroll">
+          <div className="scrollbar-hidden flex w-full flex-row flex-nowrap justify-around overflow-scroll">
             <div className="flex max-w-40 flex-col text-center">
               <div className="text-sm font-bold">Live Event</div>
               <div className="text-sm">{liveData.info.event_name}</div>
@@ -85,7 +85,7 @@ export default async function AdminDashboard() {
               </div>
             </div>
           </div>
-          <div className="flex w-full flex-row flex-nowrap justify-around overflow-scroll">
+          <div className="scrollbar-hidden flex w-full flex-row flex-nowrap justify-around overflow-scroll">
             <div className="flex max-w-40 flex-col text-center">
               <div className="text-sm font-bold">Live Update</div>
               <div className="text-sm">{liveData.info.last_update}</div>

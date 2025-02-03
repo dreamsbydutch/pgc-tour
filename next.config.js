@@ -18,7 +18,7 @@ const config = {
       },
       {
         protocol: "https",
-        hostname: "n9n1jxo7g.ufs.sh",
+        hostname: "jn9n1jxo7g.ufs.sh",
       },
       {
         protocol: "https",
