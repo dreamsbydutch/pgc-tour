@@ -127,7 +127,7 @@ export async function GET(request: Request) {
         }
       }
     } else {
-      if ((tournament.currentRound ?? 0) === 1 && (team.roundOne ?? 0) < 60) {
+      if ((tournament.currentRound ?? 0) === 1 && (team.thru ?? 0) > 0) {
         data.roundOne =
           teamGolfers.reduce(
             (p, c) => (p += c.roundOne ?? tournament.course.par + 8),
@@ -149,7 +149,7 @@ export async function GET(request: Request) {
             10 -
           tournament.course.par;
       }
-      if ((tournament.currentRound ?? 0) === 2 && (team.roundTwo ?? 0) < 60) {
+      if ((tournament.currentRound ?? 0) === 2 && (team.thru ?? 0) > 0) {
         data.roundTwo =
           teamGolfers.reduce(
             (p, c) => (p += c.roundTwo ?? tournament.course.par + 8),
@@ -173,7 +173,7 @@ export async function GET(request: Request) {
             10 -
             tournament.course.par);
       }
-      if ((tournament.currentRound ?? 0) === 3 && (team.roundThree ?? 0) < 60) {
+      if ((tournament.currentRound ?? 0) === 3 && (team.thru ?? 0) > 0) {
         data.roundThree =
           teamGolfers
             .sort((a, b) => (a.roundThree ?? 0) - (b.roundThree ?? 0))
@@ -207,7 +207,7 @@ export async function GET(request: Request) {
             5 -
             tournament.course.par);
       }
-      if ((tournament.currentRound ?? 0) === 4 && (team.roundFour ?? 0) < 60) {
+      if ((tournament.currentRound ?? 0) === 4 && (team.thru ?? 0) > 0) {
         data.roundFour =
           teamGolfers
             .sort((a, b) => (a.roundFour ?? 0) - (b.roundFour ?? 0))
@@ -242,19 +242,6 @@ export async function GET(request: Request) {
             5 -
             tournament.course.par);
       }
-      // if (
-      //   (tournament.currentRound ?? 0) === 4 &&
-      //   (team.roundFour ?? 0) > 60
-      // ) {
-      //   data.today = (team.roundFour ?? 0) - tournament.course.par;
-      //   data.thru = 18;
-      //   data.score =
-      //     (team.roundOne ?? 0) +
-      //     (team.roundTwo ?? 0) +
-      //     (team.roundThree ?? 0) +
-      //     (team.roundFour ?? 0) -
-      //     tournament.course.par * 4;
-      // }
     }
 
     if (data.score) {
@@ -291,9 +278,6 @@ export async function GET(request: Request) {
 
   updatedTeams = await Promise.all(
     updatedTeams.map(async (team) => {
-      const teamGolfers = golfers.filter((golfer) =>
-        team.golferIds.includes(golfer.apiId),
-      );
       team.position =
         "" +
         (updatedTeams.filter(
@@ -325,7 +309,36 @@ export async function GET(request: Request) {
           ).length
         ).toString();
 
-      console.log(team);
+      if (
+        !tournament.livePlay &&
+        (tournament.currentRound ?? 0) === 4 &&
+        (team.thru ?? 0) > 0
+      ) {
+        team.points = team.position.includes("T")
+          ? tournament.tier.points
+              .slice(
+                +team.position.replace("T", "") - 1,
+                +team.position.replace("T", "") -
+                  1 +
+                  updatedTeams.filter((obj) => obj.position === team.position)
+                    .length,
+              )
+              .reduce((p, c) => (p += c), 0) /
+            updatedTeams.filter((obj) => obj.position === team.position).length
+          : (tournament.tier.points[+team.position - 1] ?? null);
+        team.earnings = team.position.includes("T")
+          ? tournament.tier.payouts
+              .slice(
+                +team.position.replace("T", "") - 1,
+                +team.position.replace("T", "") -
+                  1 +
+                  updatedTeams.filter((obj) => obj.position === team.position)
+                    .length,
+              )
+              .reduce((p, c) => (p += c), 0) /
+            updatedTeams.filter((obj) => obj.position === team.position).length
+          : (tournament.tier.payouts[+team.position - 1] ?? null);
+      }
 
       await api.team.update(team);
 
