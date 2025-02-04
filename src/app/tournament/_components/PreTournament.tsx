@@ -123,7 +123,7 @@ function TeamTeeTimes({
     return <></>;
   const teeTimes = [
     ...new Set(
-      teamGolfers
+      teamGolfers?.sort((a, b) => (b.endHole ?? 0) - (a.endHole ?? 0))
         ?.sort((a, b) => {
           if (!a.roundOneTeeTime && !b.roundOneTeeTime) return 0;
           if (!a.roundOneTeeTime) return 1;
