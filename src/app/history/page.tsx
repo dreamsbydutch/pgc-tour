@@ -25,10 +25,10 @@ export default function historyPage() {
             <div className="mt-4 text-center font-varela font-bold">
               {season.year} Schedule
             </div>
-            <Table className="mx-auto w-3/4 text-center font-varela">
+            <Table className="text-center font-varela">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="span text-center text-xs font-bold">
+                  <TableHead className="text-center text-xs font-bold">
                     Tournament
                   </TableHead>
                   <TableHead className="text-center text-xs font-bold">
@@ -52,13 +52,13 @@ export default function historyPage() {
                     <TableRow
                       key={tourney.id}
                       className={cn(
-                        "border-y-0 !border-l !border-r border-slate-500",
+                        "border-y-0 !border-l-2 !border-r-2 border-slate-500",
                         tournaments.filter(
                           (obj) =>
                             obj.startDate < tourney.endDate &&
                             obj.seasonId === season.id,
                         ).length === 1
-                          ? "border-t-4"
+                          ? "border-t-2"
                           : "",
                         tournaments.filter(
                           (obj) =>
@@ -76,7 +76,7 @@ export default function historyPage() {
                           tournaments.filter(
                             (obj) => obj.seasonId === season.id,
                           ).length
-                          ? "!border-b-4"
+                          ? "!border-b-2"
                           : "",
 
                         tourney.tier.name === "Playoff" ? "bg-yellow-50" : "",

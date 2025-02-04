@@ -43,7 +43,7 @@ export function PGCListing({
     <div
       key={team.id}
       onClick={() => setIsOpen(!isOpen)}
-      className="my-1 grid grid-flow-row grid-cols-10 rounded-lg border-b border-slate-300 text-center"
+      className="my-1 grid grid-flow-row grid-cols-10 border-b border-slate-300 text-center"
     >
       <div
         className={cn(
@@ -105,8 +105,7 @@ export function PGCListing({
               "bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50",
             member.data?.friends.includes(team.tourCard.memberId) &&
               "bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50",
-            isOpen &&
-              "border-b border-l border-r border-slate-300 p-2 shadow-lg",
+            isOpen && "border-b border-slate-300 p-2",
           )}
         >
           <div
@@ -115,7 +114,7 @@ export function PGCListing({
             )}
           >
             <div className="col-span-7 text-sm font-bold">Rounds</div>
-            {(team.round ?? 0) <= 2 ? (
+            {(tournament.currentRound ?? 0) <= 2 ? (
               <>
                 <div className="col-span-3 text-sm font-bold">Make Cut</div>
                 <div className="col-span-2 text-sm font-bold">
@@ -136,7 +135,7 @@ export function PGCListing({
               {team.roundThree ? " / " + team.roundThree : ""}
               {team.roundFour ? " / " + team.roundFour : ""}
             </div>
-            {(team.round ?? 0 <= 2) ? (
+            {(tournament.currentRound ?? 0) <= 2 ? (
               <>
                 <div className="col-span-3 text-lg">
                   {Math.round((team.makeCut ?? 0) * 1000) / 10}%
