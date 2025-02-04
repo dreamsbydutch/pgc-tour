@@ -7,7 +7,11 @@ import type {
   DataGolfLiveTournament,
 } from "@/src/types/datagolf_types";
 import { fetchDataGolf } from "@/src/lib/utils";
-import CreateGroupsButton from "./_components/CreateGroupsButton";
+import {
+  CreateGroupsButton,
+  UpdateGolfersButton,
+  UpdateTeamsButton,
+} from "./_components/CreateGroupsButton";
 import HistoryButton from "./_components/HistoryButton";
 
 export default async function AdminDashboard() {
@@ -26,7 +30,7 @@ export default async function AdminDashboard() {
 
   return (
     <>
-      <div className="mb-2 font-varela text-center">
+      <div className="mb-2 text-center font-varela">
         <div className="mb-4 flex w-full flex-col flex-wrap gap-2">
           <div className="scrollbar-hidden flex w-full flex-row flex-nowrap justify-around overflow-scroll">
             <div className="flex max-w-40 flex-col text-center">
@@ -93,8 +97,12 @@ export default async function AdminDashboard() {
             </div>
             <CreateGroupsButton />
           </div>
+          <div className="scrollbar-hidden flex w-full flex-row flex-nowrap justify-around overflow-scroll">
+            <UpdateGolfersButton />
+            <UpdateTeamsButton />
+          </div>
         </div>
-        <HistoryButton className=" mt-4 w-3/4" />
+        <HistoryButton className="mt-4 w-3/4" />
         {tours?.map(async (tour) => {
           const tourCards = await api.tourCard.getByTourId({ tourId: tour.id });
           return (

@@ -36,6 +36,24 @@ export async function GET(request: Request) {
   let liveGolfers = 0;
   const liveRounds = new Set();
 
+  const missingGolfers = await Promise.all(
+    fieldData.field
+      .filter((obj) => !golfers.map((a) => a.apiId).includes(obj.dg_id))
+      .map(async (golfer) => {
+        await api.golfer.create({
+          apiId: golfer.dg_id,
+          playerName: golfer.player_name,
+          group: 0,
+          worldRank: golfer.ranking_data?.owgr_rank,
+          rating:
+            Math.round(
+              ((golfer.ranking_data?.dg_skill_estimate ?? 0) + 2) / 0.0004,
+            ) / 100,
+          tournamentId: tournament.id,
+        });
+      }),
+  );
+
   await Promise.all(
     golfers.map(async (golfer) => {
       const data: {
@@ -176,6 +194,14 @@ export async function GET(request: Request) {
       if (liveGolfer?.end_hole !== undefined) {
         data.endHole = liveGolfer.end_hole;
       }
+      if (fieldGolfer?.start_hole !== undefined) {
+        data.endHole =
+          fieldGolfer.start_hole === 1
+            ? 18
+            : fieldGolfer.start_hole === 10
+              ? 9
+              : undefined;
+      }
       if (
         liveGolfer &&
         liveGolfer.current_pos !== "WD" &&
@@ -199,6 +225,7 @@ export async function GET(request: Request) {
     livePlay: liveGolfers > 0 ? true : false,
   });
 
+  console.log(missingGolfers);
   return NextResponse.redirect(`${origin}${next}`);
 }
 // https://www.pgctour.ca/cron/update-golfers

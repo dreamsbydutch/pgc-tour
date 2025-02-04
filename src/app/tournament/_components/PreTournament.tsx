@@ -155,9 +155,9 @@ function TeamTeeTimes({
             return (
               <div
                 key={i}
-                className="w-[10rem] p-2 text-center text-lg font-bold"
+                className="w-[180px] p-2 text-center text-lg font-bold"
               >
-                {`${formatTime(time)} - Hole #${wave}`}
+                {`${formatTime(time)} - Hole ${wave}`}
                 <div className={cn("text-sm font-normal")}>
                   {group
                     ?.sort(
@@ -173,7 +173,7 @@ function TeamTeeTimes({
                             : "text-muted-foreground",
                         )}
                       >
-                        {`#${obj.worldRank} ${obj.playerName}`}
+                        {`#${obj.worldRank ?? "N/A"} ${obj.playerName}`}
                       </div>
                     ))}
                 </div>
