@@ -240,7 +240,6 @@ export async function GET(request: Request) {
     livePlay: liveGolfers > 0 ? true : false,
   });
 
-  console.log(fieldData.field[0]);
   return NextResponse.redirect(`${origin}${next}`);
 }
 // https://www.pgctour.ca/cron/update-golfers

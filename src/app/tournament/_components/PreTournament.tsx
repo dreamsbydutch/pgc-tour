@@ -141,7 +141,9 @@ function TeamTeeTimes({
   const teamIds = teamGolfers?.map((a) => a.apiId);
   return (
     <>
-      <div className="pt-4 text-center text-2xl font-bold">Tee Times</div>
+      <div className="pt-4 text-center text-2xl font-bold">
+        Thursday Tee Times
+      </div>
       <div className="flex flex-wrap justify-around">
         {teeTimes &&
           teeTimes.map((golfer, i) => {
