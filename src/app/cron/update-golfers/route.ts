@@ -5,7 +5,9 @@ import { api } from "@/src/trpc/server";
 import type {
   DataGolfLiveTournament,
   DatagolfFieldInput,
+  DatagolfRankingInput,
 } from "@/src/types/datagolf_types";
+import { Golfer } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -23,6 +25,10 @@ export async function GET(request: Request) {
     "field-updates",
     null,
   )) as DatagolfFieldInput;
+  const rankingsData = (await fetchDataGolf(
+    "preds/get-dg-rankings",
+    null,
+  )) as DatagolfRankingInput;
 
   const tournament = await api.tournament.getCurrent();
   if (!tournament) return NextResponse.redirect(`${origin}/`);
@@ -36,21 +42,30 @@ export async function GET(request: Request) {
   let liveGolfers = 0;
   const liveRounds = new Set();
 
-  const missingGolfers = await Promise.all(
+  await Promise.all(
     fieldData.field
       .filter((obj) => !golfers.map((a) => a.apiId).includes(obj.dg_id))
+      .map((golfer) => {
+        golfer.ranking_data = rankingsData.rankings.find(
+          (obj) => obj.dg_id === golfer.dg_id,
+        );
+        return golfer;
+      })
       .map(async (golfer) => {
-        await api.golfer.create({
+        const name = golfer.player_name.split(", ");
+        const golferData = {
           apiId: golfer.dg_id,
-          playerName: golfer.player_name,
+          playerName: name[1] + " " + name[0],
           group: 0,
           worldRank: golfer.ranking_data?.owgr_rank,
           rating:
             Math.round(
-              ((golfer.ranking_data?.dg_skill_estimate ?? 0) + 2) / 0.0004,
+              ((golfer.ranking_data?.dg_skill_estimate ?? -1.875) + 2) / 0.0004,
             ) / 100,
           tournamentId: tournament.id,
-        });
+        };
+        await api.golfer.create(golferData);
+        golfers.push(golferData as Golfer);
       }),
   );
 
@@ -225,7 +240,7 @@ export async function GET(request: Request) {
     livePlay: liveGolfers > 0 ? true : false,
   });
 
-  console.log(missingGolfers);
+  console.log(fieldData.field[0]);
   return NextResponse.redirect(`${origin}${next}`);
 }
 // https://www.pgctour.ca/cron/update-golfers

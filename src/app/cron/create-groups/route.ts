@@ -113,7 +113,8 @@ export async function GET(request: Request) {
               worldRank: golfer.ranking_data?.owgr_rank,
               rating:
                 Math.round(
-                  ((golfer.ranking_data?.dg_skill_estimate ?? 0) + 2) / 0.0004,
+                  ((golfer.ranking_data?.dg_skill_estimate ?? -1.875) + 2) /
+                    0.0004,
                 ) / 100,
               tournamentId: currentTourney.id,
             });

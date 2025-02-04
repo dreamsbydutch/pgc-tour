@@ -3,12 +3,15 @@
 import { useState } from "react";
 import { Button } from "../../_components/ui/button";
 import { useRouter } from "next/navigation";
+import LoadingSpinner from "../../_components/LoadingSpinner";
 
 export function CreateGroupsButton() {
+  const [isClicked, setIsClicked] = useState(false);
   const [effect, setEffect] = useState(false);
   const router = useRouter();
 
   const handleButtonClick = () => {
+    setIsClicked(true);
     router.push("/cron/create-groups");
   };
 
@@ -18,17 +21,20 @@ export function CreateGroupsButton() {
         className={`${effect && "animate-toggleClick"} h-[2rem]`}
         onAnimationEnd={() => setEffect(false)}
         onClick={handleButtonClick}
+        disabled={isClicked}
       >
-        Create Groups
+        {isClicked ? <LoadingSpinner /> : "Create Groups"}
       </Button>
     </div>
   );
 }
 export function UpdateGolfersButton() {
+  const [isClicked, setIsClicked] = useState(false);
   const [effect, setEffect] = useState(false);
   const router = useRouter();
 
   const handleButtonClick = () => {
+    setIsClicked(true);
     router.push("/cron/update-golfers");
   };
 
@@ -38,17 +44,20 @@ export function UpdateGolfersButton() {
         className={`${effect && "animate-toggleClick"} h-[2rem]`}
         onAnimationEnd={() => setEffect(false)}
         onClick={handleButtonClick}
+        disabled={isClicked}
       >
-        Update Golfers
+        {isClicked ? <LoadingSpinner /> : "Update Golfers"}
       </Button>
     </div>
   );
 }
 export function UpdateTeamsButton() {
+  const [isClicked, setIsClicked] = useState(false);
   const [effect, setEffect] = useState(false);
   const router = useRouter();
 
   const handleButtonClick = () => {
+    setIsClicked(true);
     router.push("/cron/update-teams");
   };
 
@@ -58,8 +67,9 @@ export function UpdateTeamsButton() {
         className={`${effect && "animate-toggleClick"} h-[2rem]`}
         onAnimationEnd={() => setEffect(false)}
         onClick={handleButtonClick}
+        disabled={isClicked}
       >
-        Update Teams
+        {isClicked ? <LoadingSpinner /> : "Update Teamss"}
       </Button>
     </div>
   );
