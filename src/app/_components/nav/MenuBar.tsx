@@ -15,7 +15,7 @@ export default function MenuBar({ className }: { className?: string }) {
   const { user, loading } = useUser();
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  
+
   return (
     <Navbar
       {...{
@@ -49,22 +49,26 @@ function Navbar({
   setIsGoogleLoading: Dispatch<SetStateAction<boolean>>;
 }) {
   return (
-    <div className={cn(className, "h-14")}>
+    <div className={cn(className, "h-[55px] text-center")}>
       <NavItem href={"/"}>
-        <Home size={"2.25rem"} />
+        <Home size={"2.5rem"} className="mx-auto" />
+        {/* <span className="font-barlow text-sm font-semibold">HOME</span> */}
       </NavItem>
       <NavItem href={"/tournament"}>
-        <List size={"2.25rem"} />
+        <List size={"2.5rem"} className="mx-auto" />
+        {/* <span className="font-barlow text-sm font-semibold">LEADERBOARD</span> */}
       </NavItem>
       <NavItem href={"/standings"}>
-        <Trophy size={"2.25rem"} />
+        <Trophy size={"2.5rem"} className="mx-auto" />
+        {/* <span className="font-barlow text-sm font-semibold">STANDINGS</span> */}
       </NavItem>
       <NavItem href={"/rulebook"}>
-        <BookText size={"2.25rem"} />
+        <BookText size={"2.5rem"} className="mx-auto" />
+        {/* <span className="font-barlow text-sm font-semibold">RULEBOOK</span> */}
       </NavItem>
-      <div className="flex min-w-[2.25rem] items-center justify-center">
+      <div className="flex min-w-[2.5rem] items-center justify-center">
         {loading || isSigningOut ? (
-          <Skeleton className="h-[2.25rem] w-[2.25rem] rounded-full" />
+          <Skeleton className="h-[2.5rem] w-[2.5rem] rounded-full" />
         ) : user ? (
           <>
             <UserAccountNav {...{ user, setIsSigningOut }} />
@@ -74,7 +78,12 @@ function Navbar({
             {isGoogleLoading ? (
               <LoadingSpinner />
             ) : (
-              <LogInIcon size={"2.25rem"} />
+              <>
+                <LogInIcon size={"2.25rem"} className="mx-auto" />
+                {/* <span className="font-barlow text-sm font-semibold">
+                  LOG IN
+                </span> */}
+              </>
             )}
           </div>
         )}

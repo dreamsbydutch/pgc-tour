@@ -26,8 +26,8 @@ export default async function AdminDashboard() {
 
   return (
     <>
-      <div className="mb-8 font-varela">
-        <div className="mb-6 flex w-full flex-col flex-wrap gap-2">
+      <div className="mb-2 font-varela text-center">
+        <div className="mb-4 flex w-full flex-col flex-wrap gap-2">
           <div className="scrollbar-hidden flex w-full flex-row flex-nowrap justify-around overflow-scroll">
             <div className="flex max-w-40 flex-col text-center">
               <div className="text-sm font-bold">Current Event</div>
@@ -94,13 +94,20 @@ export default async function AdminDashboard() {
             <CreateGroupsButton />
           </div>
         </div>
-        {tours?.map((tour) => (
-          <div
-            key={tour.id}
-          >{`${tour.name} - ${tour.tourCards.length} sign ups (${+(process.env.TOUR_MAX_SIZE ?? 75) - tour.tourCards.length} left)`}</div>
-        ))}
+        <HistoryButton className=" mt-4 w-3/4" />
+        {tours?.map(async (tour) => {
+          const tourCards = await api.tourCard.getByTourId({ tourId: tour.id });
+          return (
+            <div
+              key={tour.id}
+              className="my-4 flex flex-col items-center justify-center"
+            >
+              <div className="text-lg font-semibold">{`${tour.name}`}</div>
+              <div className="text-base">{`${tour.tourCards.length} sign ups (${+(process.env.TOUR_MAX_SIZE ?? 75) - tour.tourCards.length} left - ${tourCards?.filter((obj) => obj.member.account !== 0).length} unpaid)`}</div>
+            </div>
+          );
+        })}
       </div>
-      <HistoryButton />
       <PaymentForm />
     </>
   );

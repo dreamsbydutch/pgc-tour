@@ -7,7 +7,7 @@ import type {
   DatagolfFieldInput,
   DataGolfLiveTournament,
 } from "@/src/types/datagolf_types";
-import type { Golfer, Team } from "@prisma/client";
+import { TeamData } from "@/src/types/prisma_include";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
   const teams = await api.team.getByTournament({ tournamentId: tournament.id });
 
   let updatedTeams = teams.map((team) => {
-    const data: Team = { ...team, round: liveData.info.current_round };
+    const data: TeamData = { ...team, round: liveData.info.current_round };
     const teamGolfers = golfers.filter((golfer) =>
       team.golferIds.includes(golfer.apiId),
     );

@@ -29,15 +29,15 @@ export function UserAccountNav({
   const member = api.member.getById.useQuery({ memberId: user?.id }).data;
 
   return (
-    <div className="w-fit space-x-2">
+    <div className="w-fit">
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center space-x-1">
+        <DropdownMenuTrigger className="flex items-center">
           <Image
             className="grid place-items-center rounded-full bg-border"
             src={user?.user_metadata.avatar_url as string}
             alt=""
-            width={30}
-            height={30}
+            width={35}
+            height={35}
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

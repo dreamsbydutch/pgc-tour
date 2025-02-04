@@ -17,7 +17,7 @@ export function NavItem({ href, children }: NavItemProps) {
   return (
     <Link
       href={href}
-      className={cn("text-sm text-muted-foreground", {
+      className={cn("py-1 text-sm text-muted-foreground", {
         "text-secondary-foreground": isActive,
       })}
     >
