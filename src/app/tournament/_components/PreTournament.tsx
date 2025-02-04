@@ -66,7 +66,7 @@ function TeamPickForm({
     <div className="mx-auto mb-4 w-fit max-w-4xl rounded-lg border border-slate-400 bg-slate-100 px-6 py-2 text-center shadow-xl">
       <div className="text-2xl font-bold">{tourCard.member?.fullname}</div>
       {tourCard.member.account > 0 && (
-        <div className="mx-auto mb-8 w-5/6 text-center text-lg italic text-red-600">{`Please send ${formatMoney(tourCard.member.account)} to puregolfcollectivetour@gmail.com before making your picks.`}</div>
+        <div className="mx-auto mb-8 w-5/6 text-center text-lg italic text-red-600">{`Please send ${formatMoney(tourCard.member.account)} to puregolfcollectivetour@gmail.com to unlock your picks.`}</div>
       )}
       <div className="text-xl font-bold">{`${tourCard?.position} - ${tourCard?.points} pts${tourCard?.earnings ? " - " + formatMoney(tourCard?.earnings ?? 0) : ""}`}</div>
       {teamGolfers?.map((golfer, i) => {
