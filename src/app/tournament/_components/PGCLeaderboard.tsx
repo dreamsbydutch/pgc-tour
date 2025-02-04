@@ -43,7 +43,7 @@ export function PGCListing({
     <div
       key={team.id}
       onClick={() => setIsOpen(!isOpen)}
-      className="my-1 grid grid-flow-row grid-cols-10 border-b border-slate-300 text-center"
+      className="my-1 grid grid-flow-row grid-cols-10 text-center"
     >
       <div
         className={cn(

@@ -157,7 +157,7 @@ function TeamTeeTimes({
                 key={i}
                 className="w-[10rem] p-2 text-center text-lg font-bold"
               >
-                {`${formatTime(time)} - ${wave === 10 ? "Back" : "Front"}`}
+                {`${formatTime(time)} - Hole #${wave}`}
                 <div className={cn("text-sm font-normal")}>
                   {group
                     ?.sort(
