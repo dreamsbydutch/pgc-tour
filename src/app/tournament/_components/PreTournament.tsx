@@ -69,22 +69,25 @@ function TeamPickForm({
         <div className="mx-auto mb-8 w-5/6 text-center text-lg italic text-red-600">{`Please send ${formatMoney(tourCard.member.account)} to puregolfcollectivetour@gmail.com to unlock your picks.`}</div>
       )}
       <div className="text-xl font-bold">{`${tourCard?.position} - ${tourCard?.points} pts${tourCard?.earnings ? " - " + formatMoney(tourCard?.earnings ?? 0) : ""}`}</div>
-      {teamGolfers?.map((golfer, i) => {
-        return (
-          <div
-            key={golfer?.id}
-            className={cn(
-              i % 2 !== 0 && i < 9 && "border-b border-slate-500",
-              i === 0 && "mt-2",
-              "py-0.5",
-            )}
-          >
-            <div className={cn("text-lg")}>
-              {`#${golfer?.worldRank} ${golfer?.playerName} (${golfer?.rating})`}
+      {teamGolfers
+        ?.sort((a, b) => (a.worldRank ?? Infinity) - (b.worldRank ?? Infinity))
+        .sort((a, b) => (a.group ?? Infinity) - (b.group ?? Infinity))
+        .map((golfer, i) => {
+          return (
+            <div
+              key={golfer?.id}
+              className={cn(
+                i % 2 !== 0 && i < 9 && "border-b border-slate-500",
+                i === 0 && "mt-2",
+                "py-0.5",
+              )}
+            >
+              <div className={cn("text-lg")}>
+                {`#${golfer?.worldRank} ${golfer?.playerName} (${golfer?.rating})`}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
       <Button
         key={existingTeam?.id}
         onClick={() => {
@@ -123,7 +126,8 @@ function TeamTeeTimes({
     return <></>;
   const teeTimes = [
     ...new Set(
-      teamGolfers?.sort((a, b) => (b.endHole ?? 0) - (a.endHole ?? 0))
+      teamGolfers
+        ?.sort((a, b) => (b.endHole ?? 0) - (a.endHole ?? 0))
         ?.sort((a, b) => {
           if (!a.roundOneTeeTime && !b.roundOneTeeTime) return 0;
           if (!a.roundOneTeeTime) return 1;
@@ -144,7 +148,7 @@ function TeamTeeTimes({
       <div className="pt-4 text-center text-2xl font-bold">
         Thursday Tee Times
       </div>
-      <div className="flex flex-wrap justify-around">
+      <div className="mx-auto flex max-w-[720px] flex-wrap justify-around">
         {teeTimes &&
           teeTimes.map((golfer, i) => {
             const time = new Date(golfer?.split(" - ")[0] ?? "");

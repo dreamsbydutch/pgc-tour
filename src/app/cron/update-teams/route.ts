@@ -47,10 +47,10 @@ export async function GET(request: Request) {
       team.golferIds.includes(golfer.apiId),
     );
 
-    if (team.roundOneTeeTime === null) {
+    if (!(new Date(team.roundOneTeeTime ?? "") > new Date())) {
       data.roundOneTeeTime =
         teamGolfers.sort((a, b) => {
-          if (!a.roundOneTeeTime && !b.roundOneTeeTime) return 0;
+          if (!a.roundOneTeeTime && !b.roundOneTeeTime) return 1;
           if (!a.roundOneTeeTime) return 1;
           if (!b.roundOneTeeTime) return -1;
           return (
@@ -59,7 +59,7 @@ export async function GET(request: Request) {
           );
         })[0]?.roundOneTeeTime ?? "";
     }
-    if (team.roundTwoTeeTime === null) {
+    if (!(new Date(team.roundTwoTeeTime ?? "") > new Date())) {
       data.roundTwoTeeTime =
         teamGolfers.sort((a, b) => {
           if (!a.roundTwoTeeTime && !b.roundTwoTeeTime) return 0;
@@ -71,7 +71,7 @@ export async function GET(request: Request) {
           );
         })[0]?.roundTwoTeeTime ?? "";
     }
-    if (team.roundThreeTeeTime === null) {
+    if (!(new Date(team.roundThreeTeeTime ?? "") > new Date())) {
       data.roundThreeTeeTime =
         teamGolfers.sort((a, b) => {
           if (!a.roundThreeTeeTime && !b.roundThreeTeeTime) return 0;
@@ -83,7 +83,7 @@ export async function GET(request: Request) {
           );
         })[5]?.roundThreeTeeTime ?? "";
     }
-    if (team.roundFourTeeTime === null) {
+    if (!(new Date(team.roundFourTeeTime ?? "") > new Date())) {
       data.roundFourTeeTime =
         teamGolfers.sort((a, b) => {
           if (!a.roundFourTeeTime && !b.roundFourTeeTime) return 0;

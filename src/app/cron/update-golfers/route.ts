@@ -57,7 +57,7 @@ export async function GET(request: Request) {
           apiId: golfer.dg_id,
           playerName: name[1] + " " + name[0],
           group: 0,
-          worldRank: golfer.ranking_data?.owgr_rank,
+          worldRank: golfer.ranking_data?.owgr_rank ?? 501,
           rating:
             Math.round(
               ((golfer.ranking_data?.dg_skill_estimate ?? -1.875) + 2) / 0.0004,
