@@ -39,7 +39,6 @@ export async function GET(request: Request) {
   const golferIDs = teams.map((obj) => obj.golferIds).flat();
 
   let liveGolfers = 0;
-  const liveRounds = new Set();
 
   await Promise.all(
     fieldData.field
@@ -222,14 +221,6 @@ export async function GET(request: Request) {
               ? 9
               : undefined;
       }
-      if (
-        liveGolfer &&
-        liveGolfer.current_pos !== "WD" &&
-        liveGolfer.current_pos !== "DQ" &&
-        liveGolfer.current_pos !== "CUT"
-      ) {
-        liveRounds.add(liveGolfer?.round);
-      }
 
       await api.golfer.update(data);
 
@@ -239,9 +230,7 @@ export async function GET(request: Request) {
 
   await api.tournament.update({
     id: tournament.id,
-    currentRound: [...liveRounds].sort(
-      (a, b) => (a as number) - (b as number),
-    )[0] as number,
+    currentRound: fieldData.current_round,
     livePlay: liveGolfers > 0 ? true : false,
   });
 
