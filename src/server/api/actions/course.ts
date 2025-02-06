@@ -1,6 +1,6 @@
 "use server";
 
-import { fetchDataGolf, getCityCoordinates } from "@/src/lib/utils";
+import { fetchDataGolf } from "@/src/lib/utils";
 import { api } from "@/trpcLocal/server";
 
 export async function seedCourses() {
