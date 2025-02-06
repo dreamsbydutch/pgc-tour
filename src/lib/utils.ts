@@ -1,7 +1,9 @@
-import type { Golfer, Team } from "@prisma/client";
+import type { Course, Golfer, Team } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { formatDate, formatDistanceToNowStrict } from "date-fns";
 import { twMerge } from "tailwind-merge";
+import tzLookup from "tz-lookup";
+import { api } from "../trpc/react";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -110,24 +112,24 @@ export function formatName(name: string, type: "display" | "full") {
     : firstName.charAt(0).toUpperCase() + ". " + lastName;
 }
 
-export function getGolferTeeTime(golfer: Golfer) {
+export function getGolferTeeTime(course: Course, golfer: Golfer) {
   const roundNames = ["One", "Two", "Three", "Four"];
   if (golfer.round === null) {
     throw new Error("Golfer round is null");
   }
   const teeTimeKey =
     `round${roundNames[golfer.round - 1]}TeeTime` as keyof Golfer;
-  return formatTime(new Date(golfer[teeTimeKey] ?? ""));
+  return formatTime(course, new Date(golfer[teeTimeKey] ?? ""));
 }
-export function getTeamTeeTime(team: Team) {
+export function getTeamTeeTime(course: Course, team: Team) {
   const roundNames = ["One", "Two", "Three", "Four"];
   if (team.round === null) {
     throw new Error("Team round is null");
   }
   const teeTimeKey = `round${roundNames[team.round - 1]}TeeTime` as keyof Team;
-  return formatTime(new Date((team[teeTimeKey] as string) ?? ""));
+  return formatTime(course, new Date((team[teeTimeKey] as string) ?? ""));
 }
-export function formatTime(time: Date) {
+export function formatTime(course: Course, time: Date) {
   return new Date(time ?? "").toLocaleString("en-US", {
     hour: "numeric",
     minute: "numeric",
@@ -170,4 +172,23 @@ type DataGolfExports =
   | "preds/get-dg-rankings"
   | "preds/in-play"
   | "preds/live-hole-stats"
-  | "preds/live-tournament-stats";
+  | "preds/live-tournament-stats"
+  | "historical-raw-data/event-list";
+
+function convertToUserLocalTime(course: Course, localTime: Date): Date {
+  const cityTimeZone = tzLookup(course.latitude ?? 0, course.longitude ?? 0);
+
+  // Convert local time (assumed in city's timezone) to UTC
+  const utcTime = new Date(
+    localTime.toLocaleString("en-US", { timeZone: cityTimeZone }),
+  );
+
+  // Convert from UTC to the user's local timezone
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userLocalTimeString = utcTime.toLocaleString("en-US", {
+    timeZone: userTimeZone,
+  });
+
+  // Convert localized string back to Date object
+  return new Date(userLocalTimeString);
+}
