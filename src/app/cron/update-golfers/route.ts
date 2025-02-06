@@ -92,7 +92,7 @@ export async function GET(request: Request) {
         roundFourTeeTime?: string | undefined;
         roundFour?: number | undefined;
         endHole?: number | undefined;
-      } = { id: +golfer.apiId, roundFour: undefined };
+      } = { id: golfer.id, roundFour: undefined };
       const liveGolfer = liveData.data.find(
         (obj) =>
           fieldData.event_name === liveData.info.event_name &&
@@ -204,7 +204,7 @@ export async function GET(request: Request) {
       } else {
         data.round = 1
       }
-      if (liveGolfer?.country !== undefined) {
+      if (liveGolfer?.country !== undefined && golfer.country === null) {
         data.country = liveGolfer.country;
       }
       if (liveGolfer?.end_hole !== undefined) {
@@ -226,7 +226,6 @@ export async function GET(request: Request) {
       ) {
         liveRounds.add(liveGolfer?.round);
       }
-      console.log(data)
       await api.golfer.update(data);
 
       return data;
