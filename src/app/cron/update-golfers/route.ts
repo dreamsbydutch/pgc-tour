@@ -171,6 +171,7 @@ export async function GET(request: Request) {
         data.posChange =
           Number(liveGolfer.current_pos.replace("T", "")) -
           Number(golfer.position?.replace("T", "") ?? 0);
+         data.posChange = isNaN(data.posChange) ? undefined : data.posChange
       }
       if (
         liveGolfer?.current_score !== undefined &&
