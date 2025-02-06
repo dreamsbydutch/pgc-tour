@@ -202,6 +202,8 @@ export async function GET(request: Request) {
       }
       if (liveGolfer?.round !== undefined) {
         data.round = liveGolfer.round;
+      } else {
+        data.round = 1
       }
       if (liveGolfer?.country !== undefined && golfer.country === null) {
         data.country = liveGolfer.country;
