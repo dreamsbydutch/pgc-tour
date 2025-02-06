@@ -6,7 +6,7 @@ import { cn, formatMoney, formatTime } from "@/src/lib/utils";
 import { Button } from "../../_components/ui/button";
 import { useRouter } from "next/navigation";
 import { api } from "@/src/trpc/react";
-import type { Golfer } from "@prisma/client";
+import type { Course, Golfer } from "@prisma/client";
 import { useState } from "react";
 import LoadingSpinner from "../../_components/LoadingSpinner";
 
@@ -24,6 +24,10 @@ export default function PreTournamentPage({
   const golfers = api.golfer.getByTournament.useQuery({
     tournamentId: tournament.id,
   }).data;
+  const course =
+    api.course.getById.useQuery({
+      courseID: tournament.courseId,
+    }).data ?? undefined;
 
   const teamGolfers = golfers
     ?.filter((obj) => existingTeam?.golferIds.includes(obj.apiId))
@@ -39,7 +43,7 @@ export default function PreTournamentPage({
       ) : (
         <>
           <TeamPickForm {...{ tourCard, tournament, teamGolfers }} />
-          <TeamTeeTimes {...{ golfers, teamGolfers }} />
+          <TeamTeeTimes {...{ golfers, teamGolfers, course }} />
         </>
       )}
     </div>
@@ -114,14 +118,17 @@ function TeamPickForm({
 function TeamTeeTimes({
   golfers,
   teamGolfers,
+  course,
 }: {
   golfers: Golfer[] | undefined;
   teamGolfers: Golfer[] | undefined;
+  course: Course | undefined;
 }) {
   if (
     !teamGolfers ||
     teamGolfers.length === 0 ||
-    teamGolfers.filter((obj) => obj.roundOneTeeTime).length === 0
+    teamGolfers.filter((obj) => obj.roundOneTeeTime).length === 0 ||
+    !course
   )
     return <></>;
   const teeTimes = [
@@ -163,7 +170,7 @@ function TeamTeeTimes({
                 key={i}
                 className="w-[180px] p-2 text-center text-lg font-bold"
               >
-                {`${formatTime(time)} - Hole ${wave}`}
+                {`${formatTime(course, time)} - Hole ${wave}`}
                 <div className={cn("text-sm font-normal")}>
                   {group
                     ?.sort(

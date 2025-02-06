@@ -31,6 +31,7 @@ import {
 } from "country-flag-icons/react/3x2";
 import { TeamData } from "@/src/types/prisma_include";
 import { MoveDownIcon, MoveUpIcon } from "lucide-react";
+import { api } from "@/src/trpc/react";
 
 export function PGAListing({
   golfer,
@@ -39,6 +40,9 @@ export function PGAListing({
   golfer: Golfer;
   userTeam: TeamData | undefined;
 }) {
+  const course = api.course.getById.useQuery({
+    courseID: userTeam?.tournament.courseId ?? "",
+  });
   const [isOpen, setIsOpen] = useState(false);
   const total =
     (golfer.roundOne ?? 0) +
@@ -93,7 +97,7 @@ export function PGAListing({
         </div>
         {golfer.thru === 0 ? (
           <div className="col-span-2 place-self-center font-varela text-xs">
-            {getGolferTeeTime(golfer)}
+            {course.data && getGolferTeeTime(course.data, golfer)}
           </div>
         ) : (
           <>

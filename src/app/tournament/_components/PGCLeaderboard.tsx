@@ -30,6 +30,7 @@ export function PGCListing({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const member = api.member.getSelf.useQuery();
+  const course = api.course.getById.useQuery({ courseID: tournament.courseId });
   const posChange =
     (team?.pastPosition ? +team.pastPosition.replace("T", "") : 0) -
     (team?.position ? +team.position.replace("T", "") : 0);
@@ -82,7 +83,7 @@ export function PGCListing({
         </div>
         {team.thru === 0 ? (
           <div className="col-span-2 place-self-center font-varela text-sm">
-            {getTeamTeeTime(team)}
+            {course.data && getTeamTeeTime(course.data, team)}
           </div>
         ) : (
           <>
@@ -199,7 +200,7 @@ export function PGCListing({
                     <td className="text-sm">{formatScore(golfer.score)}</td>
                     {golfer.thru === 0 ? (
                       <td className="text-xs" colSpan={2}>
-                        {getGolferTeeTime(golfer)}
+                        {course.data && getGolferTeeTime(course.data, golfer)}
                       </td>
                     ) : (
                       <>
