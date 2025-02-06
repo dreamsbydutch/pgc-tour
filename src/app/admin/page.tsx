@@ -9,6 +9,7 @@ import type {
 import { fetchDataGolf } from "@/src/lib/utils";
 import {
   CreateGroupsButton,
+  EmailListLinkButton,
   UpdateGolfersButton,
   UpdateTeamsButton,
 } from "./_components/CreateGroupsButton";
@@ -100,6 +101,9 @@ export default async function AdminDashboard() {
           <div className="scrollbar-hidden flex w-full flex-row flex-nowrap justify-around overflow-scroll">
             <UpdateGolfersButton />
             <UpdateTeamsButton />
+          </div>
+          <div className="scrollbar-hidden flex w-full flex-row flex-nowrap justify-around overflow-scroll">
+            <EmailListLinkButton />
           </div>
         </div>
         <HistoryButton className="mt-4 w-3/4" />
