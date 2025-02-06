@@ -226,7 +226,7 @@ export async function GET(request: Request) {
       ) {
         liveRounds.add(liveGolfer?.round);
       }
-
+      console.log(data)
       await api.golfer.update(data);
 
       return data;
