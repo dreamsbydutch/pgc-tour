@@ -7,7 +7,6 @@ import type {
   DatagolfFieldInput,
   DatagolfRankingInput,
 } from "@/src/types/datagolf_types";
-import { Golfer } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -65,7 +64,6 @@ export async function GET(request: Request) {
           tournamentId: tournament.id,
         };
         await api.golfer.create(golferData);
-        golfers.push(golferData as Golfer);
       }),
   );
 
@@ -94,16 +92,16 @@ export async function GET(request: Request) {
         roundFourTeeTime?: string | undefined;
         roundFour?: number | undefined;
         endHole?: number | undefined;
-      } = { id: golfer.id, roundFour: undefined };
+      } = { id: +golfer.apiId, roundFour: undefined };
       const liveGolfer = liveData.data.find(
         (obj) =>
           fieldData.event_name === liveData.info.event_name &&
-          obj.dg_id === golfer.apiId,
+          obj.dg_id === +golfer.apiId,
       );
       const fieldGolfer = fieldData.field.find(
-        (obj) => obj.dg_id === golfer.apiId,
+        (obj) => obj.dg_id === +golfer.apiId,
       );
-      if (!golfer.roundOne) {
+      if (tournament.currentRound === 1 && !tournament.livePlay) {
         data.usage =
           golferIDs.filter((obj) => obj === golfer.apiId).length / teams.length;
       }
@@ -205,7 +203,7 @@ export async function GET(request: Request) {
       } else {
         data.round = 1
       }
-      if (liveGolfer?.country !== undefined && golfer.country === null) {
+      if (liveGolfer?.country !== undefined) {
         data.country = liveGolfer.country;
       }
       if (liveGolfer?.end_hole !== undefined) {
