@@ -70,7 +70,7 @@ export function PGAListing({
       >
         <div className="col-span-2 flex place-self-center font-varela text-base">
           {golfer.position}
-          {!golfer.posChange ? (
+          {/* {!golfer.posChange ? (
             <></>
           ) : golfer.posChange > 0 ? (
             <span className="ml-0.5 flex items-center justify-center text-xs text-green-900">
@@ -82,7 +82,7 @@ export function PGAListing({
               <MoveDownIcon className="w-3" />
               {Math.abs(golfer.posChange)}
             </span>
-          )}
+          )} */}
         </div>
         <div className="col-span-4 place-self-center font-varela text-lg">
           {golfer.playerName}
