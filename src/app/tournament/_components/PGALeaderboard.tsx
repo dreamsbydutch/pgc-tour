@@ -95,7 +95,7 @@ export function PGAListing({
         <div className="col-span-2 place-self-center font-varela text-base">
           {formatScore(golfer.score)}
         </div>
-        {golfer.thru === 0 ? (
+        {!golfer.thru || golfer.thru === 0 ? (
           <div className="col-span-2 place-self-center font-varela text-xs">
             {course.data && getGolferTeeTime(course.data, golfer)}
           </div>
