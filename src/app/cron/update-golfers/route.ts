@@ -175,10 +175,14 @@ export async function GET(request: Request) {
       }
       if (
         liveGolfer?.current_score !== undefined &&
+        liveGolfer.current_pos !== undefined &&
+        liveGolfer.current_pos !== "--" &&
         liveGolfer.current_pos !== "WD" &&
         liveGolfer.current_pos !== "DQ"
       ) {
         data.score = liveGolfer.current_score;
+      } else {
+        data.score = undefined
       }
       if (
         liveGolfer?.thru !== undefined &&
