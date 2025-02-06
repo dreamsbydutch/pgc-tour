@@ -281,13 +281,13 @@ export async function GET(request: Request) {
       team.position =
         "" +
         (updatedTeams.filter(
-          (obj) => (obj.score ?? 100) === (team.score ?? 100),
+          (obj) => (obj.tourCard.tourId === team.tourCard.tourId) && ((obj.score ?? 100) === (team.score ?? 100)),
         ).length > 1
           ? "T"
           : "") +
         (
           1 +
-          updatedTeams.filter((obj) => (obj.score ?? 100) < (team.score ?? 100))
+          updatedTeams.filter((obj) => (obj.tourCard.tourId === team.tourCard.tourId) && ((obj.score ?? 100) < (team.score ?? 100)))
             .length
         ).toString();
 
@@ -295,8 +295,8 @@ export async function GET(request: Request) {
         "" +
         (updatedTeams.filter(
           (obj) =>
-            (obj.score ?? 100) - (obj.today ?? 100) ===
-            (team.score ?? 100) - (team.today ?? 100),
+            (obj.tourCard.tourId === team.tourCard.tourId) && ((obj.score ?? 100) - (obj.today ?? 100) ===
+            (team.score ?? 100) - (team.today ?? 100)),
         ).length > 1
           ? "T"
           : "") +
@@ -304,8 +304,8 @@ export async function GET(request: Request) {
           1 +
           updatedTeams.filter(
             (obj) =>
-              (obj.score ?? 100) - (obj.today ?? 100) <
-              (team.score ?? 100) - (team.today ?? 100),
+              (obj.tourCard.tourId === team.tourCard.tourId) && ((obj.score ?? 100) - (obj.today ?? 100) <
+              (team.score ?? 100) - (team.today ?? 100)),
           ).length
         ).toString();
 

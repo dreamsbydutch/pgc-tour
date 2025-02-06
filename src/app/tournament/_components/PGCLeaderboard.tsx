@@ -58,7 +58,7 @@ export function PGCListing({
       >
         <div className="col-span-2 flex place-self-center font-varela text-base">
           {team.position}
-          {posChange === 0 ? (
+          {/* {posChange === 0 ? (
             // <span className="ml-0.5 flex items-center justify-center text-2xs">
             //   <MoveHorizontalIcon className="w-2" />
             // </span>
@@ -73,7 +73,7 @@ export function PGCListing({
               <MoveDownIcon className="w-3" />
               {Math.abs(posChange)}
             </span>
-          )}
+          )} */}
         </div>
         <div className="col-span-4 place-self-center font-varela text-lg">
           {team.tourCard.displayName}
