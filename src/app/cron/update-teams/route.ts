@@ -108,7 +108,7 @@ function updateTeamData(
   );
 
   // Calculate team statistics depending on whether live play is enabled.
-  if (tournament.livePlay) {
+  if (!tournament.livePlay) {
     Object.assign(
       updatedTeam,
       calculateLiveTeamStats(updatedTeam, team, teamGolfers, tournament),
