@@ -7,7 +7,8 @@ import type {
   DatagolfFieldInput,
   DataGolfLiveTournament,
 } from "@/src/types/datagolf_types";
-import { TeamData } from "@/src/types/prisma_include";
+import { TeamData, TournamentData } from "@/src/types/prisma_include";
+import { Golfer } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -66,10 +67,10 @@ export async function GET(request: Request) {
  */
 function updateTeamData(
   team: TeamData,
-  golfers: any[],
+  golfers: Golfer[],
   fieldData: DatagolfFieldInput,
   liveData: DataGolfLiveTournament,
-  tournament: any,
+  tournament: TournamentData,
 ): TeamData {
   const updatedTeam: TeamData = {
     ...team,
@@ -136,8 +137,8 @@ function updateTeamData(
  */
 function assignTeeTime(
   currentTeeTime: string | null | undefined,
-  teamGolfers: any[],
-  teeTimeKey: string,
+  teamGolfers: Golfer[],
+  teeTimeKey: keyof Golfer,
   sortIndex: number,
 ): string {
   if (!(new Date(currentTeeTime ?? "") > new Date())) {
@@ -150,7 +151,7 @@ function assignTeeTime(
         : Infinity;
       return aTime - bTime;
     });
-    return sorted[sortIndex]?.[teeTimeKey] ?? "";
+    return sorted[sortIndex]?.[teeTimeKey]?.toString() ?? "";
   }
   return currentTeeTime ?? "";
 }
@@ -161,8 +162,8 @@ function assignTeeTime(
 function calculateLiveTeamStats(
   updatedTeam: TeamData,
   team: TeamData,
-  teamGolfers: any[],
-  tournament: any,
+  teamGolfers: Golfer[],
+  tournament: TournamentData,
 ): Partial<TeamData> {
   if ((tournament.currentRound ?? 0) >= 3) {
     updatedTeam.today = average(teamGolfers.slice(0, 5), "today", 8);
@@ -200,8 +201,8 @@ function calculateLiveTeamStats(
 function calculateNonLiveTeamStats(
   updatedTeam: TeamData,
   team: TeamData,
-  teamGolfers: any[],
-  tournament: any,
+  teamGolfers: Golfer[],
+  tournament: TournamentData,
 ): Partial<TeamData> {
   if (tournament.currentRound === 1 && (team.thru ?? 0) > 0) {
     updatedTeam.roundOne = average(
@@ -316,14 +317,18 @@ function calculateNonLiveTeamStats(
  * Calculates an average for a given key from an array of objects.
  */
 function average(
-  arr: any[],
+  arr: Record<string | number, number | string | Date | null | undefined>[],
   key: string,
   defaultValue: number,
   count?: number,
 ): number {
   const n = count ?? arr.length;
   if (n === 0) return defaultValue;
-  const total = arr.reduce((sum, item) => sum + (item[key] ?? defaultValue), 0);
+  const total = arr.reduce(
+    (sum, item) =>
+      sum + (typeof item[key] === "number" ? item[key] : defaultValue),
+    0,
+  );
   return total / n;
 }
 
@@ -339,7 +344,7 @@ function roundValue(val: number | null | undefined): number | null {
  */
 async function updateTeamPositions(
   updatedTeams: TeamData[],
-  tournament: any,
+  tournament: TournamentData,
 ): Promise<TeamData[]> {
   return Promise.all(
     updatedTeams.map(async (team) => {
