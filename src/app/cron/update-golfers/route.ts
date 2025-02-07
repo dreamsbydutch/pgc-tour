@@ -4,10 +4,13 @@ import { fetchDataGolf } from "@/src/lib/utils";
 import { api } from "@/src/trpc/server";
 import type {
   DataGolfLiveTournament,
+  DatagolfFieldGolfer,
   DatagolfFieldInput,
+  DatagolfLiveGolfer,
   DatagolfRankingInput,
 } from "@/src/types/datagolf_types";
-import { TournamentData } from "@/src/types/prisma_include";
+import type { TeamData, TournamentData } from "@/src/types/prisma_include";
+import { Golfer } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -81,7 +84,7 @@ export async function GET(request: Request) {
  * from the current list of golfers.
  */
 async function createMissingGolfers(
-  field: Array<any>,
+  field: DatagolfFieldGolfer[],
   existingGolfers: Array<{ apiId: number }>,
   rankingsData: DatagolfRankingInput,
   tournament: TournamentData,
@@ -119,18 +122,20 @@ async function createMissingGolfers(
  * The `addLiveCount` callback accumulates the number of golfers with live data.
  */
 async function updateExistingGolfers(
-  golfers: Array<any>,
+  golfers: Golfer[],
   liveData: DataGolfLiveTournament,
   fieldData: DatagolfFieldInput,
-  tournament: any,
+  tournament: TournamentData,
   golferIDs: number[],
-  teams: Array<any>,
+  teams: TeamData[],
   addLiveCount: (count: number) => void,
 ) {
   await Promise.all(
     golfers.map(async (golfer) => {
       // Initialize update object.
-      const updateData: any = { id: golfer.id, roundFour: undefined };
+      const updateData: { id: number } & Partial<Omit<Golfer, "id">> = {
+        id: golfer.id,
+      };
 
       // Find matching live and field data records.
       const liveGolfer = liveData.data.find(
@@ -201,8 +206,12 @@ async function updateExistingGolfers(
         updateData.today = liveGolfer.today;
       }
       updateData.round = liveGolfer?.round ?? 1;
-      if (liveGolfer?.country !== undefined && golfer.country === null) {
-        updateData.country = liveGolfer.country;
+      if (
+        liveGolfer?.country !== undefined &&
+        golfer.country === null &&
+        liveGolfer.country !== null
+      ) {
+        updateData.country = liveGolfer.country ?? undefined;
       }
       if (liveGolfer?.end_hole !== undefined) {
         updateData.endHole = liveGolfer.end_hole;
@@ -226,11 +235,11 @@ async function updateExistingGolfers(
  * Sets tee times and round scores for a golfer.
  */
 function setRoundTeeTimesAndScores(
-  updateData: any,
-  liveGolfer: any,
-  fieldGolfer: any,
+  updateData: Partial<Golfer>,
+  liveGolfer: DatagolfLiveGolfer | undefined,
+  fieldGolfer: DatagolfFieldGolfer | undefined,
   fieldData: DatagolfFieldInput,
-  tournament: any,
+  tournament: TournamentData,
 ) {
   // Round One
   if (fieldGolfer?.r1_teetime)
