@@ -11,10 +11,7 @@ import { TeamData } from "@/src/types/prisma_include";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  // Extract search parameters and origin from the request URL
   const { searchParams, origin } = new URL(request.url);
-
-  // Get the authorization code and the 'next' redirect path
   const next = searchParams.get("next") ?? "/";
 
   const liveData = (await fetchDataGolf(
@@ -29,245 +26,22 @@ export async function GET(request: Request) {
   const tournament = await api.tournament.getCurrent();
   if (!tournament) return NextResponse.redirect(`${origin}/`);
 
-  const golfers = await api.golfer.getByTournament({
+  let golfers = await api.golfer.getByTournament({
     tournamentId: tournament.id,
   });
+  // Sort golfers by today, then thru, then score, then group
   golfers.sort(
     (a, b) =>
-      (a.today ?? 0) - (b.today ?? 0) || // Sort by today
-      (a.thru ?? 0) - (b.thru ?? 0) || // Then sort by thru
-      (a.score ?? 0) - (b.score ?? 0) || // Then sort by score
+      (a.today ?? 0) - (b.today ?? 0) ||
+      (a.thru ?? 0) - (b.thru ?? 0) ||
+      (a.score ?? 0) - (b.score ?? 0) ||
       (a.group ?? 0) - (b.group ?? 0),
   );
+
   const teams = await api.team.getByTournament({ tournamentId: tournament.id });
-
-  let updatedTeams = teams.map((team) => {
-    const data: TeamData = { ...team, round: fieldData.current_round };
-    const teamGolfers = golfers.filter((golfer) =>
-      team.golferIds.includes(golfer.apiId),
-    );
-
-    if (!(new Date(team.roundOneTeeTime ?? "") > new Date())) {
-      data.roundOneTeeTime =
-        teamGolfers.sort((a, b) => {
-          if (!a.roundOneTeeTime && !b.roundOneTeeTime) return 1;
-          if (!a.roundOneTeeTime) return 1;
-          if (!b.roundOneTeeTime) return -1;
-          return (
-            new Date(a.roundOneTeeTime).getTime() -
-            new Date(b.roundOneTeeTime).getTime()
-          );
-        })[0]?.roundOneTeeTime ?? "";
-    }
-    if (!(new Date(team.roundTwoTeeTime ?? "") > new Date())) {
-      data.roundTwoTeeTime =
-        teamGolfers.sort((a, b) => {
-          if (!a.roundTwoTeeTime && !b.roundTwoTeeTime) return 0;
-          if (!a.roundTwoTeeTime) return 1;
-          if (!b.roundTwoTeeTime) return -1;
-          return (
-            new Date(a.roundTwoTeeTime).getTime() -
-            new Date(b.roundTwoTeeTime).getTime()
-          );
-        })[0]?.roundTwoTeeTime ?? "";
-    }
-    if (!(new Date(team.roundThreeTeeTime ?? "") > new Date())) {
-      data.roundThreeTeeTime =
-        teamGolfers.sort((a, b) => {
-          if (!a.roundThreeTeeTime && !b.roundThreeTeeTime) return 0;
-          if (!a.roundThreeTeeTime) return 1;
-          if (!b.roundThreeTeeTime) return -1;
-          return (
-            new Date(a.roundThreeTeeTime).getTime() -
-            new Date(b.roundThreeTeeTime).getTime()
-          );
-        })[5]?.roundThreeTeeTime ?? "";
-    }
-    if (!(new Date(team.roundFourTeeTime ?? "") > new Date())) {
-      data.roundFourTeeTime =
-        teamGolfers.sort((a, b) => {
-          if (!a.roundFourTeeTime && !b.roundFourTeeTime) return 0;
-          if (!a.roundFourTeeTime) return 1;
-          if (!b.roundFourTeeTime) return -1;
-          return (
-            new Date(a.roundFourTeeTime).getTime() -
-            new Date(b.roundFourTeeTime).getTime()
-          );
-        })[5]?.roundFourTeeTime ?? "";
-    }
-
-    if (tournament.livePlay) {
-      if ((tournament.currentRound ?? 0) >= 3) {
-        data.today =
-          teamGolfers.slice(0, 5).reduce((p, c) => (p += c.today ?? 8), 0) / 5;
-        data.thru =
-          teamGolfers.slice(0, 5).reduce((p, c) => (p += c.thru ?? 0), 0) / 5;
-        if ((tournament.currentRound ?? 0) === 3) {
-          data.score =
-            (team.roundOne ?? 0) -
-            tournament.course.par +
-            ((team.roundTwo ?? 0) - tournament.course.par) +
-            data.today;
-        } else if ((tournament.currentRound ?? 0) === 4) {
-          data.score =
-            (team.roundOne ?? 0) -
-            tournament.course.par +
-            ((team.roundTwo ?? 0) - tournament.course.par) +
-            ((team.roundThree ?? 0) - tournament.course.par) +
-            data.today;
-        }
-      } else {
-        data.today = teamGolfers.reduce((p, c) => (p += c.today ?? 8), 0) / 10;
-        data.thru = teamGolfers.reduce((p, c) => (p += c.thru ?? 0), 0) / 10;
-        if ((tournament.currentRound ?? 0) === 1) {
-          data.score = data.today;
-        } else if ((tournament.currentRound ?? 0) === 2) {
-          data.score =
-            (team.roundOne ?? 0) - tournament.course.par + data.today;
-        }
-      }
-    } else {
-      if ((tournament.currentRound ?? 0) === 1 && (team.thru ?? 0) > 0) {
-        data.roundOne =
-          teamGolfers.reduce(
-            (p, c) => (p += c.roundOne ?? tournament.course.par + 8),
-            0,
-          ) / 10;
-        data.today =
-          teamGolfers.reduce(
-            (p, c) => (p += c.roundOne ?? tournament.course.par + 8),
-            0,
-          ) /
-            10 -
-          tournament.course.par;
-        data.thru = 18;
-        data.score =
-          teamGolfers.reduce(
-            (p, c) => (p += c.roundOne ?? tournament.course.par + 8),
-            0,
-          ) /
-            10 -
-          tournament.course.par;
-      }
-      if ((tournament.currentRound ?? 0) === 2 && (team.thru ?? 0) > 0) {
-        data.roundTwo =
-          teamGolfers.reduce(
-            (p, c) => (p += c.roundTwo ?? tournament.course.par + 8),
-            0,
-          ) / 10;
-        data.today =
-          teamGolfers.reduce(
-            (p, c) => (p += c.roundTwo ?? tournament.course.par + 8),
-            0,
-          ) /
-            10 -
-          tournament.course.par;
-        data.thru = 18;
-        data.score =
-          (team.roundOne ?? 0) -
-          tournament.course.par +
-          (teamGolfers.reduce(
-            (p, c) => (p += c.roundTwo ?? tournament.course.par + 8),
-            0,
-          ) /
-            10 -
-            tournament.course.par);
-      }
-      if ((tournament.currentRound ?? 0) === 3 && (team.thru ?? 0) > 0) {
-        data.roundThree =
-          teamGolfers
-            .sort((a, b) => (a.roundThree ?? 0) - (b.roundThree ?? 0))
-            .slice(0, 5)
-            .reduce(
-              (p, c) => (p += c.roundThree ?? tournament.course.par + 8),
-              0,
-            ) / 5;
-        data.today =
-          teamGolfers
-            .sort((a, b) => (a.roundThree ?? 0) - (b.roundThree ?? 0))
-            .slice(0, 5)
-            .reduce(
-              (p, c) => (p += c.roundThree ?? tournament.course.par + 8),
-              0,
-            ) /
-            5 -
-          tournament.course.par;
-        data.thru = 18;
-        data.score =
-          (team.roundOne ?? 0) +
-          (team.roundTwo ?? 0) -
-          tournament.course.par * 2 +
-          (teamGolfers
-            .sort((a, b) => (a.roundThree ?? 0) - (b.roundThree ?? 0))
-            .slice(0, 5)
-            .reduce(
-              (p, c) => (p += c.roundThree ?? tournament.course.par + 8),
-              0,
-            ) /
-            5 -
-            tournament.course.par);
-      }
-      if ((tournament.currentRound ?? 0) === 4 && (team.thru ?? 0) > 0) {
-        data.roundFour =
-          teamGolfers
-            .sort((a, b) => (a.roundFour ?? 0) - (b.roundFour ?? 0))
-            .slice(0, 5)
-            .reduce(
-              (p, c) => (p += c.roundFour ?? tournament.course.par + 8),
-              0,
-            ) / 5;
-        data.today =
-          teamGolfers
-            .sort((a, b) => (a.roundFour ?? 0) - (b.roundFour ?? 0))
-            .slice(0, 5)
-            .reduce(
-              (p, c) => (p += c.roundFour ?? tournament.course.par + 8),
-              0,
-            ) /
-            5 -
-          tournament.course.par;
-        data.thru = 18;
-        data.score =
-          (team.roundOne ?? 0) +
-          (team.roundTwo ?? 0) +
-          (team.roundThree ?? 0) -
-          tournament.course.par * 3 +
-          (teamGolfers
-            .sort((a, b) => (a.roundFour ?? 0) - (b.roundFour ?? 0))
-            .slice(0, 5)
-            .reduce(
-              (p, c) => (p += c.roundFour ?? tournament.course.par + 8),
-              0,
-            ) /
-            5 -
-            tournament.course.par);
-      }
-    }
-
-    if (data.score) {
-      data.score = Math.round(data.score * 10) / 10;
-    }
-    if (data.today) {
-      data.today = Math.round(data.today * 10) / 10;
-    }
-    if (data.thru) {
-      data.thru = Math.round(data.thru * 10) / 10;
-    }
-    if (data.roundOne) {
-      data.roundOne = Math.round(data.roundOne * 10) / 10;
-    }
-    if (data.roundTwo) {
-      data.roundTwo = Math.round(data.roundTwo * 10) / 10;
-    }
-    if (data.roundThree) {
-      data.roundThree = Math.round(data.roundThree * 10) / 10;
-    }
-    if (data.roundFour) {
-      data.roundFour = Math.round(data.roundFour * 10) / 10;
-    }
-
-    return data;
-  });
+  let updatedTeams = teams.map((team) =>
+    updateTeamData(team, golfers, fieldData, liveData, tournament),
+  );
 
   updatedTeams = simulateTournament(
     golfers,
@@ -275,78 +49,357 @@ export async function GET(request: Request) {
     tournament.course.par,
     50000,
   );
-
-  updatedTeams = await Promise.all(
-    updatedTeams.map(async (team) => {
-      team.position =
-        "" +
-        (updatedTeams.filter(
-          (obj) => (obj.tourCard.tourId === team.tourCard.tourId) && ((obj.score ?? 100) === (team.score ?? 100)),
-        ).length > 1
-          ? "T"
-          : "") +
-        (
-          1 +
-          updatedTeams.filter((obj) => (obj.tourCard.tourId === team.tourCard.tourId) && ((obj.score ?? 100) < (team.score ?? 100)))
-            .length
-        ).toString();
-
-      team.pastPosition =
-        "" +
-        (updatedTeams.filter(
-          (obj) =>
-            (obj.tourCard.tourId === team.tourCard.tourId) && ((obj.score ?? 100) - (obj.today ?? 100) ===
-            (team.score ?? 100) - (team.today ?? 100)),
-        ).length > 1
-          ? "T"
-          : "") +
-        (
-          1 +
-          updatedTeams.filter(
-            (obj) =>
-              (obj.tourCard.tourId === team.tourCard.tourId) && ((obj.score ?? 100) - (obj.today ?? 100) <
-              (team.score ?? 100) - (team.today ?? 100)),
-          ).length
-        ).toString();
-
-      if (
-        !tournament.livePlay &&
-        (tournament.currentRound ?? 0) === 4 &&
-        (team.thru ?? 0) > 0
-      ) {
-        team.points = team.position.includes("T")
-          ? tournament.tier.points
-              .slice(
-                +team.position.replace("T", "") - 1,
-                +team.position.replace("T", "") -
-                  1 +
-                  updatedTeams.filter((obj) => obj.position === team.position)
-                    .length,
-              )
-              .reduce((p, c) => (p += c), 0) /
-            updatedTeams.filter((obj) => obj.position === team.position).length
-          : (tournament.tier.points[+team.position - 1] ?? null);
-        team.earnings = team.position.includes("T")
-          ? tournament.tier.payouts
-              .slice(
-                +team.position.replace("T", "") - 1,
-                +team.position.replace("T", "") -
-                  1 +
-                  updatedTeams.filter((obj) => obj.position === team.position)
-                    .length,
-              )
-              .reduce((p, c) => (p += c), 0) /
-            updatedTeams.filter((obj) => obj.position === team.position).length
-          : (tournament.tier.payouts[+team.position - 1] ?? null);
-      }
-
-      await api.team.update(team);
-
-      return team;
-    }),
-  );
+  updatedTeams = await updateTeamPositions(updatedTeams, tournament);
 
   return NextResponse.redirect(`${origin}${next}`);
 }
-// http://www.pgctour.ca/cron/update-teams
+
+// https://www.pgctour.ca/cron/update-teams
 // http://localhost:3000/cron/update-teams
+
+/*─────────────────────────────────────────────────────────────*
+ *                  HELPER FUNCTIONS BELOW                   *
+ *─────────────────────────────────────────────────────────────*/
+
+/**
+ * Updates a single team's data by assigning tee times and calculating stats.
+ */
+function updateTeamData(
+  team: TeamData,
+  golfers: any[],
+  fieldData: DatagolfFieldInput,
+  liveData: DataGolfLiveTournament,
+  tournament: any,
+): TeamData {
+  const updatedTeam: TeamData = {
+    ...team,
+    round:
+      liveData.info.event_name === fieldData.event_name
+        ? liveData.info.current_round
+        : fieldData.current_round,
+  };
+  const teamGolfers = golfers.filter((g) => team.golferIds.includes(g.apiId));
+
+  // Assign tee times for each round if the current value is not in the future.
+  updatedTeam.roundOneTeeTime = assignTeeTime(
+    team.roundOneTeeTime,
+    teamGolfers,
+    "roundOneTeeTime",
+    0,
+  );
+  updatedTeam.roundTwoTeeTime = assignTeeTime(
+    team.roundTwoTeeTime,
+    teamGolfers,
+    "roundTwoTeeTime",
+    0,
+  );
+  updatedTeam.roundThreeTeeTime = assignTeeTime(
+    team.roundThreeTeeTime,
+    teamGolfers,
+    "roundThreeTeeTime",
+    5,
+  );
+  updatedTeam.roundFourTeeTime = assignTeeTime(
+    team.roundFourTeeTime,
+    teamGolfers,
+    "roundFourTeeTime",
+    5,
+  );
+
+  // Calculate team statistics depending on whether live play is enabled.
+  if (tournament.livePlay) {
+    Object.assign(
+      updatedTeam,
+      calculateLiveTeamStats(updatedTeam, team, teamGolfers, tournament),
+    );
+  } else {
+    Object.assign(
+      updatedTeam,
+      calculateNonLiveTeamStats(updatedTeam, team, teamGolfers, tournament),
+    );
+  }
+
+  // Round numeric fields to one decimal place.
+  updatedTeam.score = roundValue(updatedTeam.score);
+  updatedTeam.today = roundValue(updatedTeam.today);
+  updatedTeam.thru = roundValue(updatedTeam.thru);
+  updatedTeam.roundOne = roundValue(updatedTeam.roundOne);
+  updatedTeam.roundTwo = roundValue(updatedTeam.roundTwo);
+  updatedTeam.roundThree = roundValue(updatedTeam.roundThree);
+  updatedTeam.roundFour = roundValue(updatedTeam.roundFour);
+
+  return updatedTeam;
+}
+
+/**
+ * Returns a tee time from the sorted team golfers if the existing tee time is not in the future.
+ */
+function assignTeeTime(
+  currentTeeTime: string | null | undefined,
+  teamGolfers: any[],
+  teeTimeKey: string,
+  sortIndex: number,
+): string {
+  if (!(new Date(currentTeeTime ?? "") > new Date())) {
+    const sorted = teamGolfers.slice().sort((a, b) => {
+      const aTime = a[teeTimeKey]
+        ? new Date(a[teeTimeKey]).getTime()
+        : Infinity;
+      const bTime = b[teeTimeKey]
+        ? new Date(b[teeTimeKey]).getTime()
+        : Infinity;
+      return aTime - bTime;
+    });
+    return sorted[sortIndex]?.[teeTimeKey] ?? "";
+  }
+  return currentTeeTime ?? "";
+}
+
+/**
+ * Calculates statistics for teams during live play.
+ */
+function calculateLiveTeamStats(
+  updatedTeam: TeamData,
+  team: TeamData,
+  teamGolfers: any[],
+  tournament: any,
+): Partial<TeamData> {
+  if ((tournament.currentRound ?? 0) >= 3) {
+    updatedTeam.today = average(teamGolfers.slice(0, 5), "today", 8);
+    updatedTeam.thru = average(teamGolfers.slice(0, 5), "thru", 0);
+    if (tournament.currentRound === 3) {
+      updatedTeam.score =
+        (team.roundOne ?? 0) -
+        tournament.course.par +
+        ((team.roundTwo ?? 0) - tournament.course.par) +
+        (updatedTeam.today ?? 0);
+    } else if (tournament.currentRound === 4) {
+      updatedTeam.score =
+        (team.roundOne ?? 0) -
+        tournament.course.par +
+        ((team.roundTwo ?? 0) - tournament.course.par) +
+        ((team.roundThree ?? 0) - tournament.course.par) +
+        (updatedTeam.today ?? 0);
+    }
+  } else {
+    updatedTeam.today = average(teamGolfers, "today", 8, teamGolfers.length);
+    updatedTeam.thru = average(teamGolfers, "thru", 0, teamGolfers.length);
+    if (tournament.currentRound === 1) {
+      updatedTeam.score = updatedTeam.today;
+    } else if (tournament.currentRound === 2) {
+      updatedTeam.score =
+        (team.roundOne ?? 0) - tournament.course.par + (updatedTeam.today ?? 0);
+    }
+  }
+  return updatedTeam;
+}
+
+/**
+ * Calculates statistics for teams when live play is not active.
+ */
+function calculateNonLiveTeamStats(
+  updatedTeam: TeamData,
+  team: TeamData,
+  teamGolfers: any[],
+  tournament: any,
+): Partial<TeamData> {
+  if (tournament.currentRound === 1 && (team.thru ?? 0) > 0) {
+    updatedTeam.roundOne = average(
+      teamGolfers,
+      "roundOne",
+      tournament.course.par + 8,
+      teamGolfers.length,
+    );
+    updatedTeam.today =
+      average(
+        teamGolfers,
+        "roundOne",
+        tournament.course.par + 8,
+        teamGolfers.length,
+      ) - tournament.course.par;
+    updatedTeam.thru = 18;
+    updatedTeam.score =
+      average(
+        teamGolfers,
+        "roundOne",
+        tournament.course.par + 8,
+        teamGolfers.length,
+      ) - tournament.course.par;
+  }
+  if (tournament.currentRound === 2 && (team.thru ?? 0) > 0) {
+    updatedTeam.roundTwo = average(
+      teamGolfers,
+      "roundTwo",
+      tournament.course.par + 8,
+      teamGolfers.length,
+    );
+    updatedTeam.today =
+      average(
+        teamGolfers,
+        "roundTwo",
+        tournament.course.par + 8,
+        teamGolfers.length,
+      ) - tournament.course.par;
+    updatedTeam.thru = 18;
+    updatedTeam.score =
+      (team.roundOne ?? 0) -
+      tournament.course.par +
+      (average(
+        teamGolfers,
+        "roundTwo",
+        tournament.course.par + 8,
+        teamGolfers.length,
+      ) -
+        tournament.course.par);
+  }
+  if (tournament.currentRound === 3 && (team.thru ?? 0) > 0) {
+    const sortedR3 = teamGolfers
+      .slice()
+      .sort((a, b) => (a.roundThree ?? 0) - (b.roundThree ?? 0));
+    updatedTeam.roundThree = average(
+      sortedR3.slice(0, 5),
+      "roundThree",
+      tournament.course.par + 8,
+      5,
+    );
+    updatedTeam.today =
+      average(
+        sortedR3.slice(0, 5),
+        "roundThree",
+        tournament.course.par + 8,
+        5,
+      ) - tournament.course.par;
+    updatedTeam.thru = 18;
+    updatedTeam.score =
+      (team.roundOne ?? 0) +
+      (team.roundTwo ?? 0) -
+      tournament.course.par * 2 +
+      (average(
+        sortedR3.slice(0, 5),
+        "roundThree",
+        tournament.course.par + 8,
+        5,
+      ) -
+        tournament.course.par);
+  }
+  if (tournament.currentRound === 4 && (team.thru ?? 0) > 0) {
+    const sortedR4 = teamGolfers
+      .slice()
+      .sort((a, b) => (a.roundFour ?? 0) - (b.roundFour ?? 0));
+    updatedTeam.roundFour = average(
+      sortedR4.slice(0, 5),
+      "roundFour",
+      tournament.course.par + 8,
+      5,
+    );
+    updatedTeam.today =
+      average(sortedR4.slice(0, 5), "roundFour", tournament.course.par + 8, 5) -
+      tournament.course.par;
+    updatedTeam.thru = 18;
+    updatedTeam.score =
+      (team.roundOne ?? 0) +
+      (team.roundTwo ?? 0) +
+      (team.roundThree ?? 0) -
+      tournament.course.par * 3 +
+      (average(
+        sortedR4.slice(0, 5),
+        "roundFour",
+        tournament.course.par + 8,
+        5,
+      ) -
+        tournament.course.par);
+  }
+  return updatedTeam;
+}
+
+/**
+ * Calculates an average for a given key from an array of objects.
+ */
+function average(
+  arr: any[],
+  key: string,
+  defaultValue: number,
+  count?: number,
+): number {
+  const n = count ?? arr.length;
+  if (n === 0) return defaultValue;
+  const total = arr.reduce((sum, item) => sum + (item[key] ?? defaultValue), 0);
+  return total / n;
+}
+
+/**
+ * Rounds a number to one decimal place.
+ */
+function roundValue(val: number | null | undefined): number | null {
+  return val === undefined || val === null ? null : Math.round(val * 10) / 10;
+}
+
+/**
+ * Updates team positions, past positions, points, and earnings.
+ */
+async function updateTeamPositions(
+  updatedTeams: TeamData[],
+  tournament: any,
+): Promise<TeamData[]> {
+  return Promise.all(
+    updatedTeams.map(async (team) => {
+      const sameTourTeams = updatedTeams.filter(
+        (obj) => obj.tourCard.tourId === team.tourCard.tourId,
+      );
+      // Determine current position
+      const tiedCount = sameTourTeams.filter(
+        (obj) => (obj.score ?? 100) === (team.score ?? 100),
+      ).length;
+      const lowerScoreCount = sameTourTeams.filter(
+        (obj) => (obj.score ?? 100) < (team.score ?? 100),
+      ).length;
+      team.position = `${tiedCount > 1 ? "T" : ""}${lowerScoreCount + 1}`;
+
+      // Determine past position based on (score - today)
+      const tiedPastCount = sameTourTeams.filter(
+        (obj) =>
+          (obj.score ?? 100) - (obj.today ?? 100) ===
+          (team.score ?? 100) - (team.today ?? 100),
+      ).length;
+      const lowerPastCount = sameTourTeams.filter(
+        (obj) =>
+          (obj.score ?? 100) - (obj.today ?? 100) <
+          (team.score ?? 100) - (team.today ?? 100),
+      ).length;
+      team.pastPosition = `${tiedPastCount > 1 ? "T" : ""}${lowerPastCount + 1}`;
+
+      // Update points and earnings if tournament round 4 is complete and not live.
+      if (
+        !tournament.livePlay &&
+        tournament.currentRound === 4 &&
+        (team.thru ?? 0) > 0
+      ) {
+        if (team.position.includes("T")) {
+          const tiedTeams = updatedTeams.filter(
+            (obj) => obj.position === team.position,
+          );
+          team.points =
+            tournament.tier.points
+              .slice(
+                +team.position.replace("T", "") - 1,
+                +team.position.replace("T", "") - 1 + tiedTeams.length,
+              )
+              .reduce((p: number, c: number) => p + c, 0) / tiedTeams.length;
+          team.earnings =
+            tournament.tier.payouts
+              .slice(
+                +team.position.replace("T", "") - 1,
+                +team.position.replace("T", "") - 1 + tiedTeams.length,
+              )
+              .reduce((p: number, c: number) => p + c, 0) / tiedTeams.length;
+        } else {
+          team.points = tournament.tier.points[+team.position - 1] ?? null;
+          team.earnings = tournament.tier.payouts[+team.position - 1] ?? null;
+        }
+      }
+
+      await api.team.update(team);
+      return team;
+    }),
+  );
+}
