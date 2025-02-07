@@ -27,7 +27,7 @@ export async function GET(request: Request) {
   const tournament = await api.tournament.getCurrent();
   if (!tournament) return NextResponse.redirect(`${origin}/`);
 
-  let golfers = await api.golfer.getByTournament({
+  const golfers = await api.golfer.getByTournament({
     tournamentId: tournament.id,
   });
   // Sort golfers by today, then thru, then score, then group
