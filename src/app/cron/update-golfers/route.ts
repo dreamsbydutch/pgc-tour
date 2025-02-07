@@ -70,9 +70,7 @@ export async function GET(request: Request) {
   await api.tournament.update({
     id: tournament.id,
     currentRound:
-      liveData.info.event_name === fieldData.event_name
-        ? liveData.info.current_round
-        : fieldData.current_round,
+    golfers.filter(obj => !obj.roundOne).length > 0 ? 1 : golfers.filter(obj => !obj.roundTwo).length > 0 ? 2 : golfers.filter(obj => !obj.roundThree).length > 0 ? 3 : golfers.filter(obj => !obj.roundFour).length > 0 ? 4 : 5,
     livePlay: liveGolfersCount > 0,
   });
 
