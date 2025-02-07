@@ -75,7 +75,7 @@ type DatagolfLiveInfo = {
   event_name: string;
   last_update: string;
 };
-type DatagolfLiveGolfer = {
+export type DatagolfLiveGolfer = {
   R1: number | null;
   R2: number | null;
   R3: number | null;
