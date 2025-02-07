@@ -204,7 +204,7 @@ function calculateNonLiveTeamStats(
   teamGolfers: Golfer[],
   tournament: TournamentData,
 ): Partial<TeamData> {
-  if (tournament.currentRound === 1 && (team.thru ?? 0) > 0) {
+  if (tournament.currentRound === 2 && (team.thru ?? 0) > 0) {
     updatedTeam.roundOne = average(
       teamGolfers,
       "roundOne",
@@ -227,7 +227,7 @@ function calculateNonLiveTeamStats(
         teamGolfers.length,
       ) - tournament.course.par;
   }
-  if (tournament.currentRound === 2 && (team.thru ?? 0) > 0) {
+  if (tournament.currentRound === 1 && (team.thru ?? 0) > 0) {
     updatedTeam.roundTwo = average(
       teamGolfers,
       "roundTwo",
