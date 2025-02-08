@@ -335,15 +335,15 @@ function PGCMobileDropdown({
           </>
         )}
       </div>
-      <div className="col-span-10 mx-auto my-4 w-11/12">
+      <div className="col-span-10 my-4 w-full">
         <Table className="scrollbar-hidden mx-auto w-full border border-gray-700 text-center font-varela">
           <TableRow className="bg-gray-700 font-bold text-gray-100 hover:bg-gray-700">
-            <td className="text-sm">Pos</td>
-            <td className="text-sm">Player</td>
-            <td className="text-sm">Score</td>
-            <td className="text-xs">Today</td>
-            <td className="text-xs">Thru</td>
-            <td className="text-xs">Group</td>
+            <td className="px-0.5 text-xs">Pos</td>
+            <td className="px-0.5 text-xs">Player</td>
+            <td className="px-0.5 text-xs">Score</td>
+            <td className="px-0.5 text-2xs">Today</td>
+            <td className="px-0.5 text-2xs">Thru</td>
+            <td className="px-0.5 text-2xs">Group</td>
           </TableRow>
           {golfers
             ?.filter((g) => team.golferIds.includes(g.apiId))
@@ -368,11 +368,13 @@ function PGCMobileDropdown({
                     "text-gray-400",
                 )}
               >
-                <td className="text-sm">{golfer.position}</td>
-                <td className="whitespace-nowrap px-1.5 text-sm">
+                <td className="px-1 text-xs">{golfer.position}</td>
+                <td className="whitespace-nowrap px-1 text-sm">
                   {golfer.playerName}
                 </td>
-                <td className="text-sm">{formatScore(golfer.score)}</td>
+                <td className="border-r border-gray-300 px-1 text-sm">
+                  {formatScore(golfer.score)}
+                </td>
                 {golfer.thru === 0 ? (
                   <td className="text-xs" colSpan={2}>
                     {course && getGolferTeeTime(course, golfer)}
@@ -385,7 +387,9 @@ function PGCMobileDropdown({
                     </td>
                   </>
                 )}
-                <td className="text-xs">{golfer.group}</td>
+                <td className="border-l border-gray-300 text-xs">
+                  {golfer.group}
+                </td>
               </TableRow>
             ))}
         </Table>
