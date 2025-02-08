@@ -216,8 +216,8 @@ async function updateExistingGolfers(
           liveGolfer?.current_pos === "DQ") &&
         (tournament.currentRound ?? 0) >= 3
       ) {
-        updateData.today = null;
-        updateData.thru = null;
+        updateData.today = undefined;
+        updateData.thru = undefined;
       } else if (
         liveGolfer?.current_pos === "WD" ||
         liveGolfer?.current_pos === "DQ"

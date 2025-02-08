@@ -81,7 +81,11 @@ function updateTeamData(
         ? liveData.info.current_round
         : fieldData.current_round,
   };
-  const teamGolfers = golfers.filter((g) => team.golferIds.includes(g.apiId));
+  const teamGolfers = golfers.filter(
+    (g) =>
+      team.golferIds.includes(g.apiId) &&
+      (g.round ?? 0) >= (tournament.currentRound ?? 0),
+  );
 
   // Assign tee times for each round if the current value is not in the future.
   updatedTeam.roundOneTeeTime = assignTeeTime(
@@ -98,13 +102,13 @@ function updateTeamData(
   );
   updatedTeam.roundThreeTeeTime = assignTeeTime(
     team.roundThreeTeeTime,
-    teamGolfers.filter((a) => (a.round ?? 0) >= (tournament.currentRound ?? 0)),
+    teamGolfers,
     "roundThreeTeeTime",
     5,
   );
   updatedTeam.roundFourTeeTime = assignTeeTime(
     team.roundFourTeeTime,
-    teamGolfers.filter((a) => (a.round ?? 0) >= (tournament.currentRound ?? 0)),
+    teamGolfers,
     "roundFourTeeTime",
     5,
   );
@@ -116,9 +120,7 @@ function updateTeamData(
       calculateLiveTeamStats(
         updatedTeam,
         team,
-        teamGolfers.filter(
-          (a) => (a.round ?? 0) >= (tournament.currentRound ?? 0),
-        ),
+        teamGolfers,
         tournament,
       ),
     );
@@ -128,9 +130,7 @@ function updateTeamData(
       calculateNonLiveTeamStats(
         updatedTeam,
         team,
-        teamGolfers.filter(
-          (a) => (a.round ?? 0) >= (tournament.currentRound ?? 0),
-        ),
+        teamGolfers,
         tournament,
       ),
     );
