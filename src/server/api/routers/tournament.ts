@@ -38,7 +38,33 @@ export const tournamentRouter = createTRPCRouter({
         (a, b) =>
           new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
       )
-      .find((obj) => obj.endDate > today);
+      .find((obj) => obj.endDate > today && obj.startDate < today);
+  }),
+  getRecent: publicProcedure.query(async ({ ctx }) => {
+    const today = new Date();
+    const tournaments = await ctx.db.tournament.findMany({
+      include: tournamentDataInclude,
+    });
+
+    return tournaments
+      .sort(
+        (a, b) =>
+          new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+      )
+      .find((obj) => obj.endDate < today);
+  }),
+  getNext: publicProcedure.query(async ({ ctx }) => {
+    const today = new Date();
+    const tournaments = await ctx.db.tournament.findMany({
+      include: tournamentDataInclude,
+    });
+
+    return tournaments
+      .sort(
+        (a, b) =>
+          new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+      )
+      .find((obj) => obj.startDate > today);
   }),
   update: publicProcedure
     .input(

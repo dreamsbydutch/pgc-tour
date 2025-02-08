@@ -7,8 +7,8 @@ import type {
   DatagolfFieldInput,
   DataGolfLiveTournament,
 } from "@/src/types/datagolf_types";
-import { TeamData, TournamentData } from "@/src/types/prisma_include";
-import { Golfer } from "@prisma/client";
+import type { TeamData, TournamentData } from "@/src/types/prisma_include";
+import type { Golfer } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -39,7 +39,9 @@ export async function GET(request: Request) {
       (a.group ?? 0) - (b.group ?? 0),
   );
 
-  const teams = await api.team.getByTournament({ tournamentId: tournament.id });
+  const teams: TeamData[] = await api.team.getByTournament({
+    tournamentId: tournament.id,
+  });
   let updatedTeams = teams.map((team) =>
     updateTeamData(team, golfers, fieldData, liveData, tournament),
   );
@@ -48,7 +50,7 @@ export async function GET(request: Request) {
     golfers,
     updatedTeams,
     tournament.course.par,
-    50000,
+    10000,
   );
   updatedTeams = await updateTeamPositions(updatedTeams, tournament);
 
@@ -59,7 +61,7 @@ export async function GET(request: Request) {
 // http://localhost:3000/cron/update-teams
 
 /*─────────────────────────────────────────────────────────────*
- *                  HELPER FUNCTIONS BELOW                   *
+ *                   HELPER FUNCTIONS BELOW                    *
  *─────────────────────────────────────────────────────────────*/
 
 /**
@@ -96,13 +98,13 @@ function updateTeamData(
   );
   updatedTeam.roundThreeTeeTime = assignTeeTime(
     team.roundThreeTeeTime,
-    teamGolfers,
+    teamGolfers.filter((a) => (a.round ?? 0) >= (tournament.currentRound ?? 0)),
     "roundThreeTeeTime",
     5,
   );
   updatedTeam.roundFourTeeTime = assignTeeTime(
     team.roundFourTeeTime,
-    teamGolfers,
+    teamGolfers.filter((a) => (a.round ?? 0) >= (tournament.currentRound ?? 0)),
     "roundFourTeeTime",
     5,
   );
@@ -111,12 +113,26 @@ function updateTeamData(
   if (tournament.livePlay) {
     Object.assign(
       updatedTeam,
-      calculateLiveTeamStats(updatedTeam, team, teamGolfers, tournament),
+      calculateLiveTeamStats(
+        updatedTeam,
+        team,
+        teamGolfers.filter(
+          (a) => (a.round ?? 0) >= (tournament.currentRound ?? 0),
+        ),
+        tournament,
+      ),
     );
   } else {
     Object.assign(
       updatedTeam,
-      calculateNonLiveTeamStats(updatedTeam, team, teamGolfers, tournament),
+      calculateNonLiveTeamStats(
+        updatedTeam,
+        team,
+        teamGolfers.filter(
+          (a) => (a.round ?? 0) >= (tournament.currentRound ?? 0),
+        ),
+        tournament,
+      ),
     );
   }
 
@@ -174,6 +190,14 @@ function calculateLiveTeamStats(
         tournament.course.par +
         ((team.roundTwo ?? 0) - tournament.course.par) +
         (updatedTeam.today ?? 0);
+      if (updatedTeam.roundTwo === null) {
+        updatedTeam.roundTwo = average(
+          teamGolfers,
+          "roundTwo",
+          tournament.course.par + 8,
+          teamGolfers.length,
+        );
+      }
     } else if (tournament.currentRound === 4) {
       updatedTeam.score =
         (team.roundOne ?? 0) -
@@ -181,6 +205,17 @@ function calculateLiveTeamStats(
         ((team.roundTwo ?? 0) - tournament.course.par) +
         ((team.roundThree ?? 0) - tournament.course.par) +
         (updatedTeam.today ?? 0);
+      if (updatedTeam.roundThree === null) {
+        updatedTeam.roundThree = average(
+          teamGolfers
+            .slice()
+            .sort((a, b) => (a.roundThree ?? 0) - (b.roundThree ?? 0))
+            .slice(0, 5),
+          "roundThree",
+          tournament.course.par + 8,
+          5,
+        );
+      }
     }
   } else {
     updatedTeam.today = average(teamGolfers, "today", 8, teamGolfers.length);
@@ -190,6 +225,14 @@ function calculateLiveTeamStats(
     } else if (tournament.currentRound === 2) {
       updatedTeam.score =
         (team.roundOne ?? 0) - tournament.course.par + (updatedTeam.today ?? 0);
+      if (updatedTeam.roundOne === null) {
+        updatedTeam.roundOne = average(
+          teamGolfers,
+          "roundOne",
+          tournament.course.par + 8,
+          teamGolfers.length,
+        );
+      }
     }
   }
   return updatedTeam;

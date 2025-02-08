@@ -202,6 +202,12 @@ async function updateExistingGolfers(
         liveGolfer.current_pos !== "CUT"
       ) {
         updateData.today = liveGolfer.today;
+      } else if (
+        (liveGolfer?.current_pos === "WD" ||
+        liveGolfer?.current_pos === "DQ")
+      ) {
+        updateData.today = 8
+        updateData.thru = 18
       }
       updateData.round = liveGolfer?.round ?? 1;
       if (
@@ -246,7 +252,7 @@ function setRoundTeeTimesAndScores(
   if (
     !liveGolfer?.R1 &&
     fieldGolfer?.r1_teetime &&
-    fieldData.current_round > 1
+    (fieldData.current_round > 1 || liveGolfer?.current_pos == "WD" || liveGolfer?.current_pos === "DQ")
   ) {
     updateData.roundOne = tournament.course.par + 8;
   }
@@ -258,7 +264,7 @@ function setRoundTeeTimesAndScores(
   if (
     !liveGolfer?.R2 &&
     fieldGolfer?.r1_teetime &&
-    fieldData.current_round > 2
+    (fieldData.current_round > 2 || liveGolfer?.current_pos == "WD" || liveGolfer?.current_pos === "DQ")
   ) {
     updateData.roundTwo = tournament.course.par + 8;
   }
@@ -270,7 +276,7 @@ function setRoundTeeTimesAndScores(
   if (
     !liveGolfer?.R3 &&
     fieldGolfer?.r3_teetime &&
-    fieldData.current_round > 3
+    (fieldData.current_round > 3 || liveGolfer?.current_pos == "WD" || liveGolfer?.current_pos === "DQ")
   ) {
     updateData.roundThree = tournament.course.par + 8;
   }
@@ -282,7 +288,7 @@ function setRoundTeeTimesAndScores(
   if (
     !liveGolfer?.R4 &&
     fieldGolfer?.r4_teetime &&
-    fieldData.current_round > 4
+    (fieldData.current_round > 4 || liveGolfer?.current_pos == "WD" || liveGolfer?.current_pos === "DQ")
   ) {
     updateData.roundFour = tournament.course.par + 8;
   }
