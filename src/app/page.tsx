@@ -1,57 +1,37 @@
-// import { TourCardForm } from "./_components/TourCardForm";
-import { db } from "../server/db";
 import { createClient } from "../lib/supabase/server";
 import TournamentCountdown from "./tournament/_components/TournamentCountdown";
-import { formatName } from "../lib/utils";
-// import { formatMoney, formatName } from "../lib/utils";
-// import { TourCardOutput } from "./_components/TourCardOutput";
+import { formatName, groupChatLink } from "../lib/utils";
 import Link from "next/link";
-import { tourDataIncludeTourCard } from "../types/prisma_include";
-// import { type TourData, tourDataIncludeTourCard } from "../types/prisma_include";
 import SignInPage from "./signin/page";
-// import { Member, Tour, TourCard, Tournament } from "@prisma/client";
-// import { User } from "@supabase/supabase-js";
+import HomePageLeaderboard from "./tournament/_components/HomePageLeaderboard";
+import { api } from "../trpc/server";
 
 export default async function Home() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
-
-  const season = await db.season.findUnique({ where: { year: 2025 } });
-  // const tourCard = await db.tourCard.findFirst({
-  //   where: { seasonId: season?.id, memberId: data.user?.id },
-  // });
-  const tours = await db.tour.findMany({
-    where: { seasonId: season?.id },
-    include: tourDataIncludeTourCard,
-  });
-  const member =
-    data.user && (await db.member.findUnique({ where: { id: data.user.id } }));
+  const member = data.user && (await api.member.getSelf());
   if (!member && data.user) {
     const fullName = formatName(
       data.user?.user_metadata.name as string,
       "full",
     );
     const splitName = fullName.split(" ");
-    await db.member.create({
-      data: {
-        id: data.user.id,
-        email: data.user.email ?? (data.user.user_metadata.email as string),
-        role: "regular",
-        fullname: fullName,
-        firstname: splitName[0],
-        lastname: splitName.slice(1).toString(),
-      },
+    await api.member.create({
+      id: data.user.id,
+      email: data.user.email ?? (data.user.user_metadata.email as string),
+      fullname: fullName,
+      firstname: splitName[0] ?? "",
+      lastname: splitName.slice(1).toString(),
     });
   }
-  const tourney = await db.tournament.findFirst({
-    where: {
-      seasonId: season?.id,
-    },
-    orderBy: { startDate: "asc" },
-  });
-  if (!tours || !season) return <div>Error</div>;
-
   if (!member) return <SignInPage />;
+
+  const season = await api.season.getByYear({ year: new Date().getFullYear() });
+  const tours = await api.tour.getBySeason({ seasonID: season?.id });
+  const pastTourney = await api.tournament.getRecent();
+  const currentTourney = await api.tournament.getCurrent();
+  const nextTourney = await api.tournament.getNext();
+  const tourney = currentTourney ?? nextTourney;
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col">
@@ -66,6 +46,18 @@ export default async function Home() {
         <TournamentCountdown tourney={tourney} />
       )}
       <div className="mt-4 flex flex-col justify-start">
+        <HomePageLeaderboard {...{ tourney, season: season ?? undefined }} />
+        {/* <Link
+          href={groupChatLink}
+          className="my-3 flex w-fit items-center justify-center rounded-lg bg-green-50 p-2 text-sm font-semibold text-slate-700 shadow-md"
+        >
+          <img
+            src="https://jn9n1jxo7g.ufs.sh/f/94GU8p0EVxqPIIVIUpPh4DfnxtyK0HbYZX9dkj8wcaQAqzrN"
+            alt="WhatsApp"
+            className="mr-2 w-6 rounded-md opacity-80"
+          />
+          Join the Group Chat
+        </Link> */}
         <Link href={"/privacy"} className="text-xs text-slate-400">
           Privacy Policy
         </Link>
