@@ -242,7 +242,9 @@ function PGAMobileDropdown({
       <div className="col-span-2 text-sm font-bold">Group</div>
       <div className="col-span-8 text-lg">{`${golfer.roundOne ? golfer.roundOne : ""}${golfer.roundTwo ? " / " + golfer.roundTwo : ""}${golfer.roundThree ? " / " + golfer.roundThree : ""}${golfer.roundFour ? " / " + golfer.roundFour : ""}`}</div>
       <div className="col-span-2 text-lg">{total}</div>
-      <div className="col-span-2 text-lg">{golfer.group}</div>
+      <div className="col-span-2 text-lg">
+        {golfer.group === 0 ? "-" : golfer.group}
+      </div>
     </div>
   );
 }
@@ -263,10 +265,7 @@ function PGCMobileDropdown({
   const golfers = api.golfer.getByTournament.useQuery({
     tournamentId: tournament.id,
   }).data;
-  const moneyThreshold =
-    tournament.tier.payouts.filter((a) => a > 0).length === 3
-      ? "Three"
-      : "Five";
+  const moneyThreshold = tournament.tier.payouts.filter((a) => a > 0).length;
   return (
     <div
       className={cn(
@@ -282,10 +281,13 @@ function PGCMobileDropdown({
     >
       <div
         className={cn(
-          "col-span-10 grid grid-cols-12 items-center justify-center",
+          "col-span-10 grid grid-cols-17 items-center justify-center",
         )}
       >
-        <div className="col-span-7 text-sm font-bold">Rounds</div>
+        <div className="col-span-3 text-sm font-bold">R1</div>
+        <div className="col-span-3 text-sm font-bold">R2</div>
+        <div className="col-span-3 text-sm font-bold">R3</div>
+        <div className="col-span-3 text-sm font-bold">R4</div>
         {(tournament.currentRound ?? 0) <= 2 ? (
           <>
             <div className="col-span-3 text-sm font-bold">Make Cut</div>
@@ -301,41 +303,55 @@ function PGCMobileDropdown({
             <div className="col-span-2 text-sm font-bold">Win</div>
           </>
         )}
-        <div className="col-span-7 text-lg">
-          {team.roundOne ?? "-"}
-          {team.roundTwo ? " / " + team.roundTwo : ""}
-          {team.roundThree ? " / " + team.roundThree : ""}
-          {team.roundFour ? " / " + team.roundFour : ""}
-        </div>
+        <div className="col-span-3 text-base">{team.roundOne ?? "-"}</div>
+        <div className="col-span-3 text-base">{team.roundTwo ?? "-"}</div>
+        <div className="col-span-3 text-base">{team.roundThree ?? "-"}</div>
+        <div className="col-span-3 text-base">{team.roundFour ?? "-"}</div>
         {(tournament.currentRound ?? 0) <= 2 ? (
           <>
-            <div className="col-span-3 text-lg">
+            <div className="col-span-3 text-base">
               {Math.round((team.makeCut ?? 0) * 1000) / 10}%
             </div>
-            <div className="col-span-2 text-lg">
+            <div className="col-span-2 text-base">
               {Math.round(
-                (Number(team[("top" + moneyThreshold) as keyof TeamData]) ??
-                  0) * 1000,
+                (Number(
+                  team[
+                    ("top" +
+                      (moneyThreshold === 3
+                        ? "Three"
+                        : moneyThreshold === 5
+                          ? "Five"
+                          : "Ten")) as keyof TeamData
+                  ],
+                ) ?? 0) * 1000,
               ) / 10}
               %
             </div>
           </>
         ) : (
           <>
-            <div className="col-span-3 text-lg">
+            <div className="col-span-3 text-base">
               {Math.round(
-                (Number(team[("top" + moneyThreshold) as keyof TeamData]) ??
-                  0) * 1000,
+                (Number(
+                  team[
+                    ("top" +
+                      (moneyThreshold === 3
+                        ? "Three"
+                        : moneyThreshold === 5
+                          ? "Five"
+                          : "Ten")) as keyof TeamData
+                  ],
+                ) ?? 0) * 1000,
               ) / 10}
               %
             </div>
-            <div className="col-span-2 text-lg">
+            <div className="col-span-2 text-base">
               {Math.round((team.win ?? 0) * 1000) / 10}%
             </div>
           </>
         )}
       </div>
-      <div className="col-span-10 my-4 w-full">
+      <div className="col-span-10 mb-4 mt-2 w-full">
         <Table className="scrollbar-hidden mx-auto w-full border border-gray-700 text-center font-varela">
           <TableRow className="bg-gray-700 font-bold text-gray-100 hover:bg-gray-700">
             <td className="px-0.5 text-xs">Pos</td>

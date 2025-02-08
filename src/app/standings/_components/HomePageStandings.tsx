@@ -1,25 +1,25 @@
 export default function HomePageStandings() {
-    return (
-      <>
-        <div className="mb-4 pb-2 text-center font-yellowtail text-5xl sm:text-6xl md:text-7xl">
-          Tour Standings
-        </div>
-        <div className="mx-auto grid grid-flow-col grid-cols-2 text-center">
-          <a href="#/standings?tour=pgc" key="pgc">
-            <div className="border-r border-black pr-2">
-              <div className="mb-2 text-lg font-bold">PGC Tour</div>
-              <div className="grid grid-flow-row grid-cols-8 text-center">
-                <div className="place-self-center font-varela text-xs font-bold sm:text-sm">
-                  Rank
-                </div>
-                <div className="col-span-5 place-self-center font-varela text-base font-bold sm:text-lg">
-                  Name
-                </div>
-                <div className="col-span-2 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
-                  Points
-                </div>
+  return (
+    <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
+      <div className="mb-4 pb-2 text-center font-yellowtail text-5xl sm:text-6xl md:text-7xl">
+        Tour Standings
+      </div>
+      <div className="mx-auto grid grid-flow-col grid-cols-2 text-center">
+        <a href="#/standings?tour=pgc" key="pgc">
+          <div className="border-r border-black pr-2">
+            <div className="mb-2 text-lg font-bold">PGC Tour</div>
+            <div className="grid grid-flow-row grid-cols-8 text-center">
+              <div className="place-self-center font-varela text-xs font-bold sm:text-sm">
+                Rank
               </div>
-              {/* {standings[0].map((obj) => {
+              <div className="col-span-5 place-self-center font-varela text-base font-bold sm:text-lg">
+                Name
+              </div>
+              <div className="col-span-2 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
+                Points
+              </div>
+            </div>
+            {/* {standings[0].map((obj) => {
                   return (
                     <div className="grid grid-flow-row grid-cols-8 border-t border-dashed border-t-gray-400 py-1 text-center md:py-2">
                       <div className="md:text-md place-self-center font-varela text-2xs xs:text-xs sm:text-sm lg:text-lg">
@@ -35,23 +35,23 @@ export default function HomePageStandings() {
                     </div>
                   );
                 })} */}
-            </div>
-          </a>
-          <a href="#/standings?tour=dbyd" key="dbyd">
-            <div className="pl-2">
-              <div className="mb-2 text-lg font-bold">DbyD Tour</div>
-              <div className="grid grid-flow-row grid-cols-8 text-center">
-                <div className="place-self-center font-varela text-xs font-bold sm:text-sm">
-                  Rank
-                </div>
-                <div className="col-span-5 place-self-center font-varela text-base font-bold sm:text-lg">
-                  Name
-                </div>
-                <div className="col-span-2 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
-                  Points
-                </div>
+          </div>
+        </a>
+        <a href="#/standings?tour=dbyd" key="dbyd">
+          <div className="pl-2">
+            <div className="mb-2 text-lg font-bold">DbyD Tour</div>
+            <div className="grid grid-flow-row grid-cols-8 text-center">
+              <div className="place-self-center font-varela text-xs font-bold sm:text-sm">
+                Rank
               </div>
-              {/* {standings[1].map((obj) => {
+              <div className="col-span-5 place-self-center font-varela text-base font-bold sm:text-lg">
+                Name
+              </div>
+              <div className="col-span-2 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
+                Points
+              </div>
+            </div>
+            {/* {standings[1].map((obj) => {
                   return (
                     <div className="grid grid-flow-row grid-cols-8 border-t border-dashed border-t-gray-400 py-1 text-center md:py-2">
                       <div className="md:text-md place-self-center font-varela text-2xs xs:text-xs sm:text-sm lg:text-lg">
@@ -67,9 +67,9 @@ export default function HomePageStandings() {
                     </div>
                   );
                 })} */}
-            </div>
-          </a>
-        </div>
-      </>
-    );
-  }
+          </div>
+        </a>
+      </div>
+    </div>
+  );
+}

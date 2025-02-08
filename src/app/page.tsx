@@ -5,6 +5,7 @@ import Link from "next/link";
 import SignInPage from "./signin/page";
 import HomePageLeaderboard from "./tournament/_components/HomePageLeaderboard";
 import { api } from "../trpc/server";
+import HomePageStandings from "./standings/_components/HomePageStandings";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -31,22 +32,26 @@ export default async function Home() {
   const pastTourney = await api.tournament.getRecent();
   const currentTourney = await api.tournament.getCurrent();
   const nextTourney = await api.tournament.getNext();
-  const tourney = currentTourney ?? nextTourney;
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
-        Welcome to the PGC Tour
+        PGC Tour Clubhouse
       </h1>
       {/* <p className="mx-auto mb-4 font-varela text-base text-slate-500 md:text-lg">
         An elite fantasy golf experience
       </p> */}
 
-      {tourney && tourney.startDate > new Date() && (
-        <TournamentCountdown tourney={tourney} />
+      {!currentTourney && nextTourney && (
+        <TournamentCountdown tourney={nextTourney} />
       )}
-      <div className="mt-4 flex flex-col justify-start">
-        <HomePageLeaderboard {...{ tourney, season: season ?? undefined }} />
+      {currentTourney && (
+        <HomePageLeaderboard
+          {...{ tourney: currentTourney, season: season ?? undefined }}
+        />
+      )}
+      <div className="mt-12 flex flex-col justify-start">
+        {/* <HomePageStandings /> */}
         {/* <Link
           href={groupChatLink}
           className="my-3 flex w-fit items-center justify-center rounded-lg bg-green-50 p-2 text-sm font-semibold text-slate-700 shadow-md"

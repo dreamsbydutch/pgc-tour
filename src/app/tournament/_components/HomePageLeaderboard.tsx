@@ -1,9 +1,8 @@
 import React from "react";
 import LeaderboardHeader from "./LeaderboardHeader";
-import { TeamData, TournamentData } from "@/src/types/prisma_include";
-import { Member, Season } from "@prisma/client";
+import type { TeamData, TournamentData } from "@/src/types/prisma_include";
+import type { Season } from "@prisma/client";
 import { api } from "@/src/trpc/server";
-import { MoveDownIcon, MoveHorizontalIcon, MoveUpIcon } from "lucide-react";
 import { cn, formatScore } from "@/src/lib/utils";
 import Link from "next/link";
 
@@ -33,7 +32,7 @@ export default async function HomePageLeaderboard({
   return (
     <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
       <LeaderboardHeader {...{ focusTourney: tourney, seasonId: season.id }} />
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-2 font-varela">
         {[ccgTeams, dbydTeams].map((tour, i) => {
           const tourInfo = tours.find((a) => a.id === tour[0]?.tourCard.tourId);
           return (
@@ -46,9 +45,12 @@ export default async function HomePageLeaderboard({
               href={"/tournament/" + tourney.id + "?tour=" + tourInfo?.id}
             >
               <div
-                className={cn("pb-1 pt-2 text-center text-base font-semibold")}
+                className={cn(
+                  "flex items-center justify-center pb-1 pt-2 text-center text-lg font-semibold",
+                )}
               >
-                {tourInfo?.name}
+                <img src={tourInfo?.logoUrl} className="mr-2 h-8 w-8" />
+                {tourInfo?.shortForm} Tour
               </div>
               <div className={cn("mx-1 mb-3")}>
                 {tour.map((a) => (
@@ -69,7 +71,7 @@ async function TeamListing({ team }: { team: TeamData }) {
     <div
       className={cn(
         member?.id === team.tourCard.memberId && "bg-slate-200 font-semibold",
-        "grid grid-cols-8 items-center justify-center rounded-md py-[1px] text-center",
+        "grid grid-cols-8 items-center justify-center rounded-md text-center",
       )}
     >
       <div
