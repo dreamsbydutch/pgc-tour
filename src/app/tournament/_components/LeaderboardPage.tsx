@@ -24,7 +24,7 @@ export default function LeaderboardPage({
   inputTour: string;
 }) {
   const [activeTour, setActiveTour] = useState<string>(
-    inputTour ?? tourCard?.tourId ?? "1",
+    inputTour && inputTour !== "" ? inputTour : (tourCard?.tourId ?? ""),
   );
   const golfers = api.golfer.getByTournament.useQuery(
     {
