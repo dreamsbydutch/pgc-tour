@@ -50,7 +50,7 @@ export default async function Page({
             {...{
               tournament,
               tours: [...tours, pgaTour],
-              tourCard,
+              tourCard: tourCard ?? undefined,
             }}
           />
         </Suspense>

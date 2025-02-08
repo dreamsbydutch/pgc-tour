@@ -19,7 +19,7 @@ export default function LeaderboardPage({
 }: {
   tournament: TournamentData;
   tours: TourData[];
-  tourCard: TourCardData | null | undefined;
+  tourCard?: TourCardData;
 }) {
   const [activeTour, setActiveTour] = useState<string>(tourCard?.tourId ?? "1");
   const golfers = api.golfer.getByTournament.useQuery(
@@ -54,7 +54,10 @@ export default function LeaderboardPage({
         <LeaderboardHeaderRow />
         {activeTour === tours.find((tour) => tour.shortForm === "PGA")?.id ? (
           sortGolfersForSpecialPostions(golfers ?? []).map((obj) => (
-            <PGAListing key={obj.id} {...{ golfer: obj, userTeam }} />
+            <PGAListing
+              key={obj.id}
+              {...{ tournament, golfer: obj, userTeam }}
+            />
           ))
         ) : activeTour ===
           tours.find((tour) => tour.shortForm === "DbyD")?.id ? (
@@ -62,14 +65,20 @@ export default function LeaderboardPage({
             .filter((team) => team.tourCard.tourId === activeTour)
             .sort((a, b) => (a.score ?? 100) - (b.score ?? 100))
             .map((obj) => (
-              <PGCListing key={obj.id} {...{ tournament, team: obj, golfers, tourCard }} />
+              <PGCListing
+                key={obj.id}
+                {...{ tournament, team: obj, golfers, tourCard }}
+              />
             ))
         ) : activeTour ===
           tours.find((tour) => tour.shortForm === "CCG")?.id ? (
           sortTeamsForSpecialPostions(teams ?? [])
             .filter((team) => team.tourCard.tourId === activeTour)
             .map((obj) => (
-              <PGCListing key={obj.id} {...{ tournament, team: obj, golfers, tourCard }} />
+              <PGCListing
+                key={obj.id}
+                {...{ tournament, team: obj, golfers, tourCard }}
+              />
             ))
         ) : (
           <div className="py-4 text-center text-lg font-bold">
@@ -130,7 +139,7 @@ function ToggleButton({
 
 function LeaderboardHeaderRow() {
   return (
-    <div className="mx-auto grid max-w-xl grid-flow-row grid-cols-10 text-center">
+    <div className="mx-auto grid max-w-4xl grid-flow-row grid-cols-10 text-center">
       <div className="col-span-2 place-self-center font-varela text-sm font-bold">
         Rank
       </div>
