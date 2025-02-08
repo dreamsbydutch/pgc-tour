@@ -16,12 +16,16 @@ export default function LeaderboardPage({
   tournament,
   tours,
   tourCard,
+  inputTour,
 }: {
   tournament: TournamentData;
   tours: TourData[];
   tourCard?: TourCardData;
+  inputTour: string;
 }) {
-  const [activeTour, setActiveTour] = useState<string>(tourCard?.tourId ?? "1");
+  const [activeTour, setActiveTour] = useState<string>(
+    inputTour ?? tourCard?.tourId ?? "1",
+  );
   const golfers = api.golfer.getByTournament.useQuery(
     {
       tournamentId: tournament?.id ?? "",

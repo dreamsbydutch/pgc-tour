@@ -124,12 +124,12 @@ export function MobileListing({
               <MoveHorizontalIcon className="w-2" />
             </span>
           ) : posChange > 0 ? (
-            <span className="ml-0.5 flex items-center justify-center text-3xs text-green-900">
+            <span className="ml-0.5 flex items-center justify-center text-2xs text-green-900">
               <MoveUpIcon className="w-2" />
               {Math.abs(posChange)}
             </span>
           ) : (
-            <span className="ml-0.5 flex items-center justify-center text-3xs text-red-900">
+            <span className="ml-0.5 flex items-center justify-center text-2xs text-red-900">
               <MoveDownIcon className="w-2" />
               {Math.abs(posChange)}
             </span>
