@@ -138,13 +138,13 @@ const rulebook: RuleCategory[] = [
       {
         ruleText: "Elevated Events",
         details: [
-          "The Genesis Invitational, Arnold Palmer Inviational, The Players Championship, RBC Heritage, Wells Fargo Championship, The Memorial Torunament",
+          "Arnold Palmer Inviational, The Players Championship, RBC Heritage, Truist Championship, The Memorial Torunament, Travelers Championship",
         ],
       },
       {
         ruleText: "Standard Events",
         details: [
-          "Waste Management Open, Valero Texas Open, The CJ Cup Byron Nelson, RBC Canadian Open, Travelers Championship, Genesis Scottish Open",
+          "Waste Management Open, The Genesis Invitational, Texas Children's Houston Open, RBC Canadian Open, Rocket Mortgage Classic, Genesis Scottish Open",
         ],
       },
       {
@@ -159,6 +159,7 @@ const rulebook: RuleCategory[] = [
       {
         ruleText:
           "The field for each tournament will be split into five groups. Groups are finalized the Monday morning prior to each tournament.",
+        details:["Until furthur notice Scottie Scheffler has been removed from play for being unhuman."]
       },
       {
         ruleText:
