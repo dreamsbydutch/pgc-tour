@@ -10,8 +10,10 @@ import PreTournamentPage from "../_components/PreTournament";
 
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: { tournamentId: string };
+  searchParams: Record<string, string>;
 }) {
   const member = await api.member.getSelf();
   const tournament = await api.tournament.getById({
@@ -51,6 +53,7 @@ export default async function Page({
               tournament,
               tours: [...tours, pgaTour],
               tourCard: tourCard ?? undefined,
+              inputTour: searchParams.tour ?? "",
             }}
           />
         </Suspense>
