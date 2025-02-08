@@ -38,6 +38,7 @@ export default async function HomePageLeaderboard({
           const tourInfo = tours.find((a) => a.id === tour[0]?.tourCard.tourId);
           return (
             <Link
+              key={tourInfo?.id}
               className={cn(
                 "flex flex-col",
                 i === 0 && "border-r border-slate-800",
@@ -51,7 +52,7 @@ export default async function HomePageLeaderboard({
               </div>
               <div className={cn("mx-1 mb-3")}>
                 {tour.map((a) => (
-                  <TeamListing {...{ team: a }} />
+                  <TeamListing key={a.id} {...{ team: a }} />
                 ))}
               </div>
             </Link>

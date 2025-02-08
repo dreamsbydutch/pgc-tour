@@ -38,9 +38,9 @@ export default async function Home() {
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         Welcome to the PGC Tour
       </h1>
-      <p className="mx-auto mb-4 font-varela text-base text-slate-500 md:text-lg">
+      {/* <p className="mx-auto mb-4 font-varela text-base text-slate-500 md:text-lg">
         An elite fantasy golf experience
-      </p>
+      </p> */}
 
       {tourney && tourney.startDate > new Date() && (
         <TournamentCountdown tourney={tourney} />
