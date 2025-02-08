@@ -160,23 +160,25 @@ function LeaderboardHeaderRow() {
 }
 
 function sortTeamsForSpecialPostions(teams: TeamData[]) {
-  return teams.sort(
-    (a, b) =>
-      (a.position === "DQ"
-        ? 999 + (a.score ?? 999)
-        : a.position === "WD"
-          ? 888 + (a.score ?? 999)
-          : a.position === "CUT"
-            ? 444 + (a.score ?? 999)
-            : (a.score ?? 999)) -
-      (b.position === "DQ"
-        ? 999 + (b.score ?? 999)
-        : b.position === "WD"
-          ? 888 + (b.score ?? 999)
-          : b.position === "CUT"
-            ? 444 + (b.score ?? 999)
-            : (b.score ?? 999)),
-  );
+  return teams
+    .sort((a, b) => (a.thru ?? 0) - (b.thru ?? 0))
+    .sort(
+      (a, b) =>
+        (a.position === "DQ"
+          ? 999 + (a.score ?? 999)
+          : a.position === "WD"
+            ? 888 + (a.score ?? 999)
+            : a.position === "CUT"
+              ? 444 + (a.score ?? 999)
+              : (a.score ?? 999)) -
+        (b.position === "DQ"
+          ? 999 + (b.score ?? 999)
+          : b.position === "WD"
+            ? 888 + (b.score ?? 999)
+            : b.position === "CUT"
+              ? 444 + (b.score ?? 999)
+              : (b.score ?? 999)),
+    );
 }
 
 function sortGolfersForSpecialPostions(golfers: Golfer[]) {

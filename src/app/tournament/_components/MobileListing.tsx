@@ -39,7 +39,7 @@ import {
   TourCardData,
   TournamentData,
 } from "@/src/types/prisma_include";
-import { MoveDownIcon, MoveUpIcon } from "lucide-react";
+import { MoveDownIcon, MoveHorizontalIcon, MoveUpIcon } from "lucide-react";
 import { api } from "@/src/trpc/react";
 import { Table, TableRow } from "../../_components/ui/table";
 
@@ -117,16 +117,20 @@ export function MobileListing({
       >
         <div className="col-span-2 flex place-self-center font-varela text-base">
           {team.position}
-          {(tournament?.currentRound ?? 0) <= 1 || !posChange ? (
+          {(tournament?.currentRound ?? 0) <= 1 ? (
             <></>
+          ) : !posChange || posChange === 0 ? (
+            <span className="ml-1 flex items-center justify-center text-3xs">
+              <MoveHorizontalIcon className="w-2" />
+            </span>
           ) : posChange > 0 ? (
-            <span className="ml-0.5 flex items-center justify-center text-xs text-green-900">
-              <MoveUpIcon className="w-3" />
+            <span className="ml-0.5 flex items-center justify-center text-3xs text-green-900">
+              <MoveUpIcon className="w-2" />
               {Math.abs(posChange)}
             </span>
           ) : (
-            <span className="ml-0.5 flex items-center justify-center text-2xs text-red-900">
-              <MoveDownIcon className="w-3" />
+            <span className="ml-0.5 flex items-center justify-center text-3xs text-red-900">
+              <MoveDownIcon className="w-2" />
               {Math.abs(posChange)}
             </span>
           )}
