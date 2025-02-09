@@ -96,3 +96,47 @@ export type DatagolfLiveGolfer = {
   top_5: number;
   win: number;
 };
+
+export type DatagolfCourseInputData = {
+  courses: {
+    course_code: string;
+    course_key: string;
+    rounds: { holes: GolfHole[]; round_num: number }[];
+  }[];
+  current_round: number;
+  event_name: string;
+  last_update: string;
+};
+
+type GolfHole = {
+  afternoon_wave: {
+    avg_score: number;
+    birdies: number;
+    bogeys: number;
+    doubles_or_worse: number;
+    eagles_or_better: number;
+    pars: number;
+    players_thru: number;
+  };
+  hole: number;
+  morning_wave: {
+    avg_score: number;
+    birdies: number;
+    bogeys: number;
+    doubles_or_worse: number;
+    eagles_or_better: number;
+    pars: number;
+    players_thru: number;
+  };
+  par: number;
+  total: {
+    avg_score: number;
+    birdies: number;
+    bogeys: number;
+    doubles_or_worse: number;
+    eagles_or_better: number;
+    pars: number;
+    players_thru: number;
+  };
+  yardage: number;
+};
