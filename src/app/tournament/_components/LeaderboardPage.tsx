@@ -11,6 +11,8 @@ import type {
 import { PGAListing } from "./PGALeaderboard";
 import { PGCListing } from "./PGCLeaderboard";
 import { api } from "@/src/trpc/react";
+import Link from "next/link";
+import { ArrowLeftIcon } from "lucide-react";
 
 export default function LeaderboardPage({
   tournament,
@@ -42,6 +44,14 @@ export default function LeaderboardPage({
 
   return (
     <div className="mt-2">
+      {tourCard?.member.role === "admin" && (
+        <Link
+          className="mb-8 flex w-fit flex-row items-center justify-center self-start rounded-md border border-gray-400 px-2 py-0.5"
+          href={`/tournament/${tournament.id}/stats`}
+        >
+          Tournament Stats
+        </Link>
+      )}
       <div className="mx-auto my-4 flex w-11/12 max-w-xl justify-around text-center">
         {tours.map((tour) => (
           <ToggleButton
