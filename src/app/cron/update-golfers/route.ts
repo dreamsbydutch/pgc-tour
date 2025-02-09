@@ -74,9 +74,21 @@ export async function GET(request: Request) {
         ? 1
         : golfers.filter((obj) => !obj.roundTwo).length > 0
           ? 2
-          : golfers.filter((obj) => !obj.roundThree).length > 0
+          : golfers.filter(
+                (obj) =>
+                  !obj.roundThree &&
+                  obj.position !== "CUT" &&
+                  obj.position !== "WD" &&
+                  obj.position !== "DQ",
+              ).length > 0
             ? 3
-            : golfers.filter((obj) => !obj.roundFour).length > 0
+            : golfers.filter(
+                  (obj) =>
+                    !obj.roundFour &&
+                    obj.position !== "CUT" &&
+                    obj.position !== "WD" &&
+                    obj.position !== "DQ",
+                ).length > 0
               ? 4
               : 5,
     livePlay: liveGolfersCount > 0,
