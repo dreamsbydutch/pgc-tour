@@ -2,7 +2,7 @@ import { api } from "@/src/trpc/server";
 import LoadingSpinner from "../_components/LoadingSpinner";
 import PGCStandings from "./_components/StandingsPage";
 
-export default async function Page() {
+export default async function Page({searchParams}:{searchParams:Record<string,string>}) {
   const member = await api.member.getSelf();
   const season = await api.season.getCurrent();
   const tours = await api.tour.getBySeason({
@@ -24,5 +24,5 @@ export default async function Page() {
     tourCards: [],
   };
   if (!tours || !member || !pgaTour) return <LoadingSpinner />;
-  return <PGCStandings {...{ tours, tourCard }} />;
+  return <PGCStandings {...{ tours, tourCard, inputTour: searchParams.tour }} />;
 }

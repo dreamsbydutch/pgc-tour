@@ -17,13 +17,15 @@ import type { TourData } from "@/src/types/prisma_include";
 export default function PGCStandings({
   tours,
   tourCard,
+  inputTour,
 }: {
   tours: TourData[];
   tourCard: TourCard | null | undefined;
+  inputTour?: string;
 }) {
   const { user } = useUser();
   const [standingsToggle, setStandingsToggle] = useState<string>(
-    tourCard?.tourId ?? tours[0]?.id ?? "",
+    inputTour && inputTour !== "" ? inputTour : (tourCard?.tourId ?? ""),
   );
   const [addingToFriends, setAddingToFriends] = useState(false);
   const member = api.member.getSelf.useQuery().data;
