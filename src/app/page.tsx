@@ -50,8 +50,10 @@ export default async function Home() {
           {...{ tourney: currentTourney, season: season ?? undefined }}
         />
       )}
+      <HomePageStandings
+        {...{ tourney: currentTourney, season: season ?? undefined }}
+      />
       <div className="mt-12 flex flex-col justify-start">
-        {/* <HomePageStandings /> */}
         {/* <Link
           href={groupChatLink}
           className="my-3 flex w-fit items-center justify-center rounded-lg bg-green-50 p-2 text-sm font-semibold text-slate-700 shadow-md"

@@ -66,11 +66,12 @@ export default async function HomePageLeaderboard({
 }
 
 async function TeamListing({ team }: { team: TeamData }) {
-  const member = await api.member.getSelf();
+  const self = await api.member.getSelf();
   return (
     <div
       className={cn(
-        member?.id === team.tourCard.memberId && "bg-slate-200 font-semibold",
+        self?.friends.includes(team.tourCard.memberId) && "bg-slate-100",
+        self?.id === team.tourCard.memberId && "bg-slate-200 font-semibold",
         "grid grid-cols-8 items-center justify-center rounded-md text-center",
       )}
     >
