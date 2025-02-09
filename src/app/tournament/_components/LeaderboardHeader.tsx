@@ -4,7 +4,7 @@ import type { TournamentData } from "@/src/types/prisma_include";
 import { PopoverTrigger } from "@radix-ui/react-popover";
 import { Popover, PopoverContent } from "../../_components/ui/popover";
 import { cn, fetchDataGolf, formatMoney, formatRank } from "@/src/lib/utils";
-import { DatagolfCourseInputData } from "@/src/types/datagolf_types";
+import type { DatagolfCourseInputData } from "@/src/types/datagolf_types";
 
 export default async function LeaderboardHeader({
   focusTourney,
@@ -96,7 +96,7 @@ function PointsAndPayoutsPopover({
     <div className="grid grid-cols-3 text-center">
       <div className="mx-auto flex w-fit flex-col">
         <div className="text-base font-semibold text-white">Rank</div>
-        {focusTourney.tier.payouts.slice(0, 35).map((a, i) => (
+        {focusTourney.tier.payouts.slice(0, 35).map((_, i) => (
           <div key={i} className="text-xs">
             {formatRank(i + 1)}
           </div>
@@ -127,6 +127,7 @@ async function CoursePopover({
 }: {
   focusTourney: TournamentData;
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-any
   const courseData: DatagolfCourseInputData = await fetchDataGolf(
     "preds/live-hole-stats",
     {},
@@ -144,7 +145,10 @@ async function CoursePopover({
             (holes?.reduce((p, c) => (p ?? 0) + (c ?? 0), 0) ?? 0) /
             (holes?.length ?? 1);
           return (
-            <div className="grid grid-cols-4 border-slate-800 py-0.5 text-center [&:nth-child(9)]:border-b">
+            <div
+              key={i}
+              className="grid grid-cols-4 border-slate-800 py-0.5 text-center [&:nth-child(9)]:border-b"
+            >
               <div className="mx-auto flex w-fit flex-col">
                 <div className="text-xs">{formatRank(b.hole)} Hole</div>
               </div>
