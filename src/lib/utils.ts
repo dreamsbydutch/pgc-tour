@@ -4,7 +4,7 @@ import { formatDate, formatDistanceToNowStrict } from "date-fns";
 import { twMerge } from "tailwind-merge";
 import tzLookup from "tz-lookup";
 
-export const groupChatLink = "https://chat.whatsapp.com/EDhyiqWF10jImlvgbLQcVD"
+export const groupChatLink = "https://chat.whatsapp.com/EDhyiqWF10jImlvgbLQcVD";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

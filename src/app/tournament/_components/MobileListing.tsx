@@ -147,12 +147,11 @@ export function MobileListing({
           <div className="col-span-2"></div>
         ) : !team.thru || team.thru === 0 ? (
           <div className="col-span-2 place-self-center font-varela text-xs">
-            {course &&
-              golfer &&
-              userTeam &&
-              (type === "PGA"
-                ? getGolferTeeTime(course, golfer)
-                : getTeamTeeTime(course, userTeam))}
+            {course && golfer && type === "PGA"
+              ? getGolferTeeTime(course, golfer)
+              : course && userTeam && type === "PGC"
+                ? getTeamTeeTime(course, userTeam)
+                : null}
             {type === "PGA" && golfer?.endHole === 9 ? "*" : ""}
           </div>
         ) : (
