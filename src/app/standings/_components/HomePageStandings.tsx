@@ -5,21 +5,18 @@ import { Season } from "@prisma/client";
 import Link from "next/link";
 
 export default async function HomePageStandings({
-  tourney,
   season,
 }: {
-  tourney?: TournamentData;
   season?: Season;
 }) {
-  if (!tourney || !season) return <></>;
-  const tourCards = await api.tourCard.getBySeasonId({ seasonId: season.id });
+  const tourCards = await api.tourCard.getBySeasonId({ seasonId: season?.id });
   const ccgTourCards = tourCards
     ?.filter((a) => a.tour.shortForm === "CCG")
-    .sort((a, b) => (a.points ?? 0) - (b.points ?? 0))
+    .sort((a, b) => (b.points ?? 0) - (a.points ?? 0))
     .slice(0, 15);
   const dbydTourCards = tourCards
     ?.filter((a) => a.tour.shortForm === "DbyD")
-    .sort((a, b) => (a.points ?? 0) - (b.points ?? 0))
+    .sort((a, b) => (b.points ?? 0) - (a.points ?? 0))
     .slice(0, 15);
   return (
     <div className="mx-1 mt-8 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">

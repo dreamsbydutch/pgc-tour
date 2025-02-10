@@ -69,7 +69,7 @@ export default function PGCStandings({
         {member &&
           user &&
           activeTour?.tourCards
-            .sort((a, b) => +a.createdAt - +b.createdAt)
+            .sort((a, b) => (b.points ?? 0) - (a.points ?? 0))
             .map((tourCard) => (
               <StandingsListing
                 key={tourCard.id}
