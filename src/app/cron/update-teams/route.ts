@@ -30,6 +30,7 @@ export async function GET(request: Request) {
   const golfers = await api.golfer.getByTournament({
     tournamentId: tournament.id,
   });
+
   // Sort golfers by today, then thru, then score, then group
   golfers.sort(
     (a, b) =>
@@ -117,22 +118,12 @@ function updateTeamData(
   if (tournament.livePlay) {
     Object.assign(
       updatedTeam,
-      calculateLiveTeamStats(
-        updatedTeam,
-        team,
-        teamGolfers,
-        tournament,
-      ),
+      calculateLiveTeamStats(updatedTeam, team, teamGolfers, tournament),
     );
   } else {
     Object.assign(
       updatedTeam,
-      calculateNonLiveTeamStats(
-        updatedTeam,
-        team,
-        teamGolfers,
-        tournament,
-      ),
+      calculateNonLiveTeamStats(updatedTeam, team, teamGolfers, tournament),
     );
   }
 
@@ -326,7 +317,7 @@ function calculateNonLiveTeamStats(
       ) -
         tournament.course.par);
   }
-  if (tournament.currentRound === 4 && (team.thru ?? 0) > 0) {
+  if ((tournament.currentRound ?? 0) === 4 && (team.thru ?? 0) > 0) {
     const sortedR4 = teamGolfers
       .slice()
       .sort((a, b) => (a.roundFour ?? 0) - (b.roundFour ?? 0));
@@ -419,8 +410,7 @@ async function updateTeamPositions(
       // Update points and earnings if tournament round 4 is complete and not live.
       if (
         !tournament.livePlay &&
-        tournament.currentRound === 4 &&
-        (team.thru ?? 0) > 0
+        tournament.currentRound === 5
       ) {
         if (team.position.includes("T")) {
           const tiedTeams = updatedTeams.filter(
@@ -444,6 +434,8 @@ async function updateTeamPositions(
           team.points = tournament.tier.points[+team.position - 1] ?? null;
           team.earnings = tournament.tier.payouts[+team.position - 1] ?? null;
         }
+        team.points = Math.round(team.points ?? 0);
+        team.earnings = Math.round((team.earnings ?? 0) * 100) / 100;
       }
 
       await api.team.update(team);

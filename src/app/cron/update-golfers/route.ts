@@ -70,7 +70,7 @@ export async function GET(request: Request) {
   await api.tournament.update({
     id: tournament.id,
     currentRound:
-      golfers.filter((obj) => !obj.roundOne).length > 0
+      golfers.filter((obj) => !obj.roundOne && (obj.thru ?? 0) > 0).length > 0
         ? 1
         : golfers.filter((obj) => !obj.roundTwo).length > 0
           ? 2
@@ -166,7 +166,7 @@ async function updateExistingGolfers(
       );
 
       // Calculate usage on the first round when not live.
-      if (tournament.currentRound === 1 && !tournament.livePlay) {
+      if (tournament.currentRound === 0 && !tournament.livePlay) {
         updateData.usage =
           golferIDs.filter((id) => id === golfer.apiId).length / teams.length;
       }
@@ -181,11 +181,15 @@ async function updateExistingGolfers(
       );
 
       // Update additional fields.
-      if (liveGolfer?.top_10 !== undefined)
+      if (liveGolfer?.top_10 !== undefined) {
         updateData.topTen = liveGolfer.top_10;
-      if (liveGolfer?.make_cut !== undefined)
+      }
+      if (liveGolfer?.make_cut !== undefined) {
         updateData.makeCut = liveGolfer.make_cut;
-      if (liveGolfer?.win !== undefined) updateData.win = liveGolfer.win;
+      }
+      if (liveGolfer?.win !== undefined) {
+        updateData.win = liveGolfer.win;
+      }
       if (liveGolfer?.current_pos !== undefined) {
         updateData.position = liveGolfer.current_pos;
         const posCurrent = Number(liveGolfer.current_pos.replace("T", ""));
@@ -274,9 +278,12 @@ function setRoundTeeTimesAndScores(
   tournament: TournamentData,
 ) {
   // Round One
-  if (fieldGolfer?.r1_teetime)
+  if (fieldGolfer?.r1_teetime) {
     updateData.roundOneTeeTime = fieldGolfer.r1_teetime;
-  if (liveGolfer?.R1) updateData.roundOne = liveGolfer.R1;
+  }
+  if (liveGolfer?.R1) {
+    updateData.roundOne = liveGolfer.R1;
+  }
   if (
     !liveGolfer?.R1 &&
     fieldGolfer?.r1_teetime &&
@@ -288,9 +295,12 @@ function setRoundTeeTimesAndScores(
   }
 
   // Round Two
-  if (fieldGolfer?.r2_teetime)
+  if (fieldGolfer?.r2_teetime) {
     updateData.roundTwoTeeTime = fieldGolfer.r2_teetime;
-  if (liveGolfer?.R2) updateData.roundTwo = liveGolfer.R2;
+  }
+  if (liveGolfer?.R2) {
+    updateData.roundTwo = liveGolfer.R2;
+  }
   if (
     !liveGolfer?.R2 &&
     fieldGolfer?.r1_teetime &&
@@ -302,9 +312,12 @@ function setRoundTeeTimesAndScores(
   }
 
   // Round Three
-  if (fieldGolfer?.r3_teetime)
+  if (fieldGolfer?.r3_teetime) {
     updateData.roundThreeTeeTime = fieldGolfer.r3_teetime;
-  if (liveGolfer?.R3) updateData.roundThree = liveGolfer.R3;
+  }
+  if (liveGolfer?.R3) {
+    updateData.roundThree = liveGolfer.R3;
+  }
   if (
     !liveGolfer?.R3 &&
     fieldGolfer?.r3_teetime &&
@@ -316,9 +329,12 @@ function setRoundTeeTimesAndScores(
   }
 
   // Round Four
-  if (fieldGolfer?.r4_teetime)
+  if (fieldGolfer?.r4_teetime) {
     updateData.roundFourTeeTime = fieldGolfer.r4_teetime;
-  if (liveGolfer?.R4) updateData.roundFour = liveGolfer.R4;
+  }
+  if (liveGolfer?.R4) {
+    updateData.roundFour = liveGolfer.R4;
+  }
   if (
     !liveGolfer?.R4 &&
     fieldGolfer?.r4_teetime &&

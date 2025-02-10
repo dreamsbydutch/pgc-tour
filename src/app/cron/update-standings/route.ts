@@ -7,6 +7,7 @@ import type {
   DatagolfFieldInput,
   DatagolfRankingInput,
 } from "@/src/types/datagolf_types";
+import { TourCardData, TournamentData } from "@/src/types/prisma_include";
 import { NextResponse } from "next/server";
 // import fs from "fs";
 
@@ -14,25 +15,47 @@ export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL
   const { origin } = new URL(request.url);
 
-  // Get the authorization code and the 'next' redirect path
-  // const next = searchParams.get("next") ?? "/";
+  const season = await api.season.getCurrent();
+  let tourCards = await api.tourCard.getBySeasonId({ seasonId: season?.id });
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const rankingsData: DatagolfRankingInput = await fetchDataGolf(
-    "preds/get-dg-rankings",
-    null,
-  );
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const fieldData: DatagolfFieldInput = await fetchDataGolf(
-    "field-updates",
-    null,
-  );
-
-  const current = await api.tournament.getCurrent();
-  const next = await api.tournament.getNext();
-  const recent = await api.tournament.getRecent();
-
-  console.log("RECENT ----------------------------", recent);
-  console.log("CURRENT ----------------------------", current);
-  console.log("NEXT ----------------------------", next);
+  if (tourCards) {
+    tourCards = await Promise.all(
+      tourCards.map(async (tourCard) => {
+        const teams = await api.team.getByTourCard({ tourCardId: tourCard.id });
+        tourCard.earnings = teams.reduce(
+          (p, c) => (p += Math.round((c.earnings ?? 0) * 100) / 100),
+          0,
+        );
+        tourCard.points = teams.reduce(
+          (p, c) => (p += Math.round(c.points ?? 0)),
+          0,
+        );
+        return tourCard;
+      }),
+    );
+    tourCards = await Promise.all(
+      tourCards.map(async (tourCard) => {
+        tourCard.position =
+          (tourCards &&
+          tourCards.filter(
+            (a) => a.tourId === tourCard.tourId && a.points === tourCard.points,
+          ).length > 1
+            ? "T"
+            : "") +
+          (tourCards &&
+            tourCards.filter(
+              (a) =>
+                a.tourId === tourCard.tourId &&
+                (a.points ?? 0) > (tourCard.points ?? 0),
+            ).length + 1);
+        await api.tourCard.update({
+          id: tourCard.id,
+          position: tourCard.position,
+          points: tourCard.points ?? undefined,
+          earnings: tourCard.earnings,
+        });
+        return tourCard;
+      }),
+    );
+  }
 }
