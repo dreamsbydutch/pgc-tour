@@ -6,6 +6,7 @@ import SignInPage from "./signin/page";
 import HomePageLeaderboard from "./tournament/_components/HomePageLeaderboard";
 import { api } from "../trpc/server";
 import HomePageStandings from "./standings/_components/HomePageStandings";
+import ChampionsPopup from "./tournament/_components/ChampionsPopup";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -38,6 +39,7 @@ export default async function Home() {
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
+      <ChampionsPopup />
       {/* <p className="mx-auto mb-4 font-varela text-base text-slate-500 md:text-lg">
         An elite fantasy golf experience
       </p> */}
