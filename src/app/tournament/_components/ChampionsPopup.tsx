@@ -41,7 +41,7 @@ export default async function ChampionsPopup() {
                 .filter((a) => champ?.golferIds.includes(a.apiId))
                 .sort((a, b) => (a.score ?? 0) - (b.score ?? 0))
                 .map((golfer) => (
-                  <div className="grid grid-cols-7 items-center justify-center">
+                  <div key={golfer.id} className="grid grid-cols-7 items-center justify-center">
                     <div className="col-span-6 text-xs">
                       {golfer.playerName}
                     </div>
