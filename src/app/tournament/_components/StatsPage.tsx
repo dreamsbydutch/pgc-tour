@@ -1,7 +1,6 @@
 "use client";
 
-import { cn, formatRank, formatScore } from "@/src/lib/utils";
-import { teamCreateOnFormSubmit } from "@/src/server/api/actions/team";
+import { cn, formatScore } from "@/src/lib/utils";
 import { api } from "@/src/trpc/react";
 import type {
   TeamData,
@@ -76,7 +75,6 @@ export default function StatsPage({
               <StatsListing
                 key={obj.id}
                 {...{
-                  tournament,
                   team: obj,
                   teams,
                   activeTour,
@@ -91,7 +89,6 @@ export default function StatsPage({
               <StatsListing
                 key={obj.id}
                 {...{
-                  tournament,
                   team: obj,
                   teams,
                   activeTour,
@@ -178,12 +175,10 @@ function sortTeamsForSpecialPostions(teams: TeamData[]) {
 }
 
 function StatsListing({
-  tournament,
   team,
   teams,
   activeTour,
 }: {
-  tournament: TournamentData;
   team: TeamData;
   teams?: TeamData[];
   activeTour: string;

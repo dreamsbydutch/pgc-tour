@@ -12,7 +12,6 @@ import { PGAListing } from "./PGALeaderboard";
 import { PGCListing } from "./PGCLeaderboard";
 import { api } from "@/src/trpc/react";
 import Link from "next/link";
-import { ArrowLeftIcon } from "lucide-react";
 
 export default function LeaderboardPage({
   tournament,

@@ -1,7 +1,8 @@
 import { cn } from "@/src/lib/utils";
 import { api } from "@/src/trpc/server";
-import { TourCardData, TournamentData } from "@/src/types/prisma_include";
-import { Season } from "@prisma/client";
+import type { TourCardData } from "@/src/types/prisma_include";
+import type { Season } from "@prisma/client";
+import Image from "next/image";
 import Link from "next/link";
 
 export default async function HomePageStandings({
@@ -40,7 +41,11 @@ export default async function HomePageStandings({
                   "flex items-center justify-center pb-1 pt-2 text-center text-lg font-semibold",
                 )}
               >
-                <img src={tourCard[0]?.tour.logoUrl} className="mr-2 h-8 w-8" />
+                <Image
+                  src={tourCard[0]?.tour.logoUrl ?? ""}
+                  alt="Tour Logo"
+                  className="mr-2 h-8 w-8"
+                />
                 {tourCard[0]?.tour.shortForm} Tour
               </div>
               <div className={cn("mx-1 mb-3")}>

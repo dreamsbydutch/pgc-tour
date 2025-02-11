@@ -1,6 +1,6 @@
 import { createClient } from "../lib/supabase/server";
 import TournamentCountdown from "./tournament/_components/TournamentCountdown";
-import { formatName, groupChatLink } from "../lib/utils";
+import { formatName } from "../lib/utils";
 import Link from "next/link";
 import SignInPage from "./signin/page";
 import HomePageLeaderboard from "./tournament/_components/HomePageLeaderboard";
@@ -29,8 +29,8 @@ export default async function Home() {
   if (!member) return <SignInPage />;
 
   const season = await api.season.getByYear({ year: new Date().getFullYear() });
-  const tours = await api.tour.getBySeason({ seasonID: season?.id });
-  const pastTourney = await api.tournament.getRecent();
+  // const tours = await api.tour.getBySeason({ seasonID: season?.id });
+  // const pastTourney = await api.tournament.getRecent();
   const currentTourney = await api.tournament.getCurrent();
   const nextTourney = await api.tournament.getNext();
 

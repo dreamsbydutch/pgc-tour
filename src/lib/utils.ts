@@ -2,7 +2,7 @@ import type { Course, Golfer, Team } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { formatDate, formatDistanceToNowStrict } from "date-fns";
 import { twMerge } from "tailwind-merge";
-import tzLookup from "tz-lookup";
+// import tzLookup from "tz-lookup";
 
 export const groupChatLink = "https://chat.whatsapp.com/EDhyiqWF10jImlvgbLQcVD";
 
@@ -131,6 +131,7 @@ export function getTeamTeeTime(course: Course, team: Team) {
   return formatTime(course, new Date((team[teeTimeKey] as string) ?? ""));
 }
 export function formatTime(course: Course, time: Date) {
+  console.log(course.par);
   return new Date(time ?? "").toLocaleString("en-US", {
     hour: "numeric",
     minute: "numeric",
@@ -176,20 +177,20 @@ type DataGolfExports =
   | "preds/live-tournament-stats"
   | "historical-raw-data/event-list";
 
-function convertToUserLocalTime(course: Course, localTime: Date): Date {
-  const cityTimeZone = tzLookup(course.latitude ?? 0, course.longitude ?? 0);
+// function convertToUserLocalTime(course: Course, localTime: Date): Date {
+//   const cityTimeZone = tzLookup(course.latitude ?? 0, course.longitude ?? 0);
 
-  // Convert local time (assumed in city's timezone) to UTC
-  const utcTime = new Date(
-    localTime.toLocaleString("en-US", { timeZone: cityTimeZone }),
-  );
+//   // Convert local time (assumed in city's timezone) to UTC
+//   const utcTime = new Date(
+//     localTime.toLocaleString("en-US", { timeZone: cityTimeZone }),
+//   );
 
-  // Convert from UTC to the user's local timezone
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const userLocalTimeString = utcTime.toLocaleString("en-US", {
-    timeZone: userTimeZone,
-  });
+//   // Convert from UTC to the user's local timezone
+//   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+//   const userLocalTimeString = utcTime.toLocaleString("en-US", {
+//     timeZone: userTimeZone,
+//   });
 
-  // Convert localized string back to Date object
-  return new Date(userLocalTimeString);
-}
+//   // Convert localized string back to Date object
+//   return new Date(userLocalTimeString);
+// }

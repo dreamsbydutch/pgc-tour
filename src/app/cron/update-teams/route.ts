@@ -53,7 +53,7 @@ export async function GET(request: Request) {
     tournament.course.par,
     10000,
   );
-  updatedTeams = await updateTeamPositions(updatedTeams, tournament);
+  await updateTeamPositions(updatedTeams, tournament);
 
   return NextResponse.redirect(`${origin}${next}`);
 }
@@ -408,10 +408,7 @@ async function updateTeamPositions(
       team.pastPosition = `${tiedPastCount > 1 ? "T" : ""}${lowerPastCount + 1}`;
 
       // Update points and earnings if tournament round 4 is complete and not live.
-      if (
-        !tournament.livePlay &&
-        tournament.currentRound === 5
-      ) {
+      if (!tournament.livePlay && tournament.currentRound === 5) {
         if (team.position.includes("T")) {
           const tiedTeams = updatedTeams.filter(
             (obj) => obj.position === team.position,

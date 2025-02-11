@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { updateSession } from "@/src/lib/supabase/middleware";
 
 export const courseRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {

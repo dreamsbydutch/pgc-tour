@@ -34,7 +34,7 @@ import {
   CA,
   TW,
 } from "country-flag-icons/react/3x2";
-import {
+import type {
   TeamData,
   TourCardData,
   TournamentData,

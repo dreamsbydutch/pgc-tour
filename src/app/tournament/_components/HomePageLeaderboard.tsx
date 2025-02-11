@@ -5,6 +5,7 @@ import type { Season } from "@prisma/client";
 import { api } from "@/src/trpc/server";
 import { cn, formatScore } from "@/src/lib/utils";
 import Link from "next/link";
+import Image from "next/image";
 
 export default async function HomePageLeaderboard({
   tourney,
@@ -49,7 +50,11 @@ export default async function HomePageLeaderboard({
                   "flex items-center justify-center pb-1 pt-2 text-center text-lg font-semibold",
                 )}
               >
-                <img src={tourInfo?.logoUrl} className="mr-2 h-8 w-8" />
+                <Image
+                  alt="Tour Logo"
+                  src={tourInfo?.logoUrl}
+                  className="mr-2 h-8 w-8"
+                />
                 {tourInfo?.shortForm} Tour
               </div>
               <div className={cn("mx-1 mb-3")}>

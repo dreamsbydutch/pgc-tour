@@ -7,10 +7,8 @@ import StatsPage from "../../_components/StatsPage";
 
 export default async function page({
   params,
-  searchParams,
 }: {
   params: { tournamentId: string };
-  searchParams: Record<string, string>;
 }) {
   const member = await api.member.getSelf();
   const tournament = await api.tournament.getById({
@@ -23,17 +21,6 @@ export default async function page({
     seasonId: tournament?.seasonId,
     userId: member?.id,
   });
-  const pgaTour = {
-    id: "1",
-    shortForm: "PGA",
-    name: "PGA Tour",
-    logoUrl: "",
-    seasonId: tournament?.seasonId ?? "",
-    buyIn: 0,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    tourCards: [],
-  };
   if (!tournament || !tours) return <LoadingSpinner />;
 
   return (

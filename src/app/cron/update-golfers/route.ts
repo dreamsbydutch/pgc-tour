@@ -10,7 +10,7 @@ import type {
   DatagolfRankingInput,
 } from "@/src/types/datagolf_types";
 import type { TeamData, TournamentData } from "@/src/types/prisma_include";
-import { Golfer } from "@prisma/client";
+import type { Golfer } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {

@@ -1,6 +1,5 @@
 "use server";
 
-import { fetchDataGolf } from "@/src/lib/utils";
 import { api } from "@/trpcLocal/server";
 
 export async function seedCourses() {
@@ -373,17 +372,19 @@ const courses: SeedCourse[] = [
 export async function seedCoursesFromDataGolf() {
   const existingCourses = await api.course.getAll();
 
-  existingCourses.map(async (obj) => {
-    const location = seedLocations.find(
-      (a) => a.city === obj.location.split(", ")[0],
-    );
+  await Promise.all(
+    existingCourses.map(async (obj) => {
+      const location = seedLocations.find(
+        (a) => a.city === obj.location.split(", ")[0],
+      );
 
-    await api.course.update({
-      name: obj.name,
-      longitude: location?.lng,
-      latitude: location?.lat,
-    });
-  });
+      await api.course.update({
+        name: obj.name,
+        longitude: location?.lng,
+        latitude: location?.lat,
+      });
+    }),
+  );
 }
 
 const seedLocations = [

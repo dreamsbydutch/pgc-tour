@@ -1,5 +1,6 @@
 import { formatScore } from "@/src/lib/utils";
 import { api } from "@/src/trpc/server";
+import Image from "next/image";
 import Link from "next/link";
 
 export default async function ChampionsPopup() {
@@ -18,16 +19,22 @@ export default async function ChampionsPopup() {
     <div className="mx-auto my-8 w-full max-w-3xl rounded-2xl bg-amber-100 bg-opacity-70 p-2 shadow-lg md:w-10/12 lg:w-7/12">
       <div className="py-4 text-center">
         <h1 className="flex px-3 font-varela text-2xl font-bold sm:text-3xl md:text-4xl">
-          <img src={tournament?.logoUrl ?? ""} className="h-16 w-16" />
+          <Image
+            alt="Tourney Logo"
+            src={tournament?.logoUrl ?? ""}
+            className="h-16 w-16"
+          />
           {tournament?.name} Champions
         </h1>
-        {champs.map((champ, i) => (
+        {champs.map((champ) => (
           <Link
+            key={champ.tourCardId}
             href={`/tournament/${tournament?.id}?tour=${champ.tourCard.tourId}`}
           >
             <div className="my-2 w-full border-b border-slate-800" />
             <div className="flex items-center justify-center gap-4">
-              <img
+              <Image
+                alt="Tour Logo"
                 src={
                   tourCards?.find((a) => a.id === champ?.tourCardId)?.tour
                     .logoUrl

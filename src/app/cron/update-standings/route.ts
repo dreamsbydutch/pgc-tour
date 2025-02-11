@@ -1,15 +1,7 @@
 "use server";
 
-import { fetchDataGolf } from "@/src/lib/utils";
 import { api } from "@/src/trpc/server";
-import type {
-  DatagolfFieldGolfer,
-  DatagolfFieldInput,
-  DatagolfRankingInput,
-} from "@/src/types/datagolf_types";
-import { TourCardData, TournamentData } from "@/src/types/prisma_include";
 import { NextResponse } from "next/server";
-// import fs from "fs";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL
@@ -58,4 +50,5 @@ export async function GET(request: Request) {
       }),
     );
   }
+    return NextResponse.redirect(`${origin}/`);
 }
