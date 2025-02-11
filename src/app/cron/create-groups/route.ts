@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     null,
   );
 
-  const currentTourney = await api.tournament.getCurrent();
+  const currentTourney = await api.tournament.getNext();
   const golfers = await api.golfer.getByTournament({
     tournamentId: currentTourney?.id ?? "",
   });
