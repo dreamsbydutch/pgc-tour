@@ -11,9 +11,10 @@ import {
 } from "../../_components/ui/table";
 
 export default async function AdminDashboard() {
-  const season = await api.season.getByYear({ year: 2025 });
-  const tourCards = await api.tourCard.getBySeasonId({ seasonId: season?.id });
-  const currentTourney = await api.tournament.getCurrent();
+  const currentTourney = await api.tournament.getNext();
+  const tourCards = await api.tourCard.getBySeasonId({
+    seasonId: currentTourney?.seasonId,
+  });
   const teams = await api.team.getByTournament({
     tournamentId: currentTourney?.id,
   });
@@ -69,6 +70,14 @@ export default async function AdminDashboard() {
             ))}
         </TableBody>
       </Table>
+      <div className="text-center font-varela">
+        <div className="text-2xl font-bold">All Emails</div>
+        {tourCards?.map((tourCard) => (
+          <div key={tourCard.id}>
+            <div className="text-center text-sm">{tourCard.member.email}</div>
+          </div>
+        ))}
+      </div>
     </>
   );
 }
