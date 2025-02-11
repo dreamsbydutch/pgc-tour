@@ -37,7 +37,7 @@ export default async function ChampionsPopup() {
                 alt="Tour Logo"
                 src={
                   tourCards?.find((a) => a.id === champ?.tourCardId)?.tour
-                    .logoUrl
+                    .logoUrl ?? ""
                 }
                 className="h-12 w-12"
               />
