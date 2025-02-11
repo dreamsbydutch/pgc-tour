@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { type Tournament } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
 
 export default function TournamentCountdown({
   tourney,
@@ -52,8 +51,7 @@ const CountdownTimer = ({
   }, [startDateTime]);
 
   return (
-    <Link
-      href={`/tournament/${tourney.id}`}
+    <div
       className="mx-auto my-8 w-full max-w-3xl rounded-2xl bg-gray-100 p-2 shadow-md md:w-10/12 lg:w-7/12"
     >
       <div className="py-4 text-center">
@@ -77,7 +75,7 @@ const CountdownTimer = ({
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 

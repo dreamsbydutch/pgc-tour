@@ -45,7 +45,9 @@ export default async function Home() {
       </p> */}
 
       {!currentTourney && nextTourney && (
-        <TournamentCountdown tourney={nextTourney} />
+        <Link href={`/tournament/${nextTourney.id}`}>
+          <TournamentCountdown tourney={nextTourney} />
+        </Link>
       )}
       {currentTourney && (
         <HomePageLeaderboard
