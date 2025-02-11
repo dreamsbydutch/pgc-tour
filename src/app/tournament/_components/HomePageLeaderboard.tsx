@@ -52,7 +52,7 @@ export default async function HomePageLeaderboard({
               >
                 <Image
                   alt="Tour Logo"
-                  src={tourInfo?.logoUrl}
+                  src={tourInfo?.logoUrl ?? ""}
                   className="mr-2 h-8 w-8"
                 />
                 {tourInfo?.shortForm} Tour
