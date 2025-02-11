@@ -45,6 +45,8 @@ export default async function HomePageStandings({
                   src={tourCard[0]?.tour.logoUrl ?? ""}
                   alt="Tour Logo"
                   className="mr-2 h-8 w-8"
+                  width={128}
+                  height={128}
                 />
                 {tourCard[0]?.tour.shortForm} Tour
               </div>

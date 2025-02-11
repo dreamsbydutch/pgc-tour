@@ -54,6 +54,8 @@ export default async function HomePageLeaderboard({
                   alt="Tour Logo"
                   src={tourInfo?.logoUrl ?? ""}
                   className="mr-2 h-8 w-8"
+                  width={128}
+                  height={128}
                 />
                 {tourInfo?.shortForm} Tour
               </div>

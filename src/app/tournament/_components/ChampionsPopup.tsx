@@ -23,6 +23,8 @@ export default async function ChampionsPopup() {
             alt="Tourney Logo"
             src={tournament?.logoUrl ?? ""}
             className="h-16 w-16"
+            width={128}
+            height={128}
           />
           {tournament?.name} Champions
         </h1>
@@ -40,6 +42,8 @@ export default async function ChampionsPopup() {
                     .logoUrl ?? ""
                 }
                 className="h-12 w-12"
+                width={128}
+                height={128}
               />
               <div className="text-xl font-semibold">
                 {champ?.tourCard.displayName}
