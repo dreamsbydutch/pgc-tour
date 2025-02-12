@@ -69,9 +69,12 @@ async function submitSubscription(
     },
     body: JSON.stringify({ subscription }),
   });
-  //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const result: { success: boolean } = await res.json();
-  console.log(result);
+  if (res.ok) {
+    const result: { success: boolean } = await res.json();
+    console.log(result);
+  } else {
+    console.error("Failed to submit subscription");
+  }
 }
 
 export async function registerAndSubscribe(
@@ -90,9 +93,9 @@ export async function sendWebPush(message: string | null): Promise<void> {
   const pushBody = {
     title: "Test Push",
     body: message ?? "This is a test push message",
-    image: "/next.png",
-    icon: "nextjs.png",
-    url: "https://google.com",
+    image: "/logo512.png",
+    icon: "logo512.png",
+    url: "https://www.pgctour.ca",
   };
   const res = await fetch(endPointUrl, {
     method: "POST",
@@ -101,7 +104,10 @@ export async function sendWebPush(message: string | null): Promise<void> {
     },
     body: JSON.stringify(pushBody),
   });
-  //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const result: { success: boolean } = await res.json();
-  console.log(result);
+  if (res.ok) {
+    const result: { success: boolean } = await res.json();
+    console.log(result);
+  } else {
+    console.error("Failed to send web push");
+  }
 }
