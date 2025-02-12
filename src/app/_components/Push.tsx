@@ -70,6 +70,7 @@ async function submitSubscription(
     body: JSON.stringify({ subscription }),
   });
   if (res.ok) {
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const result: { success: boolean } = await res.json();
     console.log(result);
   } else {
@@ -105,6 +106,7 @@ export async function sendWebPush(message: string | null): Promise<void> {
     body: JSON.stringify(pushBody),
   });
   if (res.ok) {
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const result: { success: boolean } = await res.json();
     console.log(result);
   } else {
