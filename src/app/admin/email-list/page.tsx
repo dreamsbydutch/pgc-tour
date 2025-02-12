@@ -65,7 +65,9 @@ export default async function AdminDashboard() {
                 <TableCell className="text-sm">
                   {tourCard.displayName}
                 </TableCell>
-                <TableCell className="text-sm">{tourCard.tour.name}</TableCell>
+                <TableCell className="whitespace-nowrap text-sm">
+                  {tourCard.tour.name}
+                </TableCell>
               </TableRow>
             ))}
         </TableBody>
