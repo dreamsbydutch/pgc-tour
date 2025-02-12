@@ -43,6 +43,9 @@ export const env = createEnv({
     NEXT_PUBLIC_SUPABASE_URL: z.string(),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
     NEXT_PUBLIC_GOOGLE_ANALYTICS: z.string(),
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string(),
+    NEXT_PUBLIC_VAPID_PRIVATE_KEY: z.string(),
+
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
   },
 
@@ -59,6 +62,8 @@ export const env = createEnv({
     DIRECT_URL: process.env.DIRECT_URL,
     TOUR_MAX_SIZE: process.env.TOUR_MAX_SIZE,
     SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    NEXT_PUBLIC_VAPID_PRIVATE_KEY: process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY,
     // ONESIGNAL_API_KEY: process.env.ONESIGNAL_API_KEY,
     // GODADDY_EMAIL: process.env.GODADDY_EMAIL,
     // GODADDY_PASSWORD: process.env.GODADDY_PASSWORD,
