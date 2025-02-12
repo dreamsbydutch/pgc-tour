@@ -82,7 +82,10 @@ export async function registerAndSubscribe(
   onSubscribe: (subs: PushSubscription | null) => void,
 ): Promise<void> {
   try {
-    await navigator.serviceWorker.register(SERVICE_WORKER_FILE_PATH);
+    const registration = await navigator.serviceWorker.register(
+      SERVICE_WORKER_FILE_PATH,
+    );
+    console.log("Service worker registered with scope:", registration.scope);
     await subscribe(onSubscribe);
   } catch (e) {
     console.error("Failed to register service-worker: ", e);
@@ -98,6 +101,7 @@ export async function sendWebPush(message: string | null): Promise<void> {
     icon: "logo512.png",
     url: "https://www.pgctour.ca",
   };
+  console.log("Sending push message:", pushBody);
   const res = await fetch(endPointUrl, {
     method: "POST",
     headers: {
@@ -108,7 +112,7 @@ export async function sendWebPush(message: string | null): Promise<void> {
   if (res.ok) {
     //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const result: { success: boolean } = await res.json();
-    console.log(result);
+    console.log("Push message sent:", result);
   } else {
     console.error("Failed to send web push");
   }
