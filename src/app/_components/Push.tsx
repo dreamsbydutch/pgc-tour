@@ -30,20 +30,22 @@ export function checkPermissionStateAndAct(
 async function subscribe(
   onSubscribe: (subs: PushSubscription | null) => void,
 ): Promise<void> {
-  navigator.serviceWorker.ready
+  await navigator.serviceWorker.ready
     .then(async (registration: ServiceWorkerRegistration) => {
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
         return subscription.unsubscribe().then(() => {
           return registration.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+            applicationServerKey: process.env
+              .NEXT_PUBLIC_VAPID_PUBLIC_KEY as string,
           });
         });
       } else {
         return registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+          applicationServerKey: process.env
+            .NEXT_PUBLIC_VAPID_PUBLIC_KEY as string,
         });
       }
     })
@@ -69,7 +71,7 @@ async function submitSubscription(
     },
     body: JSON.stringify({ subscription }),
   });
-  const result = await res.json();
+  const result: { success: boolean } = await res.json();
   console.log(result);
 }
 
@@ -100,6 +102,6 @@ export async function sendWebPush(message: string | null): Promise<void> {
     },
     body: JSON.stringify(pushBody),
   });
-  const result = await res.json();
+  const result: { success: boolean } = await res.json();
   console.log(result);
 }
