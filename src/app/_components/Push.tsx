@@ -37,15 +37,13 @@ async function subscribe(
         return subscription.unsubscribe().then(() => {
           return registration.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: process.env
-              .NEXT_PUBLIC_VAPID_PUBLIC_KEY as string,
+            applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
           });
         });
       } else {
         return registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: process.env
-            .NEXT_PUBLIC_VAPID_PUBLIC_KEY as string,
+          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
         });
       }
     })
@@ -71,6 +69,7 @@ async function submitSubscription(
     },
     body: JSON.stringify({ subscription }),
   });
+  //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const result: { success: boolean } = await res.json();
   console.log(result);
 }
@@ -102,6 +101,7 @@ export async function sendWebPush(message: string | null): Promise<void> {
     },
     body: JSON.stringify(pushBody),
   });
+  //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const result: { success: boolean } = await res.json();
   console.log(result);
 }
