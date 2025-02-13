@@ -8,6 +8,7 @@ import { api } from "../trpc/server";
 import HomePageStandings from "./standings/_components/HomePageStandings";
 import ChampionsPopup from "./tournament/_components/ChampionsPopup";
 import RegisterServiceWorker from "./_components/RegisterServiceWorker";
+import { TourCardForm } from "./_components/TourCardForm";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -30,10 +31,11 @@ export default async function Home() {
   if (!member) return <SignInPage />;
 
   const season = await api.season.getByYear({ year: new Date().getFullYear() });
-  // const tours = await api.tour.getBySeason({ seasonID: season?.id });
+  const tours = await api.tour.getBySeason({ seasonID: season?.id });
   // const pastTourney = await api.tournament.getRecent();
   const currentTourney = await api.tournament.getCurrent();
   const nextTourney = await api.tournament.getNext();
+  const tourCard = await api.tourCard.getOwnBySeason({ seasonId: season.id });
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col">
@@ -41,11 +43,11 @@ export default async function Home() {
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      <ChampionsPopup />
+      {/* <ChampionsPopup /> */}
       {/* <p className="mx-auto mb-4 font-varela text-base text-slate-500 md:text-lg">
         An elite fantasy golf experience
       </p> */}
-
+      {!tourCard && <TourCardForm {...{ tours }} />}
       {!currentTourney && nextTourney && (
         <Link href={`/tournament/${nextTourney.id}`}>
           <TournamentCountdown tourney={nextTourney} />
