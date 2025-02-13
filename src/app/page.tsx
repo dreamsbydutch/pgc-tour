@@ -35,7 +35,7 @@ export default async function Home() {
   // const pastTourney = await api.tournament.getRecent();
   const currentTourney = await api.tournament.getCurrent();
   const nextTourney = await api.tournament.getNext();
-  const tourCard = await api.tourCard.getOwnBySeason({ seasonId: season.id });
+  const tourCard = await api.tourCard.getOwnBySeason({ seasonId: season?.id });
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col">
