@@ -43,7 +43,7 @@ export async function GET(request: Request) {
   const teams: TeamData[] = await api.team.getByTournament({
     tournamentId: tournament.id,
   });
-  let updatedTeams = teams.map((team) =>
+  const updatedTeams = teams.map((team) =>
     updateTeamData(team, golfers, fieldData, liveData, tournament),
   );
 
