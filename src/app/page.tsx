@@ -6,12 +6,9 @@ import SignInPage from "./signin/page";
 import HomePageLeaderboard from "./tournament/_components/HomePageLeaderboard";
 import { api } from "../trpc/server";
 import HomePageStandings from "./standings/_components/HomePageStandings";
-import ChampionsPopup from "./tournament/_components/ChampionsPopup";
-<<<<<<< HEAD
-=======
-import RegisterServiceWorker from "./_components/RegisterServiceWorker";
+// import ChampionsPopup from "./tournament/_components/ChampionsPopup";
+// import RegisterServiceWorker from "./_components/RegisterServiceWorker";
 import { TourCardForm } from "./_components/TourCardForm";
->>>>>>> d4d9947f27d6e63d0575c46b0e6da78a5c87ff25
 
 export default async function Home() {
   const supabase = await createClient();

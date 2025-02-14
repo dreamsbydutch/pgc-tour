@@ -47,12 +47,12 @@ export async function GET(request: Request) {
     updateTeamData(team, golfers, fieldData, liveData, tournament),
   );
 
-  updatedTeams = simulateTournament(
-    golfers,
-    updatedTeams,
-    tournament.course.par,
-    10000,
-  );
+  // updatedTeams = simulateTournament(
+  //   golfers,
+  //   updatedTeams,
+  //   tournament.course.par,
+  //   10000,
+  // );
   await updateTeamPositions(updatedTeams, tournament);
 
   return NextResponse.redirect(`${origin}${next}`);
@@ -77,10 +77,7 @@ function updateTeamData(
 ): TeamData {
   const updatedTeam: TeamData = {
     ...team,
-    round:
-      liveData.info.event_name === fieldData.event_name
-        ? liveData.info.current_round
-        : fieldData.current_round,
+    round: tournament.currentRound,
   };
   const teamGolfers = golfers.filter(
     (g) =>
@@ -132,7 +129,8 @@ function updateTeamData(
   updatedTeam.today = roundValue(updatedTeam.today);
   updatedTeam.thru = roundValue(updatedTeam.thru);
   updatedTeam.roundOne = roundValue(updatedTeam.roundOne);
-  updatedTeam.roundTwo = roundValue(updatedTeam.roundTwo);
+  updatedTeam.roundTwo = null;
+  // updatedTeam.roundTwo = roundValue(updatedTeam.roundTwo);
   updatedTeam.roundThree = roundValue(updatedTeam.roundThree);
   updatedTeam.roundFour = roundValue(updatedTeam.roundFour);
 
@@ -238,7 +236,7 @@ function calculateNonLiveTeamStats(
   teamGolfers: Golfer[],
   tournament: TournamentData,
 ): Partial<TeamData> {
-  if (tournament.currentRound === 1 && (team.thru ?? 0) > 0) {
+  if ((tournament.currentRound ?? 0) > 1 && !tournament.livePlay) {
     updatedTeam.roundOne = average(
       teamGolfers,
       "roundOne",
@@ -261,7 +259,7 @@ function calculateNonLiveTeamStats(
         teamGolfers.length,
       ) - tournament.course.par;
   }
-  if (tournament.currentRound === 2 && (team.thru ?? 0) > 0) {
+  if ((tournament.currentRound ?? 0) > 2 && !tournament.livePlay) {
     updatedTeam.roundTwo = average(
       teamGolfers,
       "roundTwo",
@@ -287,7 +285,7 @@ function calculateNonLiveTeamStats(
       ) -
         tournament.course.par);
   }
-  if (tournament.currentRound === 3 && (team.thru ?? 0) > 0) {
+  if ((tournament.currentRound ?? 0) > 3 && !tournament.livePlay) {
     const sortedR3 = teamGolfers
       .slice()
       .sort((a, b) => (a.roundThree ?? 0) - (b.roundThree ?? 0));
@@ -317,7 +315,7 @@ function calculateNonLiveTeamStats(
       ) -
         tournament.course.par);
   }
-  if ((tournament.currentRound ?? 0) === 4 && (team.thru ?? 0) > 0) {
+  if ((tournament.currentRound ?? 0) > 4 && !tournament.livePlay) {
     const sortedR4 = teamGolfers
       .slice()
       .sort((a, b) => (a.roundFour ?? 0) - (b.roundFour ?? 0));

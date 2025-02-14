@@ -241,7 +241,6 @@ async function updateExistingGolfers(
         updateData.today = 8;
         updateData.thru = 18;
       }
-      updateData.round = liveGolfer?.round ?? 1;
       if (
         liveGolfer?.country !== undefined &&
         golfer.country === null &&
@@ -280,9 +279,11 @@ function setRoundTeeTimesAndScores(
   // Round One
   if (fieldGolfer?.r1_teetime) {
     updateData.roundOneTeeTime = fieldGolfer.r1_teetime;
+    updateData.round = 1
   }
   if (liveGolfer?.R1) {
     updateData.roundOne = liveGolfer.R1;
+    updateData.round = 2
   }
   if (
     !liveGolfer?.R1 &&
@@ -300,6 +301,7 @@ function setRoundTeeTimesAndScores(
   }
   if (liveGolfer?.R2) {
     updateData.roundTwo = liveGolfer.R2;
+    updateData.round = 3
   }
   if (
     !liveGolfer?.R2 &&
@@ -317,6 +319,7 @@ function setRoundTeeTimesAndScores(
   }
   if (liveGolfer?.R3) {
     updateData.roundThree = liveGolfer.R3;
+    updateData.round = 4
   }
   if (
     !liveGolfer?.R3 &&
@@ -334,6 +337,7 @@ function setRoundTeeTimesAndScores(
   }
   if (liveGolfer?.R4) {
     updateData.roundFour = liveGolfer.R4;
+    updateData.round = 5
   }
   if (
     !liveGolfer?.R4 &&
