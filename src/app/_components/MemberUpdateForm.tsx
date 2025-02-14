@@ -39,7 +39,7 @@ export default function MemberUpdateForm({
     defaultValues: member ?? emptyMember,
     onSubmit: async ({ value }) => {
       await memberUpdateFormOnSubmit({ value });
-      await utils.invalidate();
+      await utils.member.invalidate();
       router.refresh();
       return;
     },

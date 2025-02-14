@@ -42,7 +42,7 @@ export default function PaymentForm() {
       value.description =
         formatMoney(value.amount) + " payment made by " + member?.fullname;
       await processPayment(value);
-      await utils.invalidate();
+      await utils.member.invalidate();
       router.refresh();
       return;
     },

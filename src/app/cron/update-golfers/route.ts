@@ -70,7 +70,7 @@ export async function GET(request: Request) {
   await api.tournament.update({
     id: tournament.id,
     currentRound:
-      golfers.filter((obj) => !obj.roundOne && (obj.thru ?? 0) > 0).length > 0
+      golfers.filter((obj) => !obj.roundOne).length > 0
         ? 1
         : golfers.filter((obj) => !obj.roundTwo).length > 0
           ? 2
@@ -166,7 +166,7 @@ async function updateExistingGolfers(
       );
 
       // Calculate usage on the first round when not live.
-      if (tournament.currentRound === 0 && !tournament.livePlay) {
+      if (tournament.currentRound === 1 && !tournament.livePlay) {
         updateData.usage =
           golferIDs.filter((id) => id === golfer.apiId).length / teams.length;
       }

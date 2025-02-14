@@ -187,7 +187,7 @@ function StandingsListing({
                 friendId: tourCard.memberId,
               });
             }
-            await utils.invalidate();
+            await utils.member.invalidate();
             setIsFriendChanging(false);
             setAddingToFriends(false);
             return;

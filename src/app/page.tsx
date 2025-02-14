@@ -7,7 +7,6 @@ import HomePageLeaderboard from "./tournament/_components/HomePageLeaderboard";
 import { api } from "../trpc/server";
 import HomePageStandings from "./standings/_components/HomePageStandings";
 import ChampionsPopup from "./tournament/_components/ChampionsPopup";
-import RegisterServiceWorker from "./_components/RegisterServiceWorker";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -37,7 +36,6 @@ export default async function Home() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col">
-      <RegisterServiceWorker />
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
