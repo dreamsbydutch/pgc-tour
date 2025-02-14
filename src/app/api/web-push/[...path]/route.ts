@@ -1,4 +1,7 @@
 import webpush from "web-push";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const vapidPrivateKey = process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY;
@@ -12,8 +15,6 @@ webpush.setVapidDetails(
   vapidPublicKey,
   vapidPrivateKey,
 );
-
-let subscription: webpush.PushSubscription;
 
 interface RequestWithUrl extends Request {
   url: string;
@@ -33,12 +34,23 @@ export async function POST(request: RequestWithUrl): Promise<Response> {
 
 interface SetSubscriptionRequestBody {
   subscription: webpush.PushSubscription;
+  memberId: string;
 }
 
 async function setSubscription(request: Request): Promise<Response> {
-  //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const body: SetSubscriptionRequestBody = await request.json();
-  subscription = body.subscription;
+  const { subscription, memberId } = body;
+
+  // Store the subscription in the database tied to a member
+  await prisma.subscription.create({
+    data: {
+      endpoint: subscription.endpoint,
+      keys: subscription.keys,
+      memberId: memberId,
+    },
+  });
+
+  console.log("Subscription set:", subscription);
   return new Response(JSON.stringify({ message: "Subscription set." }), {});
 }
 
@@ -52,8 +64,25 @@ async function sendPush(request: Request): Promise<Response> {
   //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const body: SendPushRequestBody = await request.json();
   const pushPayload = JSON.stringify(body);
-  await webpush.sendNotification(subscription, pushPayload);
-  return new Response(JSON.stringify({ message: "Push sent." }), {});
+
+  // Retrieve all subscriptions from the database
+  const subscriptions = await prisma.subscription.findMany();
+
+  // Send notifications to all subscriptions
+  await Promise.all(
+    subscriptions.map(async (sub) => {
+      const subscription: webpush.PushSubscription = {
+        endpoint: sub.endpoint,
+        keys: sub.keys,
+      };
+      await webpush.sendNotification(subscription, pushPayload);
+    }),
+  );
+
+  return new Response(
+    JSON.stringify({ message: "Push sent to all subscribers." }),
+    {},
+  );
 }
 
 async function notFoundApi() {

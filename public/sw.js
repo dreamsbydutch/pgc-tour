@@ -1,8 +1,7 @@
 // @ts-nocheck
 
-self.addEventListener("install", (event) => {
-  console.info("Service worker installed.");
-  event.waitUntil(self.skipWaiting());
+self.addEventListener("install", () => {
+  console.info("service worker installed.");
 });
 
 self.addEventListener("activate", (event) => {

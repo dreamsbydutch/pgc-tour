@@ -9,16 +9,17 @@ datasource db {
 }
 
 model Member {
-  id        String   @id @unique
-  fullname  String
-  firstname String?
-  lastname  String?
-  email     String   @unique
-  role      String   @default("regular")
-  account   Float    @default(0)
-  friends   String[]
+  id            String         @id @unique
+  fullname      String
+  firstname     String?
+  lastname      String?
+  email         String         @unique
+  role          String         @default("regular")
+  account       Float          @default(0)
+  friends       String[]
 
-  tourCards TourCard[]
+  tourCards     TourCard[]
+  subscriptions Subscription[]
 
   @@map("members")
 }
@@ -219,6 +220,15 @@ model Transactions {
   transactionType TransactionType
 
   @@map("transactions")
+}
+
+model Subscription {
+  id        Int      @id @default(autoincrement())
+  endpoint  String
+  keys      Json
+  createdAt DateTime @default(now())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id])
 }
 
 enum TransactionType {

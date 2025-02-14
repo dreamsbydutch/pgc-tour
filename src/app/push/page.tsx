@@ -4,8 +4,9 @@ import {
   checkPermissionStateAndAct,
   notificationUnsupported,
   registerAndSubscribe,
-  sendWebPush,
+  sendPicksReminder,
 } from "../_components/Push";
+import { api } from "@/src/trpc/react";
 
 export default function Home() {
   const [unsupported, setUnsupported] = useState<boolean>(false);
@@ -13,21 +14,29 @@ export default function Home() {
     null,
   );
   const [message, setMessage] = useState<string | null>(null);
+  const member = api.member.getSelf.useQuery().data;
   useEffect(() => {
     const isUnsupported = notificationUnsupported();
     setUnsupported(isUnsupported);
     if (isUnsupported) {
       return;
     }
-    checkPermissionStateAndAct(setSubscription);
+    checkPermissionStateAndAct(setSubscription, member ?? undefined);
   }, []);
+
+  const tournament = api.tournament.getNext.useQuery().data;
+  const teams = api.team.getByTournament.useQuery({
+    tournamentId: tournament?.id,
+  }).data;
 
   return (
     <main>
       <div className="">
         <button
           disabled={unsupported}
-          onClick={() => registerAndSubscribe(setSubscription)}
+          onClick={() =>
+            registerAndSubscribe(setSubscription, member ?? undefined)
+          }
           className={subscription ? "" : ""}
         >
           {unsupported
@@ -44,7 +53,9 @@ export default function Home() {
               value={message ?? ""}
               onChange={(e) => setMessage(e.target.value)}
             />
-            <button onClick={() => sendWebPush(message)}>Test Web Push</button>
+            <button onClick={() => sendPicksReminder(tournament, teams)}>
+              Test Web Push
+            </button>
           </>
         ) : null}
         <div className="">

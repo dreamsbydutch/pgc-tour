@@ -1,3 +1,5 @@
+import { Member, Team, Tournament } from "@prisma/client";
+
 const SERVICE_WORKER_FILE_PATH = "./sw.js";
 
 export function notificationUnsupported(): boolean {
@@ -14,13 +16,14 @@ export function notificationUnsupported(): boolean {
 
 export function checkPermissionStateAndAct(
   onSubscribe: (subs: PushSubscription | null) => void,
+  member: Member | undefined,
 ): void {
   const state: NotificationPermission = Notification.permission;
   switch (state) {
     case "denied":
       break;
     case "granted":
-      registerAndSubscribe(onSubscribe);
+      registerAndSubscribe(onSubscribe, member);
       break;
     case "default":
       break;
@@ -29,6 +32,7 @@ export function checkPermissionStateAndAct(
 
 async function subscribe(
   onSubscribe: (subs: PushSubscription | null) => void,
+  member: Member | undefined,
 ): Promise<void> {
   await navigator.serviceWorker.ready
     .then(async (registration: ServiceWorkerRegistration) => {
@@ -49,7 +53,7 @@ async function subscribe(
     })
     .then((subscription: PushSubscription) => {
       console.info("Created subscription Object: ", subscription.toJSON());
-      submitSubscription(subscription).then((_) => {
+      submitSubscription(subscription, member).then((_) => {
         onSubscribe(subscription);
       });
     })
@@ -60,6 +64,7 @@ async function subscribe(
 
 async function submitSubscription(
   subscription: PushSubscription,
+  member: Member | undefined,
 ): Promise<void> {
   const endpointUrl = "/api/web-push/subscription";
   const res = await fetch(endpointUrl, {
@@ -67,7 +72,7 @@ async function submitSubscription(
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ subscription }),
+    body: JSON.stringify({ subscription, memberId: member?.id }),
   });
   if (res.ok) {
     //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -80,26 +85,30 @@ async function submitSubscription(
 
 export async function registerAndSubscribe(
   onSubscribe: (subs: PushSubscription | null) => void,
+  member: Member | undefined,
 ): Promise<void> {
   try {
     const registration = await navigator.serviceWorker.register(
       SERVICE_WORKER_FILE_PATH,
     );
     console.log("Service worker registered with scope:", registration.scope);
-    await subscribe(onSubscribe);
+    await subscribe(onSubscribe, member);
   } catch (e) {
     console.error("Failed to register service-worker: ", e);
   }
 }
 
-export async function sendWebPush(message: string | null): Promise<void> {
+export async function sendPicksReminder(
+  tournament: Tournament | undefined,
+  teams: Team[] | undefined,
+): Promise<void> {
   const endPointUrl = "/api/web-push/send";
   const pushBody = {
-    title: "Test Push",
-    body: message ?? "This is a test push message",
-    image: "/logo512.png",
+    title: "PGC Picks",
+    body: `Don't forget to make your picks for ${tournament?.name.startsWith("The") ? "" : "the "}${tournament?.name}!`,
+    image: tournament?.logoUrl,
     icon: "logo512.png",
-    url: "https://www.pgctour.ca",
+    url: `https://www.pgctour.ca/tournament/${tournament?.id}/create-team`,
   };
   console.log("Sending push message:", pushBody);
   const res = await fetch(endPointUrl, {
@@ -110,7 +119,6 @@ export async function sendWebPush(message: string | null): Promise<void> {
     body: JSON.stringify(pushBody),
   });
   if (res.ok) {
-    //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const result: { success: boolean } = await res.json();
     console.log("Push message sent:", result);
   } else {
