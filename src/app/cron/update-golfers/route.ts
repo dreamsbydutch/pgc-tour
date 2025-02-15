@@ -301,7 +301,15 @@ function setRoundTeeTimesAndScores(
   }
   if (liveGolfer?.R2) {
     updateData.roundTwo = liveGolfer.R2;
-    updateData.round = 3;
+    if (
+      liveGolfer?.current_pos == "CUT" ||
+      liveGolfer?.current_pos == "WD" ||
+      liveGolfer?.current_pos === "DQ"
+    ) {
+      updateData.round = 2;
+    } else {
+      updateData.round = 3;
+    }
   }
   if (
     !liveGolfer?.R2 &&
