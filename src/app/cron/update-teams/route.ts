@@ -129,8 +129,7 @@ function updateTeamData(
   updatedTeam.today = roundValue(updatedTeam.today);
   updatedTeam.thru = roundValue(updatedTeam.thru);
   updatedTeam.roundOne = roundValue(updatedTeam.roundOne);
-  updatedTeam.roundTwo = null;
-  // updatedTeam.roundTwo = roundValue(updatedTeam.roundTwo);
+  updatedTeam.roundTwo = roundValue(updatedTeam.roundTwo);
   updatedTeam.roundThree = roundValue(updatedTeam.roundThree);
   updatedTeam.roundFour = roundValue(updatedTeam.roundFour);
 
