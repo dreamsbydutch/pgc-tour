@@ -261,7 +261,6 @@ async function updateExistingGolfers(
       }
 
       await api.golfer.update(updateData);
-      updateData.today ? null : console.log(updateData);
       return updateData;
     }),
   );
