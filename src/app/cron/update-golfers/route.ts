@@ -232,8 +232,8 @@ async function updateExistingGolfers(
           liveGolfer?.current_pos === "DQ") &&
         (tournament.currentRound ?? 0) >= 3
       ) {
-        updateData.today = undefined;
-        updateData.thru = undefined;
+        updateData.today = null;
+        updateData.thru = null;
       } else if (
         liveGolfer?.current_pos === "WD" ||
         liveGolfer?.current_pos === "DQ"
@@ -261,6 +261,7 @@ async function updateExistingGolfers(
       }
 
       await api.golfer.update(updateData);
+      updateData.today ? null : console.log(updateData);
       return updateData;
     }),
   );
@@ -279,11 +280,11 @@ function setRoundTeeTimesAndScores(
   // Round One
   if (fieldGolfer?.r1_teetime) {
     updateData.roundOneTeeTime = fieldGolfer.r1_teetime;
-    updateData.round = 1
+    updateData.round = 1;
   }
   if (liveGolfer?.R1) {
     updateData.roundOne = liveGolfer.R1;
-    updateData.round = 2
+    updateData.round = 2;
   }
   if (
     !liveGolfer?.R1 &&
@@ -301,7 +302,7 @@ function setRoundTeeTimesAndScores(
   }
   if (liveGolfer?.R2) {
     updateData.roundTwo = liveGolfer.R2;
-    updateData.round = 3
+    updateData.round = 3;
   }
   if (
     !liveGolfer?.R2 &&
@@ -319,7 +320,7 @@ function setRoundTeeTimesAndScores(
   }
   if (liveGolfer?.R3) {
     updateData.roundThree = liveGolfer.R3;
-    updateData.round = 4
+    updateData.round = 4;
   }
   if (
     !liveGolfer?.R3 &&
@@ -337,7 +338,7 @@ function setRoundTeeTimesAndScores(
   }
   if (liveGolfer?.R4) {
     updateData.roundFour = liveGolfer.R4;
-    updateData.round = 5
+    updateData.round = 5;
   }
   if (
     !liveGolfer?.R4 &&
