@@ -169,6 +169,12 @@ function calculateLiveTeamStats(
   teamGolfers: Golfer[],
   tournament: TournamentData,
 ): Partial<TeamData> {
+  if (teamGolfers.length < 5) {
+    updatedTeam.today = null;
+    updatedTeam.thru = null;
+    updatedTeam.score = null;
+    return updatedTeam;
+  }
   if ((tournament.currentRound ?? 0) >= 3) {
     updatedTeam.today = average(teamGolfers.slice(0, 5), "today", 8);
     updatedTeam.thru = average(teamGolfers.slice(0, 5), "thru", 0);
@@ -284,7 +290,11 @@ function calculateNonLiveTeamStats(
       ) -
         tournament.course.par);
   }
-  if ((tournament.currentRound ?? 0) > 3 && !tournament.livePlay) {
+  if (
+    (tournament.currentRound ?? 0) > 3 &&
+    !tournament.livePlay &&
+    teamGolfers.length >= 5
+  ) {
     const sortedR3 = teamGolfers
       .slice()
       .sort((a, b) => (a.roundThree ?? 0) - (b.roundThree ?? 0));
@@ -314,7 +324,11 @@ function calculateNonLiveTeamStats(
       ) -
         tournament.course.par);
   }
-  if ((tournament.currentRound ?? 0) > 4 && !tournament.livePlay) {
+  if (
+    (tournament.currentRound ?? 0) > 4 &&
+    !tournament.livePlay &&
+    teamGolfers.length >= 5
+  ) {
     const sortedR4 = teamGolfers
       .slice()
       .sort((a, b) => (a.roundFour ?? 0) - (b.roundFour ?? 0));
@@ -379,6 +393,14 @@ async function updateTeamPositions(
 ): Promise<TeamData[]> {
   return Promise.all(
     updatedTeams.map(async (team) => {
+      if (team.today === null) {
+        team.position = "CUT";
+        team.pastPosition = "CUT";
+        team.points = 0;
+        team.earnings = 0;
+        await api.team.update(team);
+        return team;
+      }
       const sameTourTeams = updatedTeams.filter(
         (obj) => obj.tourCard.tourId === team.tourCard.tourId,
       );
