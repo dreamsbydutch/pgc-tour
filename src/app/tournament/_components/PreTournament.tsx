@@ -38,7 +38,11 @@ export default function PreTournamentPage({
   return (
     <div>
       <TournamentCountdown tourney={tournament} key={tournament.id} />
-      {!tourCard || !golfers || golfers.length === 0 ? (
+      {!tourCard ||
+      !golfers ||
+      golfers.length === 0 ||
+      new Date(tournament.startDate).getTime() - new Date().getTime() >
+        4 * 24 * 60 * 60 * 1000 ? (
         <></>
       ) : (
         <>
