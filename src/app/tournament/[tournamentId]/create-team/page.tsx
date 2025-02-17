@@ -5,7 +5,7 @@ import TournamentCountdown from "../../_components/TournamentCountdown";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
-// import CreateTeamForm from "./CreateTeamForm";
+import CreateTeamForm from "./CreateTeamForm";
 
 export default async function CreateTeamPage({
   params,
@@ -41,8 +41,7 @@ export default async function CreateTeamPage({
         ) : current ? (
           <div>The tournament has begun.</div>
         ) : (
-          <></>
-          // <CreateTeamForm {...{ tournament, tourCard }} />
+          <CreateTeamForm {...{ tournament, tourCard }} />
         )}
       </div>
     </>
