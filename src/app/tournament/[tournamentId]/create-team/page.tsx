@@ -39,7 +39,7 @@ export default async function CreateTeamPage({
         ) : current ? (
           <div>The tournament has begun.</div>
         ) : (
-          <CreateTeamForm {...{ tournament, tourCard }} />
+          // <CreateTeamForm {...{ tournament, tourCard }} />
         )}
       </div>
     </>

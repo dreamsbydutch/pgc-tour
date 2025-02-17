@@ -53,7 +53,7 @@ export async function GET(request: Request) {
   //   tournament.course.par,
   //   10000,
   // );
-  await updateTeamPositions(updatedTeams, tournament);
+  await updateTeamPositions(updatedTeams, tournament, golfers);
 
   return NextResponse.redirect(`${origin}${next}`);
 }
@@ -390,12 +390,22 @@ function roundValue(val: number | null | undefined): number | null {
 async function updateTeamPositions(
   updatedTeams: TeamData[],
   tournament: TournamentData,
+  golfers: Golfer[],
 ): Promise<TeamData[]> {
   return Promise.all(
     updatedTeams.map(async (team) => {
-      if (team.today === null) {
+      const teamGolfers = golfers.filter(
+        (g) =>
+          team.golferIds.includes(g.apiId) &&
+          (g.round ?? 0) >= (tournament.currentRound ?? 0),
+      );
+
+      if (teamGolfers.length < 5) {
         team.position = "CUT";
         team.pastPosition = "CUT";
+        team.score = null;
+        team.today = null;
+        team.thru = null;
         team.points = 0;
         team.earnings = 0;
         await api.team.update(team);
