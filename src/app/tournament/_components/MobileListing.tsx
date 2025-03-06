@@ -86,7 +86,7 @@ export function MobileListing({
       key={team.id}
       onClick={() => setIsOpen(!isOpen)}
       className={cn(
-        "my-0.5 grid max-w-4xl grid-flow-row grid-cols-10 rounded-md text-center",
+        "mx-auto my-0.5 grid max-w-4xl grid-flow-row grid-cols-10 rounded-md text-center",
       )}
     >
       <div
@@ -169,11 +169,11 @@ export function MobileListing({
       {isOpen && golfer && type == "PGA" && (
         <PGAMobileDropdown {...{ golfer, userTeam, total }} />
       )}
-      {isOpen && userTeam && course && type == "PGC" && (
+      {isOpen && userTeam && type == "PGC" && (
         <PGCMobileDropdown
           {...{
             tournament,
-            course,
+            course: course ?? undefined,
             team: userTeam,
             tourCard,
             member: member ?? undefined,
@@ -256,7 +256,7 @@ function PGCMobileDropdown({
   member,
 }: {
   tournament: TournamentData;
-  course: Course;
+  course?: Course;
   team: TeamData;
   tourCard?: TourCardData;
   member?: Member;
@@ -390,7 +390,7 @@ function PGCMobileDropdown({
                 <td className="border-r border-gray-300 px-1 text-sm">
                   {formatScore(golfer.score)}
                 </td>
-                {golfer.thru === 0 ? (
+                {golfer.thru === 0 && course ? (
                   <td className="text-xs" colSpan={2}>
                     {course && getGolferTeeTime(course, golfer)}
                   </td>
