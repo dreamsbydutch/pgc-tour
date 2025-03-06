@@ -9,14 +9,14 @@ datasource db {
 }
 
 model Member {
-  id            String         @id @unique
-  fullname      String
-  firstname     String?
-  lastname      String?
-  email         String         @unique
-  role          String         @default("regular")
-  account       Float          @default(0)
-  friends       String[]
+  id        String   @id @unique
+  fullname  String
+  firstname String?
+  lastname  String?
+  email     String   @unique
+  role      String   @default("regular")
+  account   Float    @default(0)
+  friends   String[]
 
   tourCards     TourCard[]
   subscriptions Subscription[]
@@ -101,18 +101,17 @@ model Tournament {
 }
 
 model Course {
-  id          String       @id @default(cuid())
-  apiId       String
-  name        String       @unique
-  location    String
-  par         Int
-  front       Int
-  back        Int
-  longitude   Float?
-  latitude    Float?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  tournaments Tournament[]
+  id             String       @id @default(cuid())
+  apiId          String
+  name           String       @unique
+  location       String
+  par            Int
+  front          Int
+  back           Int
+  timeZoneOffset Int          @default(4)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  tournaments    Tournament[]
 
   @@map("courses")
 }

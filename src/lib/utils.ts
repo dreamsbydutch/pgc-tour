@@ -177,20 +177,3 @@ type DataGolfExports =
   | "preds/live-tournament-stats"
   | "historical-raw-data/event-list";
 
-// function convertToUserLocalTime(course: Course, localTime: Date): Date {
-//   const cityTimeZone = tzLookup(course.latitude ?? 0, course.longitude ?? 0);
-
-//   // Convert local time (assumed in city's timezone) to UTC
-//   const utcTime = new Date(
-//     localTime.toLocaleString("en-US", { timeZone: cityTimeZone }),
-//   );
-
-//   // Convert from UTC to the user's local timezone
-//   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-//   const userLocalTimeString = utcTime.toLocaleString("en-US", {
-//     timeZone: userTimeZone,
-//   });
-
-//   // Convert localized string back to Date object
-//   return new Date(userLocalTimeString);
-// }

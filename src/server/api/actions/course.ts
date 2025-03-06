@@ -374,60 +374,11 @@ export async function seedCoursesFromDataGolf() {
 
   await Promise.all(
     existingCourses.map(async (obj) => {
-      const location = seedLocations.find(
-        (a) => a.city === obj.location.split(", ")[0],
-      );
 
       await api.course.update({
         name: obj.name,
-        longitude: location?.lng,
-        latitude: location?.lat,
       });
     }),
   );
 }
 
-const seedLocations = [
-  { city: "Kiawah Island", region: "SC", lat: 32.6082, lng: -80.0848 },
-  { city: "Liverpool", region: "ENG", lat: 53.4, lng: -2.9833 },
-  { city: "Troon", region: "SCT", lat: 55.5333, lng: -4.6667 },
-  { city: "Wilmington", region: "DE", lat: 39.7392, lng: -75.5398 },
-  { city: "Bay Hill", region: "FL", lat: 28.4636, lng: -81.5072 },
-  { city: "Jersey City", region: "NJ", lat: 40.7178, lng: -74.0437 },
-  { city: "Louisville", region: "KY", lat: 38.2527, lng: -85.7585 },
-  { city: "McKinney", region: "TX", lat: 33.1976, lng: -96.6398 },
-  { city: "Scottsdale", region: "AZ", lat: 33.4942, lng: -111.9261 },
-  { city: "Castle Rock", region: "CO", lat: 39.3725, lng: -104.8561 },
-  { city: "Memphis", region: "TN", lat: 35.1495, lng: -90.049 },
-  { city: "Baltimore", region: "MD", lat: 39.2904, lng: -76.6122 },
-  { city: "San Diego", region: "CA", lat: 32.7157, lng: -117.1611 },
-  { city: "Avondale", region: "LA", lat: 29.8894, lng: -90.0973 },
-  { city: "Atlanta", region: "GA", lat: 33.749, lng: -84.388 },
-  { city: "Dublin", region: "OH", lat: 40.0992, lng: -83.1146 },
-  { city: "Los Angeles", region: "CA", lat: 34.0522, lng: -118.2437 },
-  { city: "Naucalpan", region: "MEX", lat: 19.4769, lng: -99.2392 },
-  { city: "Charlotte", region: "NC", lat: 35.2271, lng: -80.8431 },
-  { city: "Augusta", region: "GA", lat: 33.4735, lng: -82.0105 },
-  { city: "Hilton Head Island", region: "SC", lat: 32.2163, lng: -80.7526 },
-  { city: "Ponte Vedra Beach", region: "FL", lat: 30.2583, lng: -81.3874 },
-  { city: "San Antonio", region: "TX", lat: 29.4241, lng: -98.4936 },
-  { city: "Tulsa", region: "OK", lat: 36.1539, lng: -95.9928 },
-  { city: "Detroit", region: "MI", lat: 42.3314, lng: -83.0458 },
-  { city: "Pacific Palisades", region: "CA", lat: 34.0375, lng: -118.5145 },
-  { city: "Fife", region: "SCT", lat: 56.19, lng: -3.02 },
-  { city: "Potomac", region: "MD", lat: 39.038, lng: -77.2075 },
-  { city: "Pinehurst", region: "NC", lat: 35.1944, lng: -79.4628 },
-  { city: "Rochester", region: "NY", lat: 43.1566, lng: -77.6088 },
-  { city: "Kent", region: "ENG", lat: 51.2786, lng: 0.5204 },
-  { city: "Olympia Fields", region: "IL", lat: 41.5483, lng: -87.7412 },
-  { city: "Toronto", region: "ON", lat: 43.7001, lng: -79.4163 },
-  { city: "Caledon", region: "ON", lat: 43.8581, lng: -79.7663 },
-  { city: "Portrush", region: "NIR", lat: 55.19, lng: -6.65 },
-  { city: "Houston", region: "TX", lat: 29.7604, lng: -95.3698 },
-  { city: "Philadelphia", region: "PA", lat: 39.9526, lng: -75.1652 },
-  { city: "Oakmont", region: "PA", lat: 40.5292, lng: -79.8444 },
-  { city: "Ancaster", region: "ON", lat: 43.255, lng: -80.0167 },
-  { city: "Brookline", region: "MA", lat: 42.3318, lng: -71.1212 },
-  { city: "Hartford", region: "CT", lat: 41.7637, lng: -72.6851 },
-  { city: "North Berwick", region: "SCT", lat: 56.0575, lng: -2.7181 },
-];

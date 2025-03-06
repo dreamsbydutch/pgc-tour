@@ -48,8 +48,6 @@ export const courseRouter = createTRPCRouter({
         par: z.number().optional(),
         front: z.number().optional(),
         back: z.number().optional(),
-        longitude: z.number().optional(),
-        latitude: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -60,8 +58,6 @@ export const courseRouter = createTRPCRouter({
           par: input.par,
           front: input.front,
           back: input.back,
-          longitude: input.longitude,
-          latitude: input.latitude,
         },
       });
     }),
