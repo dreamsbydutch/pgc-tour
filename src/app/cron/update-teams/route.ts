@@ -79,11 +79,7 @@ function updateTeamData(
     ...team,
     round: tournament.currentRound,
   };
-  const teamGolfers = golfers.filter(
-    (g) =>
-      team.golferIds.includes(g.apiId) &&
-      (g.round ?? 0) >= (tournament.currentRound ?? 0),
-  );
+  const teamGolfers = golfers.filter((g) => team.golferIds.includes(g.apiId));
 
   // Assign tee times for each round if the current value is not in the future.
   updatedTeam.roundOneTeeTime = assignTeeTime(
@@ -169,6 +165,27 @@ function calculateLiveTeamStats(
   teamGolfers: Golfer[],
   tournament: TournamentData,
 ): Partial<TeamData> {
+  if (teamGolfers.length >= 5) {
+    updatedTeam.roundOne = average(
+      teamGolfers,
+      "roundOne",
+      tournament.course.par + 8,
+      teamGolfers.length,
+    );
+    updatedTeam.roundTwo = average(
+      teamGolfers,
+      "roundTwo",
+      tournament.course.par + 8,
+      teamGolfers.length,
+    );
+    console.log(
+      updatedTeam.tourCard.displayName,
+      teamGolfers.length,
+      updatedTeam.roundOne,
+      updatedTeam.roundTwo,
+    );
+    return updatedTeam;
+  }
   if (teamGolfers.length < 5) {
     updatedTeam.today = null;
     updatedTeam.thru = null;
@@ -176,6 +193,9 @@ function calculateLiveTeamStats(
     return updatedTeam;
   }
   if ((tournament.currentRound ?? 0) >= 3) {
+    teamGolfers = teamGolfers.filter(
+      (g) => (g.round ?? 0) >= (tournament.currentRound ?? 0),
+    );
     updatedTeam.today = average(teamGolfers.slice(0, 5), "today", 8);
     updatedTeam.thru = average(teamGolfers.slice(0, 5), "thru", 0);
     if (tournament.currentRound === 3) {
@@ -295,6 +315,9 @@ function calculateNonLiveTeamStats(
     !tournament.livePlay &&
     teamGolfers.length >= 5
   ) {
+    teamGolfers = teamGolfers.filter(
+      (g) => (g.round ?? 0) >= (tournament.currentRound ?? 0),
+    );
     const sortedR3 = teamGolfers
       .slice()
       .sort((a, b) => (a.roundThree ?? 0) - (b.roundThree ?? 0));
@@ -329,6 +352,9 @@ function calculateNonLiveTeamStats(
     !tournament.livePlay &&
     teamGolfers.length >= 5
   ) {
+    teamGolfers = teamGolfers.filter(
+      (g) => (g.round ?? 0) >= (tournament.currentRound ?? 0),
+    );
     const sortedR4 = teamGolfers
       .slice()
       .sort((a, b) => (a.roundFour ?? 0) - (b.roundFour ?? 0));
