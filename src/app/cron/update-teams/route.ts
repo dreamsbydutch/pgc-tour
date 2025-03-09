@@ -165,27 +165,6 @@ function calculateLiveTeamStats(
   teamGolfers: Golfer[],
   tournament: TournamentData,
 ): Partial<TeamData> {
-  if (teamGolfers.length >= 5) {
-    updatedTeam.roundOne = average(
-      teamGolfers,
-      "roundOne",
-      tournament.course.par + 8,
-      teamGolfers.length,
-    );
-    updatedTeam.roundTwo = average(
-      teamGolfers,
-      "roundTwo",
-      tournament.course.par + 8,
-      teamGolfers.length,
-    );
-    console.log(
-      updatedTeam.tourCard.displayName,
-      teamGolfers.length,
-      updatedTeam.roundOne,
-      updatedTeam.roundTwo,
-    );
-    return updatedTeam;
-  }
   if (teamGolfers.length < 5) {
     updatedTeam.today = null;
     updatedTeam.thru = null;
@@ -193,9 +172,9 @@ function calculateLiveTeamStats(
     return updatedTeam;
   }
   if ((tournament.currentRound ?? 0) >= 3) {
-    teamGolfers = teamGolfers.filter(
-      (g) => (g.round ?? 0) >= (tournament.currentRound ?? 0),
-    );
+    teamGolfers = teamGolfers
+      .filter((g) => (g.round ?? 0) >= (tournament.currentRound ?? 0))
+      .sort((a, b) => (a.today ?? 0) - (b.today ?? 0));
     updatedTeam.today = average(teamGolfers.slice(0, 5), "today", 8);
     updatedTeam.thru = average(teamGolfers.slice(0, 5), "thru", 0);
     if (tournament.currentRound === 3) {
