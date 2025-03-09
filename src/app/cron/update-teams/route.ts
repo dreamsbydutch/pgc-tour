@@ -426,7 +426,7 @@ async function updateTeamPositions(
       const lowerScoreCount = sameTourTeams.filter(
         (obj) => (obj.score ?? 100) < (team.score ?? 100),
       ).length;
-      team.position = `${tiedCount > 1 ? "T" : ""}${lowerScoreCount + 1}`;
+      team.position = `${tiedCount > 1 ? "T" : ""}${lowerScoreCount -1}`;
 
       // Determine past position based on (score - today)
       const tiedPastCount = sameTourTeams.filter(
@@ -439,7 +439,7 @@ async function updateTeamPositions(
           (obj.score ?? 100) - (obj.today ?? 100) <
           (team.score ?? 100) - (team.today ?? 100),
       ).length;
-      team.pastPosition = `${tiedPastCount > 1 ? "T" : ""}${lowerPastCount + 1}`;
+      team.pastPosition = `${tiedPastCount > 1 ? "T" : ""}${lowerPastCount -1}`;
 
       // Update points and earnings if tournament round 4 is complete and not live.
       if (!tournament.livePlay && tournament.currentRound === 5) {
