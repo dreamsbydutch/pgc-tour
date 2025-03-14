@@ -166,7 +166,7 @@ async function updateExistingGolfers(
       );
 
       // Calculate usage on the first round when not live.
-      if (tournament.currentRound === 2 && tournament.livePlay) {
+      if (tournament.currentRound === 1 && tournament.livePlay) {
         updateData.usage =
           golferIDs.filter((id) => id === golfer.apiId).length / teams.length;
       }
