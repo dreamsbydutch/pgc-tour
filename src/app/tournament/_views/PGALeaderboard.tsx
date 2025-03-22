@@ -5,6 +5,8 @@ import type { Golfer } from "@prisma/client";
 import type { TeamData, TournamentData } from "@/src/types/prisma_include";
 // import { api } from "@/src/trpc/react";
 import { MobileListing } from "./MobileListing";
+import { TabletListing } from "./TabletListing";
+import { DesktopListing } from "./DesktopListing";
 
 export function PGAListing({
   tournament,
@@ -24,5 +26,12 @@ export function PGAListing({
   //   (golfer.roundTwo ?? 0) +
   //   (golfer.roundThree ?? 0) +
   //   (golfer.roundFour ?? 0);
-  return <MobileListing {...{ type: "PGA", tournament, golfer, userTeam }} />;
+  if (typeof window === "undefined")
+    return <MobileListing {...{ type: "PGA", tournament, golfer, userTeam }} />;
+  const width = window.innerWidth;
+  return width < 650 ? (
+    <MobileListing {...{ type: "PGA", tournament, golfer, userTeam }} />
+  ) : (
+    <DesktopListing {...{ type: "PGA", tournament, golfer, userTeam }} />
+  );
 }

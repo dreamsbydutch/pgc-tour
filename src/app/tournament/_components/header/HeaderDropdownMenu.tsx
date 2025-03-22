@@ -11,13 +11,13 @@ import {
   DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../_components/ui/dropdown-menu";
+} from "@/src/app/_components/ui/dropdown-menu";
 import Link from "next/link";
 import Image from "next/image";
 import { type TournamentData } from "@/src/types/prisma_include";
 import { api } from "@/src/trpc/react";
 import { cn } from "@/lib/utils";
-import LoadingSpinner from "../../_components/LoadingSpinner";
+import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 
 export default function HeaderDropdown({
   activeTourney,

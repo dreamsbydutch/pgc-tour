@@ -5,8 +5,20 @@ import { createClient } from "@/src/lib/supabase/server";
 
 export const memberRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.member.findMany({});
+    return await ctx.db.member.findMany({ include: { tourCards: true } });
   }),
+  getByEmail: publicProcedure
+    .input(z.object({ email: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.member.findUnique({ where: { email: input.email } });
+    }),
+  getByLastName: publicProcedure
+    .input(z.object({ lastname: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.member.findMany({
+        where: { lastname: input.lastname },
+      });
+    }),
   getSelf: publicProcedure.query(async ({ ctx }) => {
     const supabase = await createClient();
     const user = await supabase.auth.getUser();

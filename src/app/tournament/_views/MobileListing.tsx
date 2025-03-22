@@ -287,9 +287,9 @@ function PGCMobileDropdown({
         <div className="col-span-3 text-sm font-bold">R2</div>
         <div className="col-span-3 text-sm font-bold">R3</div>
         <div className="col-span-3 text-sm font-bold">R4</div>
-        {(tournament.currentRound ?? 0) <= 2 ? (
+        <div className="col-span-5 text-sm font-bold">Make Cut</div>
+        {/* {(tournament.currentRound ?? 0) <= 2 ? (
           <>
-            <div className="col-span-3 text-sm font-bold">Make Cut</div>
             <div className="col-span-2 text-sm font-bold">
               Top {moneyThreshold}
             </div>
@@ -301,16 +301,16 @@ function PGCMobileDropdown({
             </div>
             <div className="col-span-2 text-sm font-bold">Win</div>
           </>
-        )}
+        )} */}
         <div className="col-span-3 text-base">{team.roundOne ?? "-"}</div>
         <div className="col-span-3 text-base">{team.roundTwo ?? "-"}</div>
         <div className="col-span-3 text-base">{team.roundThree ?? "-"}</div>
         <div className="col-span-3 text-base">{team.roundFour ?? "-"}</div>
-        {(tournament.currentRound ?? 0) <= 2 ? (
+        <div className="col-span-5 text-base">
+          {Math.round((team.makeCut ?? 0) * 1000) / 10}%
+        </div>
+        {/* {(tournament.currentRound ?? 0) <= 2 ? (
           <>
-            <div className="col-span-3 text-base">
-              {Math.round((team.makeCut ?? 0) * 1000) / 10}%
-            </div>
             <div className="col-span-2 text-base">
               {Math.round(
                 (Number(
@@ -348,7 +348,7 @@ function PGCMobileDropdown({
               {Math.round((team.win ?? 0) * 1000) / 10}%
             </div>
           </>
-        )}
+        )} */}
       </div>
       <div className="col-span-10 mb-4 mt-2 w-full">
         <Table className="scrollbar-hidden mx-auto w-full border border-gray-700 text-center font-varela">

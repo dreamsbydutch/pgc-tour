@@ -2,7 +2,7 @@ import Image from "next/image";
 import HeaderDropdown from "./HeaderDropdownMenu";
 import type { TournamentData } from "@/src/types/prisma_include";
 import { PopoverTrigger } from "@radix-ui/react-popover";
-import { Popover, PopoverContent } from "../../_components/ui/popover";
+import { Popover, PopoverContent } from "@/src/app/_components/ui/popover";
 import { cn, fetchDataGolf, formatMoney, formatRank } from "@/src/lib/utils";
 import type { DatagolfCourseInputData } from "@/src/types/datagolf_types";
 

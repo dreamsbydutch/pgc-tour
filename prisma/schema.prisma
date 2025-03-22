@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,17 +7,23 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
-        
 
 model Member {
-  id        String   @id @unique
-  fullname  String
-  firstname String?
-  lastname  String?
-  email     String   @unique
-  role      String   @default("regular")
-  account   Float    @default(0)
-  friends   String[]
+  id          String  @id @unique
+  fullname    String
+  firstname   String?
+  lastname    String?
+  email       String  @unique
+  role        String  @default("regular")
+  account     Float   @default(0)
+  earnings    Float   @default(0)
+  points      Float   @default(0)
+  win         Float   @default(0)
+  topTen      Float   @default(0)
+  madeCut     Float   @default(0)
+  appearances Int     @default(0)
+
+  friends String[]
 
   tourCards     TourCard[]
   subscriptions Subscription[]
@@ -154,14 +159,19 @@ model Team {
 }
 
 model TourCard {
-  id          String  @id @default(cuid())
+  id          String @id @default(cuid())
   displayName String
-  earnings    Float   @default(0)
-  points      Float?
-  position    String?
-  memberId    String
-  tourId      String
-  seasonId    String
+  earnings    Float  @default(0)
+  points      Float? @default(0)
+  win         Float  @default(0)
+  topTen      Float  @default(0)
+  madeCut     Float  @default(0)
+  appearances Int    @default(0)
+
+  position String?
+  memberId String
+  tourId   String
+  seasonId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

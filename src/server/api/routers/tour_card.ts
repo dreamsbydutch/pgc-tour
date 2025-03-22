@@ -9,6 +9,14 @@ export const tourCardRouter = createTRPCRouter({
     return ctx.db.tourCard.findMany();
   }),
 
+  getByDisplayName: publicProcedure
+    .input(z.object({ name: z.string(), seasonId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.tourCard.findFirst({
+        where: { displayName: input.name, seasonId: input.seasonId },
+      });
+    }),
+
   getById: publicProcedure
     .input(z.object({ tourCardId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -116,8 +124,12 @@ export const tourCardRouter = createTRPCRouter({
         id: z.string().min(1),
         displayName: z.string().optional(),
         earnings: z.number().optional(),
-        points: z.number().optional(),
-        position: z.string().optional(),
+        points: z.number().optional().nullish(),
+        position: z.string().optional().nullish(),
+        appearances: z.number().optional(),
+        topTen: z.number().optional(),
+        win: z.number().optional(),
+        madeCut: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -128,6 +140,10 @@ export const tourCardRouter = createTRPCRouter({
           points: input.points,
           position: input.position,
           displayName: input.displayName,
+          appearances: input.appearances,
+          topTen: input.topTen,
+          win: input.win,
+          madeCut: input.madeCut,
         },
         include: tourCardDataInclude,
       });

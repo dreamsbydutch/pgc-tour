@@ -1,10 +1,10 @@
-import LeaderboardHeader from "@/src/app/tournament/_components/LeaderboardHeader";
+import LeaderboardHeader from "@/src/app/tournament/_components/header/LeaderboardHeader";
 import { Suspense } from "react";
 import { LeaderboardHeaderSkeleton } from "../_components/skeletons/LeaderboardHeaderSkeleton";
 import { LeaderboardListSkeleton } from "../_components/skeletons/LeaderboardListSkeleton";
 import LoadingSpinner from "../../_components/LoadingSpinner";
 import { api } from "@/src/trpc/server";
-import LeaderboardPage from "../_components/LeaderboardPage";
+import LeaderboardPage from "../_views/LeaderboardPage";
 import PreTournamentPage from "../_components/PreTournament";
 // import TournamentCountdown from "../_components/TournamentCountdown";
 

@@ -1,11 +1,11 @@
 import React from "react";
-import LeaderboardHeader from "./LeaderboardHeader";
 import type { TeamData, TournamentData } from "@/src/types/prisma_include";
 import type { Season } from "@prisma/client";
 import { api } from "@/src/trpc/server";
 import { cn, formatScore } from "@/src/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
+import LeaderboardHeader from "./header/LeaderboardHeader";
 
 export default async function HomePageLeaderboard({
   tourney,

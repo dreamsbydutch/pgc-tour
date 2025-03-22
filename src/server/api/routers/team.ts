@@ -16,6 +16,20 @@ export const teamRouter = createTRPCRouter({
           orderBy: { score: "asc" },
         }),
     ),
+  getBySeasonId: publicProcedure
+    .input(z.object({ seasonId: z.string().optional() }))
+    .query(
+      async ({ ctx, input }) =>
+        await ctx.db.team.findMany({
+          where: {
+            tournament: {
+              seasonId: input.seasonId,
+            },
+          },
+          include: teamDataInclude,
+          orderBy: { score: "asc" },
+        }),
+    ),
   getByTournament: publicProcedure
     .input(z.object({ tournamentId: z.string().optional() }))
     .query(

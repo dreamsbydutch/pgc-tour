@@ -9,9 +9,10 @@ import type {
   TournamentData,
 } from "@/src/types/prisma_include";
 import { PGAListing } from "./PGALeaderboard";
-import { PGCListing } from "./PGCLeaderboard";
 import { api } from "@/src/trpc/react";
 import Link from "next/link";
+import { PGCListing } from "./PGCLeaderboard";
+import { LeaderboardHeaderRow } from "../_components/LeaderboardHeaderRow";
 
 export default function LeaderboardPage({
   tournament,
@@ -65,26 +66,14 @@ export default function LeaderboardPage({
       </div>
       <div>
         <LeaderboardHeaderRow />
-        {activeTour === tours.find((tour) => tour.shortForm === "PGA")?.id ? (
+        {tours.find((tour) => tour.id === activeTour)?.shortForm === "PGA" ? (
           sortGolfersForSpecialPostions(golfers ?? []).map((obj) => (
             <PGAListing
               key={obj.id}
               {...{ tournament, golfer: obj, userTeam }}
             />
           ))
-        ) : activeTour ===
-          tours.find((tour) => tour.shortForm === "DbyD")?.id ? (
-          sortTeamsForSpecialPostions(teams ?? [])
-            .filter((team) => team.tourCard.tourId === activeTour)
-            .sort((a, b) => (a.score ?? 100) - (b.score ?? 100))
-            .map((obj) => (
-              <PGCListing
-                key={obj.id}
-                {...{ tournament, team: obj, golfers, tourCard }}
-              />
-            ))
-        ) : activeTour ===
-          tours.find((tour) => tour.shortForm === "CCG")?.id ? (
+        ) : tours.find((tour) => tour.id === activeTour) ? (
           sortTeamsForSpecialPostions(teams ?? [])
             .filter((team) => team.tourCard.tourId === activeTour)
             .map((obj) => (
@@ -147,28 +136,6 @@ function ToggleButton({
     >
       {tour?.shortForm}
     </button>
-  );
-}
-
-function LeaderboardHeaderRow() {
-  return (
-    <div className="mx-auto grid max-w-4xl grid-flow-row grid-cols-10 text-center">
-      <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-        Rank
-      </div>
-      <div className="col-span-4 place-self-center font-varela text-base font-bold">
-        Name
-      </div>
-      <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-        Score
-      </div>
-      <div className="col-span-1 place-self-center font-varela text-2xs">
-        Today
-      </div>
-      <div className="col-span-1 place-self-center font-varela text-2xs">
-        Thru
-      </div>
-    </div>
   );
 }
 

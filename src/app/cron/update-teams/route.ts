@@ -1,28 +1,13 @@
 "use server";
 
-import { simulateTournament } from "@/src/lib/simulator";
-import { fetchDataGolf } from "@/src/lib/utils";
 import { api } from "@/src/trpc/server";
-import type {
-  DatagolfFieldInput,
-  DataGolfLiveTournament,
-} from "@/src/types/datagolf_types";
 import type { TeamData, TournamentData } from "@/src/types/prisma_include";
 import type { Golfer } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const next = searchParams.get("next") ?? "/";
-
-  const liveData = (await fetchDataGolf(
-    "preds/in-play",
-    null,
-  )) as DataGolfLiveTournament;
-  const fieldData = (await fetchDataGolf(
-    "field-updates",
-    null,
-  )) as DatagolfFieldInput;
+  const next = searchParams.get("next") ?? "/"
 
   const tournament = await api.tournament.getCurrent();
   if (!tournament) return NextResponse.redirect(`${origin}/`);
@@ -44,7 +29,7 @@ export async function GET(request: Request) {
     tournamentId: tournament.id,
   });
   const updatedTeams = teams.map((team) =>
-    updateTeamData(team, golfers, fieldData, liveData, tournament),
+    updateTeamData(team, golfers, tournament),
   );
 
   // updatedTeams = simulateTournament(
@@ -71,8 +56,6 @@ export async function GET(request: Request) {
 function updateTeamData(
   team: TeamData,
   golfers: Golfer[],
-  fieldData: DatagolfFieldInput,
-  liveData: DataGolfLiveTournament,
   tournament: TournamentData,
 ): TeamData {
   const updatedTeam: TeamData = {
