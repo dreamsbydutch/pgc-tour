@@ -109,7 +109,10 @@ export default function HeaderDropdown({
                     }`}
                   >
                     <TournamentItem
-                      tourney={{ ...tourney, logoUrl: tourney.logoUrl ?? undefined }}
+                      tourney={{
+                        ...tourney,
+                        logoUrl: tourney.logoUrl ?? undefined,
+                      }}
                       isActive={activeTourney?.id === tourney.id}
                     />
                   </Link>
@@ -272,7 +275,7 @@ function useLeaderboardHeaderInfo({
     seasonId: season?.id ?? "",
   });
   const { data: tournaments } = api.tournament.getBySeason.useQuery({
-    seasonId: seasonId ?? season?.id,
+    seasonId: seasonId ?? season?.id ?? "",
   });
 
   if (!tiers || !tournaments) return null;
