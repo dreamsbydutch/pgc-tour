@@ -33,7 +33,7 @@ export default function PGCStandings({
   inputTour,
 }: {
   tours: TourData[];
-  member: Member | undefined;
+  member: Member | null | undefined;
   inputTour?: string;
 }) {
   const tourCard = tours
@@ -224,7 +224,7 @@ function StandingsListing({
   className,
 }: {
   tourCard: TourCard;
-  member: Member | undefined;
+  member: Member | null|undefined;
   addingToFriends: boolean;
   setAddingToFriends: Dispatch<SetStateAction<boolean>>;
   className?: string;

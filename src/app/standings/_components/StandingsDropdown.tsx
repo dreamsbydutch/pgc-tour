@@ -12,7 +12,7 @@ export function StandingsTourCardInfo({
   member,
 }: {
   tourCard: TourCard;
-  member: Member | undefined;
+  member: Member |null| undefined;
 }) {
   const tourneys = (
     api.tournament.getBySeason.useQuery({
