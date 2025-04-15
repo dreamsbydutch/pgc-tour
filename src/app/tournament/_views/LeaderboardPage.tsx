@@ -222,7 +222,7 @@ function LeaderboardHeaderRow({
   tournamentOver,
   activeTour,
 }: {
-  tournamentOver: Boolean;
+  tournamentOver: boolean;
   activeTour: string;
 }) {
   return (

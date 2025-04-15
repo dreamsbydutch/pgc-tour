@@ -6,7 +6,7 @@ import LoadingSpinner from "../../_components/LoadingSpinner";
 import { api } from "@/src/trpc/server";
 import LeaderboardPage from "../_views/LeaderboardPage";
 import PreTournamentPage from "../_components/PreTournament";
-import { Member } from "@prisma/client";
+import type { Member } from "@prisma/client";
 
 export default async function Page({
   params,
@@ -27,7 +27,7 @@ export default async function Page({
     seasonID: tournament?.seasonId,
   });
   const teams = await api.team.getByTournament({
-    tournamentId: tournament?.id || "",
+    tournamentId: tournament?.id ?? "",
   });
   if (!tournament || !tourCard || !member) return <LoadingSpinner />;
 

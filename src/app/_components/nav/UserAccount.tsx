@@ -11,13 +11,13 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { handleLogout } from "../../signin/actions";
-import { useState, Dispatch, SetStateAction } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 
 
 import { useRouter } from "next/navigation";
 import { api } from "@/src/trpc/react";
 import MemberUpdateForm from "../MemberUpdateForm";
-import { User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 
 /**
  * UserAccountNav Component

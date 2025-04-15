@@ -7,7 +7,7 @@ import {
 } from "@/src/server/api/actions/member";
 import { api } from "@/src/trpc/react";
 import { Star } from "lucide-react";
-import { useState, Dispatch, SetStateAction } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import LoadingSpinner from "../../_components/LoadingSpinner";
 import type { Member, TourCard, Tour } from "@prisma/client";
 import type { TourData } from "@/src/types/prisma_include";
@@ -77,7 +77,7 @@ export default function PGCStandings({
               +(obj.position?.replace("T", "") ?? 0) <=
               (activeTour?.playoffSpots[0] ?? 0),
           )
-          .map((tourCard, i) => (
+          .map((tourCard) => (
             <StandingsListing
               key={tourCard.id}
               {...{
@@ -101,7 +101,7 @@ export default function PGCStandings({
                 (activeTour?.playoffSpots[0] ?? 0) +
                   (activeTour?.playoffSpots[1] ?? 0),
           )
-          .map((tourCard, i) => (
+          .map((tourCard) => (
             <StandingsListing
               key={tourCard.id}
               {...{
@@ -123,7 +123,7 @@ export default function PGCStandings({
               (activeTour?.playoffSpots[0] ?? 0) +
                 (activeTour?.playoffSpots[1] ?? 0),
           )
-          .map((tourCard, i) => (
+          .map((tourCard) => (
             <StandingsListing
               key={tourCard.id}
               {...{

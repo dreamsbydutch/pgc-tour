@@ -2,7 +2,7 @@
 
 import { cn, formatRank } from "@/src/lib/utils";
 import { api } from "@/src/trpc/react";
-import { Member, Team, TourCard, Tournament } from "@prisma/client";
+import type { Member, Team, TourCard, Tournament } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import LoadingSpinner from "../../_components/LoadingSpinner";

@@ -142,11 +142,9 @@ function TeamPickForm({
  */
 function TeamTeeTimes({
   tournament,
-  tourCard,
   existingTeam,
 }: {
   tournament: TournamentData;
-  tourCard: TourCardData | undefined;
   existingTeam: TeamData | undefined;
 }) {
   const teamGolfers = tournament.golfers.filter((a) =>

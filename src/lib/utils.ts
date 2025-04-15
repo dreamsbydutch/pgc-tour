@@ -35,7 +35,7 @@ export function formatCompactNumber(n: number): string {
   }).format(n);
 }
 
-export function formatMoney(number: number, short: boolean = false) {
+export function formatMoney(number: number, short = false) {
   number = Number(number);
   if (Math.abs(number) >= 1e6) {
     return "$" + (number / 1e6).toFixed(1) + "M";
@@ -222,10 +222,10 @@ export function subtractTimeFromDate({
   hoursToSubtract?: number;
   minutesToSubtract?: number;
 }) {
-  weeksToSubtract = weeksToSubtract || 0;
-  daysToSubtract = daysToSubtract || 0;
-  hoursToSubtract = hoursToSubtract || 0;
-  minutesToSubtract = minutesToSubtract || 0;
+  weeksToSubtract = weeksToSubtract ?? 0;
+  daysToSubtract = daysToSubtract ?? 0;
+  hoursToSubtract = hoursToSubtract ?? 0;
+  minutesToSubtract = minutesToSubtract ?? 0;
   const timeToSubtract =
     (weeksToSubtract * 7 + daysToSubtract) * 24 * 60 * 60 * 1000 +
     hoursToSubtract * 60 * 60 * 1000 +

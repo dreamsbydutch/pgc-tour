@@ -1,7 +1,6 @@
 "use client"; // Indicates that this is a client-side component
 
 import {
-  ArchiveIcon,
   BookText,
   Home,
   List,
@@ -81,9 +80,9 @@ export default function MenuBar({ className }: { className?: string }) {
             <div className="flex items-center justify-center gap-2">
               <UserAccountNav {...{ user, size: "small", setIsSigningOut }} />
               <span className="font-barlow text-2xl font-semibold">
-                {user.user_metadata.full_name.split(" ")[0][0] +
+                {user?.user_metadata?.full_name?.split(" ")[0]?.[0] +
                   ". " +
-                  user.user_metadata.full_name.split(" ").slice(-1)[0]}
+                  user?.user_metadata?.full_name?.split(" ").slice(-1)?.[0] || "User"}
               </span>
             </div>
           </NavItem>

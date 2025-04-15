@@ -173,6 +173,7 @@ async function CoursePopover({
 }: {
   focusTourney: TournamentData;
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const courseData: DatagolfCourseInputData = await fetchDataGolf(
     "preds/live-hole-stats",
     {},

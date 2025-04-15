@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@/src/trpc/react";
-import { TourCard } from "@prisma/client";
+import type { TourCard } from "@prisma/client";
 import Image from "next/image";
 
 export default function LittleFucker({ tourCard }: { tourCard: TourCard }) {
@@ -24,6 +24,7 @@ export default function LittleFucker({ tourCard }: { tourCard: TourCard }) {
     (teams ?? []).length > 0 &&
     teams?.map((team) => (
       <Image
+        key={team.id}
         src={majors?.find((a) => a.id === team.tournamentId)?.logoUrl ?? ""}
         alt="Major Champ Logo"
         width={512}

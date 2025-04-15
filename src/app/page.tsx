@@ -9,7 +9,7 @@ import ChampionsPopup from "./tournament/_components/ChampionsPopup";
 // import RegisterServiceWorker from "./_components/RegisterServiceWorker";
 import { TourCardForm } from "./_components/TourCardForm";
 import { createNewMember } from "../server/api/actions/member";
-import { groupChatLink } from "../lib/utils";
+// import { groupChatLink } from "../lib/utils";
 
 export default async function Home() {
   const member = await checkIfUserExists();
@@ -123,7 +123,7 @@ async function checkIfUserExists() {
   const { data } = await supabase.auth.getUser();
   const member = data.user && (await api.member.getSelf());
   if (!member && data.user) {
-    createNewMember(data.user);
+    await createNewMember(data.user);
   }
   return member;
 }

@@ -3,12 +3,12 @@
 import { api } from "@/src/trpc/server";
 import { updateTourCardNames } from "./tour_card";
 import type { Member } from "@prisma/client";
-import { User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 import { formatName } from "@/src/lib/utils";
 
 export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {
   const season = await api.season.getByYear({ year: 2025 });
-  let tourCard = await api.tourCard.getByUserSeason({
+  const tourCard = await api.tourCard.getByUserSeason({
     userId: value.id,
     seasonId: season?.id,
   });

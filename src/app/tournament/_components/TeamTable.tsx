@@ -1,7 +1,7 @@
 import { Table, TableRow } from "@/src/app/_components/ui/table";
 import { cn, formatScore, getGolferTeeTime } from "@/src/lib/utils";
 import { api } from "@/src/trpc/react";
-import { TeamData } from "@/src/types/prisma_include";
+import type { TeamData } from "@/src/types/prisma_include";
 
 /**
  * TeamGolfersTable Component

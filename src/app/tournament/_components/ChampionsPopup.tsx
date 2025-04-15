@@ -2,8 +2,8 @@
 
 import { formatScore } from "@/src/lib/utils";
 import { api } from "@/src/trpc/react";
-import { TeamData, TourData, TournamentData } from "@/src/types/prisma_include";
-import { Golfer } from "@prisma/client";
+import type { TeamData, TourData, TournamentData } from "@/src/types/prisma_include";
+import type { Golfer } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 

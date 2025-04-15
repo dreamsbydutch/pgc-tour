@@ -1,11 +1,11 @@
 "use client";
 
 import { cn, formatMoney } from "@/src/lib/utils";
-import { Member, Tour, TourCard } from "@prisma/client";
+import type { Member, TourCard } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import LoadingSpinner from "../../_components/LoadingSpinner";
-import { TourData } from "@/src/types/prisma_include";
+import type { TourData } from "@/src/types/prisma_include";
 import LittleFucker from "../../_components/LittleFucker";
 
 /**

@@ -2,9 +2,7 @@
 
 import { formatMoney } from "@/src/lib/utils";
 import { api } from "@/src/trpc/react";
-import { TeamData } from "@/src/types/prisma_include";
-import { Member, TourCard, Team } from "@prisma/client";
-import Image from "next/image";
+import type { Member, TourCard } from "@prisma/client";
 
 export default function historyPage() {
   const members = api.member.getAll.useQuery().data;
@@ -21,15 +19,12 @@ export default function historyPage() {
         ?.sort((a, b) => b.points - a.points)
         ?.sort((a, b) => b.earnings - a.earnings)
         ?.sort((a, b) => b.win - a.win)
-        .map((member) => <MemberListing member={member} />)}
+        .map((member) => <MemberListing member={member} key={member.id} />)}
     </>
   );
 }
 
 function MemberListing({ member }: { member: Member }) {
-  let tourCards = api.tourCard.getByUserId.useQuery({
-    userId: member.id,
-  }).data;
   return (
     <div key={member.id} className="flex justify-between">
       <div>{member.fullname}</div>

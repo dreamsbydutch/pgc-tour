@@ -18,7 +18,6 @@ import Link from "next/link";
 
 export default async function AdminDashboard() {
   const season = await api.season.getByYear({ year: 2025 });
-  const tours = await api.tour.getBySeason({ seasonID: season?.id });
   const currentTourney = (await api.tournament.getInfo()).current;
 
   const liveData = (await fetchDataGolf(
