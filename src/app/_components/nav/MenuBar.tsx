@@ -1,12 +1,6 @@
 "use client"; // Indicates that this is a client-side component
 
-import {
-  BookText,
-  Home,
-  List,
-  LogInIcon,
-  Trophy,
-} from "lucide-react"; // Importing icons from the lucide-react library
+import { BookText, Home, List, LogInIcon, Trophy } from "lucide-react"; // Importing icons from the lucide-react library
 import { cn } from "@/src/lib/utils"; // Utility function for conditional class names
 import { useUser } from "@/src/lib/hooks/use-user"; // Hook to fetch user data
 import { Skeleton } from "../ui/skeleton"; // Skeleton loader for loading states
@@ -33,6 +27,11 @@ import { usePathname } from "next/navigation";
  */
 export default function MenuBar({ className }: { className?: string }) {
   const { user, loading } = useUser(); // Fetch user data and loading state
+  const member = user?.user_metadata; // Extract member data from user metadata
+  //es6-disable-next-line @typescript-eslint/no-unsafe-call
+  const firstName: string = member?.full_name?.split(" ")[0]; // Extract first name from full name
+  //es6-disable-next-line @typescript-eslint/no-unsafe-call
+  const lastName: string = member?.full_name?.split(" ").slice(-1)[0]; // Extract last name from full name
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false); // State for Google sign-in loading
   const [isSigningOut, setIsSigningOut] = useState(false); // State for sign-out process
 
@@ -80,9 +79,7 @@ export default function MenuBar({ className }: { className?: string }) {
             <div className="flex items-center justify-center gap-2">
               <UserAccountNav {...{ user, size: "small", setIsSigningOut }} />
               <span className="font-barlow text-2xl font-semibold">
-                {user?.user_metadata?.full_name?.split(" ")[0]?.[0] +
-                  ". " +
-                  user?.user_metadata?.full_name?.split(" ").slice(-1)?.[0] || "User"}
+                {firstName[0] + ". " + lastName || "User"}
               </span>
             </div>
           </NavItem>
