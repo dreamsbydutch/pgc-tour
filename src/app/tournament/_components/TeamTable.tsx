@@ -18,9 +18,9 @@ export default function TeamGolfersTable({ team }: { team: TeamData }) {
     tournamentId: team.tournamentId,
   }).data;
 
-  const course = api.course.getById.useQuery({
-    courseID: team.tournament.courseId,
-  }).data;
+  const course = api.tournament.getById.useQuery({
+    tournamentId: team.tournamentId,
+  }).data?.course;
 
   return (
     <Table className="scrollbar-hidden mx-auto w-full max-w-3xl border border-gray-700 text-center font-varela">
