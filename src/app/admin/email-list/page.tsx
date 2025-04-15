@@ -11,9 +11,9 @@ import {
 } from "../../_components/ui/table";
 
 export default async function AdminDashboard() {
-  const currentTourney = await api.tournament.getNext();
-  const tourCards = await api.tourCard.getBySeasonId({
-    seasonId: currentTourney?.seasonId,
+  const currentTourney = (await api.tournament.getInfo()).next;
+  const tourCards = await api.tourCard.getBySeason({
+    seasonId: currentTourney?.seasonId ?? "",
   });
   const teams = await api.team.getByTournament({
     tournamentId: currentTourney?.id,

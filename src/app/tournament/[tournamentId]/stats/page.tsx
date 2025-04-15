@@ -1,8 +1,8 @@
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { api } from "@/src/trpc/server";
-import LeaderboardHeader from "../../_components/LeaderboardHeader";
-import { LeaderboardHeaderSkeleton } from "../../_components/skeletons/LeaderboardHeaderSkeleton";
 import { Suspense } from "react";
+import { LeaderboardHeaderSkeleton } from "../../_components/skeletons/LeaderboardHeaderSkeleton";
+import LeaderboardHeader from "../../_components/header/LeaderboardHeader";
 import StatsPage from "../../_components/StatsPage";
 
 export default async function page({

@@ -36,10 +36,9 @@ export const tourCardRouter = createTRPCRouter({
       });
     }),
 
-  getBySeasonId: publicProcedure
-    .input(z.object({ seasonId: z.string().optional() }))
+  getBySeason: publicProcedure
+    .input(z.object({ seasonId: z.string() }))
     .query(async ({ ctx, input }) => {
-      if (!input.seasonId) return;
       return await ctx.db.tourCard.findMany({
         where: { seasonId: input.seasonId },
         include: tourCardDataInclude,
@@ -52,7 +51,6 @@ export const tourCardRouter = createTRPCRouter({
       if (!input.tourId) return;
       return await ctx.db.tourCard.findMany({
         where: { tourId: input.tourId },
-        include: tourCardDataInclude,
       });
     }),
   getOwnBySeason: publicProcedure
@@ -74,6 +72,29 @@ export const tourCardRouter = createTRPCRouter({
         include: tourCardDataInclude,
       });
     }),
+  getAllCurrent: publicProcedure.query(async ({ ctx }) => {
+    const season = await ctx.db.season.findUnique({ where: { year: 2025 } });
+    return await ctx.db.tourCard.findFirst({
+      where: {
+        seasonId: season?.id,
+      },
+      include: tourCardDataInclude,
+    });
+  }),
+
+  getOwnCurrent: publicProcedure.query(async ({ ctx }) => {
+    const supabase = await createClient();
+    const user = await supabase.auth.getUser();
+    if (!user) return null;
+    const season = await ctx.db.season.findUnique({ where: { year: 2025 } });
+    return await ctx.db.tourCard.findFirst({
+      where: {
+        seasonId: season?.id,
+        memberId: user.data.user?.id,
+      },
+      include: tourCardDataInclude,
+    });
+  }),
 
   getByUserSeason: publicProcedure
     .input(
@@ -114,7 +135,6 @@ export const tourCardRouter = createTRPCRouter({
           tourId: input.tourId,
           memberId: input.memberId,
         },
-        include: tourCardDataInclude,
       });
     }),
 
@@ -145,7 +165,6 @@ export const tourCardRouter = createTRPCRouter({
           win: input.win,
           madeCut: input.madeCut,
         },
-        include: tourCardDataInclude,
       });
     }),
 
@@ -154,7 +173,6 @@ export const tourCardRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.tourCard.delete({
         where: { id: input.tourCardId },
-        include: tourCardDataInclude,
       });
     }),
 });

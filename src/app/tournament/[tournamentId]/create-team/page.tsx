@@ -16,7 +16,7 @@ export default async function CreateTeamPage({
   const tournament = await api.tournament.getById({
     tournamentId: params.tournamentId,
   });
-  const current = await api.tournament.getCurrent();
+  const current = (await api.tournament.getInfo()).current;
 
   if (!tournament) {
     return <LoadingSpinner />;

@@ -19,7 +19,7 @@ import Link from "next/link";
 export default async function AdminDashboard() {
   const season = await api.season.getByYear({ year: 2025 });
   const tours = await api.tour.getBySeason({ seasonID: season?.id });
-  const currentTourney = await api.tournament.getCurrent();
+  const currentTourney = (await api.tournament.getInfo()).current;
 
   const liveData = (await fetchDataGolf(
     "preds/in-play",
@@ -109,7 +109,7 @@ export default async function AdminDashboard() {
           </div>
         </div>
         <HistoryButton className="mt-4 w-3/4" />
-        {tours?.map(async (tour) => {
+        {/* {tours?.map(async (tour) => {
           const tourCards = await api.tourCard.getByTourId({ tourId: tour.id });
           return (
             <div
@@ -120,7 +120,7 @@ export default async function AdminDashboard() {
               <div className="text-base">{`${tour.tourCards.length} sign ups (${+(process.env.TOUR_MAX_SIZE ?? 75) - tour.tourCards.length} left - ${tourCards?.filter((obj) => obj.member.account !== 0).length} unpaid)`}</div>
             </div>
           );
-        })}
+        })} */}
       </div>
       <PaymentForm />
     </>

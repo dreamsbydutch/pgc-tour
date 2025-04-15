@@ -4,17 +4,15 @@ import { api } from "@/src/trpc/server";
 import { redirect } from "next/navigation";
 
 export default async function page() {
-  const currentTourney = await api.tournament.getCurrent();
-  if (currentTourney) {
-    return redirect(`/tournament/${currentTourney.id}`);
+  const tournaments = await api.tournament.getInfo();
+  if (tournaments.current) {
+    return redirect(`/tournament/${tournaments.current.id}`);
   }
-  const nextTourney = await api.tournament.getNext();
-  if (nextTourney) {
-    return redirect(`/tournament/${nextTourney.id}`);
+  if (tournaments.next) {
+    return redirect(`/tournament/${tournaments.next.id}`);
   }
-  const recentTourney = await api.tournament.getRecent();
-  if (recentTourney) {
-    return redirect(`/tournament/${recentTourney.id}`);
+  if (tournaments.past) {
+    return redirect(`/tournament/${tournaments.past.id}`);
   }
   return redirect(`/`);
 }

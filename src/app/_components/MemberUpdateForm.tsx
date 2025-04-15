@@ -21,6 +21,12 @@ const emptyMember = {
   account: 0,
   role: "",
   friends: [],
+  points: 0,
+  earnings: 0,
+  win: 0,
+  topTen: 0,
+  madeCut: 0,
+  appearances: 0,
 };
 
 export default function MemberUpdateForm({

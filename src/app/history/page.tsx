@@ -1,186 +1,147 @@
 "use client";
 
+import { formatMoney } from "@/src/lib/utils";
 import { api } from "@/src/trpc/react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../_components/ui/table";
-import { cn } from "@/src/lib/utils";
+import { TeamData } from "@/src/types/prisma_include";
+import { Member, TourCard, Team } from "@prisma/client";
 import Image from "next/image";
-import { Member, Season, Tournament } from "@prisma/client";
-import { TournamentData } from "@/src/types/prisma_include";
 
 export default function historyPage() {
-  const seasons = api.season.getAll.useQuery().data;
-  const tournaments = api.tournament.getAll.useQuery().data;
   const members = api.member.getAll.useQuery().data;
-  // const data = members?.map((member) => {
-  //   const teams = []
-  //   member.tourCards.forEach((card) => {
-  //     const team = api.team.getByTourCard.useQuery({
-  //       tourCardId: card.id,
-  //     }).data
-  //     if (team) {
-  //       teams.push(team)
-  //     }
-  //   })
-  //   return teams.flat()
-  // })
+  const tourCards = api.tourCard.getAll.useQuery().data;
+  const teams = api.team.getAll.useQuery().data;
+  const updatedMembers = members?.map((member) =>
+    updateMembers({ member, tourCards }),
+  );
   return (
     <>
-      {seasons
-        ?.sort((a, b) => a.year - b.year)
-        .map((season) => (
-          <>
-            <div className="mt-4 text-center font-varela font-bold">
-              {season.year} Schedule
-            </div>
-            <Table className="text-center font-varela">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-center text-xs font-bold">
-                    Tournament
-                  </TableHead>
-                  <TableHead className="text-center text-xs font-bold">
-                    Teams
-                  </TableHead>
-                  <TableHead className="text-center text-xs font-bold">
-                    Made Cut
-                  </TableHead>
-                  <TableHead className="text-center text-xs font-bold">
-                    Earnings
-                  </TableHead>
-                  <TableHead className="text-center text-xs font-bold">
-                    Points
-                  </TableHead>
-                  <TableHead className="text-center text-xs font-bold">
-                    Earn Percent
-                  </TableHead>
-                  <TableHead className="text-center text-xs font-bold">
-                    Point Percent
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {tournaments
-                  ?.filter((obj) => obj.seasonId === season.id)
-                  .map((tourney) => (
-                    <TournamentTableRow {...{ tourney, tournaments, season }} />
-                  ))}
-              </TableBody>
-            </Table>
-          </>
-        ))}
+      {/* <MajorWinners members={members} tourCards={tourCards} teams={teams} /> */}
+      {updatedMembers
+        ?.sort((a, b) => b.appearances - a.appearances)
+        ?.sort((a, b) => b.points - a.points)
+        ?.sort((a, b) => b.earnings - a.earnings)
+        ?.sort((a, b) => b.win - a.win)
+        .map((member) => <MemberListing member={member} />)}
     </>
   );
 }
 
-function TournamentTableRow({
-  tourney,
-  tournaments,
-  season,
-}: {
-  tourney: TournamentData;
-  tournaments: TournamentData[];
-  season: Season;
-}) {
-  const teams = api.team.getByTournament.useQuery({
-    tournamentId: tourney.id,
-  });
-  const tours = api.tour.getBySeason.useQuery({
-    seasonID: season.id,
-  });
-  return (
-    <TableRow
-      key={tourney.id}
-      className={cn(
-        "border-y-0 !border-l-2 !border-r-2 border-slate-500",
-        tournaments.filter(
-          (obj) =>
-            obj.startDate < tourney.endDate && obj.seasonId === season.id,
-        ).length === 1
-          ? "border-t-2"
-          : "",
-        tournaments.filter(
-          (obj) =>
-            obj.startDate < tourney.endDate &&
-            obj.seasonId === season.id &&
-            obj.tier.name === "Playoff",
-        ).length === 1 && tourney.tier.name === "Playoff"
-          ? "border-t"
-          : "",
-        tournaments.filter(
-          (obj) =>
-            obj.startDate < tourney.endDate && obj.seasonId === season.id,
-        ).length ===
-          tournaments.filter((obj) => obj.seasonId === season.id).length
-          ? "!border-b-2"
-          : "",
-
-        tourney.tier.name === "Playoff" ? "bg-yellow-50" : "",
-        tourney.tier.name === "Major" ? "bg-blue-50" : "",
-      )}
-    >
-      <TableCell className="flex items-center justify-center whitespace-nowrap text-center text-xs">
-        <Image
-          src={tourney.logoUrl ?? ""}
-          className="pr-1"
-          alt={tourney.name}
-          width={20}
-          height={20}
-        />
-        {tourney.name}
-      </TableCell>
-      <TableCell className="whitespace-nowrap text-center text-xs">
-        {(teams?.data?.length ?? 0) / (tours?.data?.length ?? 1)}
-      </TableCell>
-      <TableCell className="whitespace-nowrap text-center text-xs">
-        {(teams?.data?.filter((a) => a.position !== "CUT").length ?? 0) /
-          (tours?.data?.length ?? 1)}
-      </TableCell>
-      <TableCell className="whitespace-nowrap text-center text-xs">
-        {(teams?.data?.filter((a) => (a.earnings ?? 0) > 0).length ?? 0) /
-          (tours?.data?.length ?? 1)}
-      </TableCell>
-      <TableCell className="whitespace-nowrap text-center text-xs">
-        {(teams?.data?.filter((a) => (a.points ?? 0) > 0).length ?? 0) /
-          (tours?.data?.length ?? 1)}
-      </TableCell>
-      <TableCell className="whitespace-nowrap text-center text-xs">
-        {Math.round(
-          ((teams?.data?.filter((a) => (a.earnings ?? 0) > 0).length ?? 0) /
-            (teams?.data?.length ?? 1)) *
-            10000,
-        ) / 100}
-        %
-      </TableCell>
-      <TableCell className="whitespace-nowrap text-center text-xs">
-        {Math.round(
-          ((teams?.data?.filter((a) => (a.points ?? 0) > 0).length ?? 0) /
-            (teams?.data?.length ?? 1)) *
-            10000,
-        ) / 100}
-        %
-      </TableCell>
-    </TableRow>
-  );
-}
-
 function MemberListing({ member }: { member: Member }) {
-  const tourCards = api.tourCard.getByUserId.useQuery({
+  let tourCards = api.tourCard.getByUserId.useQuery({
     userId: member.id,
-  }).data;
-  const teams = api.team.getByTourCard.useQuery({
-    tourCardId: tourCards?.[0]?.id,
   }).data;
   return (
     <div key={member.id} className="flex justify-between">
       <div>{member.fullname}</div>
-      <div>{teams?.reduce((p, c) => (p += c.earnings ?? 0), 0) ?? 0}</div>
+      <div>{member.points}</div>
+      <div>{formatMoney(member.earnings)}</div>
+      <div>{member.win}</div>
+      <div>{member.topTen}</div>
+      <div>{member.madeCut}</div>
+      <div>{member.appearances}</div>
     </div>
   );
 }
+
+function updateMembers({
+  member,
+  tourCards,
+}: {
+  member: Member;
+  tourCards: TourCard[] | undefined;
+}) {
+  const filteredTourCards = tourCards?.filter(
+    (card) => card.memberId === member.id,
+  );
+  const points =
+    filteredTourCards?.reduce((p, c) => (p += c.points ?? 0), 0) ?? 0;
+  const earnings =
+    filteredTourCards?.reduce((p, c) => (p += c.earnings ?? 0), 0) ?? 0;
+  const win = filteredTourCards?.reduce((p, c) => (p += c.win ?? 0), 0) ?? 0;
+  const topTen =
+    filteredTourCards?.reduce((p, c) => (p += c.topTen ?? 0), 0) ?? 0;
+  const madeCut =
+    filteredTourCards?.reduce((p, c) => (p += c.madeCut ?? 0), 0) ?? 0;
+  const appearances =
+    filteredTourCards?.reduce((p, c) => (p += c.appearances ?? 0), 0) ?? 0;
+  return { ...member, earnings, points, win, topTen, madeCut, appearances };
+}
+
+// function MajorWinners({
+//   members,
+//   tourCards,
+//   teams,
+// }: {
+//   members: Member[] | undefined;
+//   tourCards: TourCard[] | undefined;
+//   teams: TeamData[] | undefined;
+// }) {
+//   const majorWinners = teams
+//     ?.filter(
+//       (obj) =>
+//         obj.tournament.tier.name === "Major" &&
+//         +(obj.position?.replace("T", "") ?? 0) === 1,
+//     )
+//     .sort((a, b) => a.tournament.name.localeCompare(b.tournament.name));
+//   const memberIds = new Set(
+//     majorWinners?.map((team) => team.tourCard.memberId),
+//   );
+//   const majorWinnersMembers = members?.filter((member) =>
+//     memberIds.has(member.id),
+//   );
+//   const memberMajorWins = majorWinnersMembers?.map((member) => {
+//     const majorWins = majorWinners?.filter(
+//       (team) => team.tourCard.memberId === member.id,
+//     );
+
+//     return { ...member, majorWins: majorWins as TeamData[] };
+//   });
+
+//   const sortedMajorWinners = memberMajorWins
+//     ?.sort((a, b) =>
+//       (a.majorWins?.[0]?.tournament.name ?? "").localeCompare(
+//         b.majorWins?.[0]?.tournament.name ?? "",
+//       ),
+//     )
+//     .sort((a, b) => (b.majorWins?.length ?? 0) - (a.majorWins?.length ?? 0));
+
+//   return (
+//     <div className="flex flex-col justify-between">
+//       <div className="font-yellowtail">Major Champions</div>
+//       <MastersPlaque members={sortedMajorWinners} />
+//     </div>
+//   );
+// }
+
+// function MastersPlaque({
+//   members,
+// }: {
+//   members: (Member & { majorWins: TeamData[] })[] | undefined;
+// }) {
+//   return (
+//     <div className="flex flex-col items-center rounded-lg bg-gray-800 p-4 text-white shadow-lg">
+//       <h2 className="mb-4 h-10 text-2xl font-bold">
+//         <Image
+//           src={members?.[0]?.majorWins?.[0]?.tournament?.logoUrl ?? ""}
+//           alt={
+//             members?.[0]?.majorWins?.[0]?.tournament?.name ??
+//             "Tournament name unavailable"
+//           }
+//           width={512}
+//           height={512}
+//         />
+//         The Masters
+//       </h2>
+//       <div className="flex flex-col gap-2">
+//         {members?.map((member) => (
+//           <div
+//             key={member.id}
+//             className="border-b border-gray-600 pb-1 text-lg font-medium"
+//           >
+//             {member.fullname}
+//           </div>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }

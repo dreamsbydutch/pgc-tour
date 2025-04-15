@@ -8,12 +8,21 @@ export async function GET(request: Request) {
   const { origin } = new URL(request.url);
 
   const season = await api.season.getCurrent();
-  let tourCards = await api.tourCard.getBySeasonId({ seasonId: season?.id });
+  let tourCards = await api.tourCard.getBySeason({ seasonId: season?.id??"" });
 
   if (tourCards) {
     tourCards = await Promise.all(
       tourCards.map(async (tourCard) => {
-        const teams = await api.team.getByTourCard({ tourCardId: tourCard.id });
+        let teams = await api.team.getByTourCard({ tourCardId: tourCard.id });
+        teams = teams.filter((obj) => (obj.round ?? 0) > 4);
+        tourCard.win = teams.filter(
+          (obj) => +(obj.position?.replace("T", "") ?? 0) === 1,
+        ).length;
+        tourCard.topTen = teams.filter(
+          (obj) => +(obj.position?.replace("T", "") ?? 0) <= 10,
+        ).length;
+        tourCard.madeCut = teams.filter((obj) => obj.position !== "CUT").length;
+        tourCard.appearances = teams.length;
         tourCard.earnings = teams.reduce(
           (p, c) => (p += Math.round((c.earnings ?? 0) * 100) / 100),
           0,
@@ -45,10 +54,17 @@ export async function GET(request: Request) {
           position: tourCard.position,
           points: tourCard.points ?? undefined,
           earnings: tourCard.earnings,
+          win: tourCard.win,
+          topTen: tourCard.topTen,
+          madeCut: tourCard.madeCut,
+          appearances: tourCard.appearances,
         });
         return tourCard;
       }),
     );
   }
-    return NextResponse.redirect(`${origin}/`);
+  return NextResponse.redirect(`${origin}/`);
 }
+
+
+// localhost:3000/cron/update-standings

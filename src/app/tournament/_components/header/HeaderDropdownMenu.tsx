@@ -1,8 +1,7 @@
 "use client";
 
-import { type Tournament } from "@prisma/client";
 import { ChevronDown } from "lucide-react";
-import { type Dispatch, type SetStateAction, useState } from "react";
+import { useState, Dispatch, SetStateAction } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,22 +13,34 @@ import {
 } from "@/src/app/_components/ui/dropdown-menu";
 import Link from "next/link";
 import Image from "next/image";
-import { type TournamentData } from "@/src/types/prisma_include";
 import { api } from "@/src/trpc/react";
 import { cn } from "@/lib/utils";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 
+/**
+ * HeaderDropdown Component
+ *
+ * Displays a dropdown menu for selecting tournaments.
+ * - Allows toggling between viewing tournaments by tier or by date.
+ * - Displays a loading spinner while fetching data.
+ *
+ * Props:
+ * - activeTourney: The currently active tournament (optional).
+ * - seasonId: The current season ID (optional).
+ */
 export default function HeaderDropdown({
   activeTourney,
   seasonId,
 }: {
-  activeTourney?: Tournament;
+  activeTourney?: { id: string };
   seasonId?: string;
 }) {
   const [tierEffect, setTierEffect] = useState(false);
   const [dateEffect, setDateEffect] = useState(false);
   const [leaderboardToggle, setLeaderboardToggle] = useState("Date");
+
   const data = useLeaderboardHeaderInfo({ seasonId });
+
   if (!data)
     return (
       <div
@@ -39,8 +50,8 @@ export default function HeaderDropdown({
         <LoadingSpinner className="my-0 h-[1.5rem] w-[1.5rem] border-gray-100 border-t-gray-800" />
       </div>
     );
-  const { tiers, tournaments, tournamentsByTier } = data;
 
+  const { tiers, tournaments, tournamentsByTier } = data;
   const groupedTourneys =
     leaderboardToggle === "Tier" ? tournamentsByTier : [tournaments];
 
@@ -70,84 +81,61 @@ export default function HeaderDropdown({
               setLeaderboardToggle,
             }}
           />
-          {groupedTourneys.map((group, i) => {
-            return (
-              <div className="px-1" key={`group-${i}`}>
-                {i !== 0 && (
-                  <DropdownMenuSeparator
-                    key={`sep-${i}`}
-                    className="h-[1px] bg-slate-700"
-                  />
-                )}
-                {leaderboardToggle === "Tier" ? (
-                  groupedTourneys.length === 4 && i === 0 ? (
-                    <DropdownMenuLabel className="pb-1 text-center font-bold xs:text-lg lg:text-xl">
-                      Live
-                    </DropdownMenuLabel>
-                  ) : (
-                    <DropdownMenuLabel className="pb-1 text-center font-bold xs:text-lg lg:text-xl">
-                      {tiers.find((a) => a.id === group[0]?.tierId)?.name}
-                    </DropdownMenuLabel>
-                  )
-                ) : (
-                  ""
-                )}
-                {group.map((tourney) => {
-                  return (
-                    <DropdownMenuItem key={tourney.id} asChild>
-                      <Link
-                        className="py-0 outline-none"
-                        href={`/tournament/${leaderboardToggle === "Tier" && groupedTourneys.length === 4 && i === 0 ? "" : tourney.id}`}
-                      >
-                        <div
-                          className={cn(
-                            "w-full select-none flex-row items-center justify-center px-2 py-1.5 text-xs outline-none xs:text-sm sm:text-lg",
-                            activeTourney?.id === tourney.id &&
-                              "rounded-lg bg-slate-200",
-                          )}
-                        >
-                          <div className="flex items-center gap-2">
-                            {tourney.logoUrl && (
-                              <Image
-                                src={tourney.logoUrl}
-                                alt={`${tourney.name} logo`}
-                                width={28}
-                                height={28}
-                              />
-                            )}
-                            {tourney.name}
-                          </div>
-                          <div className="text-2xs text-slate-500 xs:text-xs">{`${tourney.startDate.toLocaleDateString(
-                            "en-us",
-                            {
-                              month: "short",
-                              day: "numeric",
-                            },
-                          )} - ${
-                            tourney.startDate.getMonth() ===
-                            tourney.endDate.getMonth()
-                              ? tourney.endDate.toLocaleDateString("en-us", {
-                                  day: "numeric",
-                                })
-                              : tourney.endDate.toLocaleDateString("en-us", {
-                                  month: "short",
-                                  day: "numeric",
-                                })
-                          } - ${tourney.course.location}`}</div>
-                        </div>
-                      </Link>
-                    </DropdownMenuItem>
-                  );
-                })}
-              </div>
-            );
-          })}
+          {groupedTourneys.map((group, i) => (
+            <div className="px-1" key={`group-${i}`}>
+              {i !== 0 && (
+                <DropdownMenuSeparator
+                  key={`sep-${i}`}
+                  className="h-[1px] bg-slate-700"
+                />
+              )}
+              {leaderboardToggle === "Tier" && (
+                <DropdownMenuLabel className="pb-1 text-center font-bold xs:text-lg lg:text-xl">
+                  {groupedTourneys.length === 4 && i === 0
+                    ? "Live"
+                    : tiers.find((tier) => tier.id === group[0]?.tierId)?.name}
+                </DropdownMenuLabel>
+              )}
+              {group.map((tourney) => (
+                <DropdownMenuItem key={tourney.id} asChild>
+                  <Link
+                    className="py-0 outline-none"
+                    href={`/tournament/${
+                      leaderboardToggle === "Tier" &&
+                      groupedTourneys.length === 4 &&
+                      i === 0
+                        ? ""
+                        : tourney.id
+                    }`}
+                  >
+                    <TournamentItem
+                      tourney={{ ...tourney, logoUrl: tourney.logoUrl ?? undefined }}
+                      isActive={activeTourney?.id === tourney.id}
+                    />
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </div>
+          ))}
         </DropdownMenuContent>
       </DropdownMenuPortal>
     </DropdownMenu>
   );
 }
 
+/**
+ * DropdownToggle Component
+ *
+ * Renders toggle buttons to switch between viewing tournaments by tier or by date.
+ *
+ * Props:
+ * - tierEffect: Boolean indicating if the "By Tier" button is active.
+ * - setTierEffect: Function to set the "By Tier" button effect.
+ * - dateEffect: Boolean indicating if the "By Date" button is active.
+ * - setDateEffect: Function to set the "By Date" button effect.
+ * - leaderboardToggle: The current toggle state ("Tier" or "Date").
+ * - setLeaderboardToggle: Function to set the toggle state.
+ */
 function DropdownToggle({
   tierEffect,
   setTierEffect,
@@ -197,6 +185,80 @@ function DropdownToggle({
   );
 }
 
+/**
+ * TournamentItem Component
+ *
+ * Renders a single tournament item in the dropdown menu.
+ *
+ * Props:
+ * - tourney: The tournament data.
+ * - isActive: Boolean indicating if the tournament is currently active.
+ */
+function TournamentItem({
+  tourney,
+  isActive,
+}: {
+  tourney: {
+    id: string;
+    name: string;
+    logoUrl?: string;
+    startDate: Date;
+    endDate: Date;
+    course: { location: string };
+  };
+  isActive: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "w-full select-none flex-row items-center justify-center px-2 py-1.5 text-xs outline-none xs:text-sm sm:text-lg",
+        isActive && "rounded-lg bg-slate-200",
+      )}
+    >
+      <div className="flex items-center gap-2">
+        {tourney.logoUrl && (
+          <Image
+            src={tourney.logoUrl}
+            alt={`${tourney.name} logo`}
+            width={28}
+            height={28}
+          />
+        )}
+        {tourney.name}
+      </div>
+      <div className="text-2xs text-slate-500 xs:text-xs">{`${tourney.startDate.toLocaleDateString(
+        "en-us",
+        {
+          month: "short",
+          day: "numeric",
+        },
+      )} - ${
+        tourney.startDate.getMonth() === tourney.endDate.getMonth()
+          ? tourney.endDate.toLocaleDateString("en-us", {
+              day: "numeric",
+            })
+          : tourney.endDate.toLocaleDateString("en-us", {
+              month: "short",
+              day: "numeric",
+            })
+      } - ${tourney.course.location}`}</div>
+    </div>
+  );
+}
+
+/**
+ * useLeaderboardHeaderInfo Hook
+ *
+ * Fetches data for the leaderboard header, including:
+ * - Tiers for the season.
+ * - Tournaments for the season.
+ * - Tournaments grouped by tier.
+ *
+ * Props:
+ * - seasonId: The current season ID (optional).
+ *
+ * @returns An object containing tiers, tournaments, and tournaments grouped by tier.
+ */
 function useLeaderboardHeaderInfo({
   seasonId,
 }: {
@@ -212,35 +274,41 @@ function useLeaderboardHeaderInfo({
   const { data: tournaments } = api.tournament.getBySeason.useQuery({
     seasonId: seasonId ?? season?.id,
   });
-  if (!tiers) return null;
-  if (!tournaments) return null;
+
+  if (!tiers || !tournaments) return null;
 
   const currentTourneyID = tournaments.find(
     (tourney) => tourney.startDate < date && tourney.endDate > date,
   )?.id;
 
-  const tournamentsByTier: TournamentData[][] = currentTourneyID
+  const tournamentsByTier = currentTourneyID
     ? [
         tournaments.filter((obj) => obj.id === currentTourneyID),
         tournaments.filter(
-          (obj) => obj.tierId === tiers.find((a) => a.name === "Major")?.id,
+          (obj) =>
+            obj.tierId === tiers.find((tier) => tier.name === "Major")?.id,
         ),
         tournaments.filter(
-          (obj) => obj.tierId === tiers.find((a) => a.name === "Elevated")?.id,
+          (obj) =>
+            obj.tierId === tiers.find((tier) => tier.name === "Elevated")?.id,
         ),
         tournaments.filter(
-          (obj) => obj.tierId === tiers.find((a) => a.name === "Standard")?.id,
+          (obj) =>
+            obj.tierId === tiers.find((tier) => tier.name === "Standard")?.id,
         ),
       ]
     : [
         tournaments.filter(
-          (obj) => obj.tierId === tiers.find((a) => a.name === "Major")?.id,
+          (obj) =>
+            obj.tierId === tiers.find((tier) => tier.name === "Major")?.id,
         ),
         tournaments.filter(
-          (obj) => obj.tierId === tiers.find((a) => a.name === "Elevated")?.id,
+          (obj) =>
+            obj.tierId === tiers.find((tier) => tier.name === "Elevated")?.id,
         ),
         tournaments.filter(
-          (obj) => obj.tierId === tiers.find((a) => a.name === "Standard")?.id,
+          (obj) =>
+            obj.tierId === tiers.find((tier) => tier.name === "Standard")?.id,
         ),
       ];
 

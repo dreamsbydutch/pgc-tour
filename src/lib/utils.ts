@@ -35,7 +35,7 @@ export function formatCompactNumber(n: number): string {
   }).format(n);
 }
 
-export function formatMoney(number: number) {
+export function formatMoney(number: number, short: boolean = false) {
   number = Number(number);
   if (Math.abs(number) >= 1e6) {
     return "$" + (number / 1e6).toFixed(1) + "M";
@@ -43,10 +43,17 @@ export function formatMoney(number: number) {
     return "$" + (number / 1e3).toFixed(0) + "k";
   } else if (Math.abs(number) === 0 || isNaN(number)) {
     return "-";
+  } else if (short) {
+    return Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(number);
   } else {
     return Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
+      maximumFractionDigits: 2,
     }).format(number);
   }
 }
@@ -114,7 +121,7 @@ export function formatName(name: string, type: "display" | "full") {
 }
 
 export function getGolferTeeTime(course: Course, golfer: Golfer) {
-  const roundNames = ["One", "Two", "Three", "Four"];
+  const roundNames = ["One", "Two", "Three", "Four", "Four"];
   if (golfer.round === null) {
     throw new Error("Golfer round is null");
   }
@@ -123,7 +130,7 @@ export function getGolferTeeTime(course: Course, golfer: Golfer) {
   return formatTime(course, new Date(golfer[teeTimeKey] ?? ""));
 }
 export function getTeamTeeTime(course: Course, team: Team) {
-  const roundNames = ["One", "Two", "Three", "Four"];
+  const roundNames = ["One", "Two", "Three", "Four", "Four"];
   if (team.round === null) {
     throw new Error("Team round is null");
   }
@@ -177,3 +184,58 @@ type DataGolfExports =
   | "preds/live-tournament-stats"
   | "historical-raw-data/event-list";
 
+export function sortByDate(a: Date, b: Date) {
+  return new Date(a).getTime() - new Date(b).getTime();
+}
+export function sortByPosition(a: string, b: string) {
+  return (
+    +a
+      .replace("T", "")
+      .replace("st", "")
+      .replace("nd", "")
+      .replace("rd", "")
+      .replace("th", "") -
+    +b
+      .replace("T", "")
+      .replace("st", "")
+      .replace("nd", "")
+      .replace("rd", "")
+      .replace("th", "")
+  );
+}
+export function sortByScore(a: string | number, b: string | number) {
+  return +a - +b;
+}
+export function sortByNumber(a: number, b: number) {
+  return a - b;
+}
+export function subtractTimeFromDate({
+  date,
+  weeksToSubtract,
+  daysToSubtract,
+  hoursToSubtract,
+  minutesToSubtract,
+}: {
+  date: Date;
+  weeksToSubtract?: number;
+  daysToSubtract?: number;
+  hoursToSubtract?: number;
+  minutesToSubtract?: number;
+}) {
+  weeksToSubtract = weeksToSubtract || 0;
+  daysToSubtract = daysToSubtract || 0;
+  hoursToSubtract = hoursToSubtract || 0;
+  minutesToSubtract = minutesToSubtract || 0;
+  const timeToSubtract =
+    (weeksToSubtract * 7 + daysToSubtract) * 24 * 60 * 60 * 1000 +
+    hoursToSubtract * 60 * 60 * 1000 +
+    minutesToSubtract * 60 * 1000;
+
+  // Instantiate a new object based on the current Date
+  const pastDate = new Date(date);
+
+  // Subtract  the number of days
+  pastDate.setTime(pastDate.getTime() - timeToSubtract);
+
+  return pastDate;
+}

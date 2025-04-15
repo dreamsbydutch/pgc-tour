@@ -1,204 +1,172 @@
-"use client";
+"use client"; // Indicates that this is a client-side component
 
-import { BookText, Home, List, LogInIcon, Trophy } from "lucide-react";
-import { cn } from "@/src/lib/utils";
-import { NavItem } from "./NavItem";
-import { useUser } from "@/src/lib/hooks/use-user";
-import { Skeleton } from "../ui/skeleton";
-import { UserAccountNav } from "./UserAccount";
-import { type Dispatch, type SetStateAction, useState } from "react";
-import LoadingSpinner from "../LoadingSpinner";
-import { signInWithGoogle } from "../../signin/actions";
-import type { User } from "@supabase/supabase-js";
+import {
+  ArchiveIcon,
+  BookText,
+  Home,
+  List,
+  LogInIcon,
+  Trophy,
+} from "lucide-react"; // Importing icons from the lucide-react library
+import { cn } from "@/src/lib/utils"; // Utility function for conditional class names
+import { useUser } from "@/src/lib/hooks/use-user"; // Hook to fetch user data
+import { Skeleton } from "../ui/skeleton"; // Skeleton loader for loading states
+import { UserAccountNav } from "./UserAccount"; // User account navigation component
+import { useState } from "react"; // React hook for managing state
+import LoadingSpinner from "../LoadingSpinner"; // Loading spinner component
+import { signInWithGoogle } from "../../signin/actions"; // Function to handle Google sign-in
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
+/**
+ * MenuBar Component
+ *
+ * This component renders a responsive navigation bar that adapts to different screen sizes.
+ * It includes:
+ * - Navigation links for various sections of the application.
+ * - User account management options (e.g., viewing account or signing out).
+ * - A sign-in option for unauthenticated users.
+ *
+ * The navigation bar dynamically adjusts its layout for mobile and desktop views.
+ *
+ * Props:
+ * - className (optional): Additional CSS classes to style the component.
+ */
 export default function MenuBar({ className }: { className?: string }) {
-  const { user, loading } = useUser();
-  const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
+  const { user, loading } = useUser(); // Fetch user data and loading state
+  const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false); // State for Google sign-in loading
+  const [isSigningOut, setIsSigningOut] = useState(false); // State for sign-out process
 
-  if (typeof window === "undefined")
-    return (
-      <Navbar
-        {...{
-          className,
-          user,
-          loading,
-          isSigningOut,
-          setIsSigningOut,
-          isGoogleLoading,
-          setIsGoogleLoading,
-        }}
-      />
-    );
-  const width = window.innerWidth;
+  // Configuration for navigation items
+  const navItems = [
+    { href: "/", icon: Home, label: "HOME" },
+    { href: "/tournament", icon: List, label: "LEADERBOARD" },
+    { href: "/standings", icon: Trophy, label: "STANDINGS" },
+    { href: "/rulebook", icon: BookText, label: "RULEBOOK" },
+    // { href: "/history", icon: ArchiveIcon, label: "RECORDS" },
+  ];
 
-  return width < 1000 ? (
-    <Navbar
-      {...{
-        className,
-        user,
-        loading,
-        isSigningOut,
-        setIsSigningOut,
-        isGoogleLoading,
-        setIsGoogleLoading,
-      }}
-    />
-  ) : (
-    <DesktopNav
-      {...{
-        className,
-        user,
-        loading,
-        isSigningOut,
-        setIsSigningOut,
-        isGoogleLoading,
-        setIsGoogleLoading,
-      }}
-    />
-  );
-}
-
-function Navbar({
-  className,
-  user,
-  loading,
-  isSigningOut,
-  setIsSigningOut,
-  isGoogleLoading,
-  setIsGoogleLoading,
-}: {
-  className?: string;
-  user: User | null;
-  loading: boolean;
-  isSigningOut: boolean;
-  setIsSigningOut: Dispatch<SetStateAction<boolean>>;
-  isGoogleLoading: boolean;
-  setIsGoogleLoading: Dispatch<SetStateAction<boolean>>;
-}) {
-  return (
-    <div
-      className={cn(
-        className,
-        "shadow-inv fixed bottom-0 z-20 flex w-full items-center justify-evenly bg-gray-200",
-        "h-[55px] text-center",
-      )}
-    >
-      <NavItem href={"/"}>
-        <Home size={"2.5rem"} className="mx-auto" />
-        {/* <span className="font-barlow text-sm font-semibold">HOME</span> */}
-      </NavItem>
-      <NavItem href={"/tournament"}>
-        <List size={"2.5rem"} className="mx-auto" />
-        {/* <span className="font-barlow text-sm font-semibold">LEADERBOARD</span> */}
-      </NavItem>
-      <NavItem href={"/standings"}>
-        <Trophy size={"2.5rem"} className="mx-auto" />
-        {/* <span className="font-barlow text-sm font-semibold">STANDINGS</span> */}
-      </NavItem>
-      <NavItem href={"/rulebook"}>
-        <BookText size={"2.5rem"} className="mx-auto" />
-        {/* <span className="font-barlow text-sm font-semibold">RULEBOOK</span> */}
-      </NavItem>
-      <div className="flex min-w-[2.5rem] items-center justify-center">
-        {loading || isSigningOut ? (
-          <Skeleton className="h-[2.5rem] w-[2.5rem] rounded-full" />
-        ) : user ? (
-          <>
+  /**
+   * UserActions Component
+   *
+   * This component handles the display of user-related actions:
+   * - Shows a loading skeleton while user data is being fetched.
+   * - Displays the user's account navigation if authenticated.
+   * - Provides a sign-in button for unauthenticated users.
+   */
+  const UserActions = () => (
+    <>
+      <div className="flex lg:hidden">
+        <div className="flex min-w-[2.5rem] items-center justify-center">
+          {loading || isSigningOut ? (
+            <Skeleton className="h-[2.5rem] w-[2.5rem] rounded-full" />
+          ) : user ? (
             <UserAccountNav {...{ user, setIsSigningOut }} />
-          </>
+          ) : (
+            <div onClick={() => signInWithGoogle({ setIsGoogleLoading })}>
+              {isGoogleLoading ? (
+                <LoadingSpinner />
+              ) : (
+                <LogInIcon size={"2.25rem"} className="mx-auto" />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="hidden lg:flex">
+        {loading || isSigningOut ? (
+          <Skeleton className="h-[1.5rem] w-[1.5rem] rounded-full" />
+        ) : user ? (
+          <NavItem href={"/user/" + user.id}>
+            <div className="flex items-center justify-center gap-2">
+              <UserAccountNav {...{ user, size: "small", setIsSigningOut }} />
+              <span className="font-barlow text-2xl font-semibold">
+                {user.user_metadata.full_name.split(" ")[0][0] +
+                  ". " +
+                  user.user_metadata.full_name.split(" ").slice(-1)[0]}
+              </span>
+            </div>
+          </NavItem>
         ) : (
           <div onClick={() => signInWithGoogle({ setIsGoogleLoading })}>
             {isGoogleLoading ? (
               <LoadingSpinner />
             ) : (
-              <>
-                <LogInIcon size={"2.25rem"} className="mx-auto" />
-                {/* <span className="font-barlow text-sm font-semibold">
+              <div className="flex items-center justify-center gap-2">
+                <LogInIcon size={"1.5rem"} className="mx-auto" />
+                <span className="font-barlow text-2xl font-semibold">
                   LOG IN
-                </span> */}
-              </>
+                </span>
+              </div>
             )}
           </div>
         )}
       </div>
-    </div>
+    </>
   );
-}
 
-function DesktopNav({
-  className,
-  user,
-  loading,
-  isSigningOut,
-  setIsSigningOut,
-  isGoogleLoading,
-  setIsGoogleLoading,
-}: {
-  className?: string;
-  user: User | null;
-  loading: boolean;
-  isSigningOut: boolean;
-  setIsSigningOut: Dispatch<SetStateAction<boolean>>;
-  isGoogleLoading: boolean;
-  setIsGoogleLoading: Dispatch<SetStateAction<boolean>>;
-}) {
   return (
     <div
       className={cn(
         className,
-        "shadow-inv fixed top-0 z-20 flex w-full items-center justify-center gap-6 bg-gray-200 px-4 py-2",
+        // Responsive styling for the navigation bar
+        "shadow-inv fixed bottom-0 z-20 flex w-full items-center justify-evenly bg-gray-200 lg:top-0 lg:justify-center lg:gap-8 lg:px-4 lg:py-2 xl:gap-14",
         "h-[55px] text-center",
       )}
     >
-      <NavItem href={"/"}>
-        <div className="flex items-center justify-center gap-2">
-          <Home size={"1.5rem"} className="mx-auto" />
-          <span className="font-barlow text-2xl font-semibold">HOME</span>
-        </div>
-      </NavItem>
-      <NavItem href={"/tournament"}>
-        <div className="flex items-center justify-center gap-2">
-          <List size={"1.5rem"} className="mx-auto" />
-          <span className="font-barlow text-2xl font-semibold">
-            LEADERBOARD
-          </span>
-        </div>
-      </NavItem>
-      <NavItem href={"/standings"}>
-        <div className="flex items-center justify-center gap-2">
-          <Trophy size={"1.5rem"} className="mx-auto" />
-          <span className="font-barlow text-2xl font-semibold">STANDINGS</span>
-        </div>
-      </NavItem>
-      <NavItem href={"/rulebook"}>
-        <div className="flex items-center justify-center gap-2">
-          <BookText size={"1.5rem"} className="mx-auto" />
-          <span className="font-barlow text-2xl font-semibold">RULEBOOK</span>
-        </div>
-      </NavItem>
-      <div className="flex min-w-[2.5rem] items-center justify-center">
-        {loading || isSigningOut ? (
-          <Skeleton className="h-[2.5rem] w-[2.5rem] rounded-full" />
-        ) : user ? (
-          <>
-            <UserAccountNav {...{ user, setIsSigningOut }} />
-          </>
-        ) : (
-          <div onClick={() => signInWithGoogle({ setIsGoogleLoading })}>
-            {isGoogleLoading ? (
-              <LoadingSpinner />
-            ) : (
-              <>
-                <LogInIcon size={"2.25rem"} className="mx-auto" />
-                {/* <span className="font-barlow text-sm font-semibold">
-                  LOG IN
-                </span> */}
-              </>
-            )}
+      {/* Render Navigation Items */}
+      {navItems.map(({ href, icon: Icon, label }) => (
+        <div key={href}>
+          <div className="flex lg:hidden">
+            <NavItem href={href}>
+              <Icon size={"2.5rem"} className="mx-auto" />
+            </NavItem>
           </div>
-        )}
-      </div>
+          <div className="hidden lg:flex">
+            <NavItem href={href}>
+              <div className="flex items-center justify-center gap-2">
+                <Icon size={"1.5rem"} className="mx-auto" />
+                <span className="font-barlow text-2xl font-semibold">
+                  {label}
+                </span>
+              </div>
+            </NavItem>
+          </div>
+        </div>
+      ))}
+
+      {/* User Account or Sign-In */}
+      <UserActions />
     </div>
+  );
+}
+
+/**
+ * NavItem Component
+ *
+ * This component renders a navigation link with active state styling.
+ *
+ * Props:
+ * - href: The URL the navigation item links to.
+ * - children: The content to display inside the navigation item (e.g., icon, label).
+ */
+type NavItemProps = {
+  href: string;
+  children: React.ReactNode;
+};
+
+export function NavItem({ href, children }: NavItemProps) {
+  const pathname = usePathname(); // Get the current pathname
+  const isActive = href === "/" ? pathname === href : pathname.startsWith(href); // Determine if the link is active
+
+  return (
+    <Link
+      href={href}
+      className={cn("py-1 text-sm text-muted-foreground", {
+        "text-secondary-foreground": isActive, // Apply active styling
+      })}
+    >
+      {children}
+    </Link>
   );
 }

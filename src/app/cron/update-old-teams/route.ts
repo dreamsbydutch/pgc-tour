@@ -30,19 +30,19 @@ export async function GET(request: Request) {
   //------------------------------------------------------------------------------------------
 
   // const tournaments = await api.tournament.getBySeason({
-  //   seasonId: "cm4w910w1000zdx9kq315wwv8",
+  //   seasonId: "cm4w910jz000gdx9k30u3ihpb",
   // });
-  // tournaments[11] && updateTournamentStats({ tourn: tournaments[11] });
+  // tournaments[3] && updateTournamentStats({ tourn: tournaments[3] });
   // tournaments.forEach(async (tourn) => updateTournamentStats({ tourn }));
 
   //------------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------------
 
   const members = await api.member.getAll();
-  const tourCards = await api.tourCard.getBySeasonId({
+  const tourCards = await api.tourCard.getBySeason({
     seasonId: "cm4w910w1000zdx9kq315wwv8",
   });
-  const allTeams = await api.team.getBySeasonId({
+  const allTeams = await api.team.getBySeason({
     seasonId: "cm4w910w1000zdx9kq315wwv8",
   });
   if (!tourCards || !allTeams || !members) {
@@ -73,55 +73,55 @@ type inputTeams = {
   golferTen: string;
 };
 
-async function updateTourCards({
-  tourCards,
-  allTeams,
-}: {
-  tourCards: TourCard[];
-  allTeams: TeamData[];
-}) {
-  const updatedTourCards = tourCards.map(async (card) => {
-    const teams = allTeams.filter(
-      (team) =>
-        team.tourCardId === card.id &&
-        team.tournament.tierId !== "cm4w91ot2006pdx9kh75ycrk0",
-    );
-    const earnings = teams.reduce((sum, team) => sum + (team.earnings ?? 0), 0);
-    const points = teams.reduce((sum, team) => sum + (team.points ?? 0), 0);
-    const win = teams.filter(
-      (team) =>
-        (team.position && team.position[0] === "T"
-          ? +(team.position?.slice(1) ?? 100)
-          : +(team.position ?? 100)) === 1,
-    ).length;
-    const appearances = teams.length;
-    const topTen = teams.filter(
-      (team) =>
-        (team.position && team.position[0] === "T"
-          ? +(team.position?.slice(1) ?? 100)
-          : +(team.position ?? 100)) <= 10,
-    ).length;
-    const madeCut = teams.filter((team) => team.position !== "CUT").length;
-    const ties = tourCards.filter((obj) => obj.points === card.points).length;
-    const pos =
-      tourCards.filter(
-        (obj) => (obj.points ?? 0) > points && obj.tourId === card.tourId,
-      ).length + 1;
-    const position = (ties > 1 ? "T" : "") + pos;
-    await api.tourCard.update({
-      id: card.id,
-      appearances,
-      earnings,
-      points,
-      win,
-      topTen,
-      position,
-      madeCut,
-    });
-    return card;
-  });
-  return;
-}
+// async function updateTourCards({
+//   tourCards,
+//   allTeams,
+// }: {
+//   tourCards: TourCard[];
+//   allTeams: TeamData[];
+// }) {
+//   const updatedTourCards = tourCards.map(async (card) => {
+//     const teams = allTeams.filter(
+//       (team) =>
+//         team.tourCardId === card.id &&
+//         team.tournament.tierId !== "cm4w91ot2006pdx9kh75ycrk0",
+//     );
+//     const earnings = teams.reduce((sum, team) => sum + (team.earnings ?? 0), 0);
+//     const points = teams.reduce((sum, team) => sum + (team.points ?? 0), 0);
+//     const win = teams.filter(
+//       (team) =>
+//         (team.position && team.position[0] === "T"
+//           ? +(team.position?.slice(1) ?? 100)
+//           : +(team.position ?? 100)) === 1,
+//     ).length;
+//     const appearances = teams.length;
+//     const topTen = teams.filter(
+//       (team) =>
+//         (team.position && team.position[0] === "T"
+//           ? +(team.position?.slice(1) ?? 100)
+//           : +(team.position ?? 100)) <= 10,
+//     ).length;
+//     const madeCut = teams.filter((team) => team.position !== "CUT").length;
+//     const ties = tourCards.filter((obj) => obj.points === card.points).length;
+//     const pos =
+//       tourCards.filter(
+//         (obj) => (obj.points ?? 0) > points && obj.tourId === card.tourId,
+//       ).length + 1;
+//     const position = (ties > 1 ? "T" : "") + pos;
+//     await api.tourCard.update({
+//       id: card.id,
+//       appearances,
+//       earnings,
+//       points,
+//       win,
+//       topTen,
+//       position,
+//       madeCut,
+//     });
+//     return card;
+//   });
+//   return;
+// }
 
 async function createTeam({
   tournaments,
@@ -408,6 +408,7 @@ async function updateTeamPositions(
       }
       team.points = Math.round(team.points ?? 0);
       team.earnings = Math.round((team.earnings ?? 0) * 100) / 100;
+      team.score = team.score ?? 0;
 
       await api.team.update(team);
       return team;

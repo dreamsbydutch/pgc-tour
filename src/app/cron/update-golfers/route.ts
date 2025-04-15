@@ -33,7 +33,7 @@ export async function GET(request: Request) {
   )) as DatagolfRankingInput;
 
   // Get the current tournament; if none, redirect.
-  const tournament = await api.tournament.getCurrent();
+  const tournament = (await api.tournament.getInfo()).current
   if (!tournament) return NextResponse.redirect(`${origin}/`);
 
   // Retrieve golfers and teams associated with the tournament.

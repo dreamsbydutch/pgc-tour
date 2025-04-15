@@ -6,7 +6,7 @@ import LoadingSpinner from "../../_components/LoadingSpinner";
 import { api } from "@/src/trpc/server";
 import LeaderboardPage from "../_views/LeaderboardPage";
 import PreTournamentPage from "../_components/PreTournament";
-// import TournamentCountdown from "../_components/TournamentCountdown";
+import { Member } from "@prisma/client";
 
 export default async function Page({
   params,
@@ -15,29 +15,21 @@ export default async function Page({
   params: { tournamentId: string };
   searchParams: Record<string, string>;
 }) {
-  const member = await api.member.getSelf();
+  const member = (await api.member.getSelf()) as Member | undefined;
   const tournament = await api.tournament.getById({
     tournamentId: params.tournamentId,
+  });
+  const tourCard = await api.tourCard.getByUserSeason({
+    userId: member?.id,
+    seasonId: tournament?.seasonId,
   });
   const tours = await api.tour.getBySeason({
     seasonID: tournament?.seasonId,
   });
-  const tourCard = await api.tourCard.getByUserSeason({
-    seasonId: tournament?.seasonId,
-    userId: member?.id,
+  const teams = await api.team.getByTournament({
+    tournamentId: tournament?.id || "",
   });
-  const pgaTour = {
-    id: "1",
-    shortForm: "PGA",
-    name: "PGA Tour",
-    logoUrl: "",
-    seasonId: tournament?.seasonId ?? "",
-    buyIn: 0,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    tourCards: [],
-  };
-  if (!tournament || !tours) return <LoadingSpinner />;
+  if (!tournament || !tourCard || !member) return <LoadingSpinner />;
 
   return (
     <div className="flex w-full flex-col">
@@ -45,15 +37,16 @@ export default async function Page({
         <LeaderboardHeader focusTourney={tournament} />
       </Suspense>
       {tournament.startDate > new Date() ? (
-        <PreTournamentPage {...{ tournament, tourCard }} />
+        <PreTournamentPage {...{ tournament, tourCard, teams }} />
       ) : (
         <Suspense fallback={<LeaderboardListSkeleton />}>
           <LeaderboardPage
             {...{
               tournament,
-              tours: [...tours, pgaTour],
-              tourCard: tourCard ?? undefined,
+              tourCard,
               inputTour: searchParams.tour ?? "",
+              tours,
+              teams,
             }}
           />
         </Suspense>

@@ -1,54 +1,36 @@
 import { createClient } from "../lib/supabase/server";
 import TournamentCountdown from "./tournament/_components/TournamentCountdown";
-import { formatName } from "../lib/utils";
 import Link from "next/link";
 import SignInPage from "./signin/page";
-import HomePageLeaderboard from "./tournament/_components/HomePageLeaderboard";
+import HomePageLeaderboard from "./tournament/_views/HomePageLeaderboard";
 import { api } from "../trpc/server";
-import HomePageStandings from "./standings/_components/HomePageStandings";
+import HomePageStandings from "./standings/_views/HomePageStandings";
 import ChampionsPopup from "./tournament/_components/ChampionsPopup";
 // import RegisterServiceWorker from "./_components/RegisterServiceWorker";
 import { TourCardForm } from "./_components/TourCardForm";
+import { createNewMember } from "../server/api/actions/member";
+import { groupChatLink } from "../lib/utils";
 
 export default async function Home() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  const member = data.user && (await api.member.getSelf());
-  if (!member && data.user) {
-    const fullName = formatName(
-      data.user?.user_metadata.name as string,
-      "full",
-    );
-    const splitName = fullName.split(" ");
-    await api.member.create({
-      id: data.user.id,
-      email: data.user.email ?? (data.user.user_metadata.email as string),
-      fullname: fullName,
-      firstname: splitName[0] ?? "",
-      lastname: splitName.slice(1).toString(),
-    });
-  }
+  const member = await checkIfUserExists();
   if (!member) return <SignInPage />;
 
-  const season = await api.season.getByYear({ year: new Date().getFullYear() });
-  const tours = await api.tour.getBySeason({ seasonID: season?.id });
-  const date = new Date();
-  const pastTourney = await api.tournament.getRecent();
-  const currentTourney = await api.tournament.getCurrent();
-  const nextTourney = await api.tournament.getNext();
-  const tourCard = await api.tourCard.getOwnBySeason({ seasonId: season?.id });
+  const tours = await api.tour.getActive();
+  const tournaments = await api.tournament.getInfo();
+  const tourCards = await api.tourCard.getBySeason({
+    seasonId: tours[0]?.seasonId ?? "",
+  });
+  const tourCard = tourCards.find((card) => card.memberId === member.id);
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      {!currentTourney &&
-      pastTourney &&
-      pastTourney.endDate &&
-      new Date(pastTourney.endDate).getTime() >
-        date.getTime() - 4 * 24 * 60 * 60 * 1000 ? (
-        <ChampionsPopup />
+      {tournaments.past &&
+      new Date(tournaments.past.endDate).getTime() >
+        new Date().getTime() - 44 * 24 * 60 * 60 * 1000 ? (
+        <ChampionsPopup {...{ tournament: tournaments.past, tours }} />
       ) : (
         <></>
       )}
@@ -56,19 +38,20 @@ export default async function Home() {
         An elite fantasy golf experience
       </p> */}
       {!tourCard && <TourCardForm {...{ tours }} />}
-      {!currentTourney && nextTourney && (
-        <Link href={`/tournament/${nextTourney.id}`}>
-          <TournamentCountdown tourney={nextTourney} />
+      {!tournaments.current && tournaments.next && (
+        <Link href={`/tournament/${tournaments.next.id}`}>
+          <TournamentCountdown tourney={tournaments.next} />
         </Link>
       )}
-      {currentTourney && (
+      {tournaments.current && (
         <HomePageLeaderboard
-          {...{ tourney: currentTourney, season: season ?? undefined }}
+          {...{
+            tourney: tournaments.current,
+            seasonId: tours[0]?.seasonId ?? undefined,
+          }}
         />
       )}
-      <HomePageStandings
-        {...{ tourney: currentTourney, season: season ?? undefined }}
-      />
+      <HomePageStandings {...{ tours, member }} />
       <div className="mt-12 flex flex-col justify-start">
         {/* <Link
           href={groupChatLink}
@@ -134,3 +117,13 @@ export default async function Home() {
 //     </>
 //   );
 // };
+
+async function checkIfUserExists() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  const member = data.user && (await api.member.getSelf());
+  if (!member && data.user) {
+    createNewMember(data.user);
+  }
+  return member;
+}

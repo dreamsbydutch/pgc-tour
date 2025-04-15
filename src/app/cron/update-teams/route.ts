@@ -7,17 +7,13 @@ import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const next = searchParams.get("next") ?? "/"
+  const next = searchParams.get("next") ?? "/";
 
-  const tournament = await api.tournament.getCurrent();
+  const tournament = (await api.tournament.getInfo()).current;
   if (!tournament) return NextResponse.redirect(`${origin}/`);
 
-  const golfers = await api.golfer.getByTournament({
-    tournamentId: tournament.id,
-  });
-
   // Sort golfers by today, then thru, then score, then group
-  golfers.sort(
+  tournament.golfers.sort(
     (a, b) =>
       (a.today ?? 0) - (b.today ?? 0) ||
       (a.thru ?? 0) - (b.thru ?? 0) ||
@@ -28,9 +24,7 @@ export async function GET(request: Request) {
   const teams: TeamData[] = await api.team.getByTournament({
     tournamentId: tournament.id,
   });
-  const updatedTeams = teams.map((team) =>
-    updateTeamData(team, golfers, tournament),
-  );
+  const updatedTeams = teams.map((team) => updateTeamData(team, tournament));
 
   // updatedTeams = simulateTournament(
   //   golfers,
@@ -38,7 +32,7 @@ export async function GET(request: Request) {
   //   tournament.course.par,
   //   10000,
   // );
-  await updateTeamPositions(updatedTeams, tournament, golfers);
+  await updateTeamPositions(updatedTeams, tournament);
 
   return NextResponse.redirect(`${origin}${next}`);
 }
@@ -53,16 +47,14 @@ export async function GET(request: Request) {
 /**
  * Updates a single team's data by assigning tee times and calculating stats.
  */
-function updateTeamData(
-  team: TeamData,
-  golfers: Golfer[],
-  tournament: TournamentData,
-): TeamData {
+function updateTeamData(team: TeamData, tournament: TournamentData): TeamData {
   const updatedTeam: TeamData = {
     ...team,
     round: tournament.currentRound,
   };
-  const teamGolfers = golfers.filter((g) => team.golferIds.includes(g.apiId));
+  const teamGolfers = tournament.golfers.filter((g) =>
+    team.golferIds.includes(g.apiId),
+  );
 
   // Assign tee times for each round if the current value is not in the future.
   updatedTeam.roundOneTeeTime = assignTeeTime(
@@ -378,11 +370,10 @@ function roundValue(val: number | null | undefined): number | null {
 async function updateTeamPositions(
   updatedTeams: TeamData[],
   tournament: TournamentData,
-  golfers: Golfer[],
 ): Promise<TeamData[]> {
   return Promise.all(
     updatedTeams.map(async (team) => {
-      const teamGolfers = golfers.filter(
+      const teamGolfers = tournament.golfers.filter(
         (g) =>
           team.golferIds.includes(g.apiId) &&
           (g.round ?? 0) >= (tournament.currentRound ?? 0),
@@ -404,10 +395,12 @@ async function updateTeamPositions(
       );
       // Determine current position
       const tiedCount = sameTourTeams.filter(
-        (obj) => (obj.score ?? 100) === (team.score ?? 100) && obj.position !== "CUT",
+        (obj) =>
+          (obj.score ?? 100) === (team.score ?? 100) && obj.position !== "CUT",
       ).length;
       const lowerScoreCount = sameTourTeams.filter(
-        (obj) => (obj.score ?? 100) < (team.score ?? 100) && obj.position !== "CUT",
+        (obj) =>
+          (obj.score ?? 100) < (team.score ?? 100) && obj.position !== "CUT",
       ).length;
       team.position = `${tiedCount > 1 ? "T" : ""}${lowerScoreCount + 1}`;
 
@@ -415,12 +408,12 @@ async function updateTeamPositions(
       const tiedPastCount = sameTourTeams.filter(
         (obj) =>
           (obj.score ?? 100) - (obj.today ?? 100) ===
-          (team.score ?? 100) - (team.today ?? 100) && obj.position !== "CUT",
+            (team.score ?? 100) - (team.today ?? 100) && obj.position !== "CUT",
       ).length;
       const lowerPastCount = sameTourTeams.filter(
         (obj) =>
           (obj.score ?? 100) - (obj.today ?? 100) <
-          (team.score ?? 100) - (team.today ?? 100) && obj.position !== "CUT",
+            (team.score ?? 100) - (team.today ?? 100) && obj.position !== "CUT",
       ).length;
       team.pastPosition = `${tiedPastCount > 1 ? "T" : ""}${lowerPastCount + 1}`;
 

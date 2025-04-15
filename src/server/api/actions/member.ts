@@ -3,6 +3,8 @@
 import { api } from "@/src/trpc/server";
 import { updateTourCardNames } from "./tour_card";
 import type { Member } from "@prisma/client";
+import { User } from "@supabase/supabase-js";
+import { formatName } from "@/src/lib/utils";
 
 export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {
   const season = await api.season.getByYear({ year: 2025 });
@@ -10,7 +12,9 @@ export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {
     userId: value.id,
     seasonId: season?.id,
   });
-  const tour = await api.tour.getById({ tourID: tourCard?.tourId });
+  const tour = tourCard?.tourId
+    ? await api.tour.getById({ tourID: tourCard.tourId })
+    : null;
   const displayName =
     (value.firstname && value.firstname[0]) + ". " + value.lastname;
   value.fullname = value.firstname + " " + value.lastname;
@@ -55,4 +59,16 @@ export async function removeFriendsFromMember({
   const friends = member.friends.filter((id) => id !== friendId);
   await api.member.update({ id: member.id, friends: friends });
   return;
+}
+
+export async function createNewMember(user: User) {
+  const fullName = formatName(user?.user_metadata.name as string, "full");
+  const splitName = fullName.split(" ");
+  await api.member.create({
+    id: user.id,
+    email: user.email ?? (user.user_metadata.email as string),
+    fullname: fullName,
+    firstname: splitName[0] ?? "",
+    lastname: splitName.slice(1).toString(),
+  });
 }
