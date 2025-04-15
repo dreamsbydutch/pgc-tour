@@ -25,10 +25,10 @@ export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {
     firstname: value.firstname,
     lastname: value.lastname,
   });
-  tourCard =
+  const newTourCard =
     tourCard && (await api.tourCard.update({ id: tourCard.id, displayName }));
-  if (tour && tourCard)
-    await updateTourCardNames({ tour: tour, tourCard: tourCard });
+  if (tour && newTourCard)
+    await updateTourCardNames({ tour: tour, tourCard: newTourCard });
   return;
 }
 
