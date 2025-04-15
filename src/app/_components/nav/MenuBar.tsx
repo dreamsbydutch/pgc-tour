@@ -28,10 +28,16 @@ import { usePathname } from "next/navigation";
 export default function MenuBar({ className }: { className?: string }) {
   const { user, loading } = useUser(); // Fetch user data and loading state
   const member = user?.user_metadata; // Extract member data from user metadata
-  //eslint-disable-next-line @typescript-eslint/no-unsafe-call @typescript-eslint/no-unsafe-assignment @typescript-eslint/no-unsafe-member-access
-  const firstName: string = member?.full_name?.split(" ")[0]; // Extract first name from full name
-  //eslint-disable-next-line @typescript-eslint/no-unsafe-call @typescript-eslint/no-unsafe-assignment @typescript-eslint/no-unsafe-member-access
-  const lastName: string = member?.full_name?.split(" ").slice(-1)[0]; // Extract last name from full name
+  //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const fullName: string | undefined = member?.full_name; // Get the full name of the member
+  //eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const firstName: string | undefined = fullName?.split(" ")[0]; // Extract first name from full name
+  //eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const lastName: string | undefined = fullName?.split(" ").slice(-1)[0]; // Extract last name from full name
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false); // State for Google sign-in loading
   const [isSigningOut, setIsSigningOut] = useState(false); // State for sign-out process
 
