@@ -85,7 +85,7 @@ export default function MenuBar({ className }: { className?: string }) {
             <div className="flex items-center justify-center gap-2">
               <UserAccountNav {...{ user, size: "small", setIsSigningOut }} />
               <span className="font-barlow text-2xl font-semibold">
-                {firstName[0] + ". " + lastName || "User"}
+                {firstName?.[0] + ". " + lastName || "User"}
               </span>
             </div>
           </NavItem>
