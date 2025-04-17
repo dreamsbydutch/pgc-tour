@@ -327,29 +327,42 @@ export function LeaderboardListing({
                 : formatMoney(+(team?.earnings ?? 0))}
             </div>
           </>
-        ) : !team?.thru ||
-          team?.thru === 0 ||
-          !golfer?.thru ||
-          golfer?.thru === 0 ? (
+        ) : type === "PGA" ?
+          ((!golfer?.thru ||
+          golfer?.thru === 0) ? (
           <div className="col-span-2 place-self-center font-varela text-xs">
-            {tournament.course && golfer && type === "PGA"
+            {tournament.course && golfer
               ? getGolferTeeTime(tournament.course, golfer)
-              : tournament.course && team && type === "PGC"
-                ? getTeamTeeTime(tournament.course, team)
                 : null}
-            {type === "PGA" && golfer?.endHole === 9 ? "*" : ""}
+            {golfer?.endHole === 9 ? "*" : ""}
           </div>
         ) : (
           <>
             <div className="col-span-1 place-self-center font-varela text-sm">
-              {formatScore(team?.today)}
+              {golfer?.today ? formatScore(golfer?.today) : "-"}
+            </div>
+            <div className="col-span-1 place-self-center whitespace-nowrap font-varela text-sm">
+              {golfer?.thru === 18 ? "F" : golfer?.thru}
+              {golfer?.endHole === 9 ? "*" : ""}
+            </div>
+          </>
+        )) : type === "PGC" ? (!team?.thru ||
+          team?.thru === 0) ? (
+          <div className="col-span-2 place-self-center font-varela text-xs">
+            {tournament.course && team
+                ? getTeamTeeTime(tournament.course, team)
+                : null}
+          </div>
+        ) : (
+          <>
+            <div className="col-span-1 place-self-center font-varela text-sm">
+              {team?.today ? formatScore(team.today) : "-"}
             </div>
             <div className="col-span-1 place-self-center whitespace-nowrap font-varela text-sm">
               {team?.thru === 18 ? "F" : team?.thru}
-              {type === "PGA" && golfer?.endHole === 9 ? "*" : ""}
             </div>
           </>
-        )}
+        ):null}
         <div
           className={cn(
             "col-span-1 hidden place-self-center font-varela text-sm sm:flex",
