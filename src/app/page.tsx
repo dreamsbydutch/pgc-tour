@@ -29,7 +29,7 @@ export default async function Home() {
       </h1>
       {tournaments.past &&
       new Date(tournaments.past.endDate).getTime() >
-        new Date().getTime() - 44 * 24 * 60 * 60 * 1000 ? (
+        new Date().getTime() - 3 * 24 * 60 * 60 * 1000 ? (
         <ChampionsPopup {...{ tournament: tournaments.past, tours }} />
       ) : (
         <></>
