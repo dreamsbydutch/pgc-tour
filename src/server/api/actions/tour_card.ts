@@ -4,14 +4,13 @@ import { db } from "../../db";
 import { redirect } from "next/navigation";
 import { createClient } from "@/src/lib/supabase/server";
 import { api } from "@/src/trpc/server";
-import type { TourData } from "@/src/types/prisma_include";
-import type { Member, TourCard } from "@prisma/client";
+import type { Member, Tour, TourCard } from "@prisma/client";
 
 export async function createTourCard({
   tour,
   seasonId,
 }: {
-  tour: TourData;
+  tour: Tour;
   seasonId: string;
 }) {
   const supabase = await createClient();
@@ -20,22 +19,6 @@ export async function createTourCard({
     memberId: data.user?.id,
   });
   if (!user || !data.user || !data.user.email) return;
-  const discount = discountArry.find(
-    (obj) =>
-      obj.email === user.email ||
-      obj.name === (user.firstname && user.firstname[0]) + ". " + user.lastname,
-  );
-  if (discount) {
-    await db.transactions.create({
-    data: {
-      amount: discount?.discount ?? 0,
-      description: "Season 4 earnings discount for " + user.fullname,
-      seasonId: seasonId,
-      transactionType: "Payment",
-      userId: user.id,
-    },
-  });
-}
   await db.transactions.create({
     data: {
       amount: tour.buyIn ?? 0,
@@ -48,7 +31,7 @@ export async function createTourCard({
   await db.member.update({
     where: { id: user.id },
     data: {
-      account: user.account + (tour.buyIn ?? 0) - (discount?.discount ?? 0),
+      account: user.account + (tour.buyIn ?? 0),
     },
   });
   const tourCard = await db.tourCard.create({
@@ -100,10 +83,11 @@ export async function updateTourCardNames({
   tour,
   tourCard,
 }: {
-  tour: TourData;
+  tour: Tour;
   tourCard: TourCard;
 }) {
-  const otherMatches = tour.tourCards.filter(
+  const tourCards = await api.tourCard.getByTourId({ tourId: tour.id });
+  const otherMatches = tourCards?.filter(
     (obj) =>
       obj.id !== tourCard.id &&
       obj.displayName.startsWith(tourCard.displayName[0] ?? "") &&
@@ -213,16 +197,3 @@ export async function updateTourCardNames({
   }
   return;
 }
-
-const discountArry = [
-  { email: "b.m.wilkinson4@gmail.com", name: "B. Wilkinson", discount: 100 },
-  { email: "samjwolman@gmail.com", name: "S. Wolman", discount: 40 },
-  {
-    email: "robert.wolfer@taylormadegolf.com",
-    name: "R. Wolfer",
-    discount: 30,
-  },
-  { email: "mack.graham9@hotmail.com", name: "M. Graham", discount: 30 },
-  { email: "mohamadelbinni@gmail.com", name: "M. Binni", discount: 25 },
-  { email: "eric.m.hubert@gmail.com", name: "E. Hubert", discount: 20 },
-];

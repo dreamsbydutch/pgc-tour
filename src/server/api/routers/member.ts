@@ -85,4 +85,40 @@ export const memberRouter = createTRPCRouter({
       });
       return updatedUser;
     }),
+  addFriend: publicProcedure
+    .input(
+      z.object({
+        memberId: z.string(),
+        friendId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const updatedUser = await ctx.db.member.update({
+        where: { id: input.memberId },
+        data: {
+          friends: {
+            push: input.friendId,
+          },
+        },
+      });
+      return updatedUser;
+    }),
+  removeFriend: publicProcedure
+    .input(
+      z.object({
+        memberId: z.string(),
+        friendsList: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const updatedUser = await ctx.db.member.update({
+        where: { id: input.memberId },
+        data: {
+          friends: {
+            set: input.friendsList
+          },
+        },
+      });
+      return updatedUser;
+    }),
 });

@@ -7,6 +7,7 @@ import { TRPCReactProvider } from "@/trpcLocal/react";
 import MenuBar from "@/components/nav/MenuBar";
 import { cn } from "../lib/utils";
 import Script from "next/script";
+import { db } from "../server/db";
 
 const varela = Varela({
   weight: ["400"],
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -45,10 +46,6 @@ export default function RootLayout({
         />
         <meta name="mobile-web-app-capable" content="yes"></meta>
         <meta name="apple-mobile-web-app-capable" content="yes"></meta>
-        {/* <meta
-          name="apple-mobile-web-app-status-bar-style"
-          content="black"
-        ></meta> */}
         <link rel="apple-touch-icon" href="/favicon.ico"></link>
         <link rel="apple-touch-startup-image" href="/favicon.ico"></link>
         <meta name="mobile-web-app-title" content="PGC Clubhouse"></meta>

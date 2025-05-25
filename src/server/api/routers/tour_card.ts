@@ -2,11 +2,10 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { createClient } from "@/src/lib/supabase/server";
-import { tourCardDataInclude } from "@/src/types/prisma_include";
 
 export const tourCardRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.tourCard.findMany();
+    return ctx.db.tourCard.findMany({ include: { member: true } });
   }),
 
   getByDisplayName: publicProcedure
@@ -22,7 +21,6 @@ export const tourCardRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.tourCard.findUnique({
         where: { id: input.tourCardId },
-        include: tourCardDataInclude,
       });
     }),
 
@@ -32,7 +30,6 @@ export const tourCardRouter = createTRPCRouter({
       if (!input.userId) return;
       return await ctx.db.tourCard.findMany({
         where: { memberId: input.userId },
-        include: tourCardDataInclude,
       });
     }),
 
@@ -41,7 +38,6 @@ export const tourCardRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return await ctx.db.tourCard.findMany({
         where: { seasonId: input.seasonId },
-        include: tourCardDataInclude,
       });
     }),
 
@@ -69,7 +65,6 @@ export const tourCardRouter = createTRPCRouter({
           seasonId: input.seasonId ?? season?.id,
           memberId: user.data.user?.id,
         },
-        include: tourCardDataInclude,
       });
     }),
   getAllCurrent: publicProcedure.query(async ({ ctx }) => {
@@ -78,7 +73,6 @@ export const tourCardRouter = createTRPCRouter({
       where: {
         seasonId: season?.id,
       },
-      include: tourCardDataInclude,
     });
   }),
 
@@ -92,7 +86,6 @@ export const tourCardRouter = createTRPCRouter({
         seasonId: season?.id,
         memberId: user.data.user?.id,
       },
-      include: tourCardDataInclude,
     });
   }),
 
@@ -111,7 +104,6 @@ export const tourCardRouter = createTRPCRouter({
           seasonId: input.seasonId ?? season?.id,
           memberId: input.userId,
         },
-        include: tourCardDataInclude,
       });
     }),
 
@@ -144,12 +136,13 @@ export const tourCardRouter = createTRPCRouter({
         id: z.string().min(1),
         displayName: z.string().optional(),
         earnings: z.number().optional(),
-        points: z.number().optional().nullish(),
-        position: z.string().optional().nullish(),
+        points: z.number().optional(),
+        position: z.string().optional().nullable(),
         appearances: z.number().optional(),
         topTen: z.number().optional(),
         win: z.number().optional(),
         madeCut: z.number().optional(),
+        playoff: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -164,6 +157,7 @@ export const tourCardRouter = createTRPCRouter({
           topTen: input.topTen,
           win: input.win,
           madeCut: input.madeCut,
+          playoff: input.playoff,
         },
       });
     }),

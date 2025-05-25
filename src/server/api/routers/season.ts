@@ -7,6 +7,11 @@ export const seasonRouter = createTRPCRouter({
     return ctx.db.season.findMany({});
   }),
 
+  getById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.season.findUnique({ where: { id: input.id } });
+    }),
   getByYear: publicProcedure
     .input(z.object({ year: z.number().min(2021) }))
     .query(async ({ ctx, input }) => {
@@ -14,8 +19,9 @@ export const seasonRouter = createTRPCRouter({
     }),
 
   getCurrent: publicProcedure.query(async ({ ctx }) => {
+    const date = new Date();
     return await ctx.db.season.findUnique({
-      where: { year: 2025 },
+      where: { year: date.getFullYear() },
     });
   }),
 

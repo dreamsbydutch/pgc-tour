@@ -1,25 +1,22 @@
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { teamDataInclude } from "@/src/types/prisma_include";
 
 export const teamRouter = createTRPCRouter({
   getAll: publicProcedure.query(
     async ({ ctx }) =>
       await ctx.db.team.findMany({
-        include: teamDataInclude,
         orderBy: { score: "asc" },
       }),
   ),
   getByTourCard: publicProcedure
-    .input(z.object({ tourCardId: z.string().optional() }))
+    .input(z.object({ tourCardId: z.string() }))
     .query(
       async ({ ctx, input }) =>
         await ctx.db.team.findMany({
           where: {
             tourCardId: input.tourCardId,
           },
-          orderBy: { score: "asc" },
         }),
     ),
   getBySeason: publicProcedure
@@ -32,19 +29,20 @@ export const teamRouter = createTRPCRouter({
               seasonId: input.seasonId,
             },
           },
-          include: teamDataInclude,
           orderBy: { score: "asc" },
         }),
     ),
   getByTournament: publicProcedure
-    .input(z.object({ tournamentId: z.string().optional() }))
+    .input(z.object({ tournamentId: z.string() }))
     .query(
       async ({ ctx, input }) =>
         await ctx.db.team.findMany({
           where: {
             tournamentId: input.tournamentId,
           },
-          include: teamDataInclude,
+          include: {
+            tourCard: true,
+          },
           orderBy: { score: "asc" },
         }),
     ),
@@ -57,7 +55,6 @@ export const teamRouter = createTRPCRouter({
             tourCardId: input.tourCardId,
             tournamentId: input.tournamentId,
           },
-          include: teamDataInclude,
           orderBy: { score: "asc" },
         }),
     ),
@@ -75,7 +72,6 @@ export const teamRouter = createTRPCRouter({
           tourCardId: input.tourCardId,
           tournamentId: input.tournamentId,
         },
-        include: teamDataInclude,
         orderBy: { score: "asc" },
       });
       if (existingTeam) {

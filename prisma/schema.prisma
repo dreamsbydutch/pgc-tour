@@ -163,11 +163,12 @@ model TourCard {
   id          String @id @default(cuid())
   displayName String
   earnings    Float  @default(0)
-  points      Float? @default(0)
+  points      Float  @default(0)
   win         Float  @default(0)
   topTen      Float  @default(0)
   madeCut     Float  @default(0)
   appearances Int    @default(0)
+  playoff     Int    @default(0)
 
   position String?
   memberId String

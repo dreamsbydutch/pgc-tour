@@ -1,12 +1,16 @@
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { tournamentDataInclude } from "@/src/types/prisma_include";
 
 export const tournamentRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.tournament.findMany({
       orderBy: { startDate: "asc" },
+      include: {
+        teams: true,
+        golfers: true,
+        course: true,
+      },
     });
   }),
   getBySeason: publicProcedure
@@ -14,7 +18,6 @@ export const tournamentRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.tournament.findMany({
         where: { seasonId: input.seasonId },
-        include: tournamentDataInclude,
         orderBy: { startDate: "asc" },
       });
     }),
@@ -23,7 +26,6 @@ export const tournamentRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.tournament.findUnique({
         where: { id: input.tournamentId },
-        include: tournamentDataInclude,
       });
     }),
   getInfo: publicProcedure.query(async ({ ctx }) => {
@@ -32,17 +34,14 @@ export const tournamentRouter = createTRPCRouter({
       current: await ctx.db.tournament.findFirst({
         where: { startDate: { lte: today }, endDate: { gte: today } },
         orderBy: { startDate: "desc" },
-        include: tournamentDataInclude,
       }),
       past: await ctx.db.tournament.findFirst({
         where: { endDate: { lte: today } },
         orderBy: { startDate: "desc" },
-        include: tournamentDataInclude,
       }),
       next: await ctx.db.tournament.findFirst({
         where: { startDate: { gte: today } },
         orderBy: { startDate: "asc" },
-        include: tournamentDataInclude,
       }),
     };
   }),
@@ -50,9 +49,32 @@ export const tournamentRouter = createTRPCRouter({
     const today = new Date();
     return ctx.db.tournament.findFirst({
       where: { startDate: { lte: today }, endDate: { gte: today } },
-      include: tournamentDataInclude,
     });
   }),
+  getLeaderboard: publicProcedure
+    .input(z.object({ tournamentId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { tournamentId } = input;
+
+      try {
+        // fetch teams by tournamentId
+        const teams = await ctx.db.team.findMany({
+          where: { tournamentId },
+          include: {
+            tourCard: true,
+          },
+        });
+        // fetch golfers by tournamentId
+        const golfers = await ctx.db.golfer.findMany({
+          where: { tournamentId },
+        });
+
+        return { teams, golfers };
+      } catch (error) {
+        console.error("Error in tRPC leaderboard fetch:", error);
+        throw error;
+      }
+    }),
 
   update: publicProcedure
     .input(

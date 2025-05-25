@@ -2,8 +2,7 @@
 
 import { Button } from "./ui/button";
 import Image from "next/image";
-import { type TourCard } from "@prisma/client";
-import { type TourData } from "@/src/types/prisma_include";
+import { Tour, type TourCard } from "@prisma/client";
 import { deleteTourCard } from "@/src/server/api/actions/tour_card";
 import { useState } from "react";
 import {
@@ -26,7 +25,7 @@ export function TourCardOutput({
   memberId,
 }: {
   name: string | undefined;
-  tour: TourData | undefined;
+  tour: Tour | undefined;
   pictureUrl: string | undefined;
   tourCard: TourCard;
   memberId: string;

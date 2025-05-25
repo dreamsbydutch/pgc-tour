@@ -3,9 +3,6 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 
 export const golferRouter = createTRPCRouter({
-  getAll: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.golfer.findMany({});
-  }),
   getById: publicProcedure
     .input(z.object({ golferID: z.number() }))
     .query(async ({ ctx, input }) => {

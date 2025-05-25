@@ -1,69 +1,62 @@
-import { createClient } from "../lib/supabase/server";
-import TournamentCountdown from "./tournament/_components/TournamentCountdown";
+"use client";
+
 import Link from "next/link";
-import SignInPage from "./signin/page";
-import HomePageLeaderboard from "./tournament/_views/HomePageLeaderboard";
-import { api } from "../trpc/server";
-import HomePageStandings from "./standings/_views/HomePageStandings";
-import ChampionsPopup from "./tournament/_components/ChampionsPopup";
-// import RegisterServiceWorker from "./_components/RegisterServiceWorker";
+import { useInitStore } from "@/src/lib/store/useInitStore";
+import ChampionsPopup from "@/src/app/(main)/tournament/_components/ChampionsPopup";
+import TournamentCountdown from "@/src/app/(main)/tournament/_components/TournamentCountdown";
 import { TourCardForm } from "./_components/TourCardForm";
-import { createNewMember } from "../server/api/actions/member";
-// import { groupChatLink } from "../lib/utils";
+import HomePageLeaderboard from "./(main)/tournament/_views/HomePageLeaderboard";
+import SignInPage from "./(auth)/signin/page";
+import HomePageStandings from "./(main)/standings/_views/HomePageStandings";
+import { useMainStore } from "../lib/store/store";
+import Image from "next/image";
+import { CurrentSchedule } from "./(main)/rulebook/page";
 
-export default async function Home() {
-  const member = await checkIfUserExists();
-  if (!member) return <SignInPage />;
-
-  const tours = await api.tour.getActive();
-  const tournaments = await api.tournament.getInfo();
-  const tourCards = await api.tourCard.getBySeason({
-    seasonId: tours[0]?.seasonId ?? "",
-  });
-  const tourCard = tourCards.find((card) => card.memberId === member.id);
-
+export default function Home() {
+  useInitStore();
+  const tiers = useMainStore((state) => state.currentTiers);
+  if (!tiers)
+    return (
+      <div className="flex h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100">
+        <div className="mx-auto flex animate-pulse items-center justify-center text-center font-varela text-3xl text-slate-600">
+          <Image
+            src={"/logo512.png"}
+            alt="PGC Logo"
+            width={96}
+            height={96}
+            className="mx-2"
+          />
+          <div className="w-44 text-center">Loading Clubhouse Data.....</div>
+        </div>
+      </div>
+    );
   return (
-    <div className="mx-auto flex max-w-4xl flex-col">
+    <div className="mx-auto flex max-w-4xl flex-col gap-2">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      {tournaments.past &&
-      new Date(tournaments.past.endDate).getTime() >
-        new Date().getTime() - 3 * 24 * 60 * 60 * 1000 ? (
-        <ChampionsPopup {...{ tournament: tournaments.past, tours }} />
-      ) : (
-        <></>
-      )}
-      {/* <p className="mx-auto mb-4 font-varela text-base text-slate-500 md:text-lg">
-        An elite fantasy golf experience
-      </p> */}
-      {!tourCard && <TourCardForm {...{ tours }} />}
-      {!tournaments.current && tournaments.next && (
-        <Link href={`/tournament/${tournaments.next.id}`}>
-          <TournamentCountdown tourney={tournaments.next} />
-        </Link>
-      )}
-      {tournaments.current && (
-        <HomePageLeaderboard
-          {...{
-            tourney: tournaments.current,
-            seasonId: tours[0]?.seasonId ?? undefined,
-          }}
-        />
-      )}
-      <HomePageStandings {...{ tours, member }} />
-      <div className="mt-12 flex flex-col justify-start">
-        {/* <Link
-          href={groupChatLink}
-          className="my-3 flex w-fit items-center justify-center rounded-lg bg-green-50 p-2 text-sm font-semibold text-slate-700 shadow-md"
-        >
-          <img
-            src="https://jn9n1jxo7g.ufs.sh/f/94GU8p0EVxqPIIVIUpPh4DfnxtyK0HbYZX9dkj8wcaQAqzrN"
-            alt="WhatsApp"
-            className="mr-2 w-6 rounded-md opacity-80"
+      <SignInPage />
+      <ChampionsPopup />
+      <HomePageLeaderboard />
+      <TournamentCountdown />
+      <HomePageStandings />
+      <TourCardForm />
+      <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
+        <div className="my-3 flex items-center justify-center gap-3">
+          <Image
+            src={"/logo512.png"}
+            alt="PGC Logo"
+            width={512}
+            height={512}
+            className="h-14 w-14"
           />
-          Join the Group Chat
-        </Link> */}
+          <h2 className="pb-1 font-yellowtail text-5xl sm:text-6xl md:text-7xl">
+            Schedule
+          </h2>
+        </div>
+        <CurrentSchedule />
+      </div>
+      <div id="footer" className="mt-12 flex flex-col justify-start">
         <Link href={"/privacy"} className="text-xs text-slate-400">
           Privacy Policy
         </Link>
@@ -118,12 +111,16 @@ export default async function Home() {
 //   );
 // };
 
-async function checkIfUserExists() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  const member = data.user && (await api.member.getSelf());
-  if (!member && data.user) {
-    await createNewMember(data.user);
-  }
-  return member;
-}
+// const groupChat = () => (
+//   <Link
+//     href={groupChatLink}
+//     className="my-3 flex w-fit items-center justify-center rounded-lg bg-green-50 p-2 text-sm font-semibold text-slate-700 shadow-md"
+//   >
+//     <img
+//       src="https://jn9n1jxo7g.ufs.sh/f/94GU8p0EVxqPIIVIUpPh4DfnxtyK0HbYZX9dkj8wcaQAqzrN"
+//       alt="WhatsApp"
+//       className="mr-2 w-6 rounded-md opacity-80"
+//     />
+//     Join the Group Chat
+//   </Link>
+// );

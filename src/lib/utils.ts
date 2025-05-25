@@ -127,7 +127,7 @@ export function getGolferTeeTime(course: Course, golfer: Golfer) {
   }
   const teeTimeKey =
     `round${roundNames[golfer.round - 1]}TeeTime` as keyof Golfer;
-  return formatTime(course, new Date(golfer[teeTimeKey] ?? ""));
+  return formatTime(new Date(golfer[teeTimeKey] ?? ""));
 }
 export function getTeamTeeTime(course: Course, team: Team) {
   const roundNames = ["One", "Two", "Three", "Four", "Four"];
@@ -135,10 +135,9 @@ export function getTeamTeeTime(course: Course, team: Team) {
     throw new Error("Team round is null");
   }
   const teeTimeKey = `round${roundNames[team.round - 1]}TeeTime` as keyof Team;
-  return formatTime(course, new Date((team[teeTimeKey] as string) ?? ""));
+  return formatTime(new Date((team[teeTimeKey] as string) ?? ""));
 }
-export function formatTime(course: Course, time: Date) {
-  console.log(course.par);
+export function formatTime(time: Date) {
   return new Date(time ?? "").toLocaleString("en-US", {
     hour: "numeric",
     minute: "numeric",

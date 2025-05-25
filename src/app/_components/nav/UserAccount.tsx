@@ -10,14 +10,13 @@ import {
 import Image from "next/image";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { handleLogout } from "../../signin/actions";
 import { useState, type Dispatch, type SetStateAction } from "react";
 
-
 import { useRouter } from "next/navigation";
-import { api } from "@/src/trpc/react";
 import MemberUpdateForm from "../MemberUpdateForm";
-import type { User } from "@supabase/supabase-js";
+import { handleLogout } from "../../(auth)/signin/actions";
+import { Member } from "@prisma/client";
+import { useUser } from "@/src/lib/hooks/use-user";
 
 /**
  * UserAccountNav Component
@@ -32,29 +31,31 @@ import type { User } from "@supabase/supabase-js";
  * - setIsSigningOut: Function to set the signing-out state.
  */
 export function UserAccountNav({
-  user,
+  member,
   size,
   setIsSigningOut,
 }: {
-  user: User | null;
+  member: Member | null;
   size?: "small" | "large";
   setIsSigningOut: Dispatch<SetStateAction<boolean>>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
-  const member = api.member.getById.useQuery({ memberId: user?.id }).data;
+  const { user, loading } = useUser();
 
   return (
     <div className="w-fit">
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center">
-          <Image
-            className="grid place-items-center rounded-full bg-border"
-            src={user?.user_metadata.avatar_url as string}
-            alt="User Avatar"
-            width={size === "small" ? 24 : 36}
-            height={size === "small" ? 24 : 36}
-          />
+          {user?.user_metadata.avatar_url && (
+            <Image
+              className="grid place-items-center rounded-full bg-border"
+              src={(user?.user_metadata.avatar_url as string) ?? ""}
+              alt="User Avatar"
+              width={size === "small" ? 24 : 36}
+              height={size === "small" ? 24 : 36}
+            />
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {/* User Information */}

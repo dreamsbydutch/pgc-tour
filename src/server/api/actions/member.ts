@@ -5,6 +5,7 @@ import { updateTourCardNames } from "./tour_card";
 import type { Member } from "@prisma/client";
 import type { User } from "@supabase/supabase-js";
 import { formatName } from "@/src/lib/utils";
+import { createClient } from "@/src/lib/supabase/server";
 
 export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {
   const season = await api.season.getByYear({ year: 2025 });
@@ -71,4 +72,14 @@ export async function createNewMember(user: User) {
     firstname: splitName[0] ?? "",
     lastname: splitName.slice(1).toString(),
   });
+}
+
+export async function checkIfUserExists() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  const member = data.user && (await api.member.getSelf());
+  if (!member && data.user) {
+    await createNewMember(data.user);
+  }
+  return member;
 }

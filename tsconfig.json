@@ -34,7 +34,7 @@
       "@/public/*": ["./public/*"],
       "@/server/*": ["./src/server/*"],
       "@/styles/*": ["./src/styles/*"],
-      "@/types/*": ["./src/types/*"],
+      "@/types/*": ["src/lib/types/*"],
       "@/trpcLocal/*": ["./src/trpc/*"]
     }
   },

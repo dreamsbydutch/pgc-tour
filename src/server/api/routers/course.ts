@@ -4,7 +4,9 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 
 export const courseRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.course.findMany();
+    return ctx.db.course.findMany({
+      orderBy: { name: "asc" },
+    });
   }),
   getById: publicProcedure
     .input(z.object({ courseID: z.string() }))
@@ -61,12 +63,4 @@ export const courseRouter = createTRPCRouter({
         },
       });
     }),
-
-  getLatest: publicProcedure.query(async ({ ctx }) => {
-    const post = await ctx.db.course.findFirst({
-      orderBy: { createdAt: "desc" },
-    });
-
-    return post ?? null;
-  }),
 });

@@ -1,15 +1,22 @@
 "use client"; // Indicates that this is a client-side component
 
-import { BookText, Home, List, LogInIcon, Trophy } from "lucide-react"; // Importing icons from the lucide-react library
+import {
+  ArchiveIcon,
+  BookText,
+  Home,
+  List,
+  LogInIcon,
+  Trophy,
+} from "lucide-react"; // Importing icons from the lucide-react library
 import { cn } from "@/src/lib/utils"; // Utility function for conditional class names
-import { useUser } from "@/src/lib/hooks/use-user"; // Hook to fetch user data
 import { Skeleton } from "../ui/skeleton"; // Skeleton loader for loading states
 import { UserAccountNav } from "./UserAccount"; // User account navigation component
 import { useState } from "react"; // React hook for managing state
 import LoadingSpinner from "../LoadingSpinner"; // Loading spinner component
-import { signInWithGoogle } from "../../signin/actions"; // Function to handle Google sign-in
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signInWithGoogle } from "../../(auth)/signin/actions";
+import { useMainStore } from "@/src/lib/store/store";
 
 /**
  * MenuBar Component
@@ -26,18 +33,8 @@ import { usePathname } from "next/navigation";
  * - className (optional): Additional CSS classes to style the component.
  */
 export default function MenuBar({ className }: { className?: string }) {
-  const { user, loading } = useUser(); // Fetch user data and loading state
-  const member = user?.user_metadata; // Extract member data from user metadata
-  //eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const fullName: string | undefined = member?.full_name; // Get the full name of the member
-  //eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  const firstName: string | undefined = fullName?.split(" ")[0]; // Extract first name from full name
-  //eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  const lastName: string | undefined = fullName?.split(" ").slice(-1)[0]; // Extract last name from full name
+  const member = useMainStore((state) => state.currentMember);
+  const tourCard = useMainStore((state) => state.currentTourCard);
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false); // State for Google sign-in loading
   const [isSigningOut, setIsSigningOut] = useState(false); // State for sign-out process
 
@@ -62,10 +59,10 @@ export default function MenuBar({ className }: { className?: string }) {
     <>
       <div className="flex lg:hidden">
         <div className="flex min-w-[2.5rem] items-center justify-center">
-          {loading || isSigningOut ? (
+          {isSigningOut ? (
             <Skeleton className="h-[2.5rem] w-[2.5rem] rounded-full" />
-          ) : user ? (
-            <UserAccountNav {...{ user, setIsSigningOut }} />
+          ) : member ? (
+            <UserAccountNav {...{ member, setIsSigningOut }} />
           ) : (
             <div onClick={() => signInWithGoogle({ setIsGoogleLoading })}>
               {isGoogleLoading ? (
@@ -78,14 +75,14 @@ export default function MenuBar({ className }: { className?: string }) {
         </div>
       </div>
       <div className="hidden lg:flex">
-        {loading || isSigningOut ? (
+        {isSigningOut ? (
           <Skeleton className="h-[1.5rem] w-[1.5rem] rounded-full" />
-        ) : user ? (
-          <NavItem href={"/user/" + user.id}>
+        ) : member ? (
+          <NavItem href={"/user/" + member.id}>
             <div className="flex items-center justify-center gap-2">
-              <UserAccountNav {...{ user, size: "small", setIsSigningOut }} />
+              <UserAccountNav {...{ member, size: "small", setIsSigningOut }} />
               <span className="font-barlow text-2xl font-semibold">
-                {firstName?.[0] + ". " + lastName || "User"}
+                {tourCard?.displayName || "User"}
               </span>
             </div>
           </NavItem>
