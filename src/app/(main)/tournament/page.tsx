@@ -126,7 +126,7 @@ export default function TournamentPage() {
 }
 
 // Simple loading view component
-export function TournamentPageLoadingView() {
+function TournamentPageLoadingView() {
   return (
     <>
       <LeaderboardHeaderSkeleton />
