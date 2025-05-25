@@ -19,7 +19,7 @@ export default function Page({
 }) {
   const tours = useMainStore((state) => state.tours);
   const tourCard = useMainStore((state) => state.currentTourCard);
-  const inputTourId = searchParams.tour;
+  const inputTourId = searchParams.tour ?? tourCard?.tourId ?? "";
 
   const [standingsToggle, setStandingsToggle] = useState<string>(
     inputTourId && inputTourId !== ""

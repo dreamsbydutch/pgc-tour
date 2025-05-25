@@ -343,7 +343,7 @@ export function PlayoffStandingsListing({
         </div>
       </div>
       {/* Player Rank */}
-      <div className="place-self-center p-1 font-varela text-sm sm:text-base">
+      <div className="max-h-8 min-h-6 min-w-6 max-w-8 place-self-center p-1 font-varela text-sm sm:text-base">
         <Image
           src={tour?.logoUrl ?? ""}
           alt="Tour Logo"

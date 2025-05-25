@@ -58,7 +58,7 @@ export async function loadInitialData() {
         course: Course | null;
       })[];
     }>("/api/tournaments/all"),
-    safeFetch<{ currentSeason: Season }>("/api/seasons/current"),
+    safeFetch<{ season: Season }>("/api/seasons/current"),
     safeFetch<{ tourCards: TourCard[] }>("/api/tourcards/current"),
     safeFetch<{ tiers: Tier[] }>("/api/tiers/current"),
   ]);
@@ -144,7 +144,7 @@ export async function loadInitialData() {
     currentTournament: currentTournament ?? storeData.currentTournament,
     nextTournament: nextTournament ?? storeData.nextTournament,
     tourCards: tourCardsData?.tourCards ?? storeData.tourCards,
-    currentSeason: seasonData?.currentSeason ?? storeData.currentSeason,
+    currentSeason: seasonData?.season ?? storeData.currentSeason,
     currentTiers:
       tiersData?.tiers.sort(
         (a, b) => (a.payouts[0] ?? 0) - (b.payouts[0] ?? 0),
