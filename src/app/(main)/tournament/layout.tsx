@@ -1,3 +1,8 @@
+import { Suspense } from "react";
+import { LeaderboardHeaderSkeleton } from "./_components/skeletons/LeaderboardHeaderSkeleton";
+import { TournamentCountdownSkeleton } from "./_components/TournamentCountdown";
+import { TeamPickFormSkeleton } from "./_views/PreTournament";
+
 export const metadata = {
   title: "Tournament",
   description: "Tournament overview and stats",
@@ -8,5 +13,18 @@ export default async function Layout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <Suspense fallback={<TournamentPageLoadingView />}>{children}</Suspense>
+  );
+}
+
+// Simple loading view component
+function TournamentPageLoadingView() {
+  return (
+    <>
+      <LeaderboardHeaderSkeleton />
+      <TournamentCountdownSkeleton />
+      <TeamPickFormSkeleton />
+    </>
+  );
 }

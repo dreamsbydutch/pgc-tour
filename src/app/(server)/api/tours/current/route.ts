@@ -1,13 +1,14 @@
-import { checkIfUserExists } from "@/src/server/api/actions/member";
+import { createClient } from "@/src/lib/supabase/server";
 import { db } from "@/src/server/db";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
     const year = new Date().getFullYear();
-    const user = await checkIfUserExists();
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
     const tourCard = await db.tourCard.findFirst({
-      where: { memberId: user?.id ?? "", season: { year } },
+      where: { memberId: data.user?.id ?? "", season: { year } },
     });
     const tour = await db.tour.findUnique({ where: { id: tourCard?.tourId } });
     return NextResponse.json({ tour });
