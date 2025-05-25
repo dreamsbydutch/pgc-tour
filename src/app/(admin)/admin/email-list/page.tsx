@@ -14,11 +14,12 @@ export default async function AdminDashboard() {
     seasonId: currentTourney?.seasonId ?? "",
   });
   const teams = await api.team.getByTournament({
-    tournamentId: currentTourney?.id,
+    tournamentId: currentTourney?.id ?? "",
   });
   const missingTeams = tourCards?.filter(
     (obj) => teams.filter((a) => a.tourCardId === obj.id).length === 0,
   );
+  const tours = await api.tour.getActive();
 
   return (
     <>
@@ -64,7 +65,7 @@ export default async function AdminDashboard() {
                   {tourCard.displayName}
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-sm">
-                  {tourCard.tour.name}
+                  {tours.find((t) => t.id === tourCard.tourId)?.name}
                 </TableCell>
               </TableRow>
             ))}

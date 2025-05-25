@@ -38,6 +38,7 @@ export const tourCardRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return await ctx.db.tourCard.findMany({
         where: { seasonId: input.seasonId },
+        include: { member: true },
       });
     }),
 
