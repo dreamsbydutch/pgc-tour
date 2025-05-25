@@ -31,6 +31,9 @@ export function TourCardOutput({
   memberId: string;
 }) {
   if (!tour) return <LoadingSpinner />;
+  const tourCards = api.tourCard.getByTourId.useQuery({
+    tourId: tour.id,
+  }).data;
   return (
     <div className="mt-2 flex flex-col items-center justify-center">
       <h2 className="max-w-xl text-center font-varela text-lg text-slate-600">
@@ -48,10 +51,10 @@ export function TourCardOutput({
         <p className="text-base italic text-gray-600">{tour.name}</p>
       </div>
       <div className="mb-2 mt-2 text-xs text-slate-600">
-        {+(process.env.TOUR_MAX_SIZE ?? 75) - tour.tourCards.length === 0
+        {+(process.env.TOUR_MAX_SIZE ?? 75) - (tourCards?.length ?? 0) === 0
           ? tour.name + " is full!"
           : +(process.env.TOUR_MAX_SIZE ?? 75) -
-            tour.tourCards.length +
+            (tourCards?.length ?? 0) +
             " spots remaining"}
       </div>
       <TourCardChangeButton {...{ tourCard, memberId }} />
