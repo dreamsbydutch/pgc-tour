@@ -80,7 +80,7 @@ export default function TeamGolfersTable({ team }: { team: Team }) {
             {/* Golfer Today and Thru */}
             {golfer.thru === 0 && course ? (
               <td className="text-xs" colSpan={2}>
-                {course && getGolferTeeTime(course, golfer)}
+                {course && getGolferTeeTime(golfer)}
               </td>
             ) : (
               <>

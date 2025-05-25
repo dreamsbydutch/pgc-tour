@@ -333,7 +333,7 @@ export function LeaderboardListing({
           !golfer?.thru || golfer?.thru === 0 ? (
             <div className="col-span-2 place-self-center font-varela text-xs">
               {tournament.course && golfer
-                ? getGolferTeeTime(tournament.course, golfer)
+                ? getGolferTeeTime(golfer)
                 : null}
               {golfer?.endHole === 9 ? "*" : ""}
             </div>
@@ -352,7 +352,7 @@ export function LeaderboardListing({
           !team?.thru || team?.thru === 0 ? (
             <div className="col-span-2 place-self-center font-varela text-xs">
               {tournament.course && team
-                ? getTeamTeeTime(tournament.course, team)
+                ? getTeamTeeTime(team)
                 : null}
             </div>
           ) : (
