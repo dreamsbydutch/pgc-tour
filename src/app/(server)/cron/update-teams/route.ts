@@ -1,7 +1,7 @@
 "use server";
 
 import { api } from "@/src/trpc/server";
-import type { Golfer } from "@prisma/client";
+import type { Course, Golfer, Team, Tournament } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -10,9 +10,12 @@ export async function GET(request: Request) {
 
   const tournament = (await api.tournament.getInfo()).current;
   if (!tournament) return NextResponse.redirect(`${origin}/`);
+  const golfers = await api.golfer.getByTournament({
+    tournamentId: tournament.id,
+  });
 
   // Sort golfers by today, then thru, then score, then group
-  tournament.golfers.sort(
+  golfers.sort(
     (a, b) =>
       (a.today ?? 0) - (b.today ?? 0) ||
       (a.thru ?? 0) - (b.thru ?? 0) ||
@@ -20,10 +23,12 @@ export async function GET(request: Request) {
       (a.group ?? 0) - (b.group ?? 0),
   );
 
-  const teams: TeamData[] = await api.team.getByTournament({
+  const teams: Team[] = await api.team.getByTournament({
     tournamentId: tournament.id,
   });
-  const updatedTeams = teams.map((team) => updateTeamData(team, tournament));
+  const updatedTeams = teams.map((team) =>
+    updateTeamData(team, tournament, golfers),
+  );
 
   // updatedTeams = simulateTournament(
   //   golfers,
@@ -31,7 +36,7 @@ export async function GET(request: Request) {
   //   tournament.course.par,
   //   10000,
   // );
-  await updateTeamPositions(updatedTeams, tournament);
+  await updateTeamPositions(updatedTeams, tournament, golfers);
 
   return NextResponse.redirect(`${origin}${next}`);
 }
@@ -46,14 +51,16 @@ export async function GET(request: Request) {
 /**
  * Updates a single team's data by assigning tee times and calculating stats.
  */
-function updateTeamData(team: TeamData, tournament: TournamentData): TeamData {
-  const updatedTeam: TeamData = {
+function updateTeamData(
+  team: Team,
+  tournament: Tournament & { course: Course },
+  golfers: Golfer[],
+): Team {
+  const updatedTeam: Team = {
     ...team,
     round: tournament.currentRound,
   };
-  const teamGolfers = tournament.golfers.filter((g) =>
-    team.golferIds.includes(g.apiId),
-  );
+  const teamGolfers = golfers.filter((g) => team.golferIds.includes(g.apiId));
 
   // Assign tee times for each round if the current value is not in the future.
   updatedTeam.roundOneTeeTime = assignTeeTime(
@@ -134,11 +141,11 @@ function assignTeeTime(
  * Calculates statistics for teams during live play.
  */
 function calculateLiveTeamStats(
-  updatedTeam: TeamData,
-  team: TeamData,
+  updatedTeam: Team,
+  team: Team,
   teamGolfers: Golfer[],
-  tournament: TournamentData,
-): Partial<TeamData> {
+  tournament: Tournament & { course: Course },
+): Partial<Team> {
   if (teamGolfers.length < 5) {
     updatedTeam.today = null;
     updatedTeam.thru = null;
@@ -209,11 +216,11 @@ function calculateLiveTeamStats(
  * Calculates statistics for teams when live play is not active.
  */
 function calculateNonLiveTeamStats(
-  updatedTeam: TeamData,
-  team: TeamData,
+  updatedTeam: Team,
+  team: Team,
   teamGolfers: Golfer[],
-  tournament: TournamentData,
-): Partial<TeamData> {
+  tournament: Tournament & { course: Course },
+): Partial<Team> {
   if ((tournament.currentRound ?? 0) > 1 && !tournament.livePlay) {
     updatedTeam.roundOne = average(
       teamGolfers,
@@ -367,12 +374,21 @@ function roundValue(val: number | null | undefined): number | null {
  * Updates team positions, past positions, points, and earnings.
  */
 async function updateTeamPositions(
-  updatedTeams: TeamData[],
-  tournament: TournamentData,
-): Promise<TeamData[]> {
+  updatedTeams: Team[],
+  tournament: Tournament & { course: Course },
+  golfers: Golfer[],
+): Promise<Team[]> {
+  const tier = await api.tier.getById({
+    tierID: tournament.tierId,
+  });
+  const tourCards = await api.tourCard.getBySeason({
+    seasonId: tournament.seasonId,
+  });
+
   return Promise.all(
     updatedTeams.map(async (team) => {
-      const teamGolfers = tournament.golfers.filter(
+      const tourCard = tourCards.find((t) => t.id === team.tourCardId);
+      const teamGolfers = golfers.filter(
         (g) =>
           team.golferIds.includes(g.apiId) &&
           (g.round ?? 0) >= (tournament.currentRound ?? 0),
@@ -390,7 +406,9 @@ async function updateTeamPositions(
         return team;
       }
       const sameTourTeams = updatedTeams.filter(
-        (obj) => obj.tourCard.tourId === team.tourCard.tourId,
+        (obj) =>
+          tourCards.find((a) => a.id === obj.tourCardId)?.tourId ===
+          tourCard?.tourId,
       );
       // Determine current position
       const tiedCount = sameTourTeams.filter(
@@ -423,22 +441,22 @@ async function updateTeamPositions(
             (obj) => obj.position === team.position,
           );
           team.points =
-            tournament.tier.points
+            (tier?.points ?? [])
               .slice(
                 +team.position.replace("T", "") - 1,
                 +team.position.replace("T", "") - 1 + tiedTeams.length,
               )
               .reduce((p: number, c: number) => p + c, 0) / tiedTeams.length;
           team.earnings =
-            tournament.tier.payouts
+            (tier?.payouts ?? [])
               .slice(
                 +team.position.replace("T", "") - 1,
                 +team.position.replace("T", "") - 1 + tiedTeams.length,
               )
               .reduce((p: number, c: number) => p + c, 0) / tiedTeams.length;
         } else {
-          team.points = tournament.tier.points[+team.position - 1] ?? null;
-          team.earnings = tournament.tier.payouts[+team.position - 1] ?? null;
+          team.points = tier?.points[+team.position - 1] ?? null;
+          team.earnings = tier?.payouts[+team.position - 1] ?? null;
         }
         team.points = Math.round(team.points ?? 0);
         team.earnings = Math.round((team.earnings ?? 0) * 100) / 100;
