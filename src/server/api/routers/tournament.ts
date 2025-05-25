@@ -34,14 +34,17 @@ export const tournamentRouter = createTRPCRouter({
       current: await ctx.db.tournament.findFirst({
         where: { startDate: { lte: today }, endDate: { gte: today } },
         orderBy: { startDate: "desc" },
+        include:{course:true}
       }),
       past: await ctx.db.tournament.findFirst({
         where: { endDate: { lte: today } },
         orderBy: { startDate: "desc" },
+        include:{course:true}
       }),
       next: await ctx.db.tournament.findFirst({
         where: { startDate: { gte: today } },
         orderBy: { startDate: "asc" },
+        include:{course:true}
       }),
     };
   }),

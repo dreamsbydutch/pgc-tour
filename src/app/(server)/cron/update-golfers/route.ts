@@ -9,7 +9,7 @@ import type {
   DatagolfLiveGolfer,
   DatagolfRankingInput,
 } from "@/src/lib/types/datagolf_types";
-import type { Golfer, Team, Tournament } from "@prisma/client";
+import type { Course, Golfer, Team, Tournament } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -104,7 +104,7 @@ async function createMissingGolfers(
   field: DatagolfFieldGolfer[],
   existingGolfers: Array<{ apiId: number }>,
   rankingsData: DatagolfRankingInput,
-  tournament: Tournament,
+  tournament: Tournament & { course: Course },
 ) {
   const existingApiIds = existingGolfers.map((g) => g.apiId);
   const missingGolfers = field.filter(
@@ -142,7 +142,7 @@ async function updateExistingGolfers(
   golfers: Golfer[],
   liveData: DataGolfLiveTournament,
   fieldData: DatagolfFieldInput,
-  tournament: Tournament,
+  tournament: Tournament & { course: Course },
   golferIDs: number[],
   teams: Team[],
   addLiveCount: (count: number) => void,
@@ -273,7 +273,7 @@ function setRoundTeeTimesAndScores(
   liveGolfer: DatagolfLiveGolfer | undefined,
   fieldGolfer: DatagolfFieldGolfer | undefined,
   fieldData: DatagolfFieldInput,
-  tournament: Tournament,
+  tournament: Tournament & { course: Course },
 ) {
   // Round One
   if (fieldGolfer?.r1_teetime) {
