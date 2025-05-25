@@ -8,9 +8,17 @@ import { TourCardForm } from "./_components/TourCardForm";
 import HomePageLeaderboard from "./(main)/tournament/_views/HomePageLeaderboard";
 import SignInPage from "./(auth)/signin/page";
 import HomePageStandings from "./(main)/standings/_views/HomePageStandings";
-import { useMainStore } from "../lib/store/store";
+import { cn } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./_components/ui/table";
 import Image from "next/image";
-import { CurrentSchedule } from "./(main)/rulebook/page";
+import { useMainStore } from "@/src/lib/store/store";
 
 export default function Home() {
   useInitStore();
@@ -124,3 +132,84 @@ export default function Home() {
 //     Join the Group Chat
 //   </Link>
 // );
+
+function CurrentSchedule() {
+  const tournaments = useMainStore((state) => state.seasonTournaments);
+  const tiers = useMainStore((state) => state.currentTiers);
+
+  return (
+    <Table className="mx-auto w-3/4 text-center font-varela">
+      <TableHeader>
+        <TableRow>
+          <TableHead className="span text-center text-xs font-bold">
+            Tournament
+          </TableHead>
+          <TableHead className="border-l text-center text-xs font-bold">
+            Dates
+          </TableHead>
+          <TableHead className="border-l text-center text-xs font-bold">
+            Tier
+          </TableHead>
+          <TableHead className="border-l text-center text-xs font-bold">
+            Course
+          </TableHead>
+          <TableHead className="border-l text-center text-xs font-bold">
+            Location
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {tournaments?.map((tourney, i) => {
+          const tier = tiers?.find((t) => t.id === tourney.tierId);
+          const start = new Date(tourney.startDate);
+          const end = new Date(tourney.endDate);
+          return (
+            <TableRow
+              key={tourney.id}
+              className={cn(
+                i === 16 ? "border-t-2 border-t-slate-500" : "",
+                i >= 16 ? "bg-yellow-50" : "",
+                tier?.name === "Major" ? "bg-blue-50" : "",
+              )}
+            >
+              <TableCell className="flex items-center justify-center whitespace-nowrap text-center text-xs">
+                <Image
+                  src={tourney.logoUrl ?? ""}
+                  className="pr-1"
+                  alt={tourney.name}
+                  width={25}
+                  height={25}
+                />
+                {tourney.name}
+              </TableCell>
+              <TableCell className="whitespace-nowrap border-l text-center text-xs">
+                {`${start.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })} - ${
+                  start.getMonth() === end.getMonth()
+                    ? end.toLocaleDateString("en-US", {
+                        day: "numeric",
+                      })
+                    : end.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })
+                }`}
+              </TableCell>
+              <TableCell className="whitespace-nowrap border-l text-center text-xs">
+                {tier?.name}
+              </TableCell>
+              <TableCell className="whitespace-nowrap border-l text-center text-xs">
+                {tourney.course?.name}
+              </TableCell>
+              <TableCell className="whitespace-nowrap border-l text-center text-xs">
+                {tourney.course?.location}
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+}

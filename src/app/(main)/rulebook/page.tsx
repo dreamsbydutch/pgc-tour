@@ -249,7 +249,7 @@ function PointsTable() {
  * Props:
  * - season: The current season data.
  */
-export function CurrentSchedule() {
+function CurrentSchedule() {
   const tournaments = useMainStore((state) => state.seasonTournaments);
   const tiers = useMainStore((state) => state.currentTiers);
 
