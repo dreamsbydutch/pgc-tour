@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { api } from "@/src/trpc/react";
 import { useLeaderboardStore, useMainStore } from "@/src/lib/store/store";
-import { Golfer, Team, TourCard } from "@prisma/client";
+import type { Golfer, Team, TourCard } from "@prisma/client";
 
 /**
  * Hook to poll current tournament leaderboard data and update LeaderboardStore
@@ -80,10 +80,10 @@ export async function updateLeaderboardNow() {
     const response: Response = await fetch("/api/tournaments/leaderboard");
     if (!response.ok) throw new Error("Failed to fetch leaderboard");
 
-    const data: {
+    const data = (await response.json()) as {
       teams: (Team & { tourCard: TourCard })[];
       golfers: Golfer[];
-    } = await response.json();
+    };
     useLeaderboardStore.getState().update(data.teams, data.golfers);
     return true;
   } catch (error) {

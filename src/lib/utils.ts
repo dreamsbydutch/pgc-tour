@@ -1,4 +1,4 @@
-import type { Course, Golfer, Team } from "@prisma/client";
+import type { Golfer, Team } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { formatDate, formatDistanceToNowStrict } from "date-fns";
 import { twMerge } from "tailwind-merge";

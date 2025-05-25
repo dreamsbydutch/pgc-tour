@@ -19,7 +19,7 @@ async function safeFetch<T>(url: string): Promise<T | null> {
   try {
     const response: Response = await fetch(url);
     if (!response.ok) return null;
-    return await response.json();
+    return (await response.json()) as T;
   } catch (error) {
     console.error(`Failed to fetch ${url}:`, error);
     return null;

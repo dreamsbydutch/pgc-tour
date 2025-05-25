@@ -1,7 +1,7 @@
 "use client";
 
 import TournamentCountdown from "../_components/TournamentCountdown";
-import { cn, formatMoney, formatTime } from "@/src/lib/utils";
+import { cn, formatMoney } from "@/src/lib/utils";
 import { Button } from "../../../_components/ui/button";
 import { useState } from "react";
 import LoadingSpinner from "../../../_components/LoadingSpinner";
