@@ -153,6 +153,8 @@ function TournamentHistoryRow({
   teams: Team[] | undefined;
   className?: string;
 }) {
+  // Get tiers for displaying tournament importance
+  const tiers = useMainStore((state) => state.currentTiers);
   if (!tourneys || !teams) {
     // Replace the simple loading spinner with a proper skeleton UI
     return (
@@ -177,9 +179,6 @@ function TournamentHistoryRow({
       </div>
     );
   }
-
-  // Get tiers for displaying tournament importance
-  const tiers = useMainStore((state) => state.currentTiers);
 
   return (
     <div

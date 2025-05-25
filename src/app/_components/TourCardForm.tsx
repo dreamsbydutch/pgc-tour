@@ -7,7 +7,7 @@ import { type Dispatch, type SetStateAction, useState } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import Link from "next/link";
 import { useMainStore } from "@/src/lib/store/store";
-import { Tour } from "@prisma/client";
+import type { Tour } from "@prisma/client";
 import { api } from "@/src/trpc/react";
 
 export function TourCardForm() {

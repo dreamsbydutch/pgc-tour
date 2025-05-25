@@ -1,4 +1,4 @@
-import {
+import type {
   Course,
   Golfer,
   Member,
@@ -17,7 +17,7 @@ const CACHE_EXPIRY = 1000 * 60 * 60 * 24;
 // Simplified fetch helper
 async function safeFetch<T>(url: string): Promise<T | null> {
   try {
-    const response = await fetch(url);
+    const response: Response = await fetch(url);
     if (!response.ok) return null;
     return await response.json();
   } catch (error) {
@@ -79,11 +79,11 @@ export async function loadInitialData() {
     currentTournament =
       tournaments.find(
         (t) => new Date(t.startDate) <= now && new Date(t.endDate) >= now,
-      ) || null;
+      ) ?? null;
 
     // Find next tournament (upcoming)
     nextTournament =
-      tournaments.find((t) => new Date(t.startDate) > now) || null;
+      tournaments.find((t) => new Date(t.startDate) > now) ?? null;
 
     // Verify pastTeamsData and pastGolfersData before using them
     const validPastTeams = Array.isArray(pastTeamsData?.pastTeams)
@@ -130,32 +130,32 @@ export async function loadInitialData() {
   const currentTourCard =
     tourCardsData?.tourCards?.find(
       (tc) => tc.memberId === memberData?.member.id,
-    ) || null;
+    ) ?? null;
   const currentTour =
-    toursData?.tours?.find((t) => t.id === currentTourCard?.tourId) || null;
+    toursData?.tours?.find((t) => t.id === currentTourCard?.tourId) ?? null;
 
   // Update store with new data, keeping existing data as fallback
   const updateData = {
-    tours: toursData?.tours || storeData.tours,
-    currentMember: memberData?.member || storeData.currentMember,
-    pastTeamsData: pastTeamsData?.pastTeams || storeData.pastTeams,
+    tours: toursData?.tours ?? storeData.tours,
+    currentMember: memberData?.member ?? storeData.currentMember,
+    pastTeamsData: pastTeamsData?.pastTeams ?? storeData.pastTeams,
     seasonTournaments:
       tournamentsData?.tournaments.sort(
         (a, b) =>
           new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
-      ) || storeData.seasonTournaments,
-    pastTournaments: pastTournaments || storeData.pastTournaments,
-    currentTournament: currentTournament || storeData.currentTournament,
-    nextTournament: nextTournament || storeData.nextTournament,
-    tourCards: tourCardsData?.tourCards || storeData.tourCards,
-    currentSeason: seasonData?.currentSeason || storeData.currentSeason,
+      ) ?? storeData.seasonTournaments,
+    pastTournaments: pastTournaments ?? storeData.pastTournaments,
+    currentTournament: currentTournament ?? storeData.currentTournament,
+    nextTournament: nextTournament ?? storeData.nextTournament,
+    tourCards: tourCardsData?.tourCards ?? storeData.tourCards,
+    currentSeason: seasonData?.currentSeason ?? storeData.currentSeason,
     currentTiers:
       tiersData?.tiers.sort(
         (a, b) => (a.payouts[0] ?? 0) - (b.payouts[0] ?? 0),
-      ) || storeData.currentTiers,
+      ) ?? storeData.currentTiers,
     // Maintain other values from existing state
-    currentTour: currentTour || storeData.currentTour,
-    currentTourCard: currentTourCard || storeData.currentTourCard,
+    currentTour: currentTour ?? storeData.currentTour,
+    currentTourCard: currentTourCard ?? storeData.currentTourCard,
     _lastUpdated: Date.now(),
   };
 

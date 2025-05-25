@@ -40,12 +40,10 @@ export default function LeaderboardPage({
   );
   const tourCard = useMainStore((state) => state.currentTourCard);
   const member = useMainStore((state) => state.currentMember);
-  const golfers = pastTournament
-    ? pastTournament.golfers
-    : useLeaderboardStore((state) => state.golfers);
-  const teamsData = pastTournament
-    ? pastTournament.teams
-    : useLeaderboardStore((state) => state.teams);
+  const storedGolfers = useLeaderboardStore((state) => state.golfers);
+  const storedTeams = useLeaderboardStore((state) => state.teams);
+  const golfers = pastTournament ? pastTournament.golfers : storedGolfers;
+  const teamsData = pastTournament ? pastTournament.teams : storedTeams;
 
   const [activeTour, setActiveTour] = useState<string>(
     inputTour && inputTour !== "" ? inputTour : (tourCard?.tourId ?? ""),
@@ -234,7 +232,7 @@ export function PlayoffLeaderboardPage({
 }: {
   tournament: Tournament & { course: Course | null };
 }) {
-  let actualTours = api.tour.getBySeason.useQuery({
+  const actualTours = api.tour.getBySeason.useQuery({
     seasonID: tournament?.seasonId ?? "",
   }).data;
   const tourCard = useMainStore((state) => state.currentTourCard);

@@ -16,7 +16,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { useMainStore } from "@/src/lib/store/store";
-import { Course, Tier, Tournament } from "@prisma/client";
+import type { Course, Tier, Tournament } from "@prisma/client";
 
 /**
  * HeaderDropdown Component

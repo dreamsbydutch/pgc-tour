@@ -3,11 +3,10 @@
 import TournamentCountdown from "../_components/TournamentCountdown";
 import { cn, formatMoney, formatTime } from "@/src/lib/utils";
 import { Button } from "../../../_components/ui/button";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import LoadingSpinner from "../../../_components/LoadingSpinner";
 import { useMainStore } from "@/src/lib/store/store";
-import {
+import type {
   Course,
   Golfer,
   Member,
@@ -114,7 +113,7 @@ export function TeamPickFormSkeleton({
         <div className="mx-auto mb-3 h-8 w-48 animate-pulse rounded bg-slate-200"></div>
         <div className="mx-auto mb-4 h-6 w-64 animate-pulse rounded bg-slate-200"></div>
         {existingTeam &&
-          [...Array(10)].map((_, i) => (
+          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((_, i) => (
             <div
               key={i}
               className={`py-0.5 ${i % 2 !== 0 && i < 9 ? "border-b border-slate-500" : ""}`}
@@ -141,14 +140,12 @@ export function TeamPickFormSkeleton({
  * - teamGolfers: The list of golfers in the user's team (optional).
  */
 function TeamPickForm({
-  tournament,
   tourCard,
   member,
   existingTeam,
   teamGolfers,
   setPickingTeam,
 }: {
-  tournament: Tournament & { course: Course | null };
   tourCard: TourCard;
   member: Member;
   existingTeam: Team | null | undefined;
@@ -216,87 +213,87 @@ function TeamPickForm({
  * - teamGolfers: The list of golfers in the user's team (optional).
  * - course: The course data (optional).
  */
-function TeamTeeTimes({
-  tournament,
-  allGolfers,
-  teamGolfers,
-}: {
-  tournament: Tournament & { course: Course | null };
-  allGolfers: Golfer[];
-  teamGolfers: Golfer[];
-}) {
-  if (
-    !teamGolfers ||
-    teamGolfers.length === 0 ||
-    teamGolfers.filter((obj) => obj.roundOneTeeTime).length === 0 ||
-    !tournament.course
-  )
-    return null;
+// function TeamTeeTimes({
+//   tournament,
+//   allGolfers,
+//   teamGolfers,
+// }: {
+//   tournament: Tournament & { course: Course | null };
+//   allGolfers: Golfer[];
+//   teamGolfers: Golfer[];
+// }) {
+//   if (
+//     !teamGolfers ||
+//     teamGolfers.length === 0 ||
+//     teamGolfers.filter((obj) => obj.roundOneTeeTime).length === 0 ||
+//     !tournament.course
+//   )
+//     return null;
 
-  const teeTimes = [
-    ...new Set(
-      teamGolfers
-        ?.sort((a, b) => (b.endHole ?? 0) - (a.endHole ?? 0))
-        ?.sort((a, b) => {
-          if (!a.roundOneTeeTime && !b.roundOneTeeTime) return 0;
-          if (!a.roundOneTeeTime) return 1;
-          if (!b.roundOneTeeTime) return -1;
-          return (
-            new Date(a.roundOneTeeTime).getTime() -
-            new Date(b.roundOneTeeTime).getTime()
-          );
-        })
-        .map(
-          (obj) => obj.roundOneTeeTime + " - " + (obj.endHole === 18 ? 1 : 10),
-        ),
-    ),
-  ];
+//   const teeTimes = [
+//     ...new Set(
+//       teamGolfers
+//         ?.sort((a, b) => (b.endHole ?? 0) - (a.endHole ?? 0))
+//         ?.sort((a, b) => {
+//           if (!a.roundOneTeeTime && !b.roundOneTeeTime) return 0;
+//           if (!a.roundOneTeeTime) return 1;
+//           if (!b.roundOneTeeTime) return -1;
+//           return (
+//             new Date(a.roundOneTeeTime).getTime() -
+//             new Date(b.roundOneTeeTime).getTime()
+//           );
+//         })
+//         .map(
+//           (obj) => obj.roundOneTeeTime + " - " + (obj.endHole === 18 ? 1 : 10),
+//         ),
+//     ),
+//   ];
 
-  const teamIds = teamGolfers?.map((a) => a.apiId);
+//   const teamIds = teamGolfers?.map((a) => a.apiId);
 
-  return (
-    <>
-      <div className="pt-4 text-center text-2xl font-bold">
-        Thursday Tee Times
-      </div>
-      <div className="mx-auto flex max-w-[720px] flex-wrap justify-around">
-        {teeTimes.map((golfer, i) => {
-          const time = new Date(golfer?.split(" - ")[0] ?? "");
-          const wave = +(golfer?.split(" - ")[1] ?? "1");
-          const group = allGolfers?.filter(
-            (obj) =>
-              obj.endHole === (wave === 1 ? 18 : 9) &&
-              obj.roundOneTeeTime === golfer?.split(" - ")[0],
-          );
-          return (
-            <div
-              key={i}
-              className="w-[180px] p-2 text-center text-lg font-bold"
-            >
-              {`${formatTime(time)} - Hole ${wave}`}
-              <div className="text-sm font-normal">
-                {group
-                  ?.sort(
-                    (a, b) =>
-                      (a.worldRank ?? Infinity) - (b.worldRank ?? Infinity),
-                  )
-                  .map((obj) => (
-                    <div
-                      key={obj.id}
-                      className={cn(
-                        teamIds?.includes(obj.apiId)
-                          ? "font-semibold"
-                          : "text-muted-foreground",
-                      )}
-                    >
-                      {`#${obj.worldRank ?? "N/A"} ${obj.playerName}`}
-                    </div>
-                  ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </>
-  );
-}
+//   return (
+//     <>
+//       <div className="pt-4 text-center text-2xl font-bold">
+//         Thursday Tee Times
+//       </div>
+//       <div className="mx-auto flex max-w-[720px] flex-wrap justify-around">
+//         {teeTimes.map((golfer, i) => {
+//           const time = new Date(golfer?.split(" - ")[0] ?? "");
+//           const wave = +(golfer?.split(" - ")[1] ?? "1");
+//           const group = allGolfers?.filter(
+//             (obj) =>
+//               obj.endHole === (wave === 1 ? 18 : 9) &&
+//               obj.roundOneTeeTime === golfer?.split(" - ")[0],
+//           );
+//           return (
+//             <div
+//               key={i}
+//               className="w-[180px] p-2 text-center text-lg font-bold"
+//             >
+//               {`${formatTime(time)} - Hole ${wave}`}
+//               <div className="text-sm font-normal">
+//                 {group
+//                   ?.sort(
+//                     (a, b) =>
+//                       (a.worldRank ?? Infinity) - (b.worldRank ?? Infinity),
+//                   )
+//                   .map((obj) => (
+//                     <div
+//                       key={obj.id}
+//                       className={cn(
+//                         teamIds?.includes(obj.apiId)
+//                           ? "font-semibold"
+//                           : "text-muted-foreground",
+//                       )}
+//                     >
+//                       {`#${obj.worldRank ?? "N/A"} ${obj.playerName}`}
+//                     </div>
+//                   ))}
+//               </div>
+//             </div>
+//           );
+//         })}
+//       </div>
+//     </>
+//   );
+// }

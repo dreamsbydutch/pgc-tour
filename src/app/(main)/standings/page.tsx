@@ -10,7 +10,7 @@ import {
   StandingsListing,
   ToursToggleButton,
 } from "./_components/StandingsPage";
-import { Tour } from "@prisma/client";
+import type { Tour } from "@prisma/client";
 
 export default function Page({
   searchParams,

@@ -1,7 +1,7 @@
 // src/lib/store.ts
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import {
+import type {
   Member,
   Season,
   Tier,
@@ -80,9 +80,8 @@ export const useMainStore = create<MainStoreState>()(
     {
       name: "pgc-main-store", // Name for the localStorage key
       storage: createJSONStorage(() => localStorage), // Use localStorage
-      onRehydrateStorage: (state) => {
-        // Optional: do something when the store is rehydrated
-        return (state, error) => {
+      onRehydrateStorage: () => {
+        return (error) => {
           if (error) {
             console.log("Error rehydrating state:", error);
           } else {

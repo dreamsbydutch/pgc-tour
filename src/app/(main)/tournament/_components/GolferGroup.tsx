@@ -1,6 +1,6 @@
 "use client";
 
-import { Controller, useForm } from "react-hook-form";
+import { Controller, type useForm } from "react-hook-form";
 import type { Golfer } from "@prisma/client";
 import clsx from "clsx";
 

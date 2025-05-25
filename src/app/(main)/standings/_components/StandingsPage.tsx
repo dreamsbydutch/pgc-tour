@@ -339,7 +339,7 @@ export function PlayoffStandingsListing({
 
         {/* Player Earnings */}
         <div className="col-span-2 place-self-center font-varela text-xs xs:text-sm sm:text-base">
-          {startingStrokes || "-"}
+          {startingStrokes ?? "-"}
         </div>
       </div>
       {/* Player Rank */}

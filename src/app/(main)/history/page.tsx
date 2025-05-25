@@ -2,22 +2,18 @@
 
 import { cn, formatMoney } from "@/src/lib/utils";
 import { api } from "@/src/trpc/react";
-import { Member, Team, Tier, TourCard, Tournament } from "@prisma/client";
+import type { Member, Team, Tier, TourCard, Tournament } from "@prisma/client";
 import Image from "next/image";
 
 export default function HistoryPage() {
   // const { data: seasons, isLoading: isSeasonLoading } =
   //   api.season.getAll.useQuery();
-  const { data: tiers, isLoading: isTierLoading } = api.tier.getAll.useQuery();
-  const { data: tournaments, isLoading: isTournamentLoading } =
-    api.tournament.getAll.useQuery();
-  const { data: members, isLoading: isMemberLoading } =
-    api.member.getAll.useQuery();
+  const { data: tiers } = api.tier.getAll.useQuery();
+  const { data: tournaments } = api.tournament.getAll.useQuery();
+  const { data: members } = api.member.getAll.useQuery();
   // const { data: tours, isLoading: isTourLoading } = api.tour.getAll.useQuery();
-  const { data: tourCards, isLoading: isTourCardLoading } =
-    api.tourCard.getAll.useQuery();
+  const { data: tourCards } = api.tourCard.getAll.useQuery();
   const teams = tournaments?.map((t) => t.teams).flat();
-  const golfers = tournaments?.map((t) => t.golfers).flat();
   const memberData = members?.map((obj) => {
     const memberTourCards = tourCards?.filter((tc) => tc.memberId === obj.id);
     const memberTeams = teams?.filter((team) =>
@@ -96,7 +92,10 @@ function HistoricalLitteFucker({
         (tourCard?.playoff ?? 0) <= 1
       ) {
         return (
-          <div className="flex flex-col items-center justify-center">
+          <div
+            key={team.id}
+            className="flex flex-col items-center justify-center"
+          >
             <Image
               key={team.id}
               src={

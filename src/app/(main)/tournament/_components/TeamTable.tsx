@@ -3,7 +3,7 @@
 import { Table, TableRow } from "@/src/app/_components/ui/table";
 import { useLeaderboardStore, useMainStore } from "@/src/lib/store/store";
 import { cn, formatScore, getGolferTeeTime } from "@/src/lib/utils";
-import { Team } from "@prisma/client";
+import type { Team } from "@prisma/client";
 
 /**
  * TeamGolfersTable Component

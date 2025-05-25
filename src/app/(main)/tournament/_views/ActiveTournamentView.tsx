@@ -7,10 +7,10 @@ import {
   useLeaderboardPolling,
 } from "@/src/lib/store/leaderboardInit";
 import LeaderboardPage from "./LeaderboardPage";
-import { Course, Tournament } from "@prisma/client";
+import type { Course, Tournament } from "@prisma/client";
 
 interface ActiveTournamentViewProps {
-  tournament: Tournament&{course:Course|null};
+  tournament: Tournament & { course: Course | null };
   inputTour: string;
 }
 
@@ -41,7 +41,10 @@ export default function ActiveTournamentView({
       }
     };
 
-    initialLoad();
+    initialLoad().catch((err) =>
+      console.error("Error during initial leaderboard load:", err)
+    );
+    return 
   }, [lastUpdated]);
 
   const handleManualRefresh = async () => {

@@ -120,7 +120,7 @@ export function formatName(name: string, type: "display" | "full") {
     : firstName.charAt(0).toUpperCase() + ". " + lastName;
 }
 
-export function getGolferTeeTime(course: Course, golfer: Golfer) {
+export function getGolferTeeTime(golfer: Golfer) {
   const roundNames = ["One", "Two", "Three", "Four", "Four"];
   if (golfer.round === null) {
     throw new Error("Golfer round is null");
@@ -129,7 +129,7 @@ export function getGolferTeeTime(course: Course, golfer: Golfer) {
     `round${roundNames[golfer.round - 1]}TeeTime` as keyof Golfer;
   return formatTime(new Date(golfer[teeTimeKey] ?? ""));
 }
-export function getTeamTeeTime(course: Course, team: Team) {
+export function getTeamTeeTime(team: Team) {
   const roundNames = ["One", "Two", "Three", "Four", "Four"];
   if (team.round === null) {
     throw new Error("Team round is null");

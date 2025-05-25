@@ -40,7 +40,9 @@ export function useInitStore() {
       };
 
       // Initialize immediately - no need for delay since we use a global flag
-      initialize();
+      initialize().catch((err) => {
+        console.error("Unexpected error during initialization:", err);
+      });
     }
   }, []);
 

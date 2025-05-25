@@ -2,7 +2,7 @@
 
 import { useMainStore } from "@/src/lib/store/store";
 import { cn, formatMoney, formatScore } from "@/src/lib/utils";
-import { Team, Tour, TourCard } from "@prisma/client";
+import type { Team, Tour, TourCard } from "@prisma/client";
 import Image from "next/image";
 import LittleFucker from "./LittleFucker";
 

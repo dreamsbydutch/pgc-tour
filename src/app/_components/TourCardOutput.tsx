@@ -2,7 +2,7 @@
 
 import { Button } from "./ui/button";
 import Image from "next/image";
-import { Tour, type TourCard } from "@prisma/client";
+import type { Tour, TourCard } from "@prisma/client";
 import { deleteTourCard } from "@/src/server/api/actions/tour_card";
 import { useState } from "react";
 import {

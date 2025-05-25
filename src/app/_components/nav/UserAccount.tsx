@@ -15,7 +15,7 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import MemberUpdateForm from "../MemberUpdateForm";
 import { handleLogout } from "../../(auth)/signin/actions";
-import { Member } from "@prisma/client";
+import type { Member } from "@prisma/client";
 import { useUser } from "@/src/lib/hooks/use-user";
 
 /**
@@ -41,7 +41,7 @@ export function UserAccountNav({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
-  const { user, loading } = useUser();
+  const { user } = useUser();
 
   return (
     <div className="w-fit">

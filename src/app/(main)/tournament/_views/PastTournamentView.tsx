@@ -1,6 +1,6 @@
 "use client";
 
-import { Course, Tournament } from "@prisma/client";
+import type { Course, Tournament } from "@prisma/client";
 import LeaderboardPage from "./LeaderboardPage";
 
 interface PastTournamentViewProps {

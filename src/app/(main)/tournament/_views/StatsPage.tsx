@@ -10,7 +10,7 @@ import { Suspense, useState, type Dispatch, type SetStateAction } from "react";
 import { useMainStore } from "@/src/lib/store/store";
 import { LeaderboardHeaderSkeleton } from "../_components/skeletons/LeaderboardHeaderSkeleton";
 import LeaderboardHeader from "../_components/header/LeaderboardHeader";
-import { Team, Tour, TourCard, Tournament } from "@prisma/client";
+import type { Team, Tour, TourCard, Tournament } from "@prisma/client";
 import {
   TableCell,
   TableHeader,
@@ -58,7 +58,7 @@ function StatsPage({
 
   // Get the currently active teams for the selected tour
   const tourTeams =
-    teams?.filter((team) => team.tourCard.tourId === activeTour) || [];
+    teams?.filter((team) => team.tourCard.tourId === activeTour) ?? [];
 
   // Helper function to get sorted teams based on tour type
   const getSortedTeams = () => {
@@ -112,7 +112,7 @@ function StatsPage({
               <StatsListing
                 key={team.id}
                 team={team}
-                teams={teams || []}
+                teams={teams ?? []}
                 tourTeams={tourTeams}
               />
             ))

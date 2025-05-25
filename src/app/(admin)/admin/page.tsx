@@ -12,10 +12,10 @@ import {
 } from "../_components/CreateGroupsButton";
 import HistoryButton from "../_components/HistoryButton";
 import Link from "next/link";
-import { useMainStore } from "@/src/lib/store/store";
+import { api } from "@/src/trpc/server";
 
 export default async function AdminDashboard() {
-  const currentTourney = useMainStore((state) => state.currentTournament);
+  const currentTourney = await api.tournament.getActive();
 
   const liveData = (await fetchDataGolf(
     "preds/in-play",

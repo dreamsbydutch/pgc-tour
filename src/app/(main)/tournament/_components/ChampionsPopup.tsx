@@ -160,8 +160,8 @@ function ChampionSectionSkeleton() {
           <div className="ml-2 h-10 w-48 animate-pulse rounded bg-amber-200" />
         </div>
         {/* Champion section */}{" "}
-        {[0, 1].map((_obj) => (
-          <ChampionSkeleton />
+        {[0, 1].map((_obj, i) => (
+          <ChampionSkeleton key={i} />
         ))}
       </div>
     </div>
@@ -180,7 +180,7 @@ function ChampionSkeleton() {
 
       {/* Team golfers skeleton grid */}
       <div className="mx-4 my-1 grid grid-cols-2 items-center justify-center gap-x-4 gap-y-1">
-        {[...Array(8)].map((_, i) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((_, i) => (
           <div key={i} className="grid grid-cols-9 items-center justify-center">
             <div className="col-span-7 h-4 w-full animate-pulse rounded bg-amber-200" />
             <div className="h-4 w-full" />

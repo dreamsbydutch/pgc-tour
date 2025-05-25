@@ -4,7 +4,7 @@ import { PopoverTrigger } from "@radix-ui/react-popover";
 import { Popover, PopoverContent } from "@/src/app/_components/ui/popover";
 import { cn, fetchDataGolf, formatMoney, formatRank } from "@/src/lib/utils";
 import type { DatagolfCourseInputData } from "@/src/lib/types/datagolf_types";
-import { Tier, Tournament } from "@prisma/client";
+import type { Tier, Tournament } from "@prisma/client";
 import { useMainStore } from "@/src/lib/store/store";
 
 /**

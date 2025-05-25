@@ -31,7 +31,7 @@ export default function TournamentPage() {
   const tournamentIdParam = searchParams.get("id");
 
   // Get the tournament data based on the query parameter
-  let focusTourney = tournamentIdParam
+  const focusTourney = tournamentIdParam
     ? (seasonTournaments?.find((t) => t.id === tournamentIdParam) ?? null)
     : null;
 
@@ -41,7 +41,10 @@ export default function TournamentPage() {
       setIsLoading(false);
     }
 
-    initialize();
+    initialize().catch((error) => {
+      console.error("Failed to initialize leaderboard store:", error);
+      setIsLoading(false);
+    });
   }, []);
 
   useEffect(() => {
