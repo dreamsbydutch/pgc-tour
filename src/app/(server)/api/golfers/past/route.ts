@@ -21,13 +21,11 @@ export async function GET() {
       },
     });
     
-    console.log(`Found ${seasonTournamentInfo.length} tournaments for the season`);
     
     const pastTournaments = seasonTournamentInfo.filter(
       (tournament) => new Date(tournament.endDate) < date,
     );
     
-    console.log(`Found ${pastTournaments.length} past tournaments`);
     
     const pastGolfers = (
       await Promise.all(
@@ -37,13 +35,11 @@ export async function GET() {
               tournamentId: tournament.id,
             },
           });
-          console.log(`Found ${tournamentGolfers.length} golfers for tournament ${tournament.id}`);
           return tournamentGolfers;
         }),
       )
     ).flat();
     
-    console.log(`Returning ${pastGolfers.length} total past golfers`);
     return NextResponse.json({ pastGolfers });
   } catch (error) {
     console.error("Error fetching golfer info:", error);

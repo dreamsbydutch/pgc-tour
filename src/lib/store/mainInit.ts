@@ -93,10 +93,6 @@ export async function loadInitialData() {
       ? pastGolfersData.pastGolfers
       : [];
 
-    console.log(
-      `Processing past tournaments with ${validPastTeams.length} teams and ${validPastGolfers.length} golfers`,
-    );
-
     // Find most recent past tournament with safer approach
     try {
       const pastTournamentsArray = tournaments.filter(

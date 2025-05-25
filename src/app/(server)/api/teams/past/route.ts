@@ -24,7 +24,6 @@ export async function GET() {
       (tournament) => new Date(tournament.endDate) < date,
     );
 
-    console.log(`Found ${pastTournaments.length} past tournaments`);
 
     const pastTeams = (
       await Promise.all(
@@ -35,15 +34,11 @@ export async function GET() {
             },
             include: { tourCard: true },
           });
-          console.log(
-            `Found ${teams.length} teams for tournament ${tournament.id}`,
-          );
           return teams;
         }),
       )
     ).flat();
 
-    console.log(`Returning ${pastTeams.length} total past teams`);
     return NextResponse.json({ pastTeams });
   } catch (error) {
     console.error("Error fetching tournament info:", error);

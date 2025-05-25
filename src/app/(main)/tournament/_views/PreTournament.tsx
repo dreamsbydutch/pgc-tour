@@ -49,7 +49,6 @@ export default function PreTournamentPage({
   const teamGolfers = allGolfers?.filter((a) =>
     existingTeam?.golferIds.includes(a.apiId),
   );
-  console.log(teamGolfers);
 
   if (pickingTeam)
     return (
