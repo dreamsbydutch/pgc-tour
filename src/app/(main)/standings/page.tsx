@@ -174,7 +174,20 @@ function PlayoffStandings({ tours }: { tours: Tour[] | null }) {
     .flat();
   return (
     <div className="mx-auto px-1">
-      <GoldPlayoffHeader />
+      <GoldPlayoffHeader
+        tier={{
+          id: "gold",
+          name: "Gold",
+          payouts:
+            tiers?.find((t) => t.name === "Playoff")?.payouts.slice(0, 30) ??
+            [],
+          points:
+            tiers?.find((t) => t.name === "Playoff")?.points.slice(0, 30) ?? [],
+          seasonId: "",
+          updatedAt: new Date(),
+          createdAt: new Date(),
+        }}
+      />
       {goldTeams
         ?.sort((a, b) => (b.points ?? 0) - (a.points ?? 0))
         .map((tourCard) => (
@@ -189,7 +202,21 @@ function PlayoffStandings({ tours }: { tours: Tour[] | null }) {
             }}
           />
         ))}
-      <SilverPlayoffHeader />
+      <SilverPlayoffHeader
+        tier={{
+          id: "silver",
+          name: "SIlver",
+          payouts:
+            tiers?.find((t) => t.name === "Playoff")?.payouts.slice(75, 85) ??
+            [],
+          points:
+            tiers?.find((t) => t.name === "Playoff")?.points.slice(75, 85) ??
+            [],
+          seasonId: "",
+          updatedAt: new Date(),
+          createdAt: new Date(),
+        }}
+      />
       {silverTeams
         ?.sort((a, b) => (b.points ?? 0) - (a.points ?? 0))
         .map((tourCard) => (

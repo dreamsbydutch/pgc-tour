@@ -1,16 +1,21 @@
 "use client";
 
-import { cn, formatMoney } from "@/src/lib/utils";
+import { cn, formatMoney, formatRank } from "@/src/lib/utils";
 // Remove server action imports
 import { Star } from "lucide-react";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import LoadingSpinner from "../../../_components/LoadingSpinner";
-import type { TourCard, Tour } from "@prisma/client";
+import type { TourCard, Tour, Tier } from "@prisma/client";
 import { StandingsTourCardInfo } from "./StandingsDropdown";
 import LittleFucker from "../../../_components/LittleFucker";
 import { useMainStore } from "@/src/lib/store/store";
 import { api } from "@/src/trpc/react";
 import Image from "next/image";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/src/app/_components/ui/popover";
 
 /**
  * tourToggleButton Component
@@ -93,50 +98,64 @@ export function StandingsHeader() {
     </div>
   );
 }
-export function GoldPlayoffHeader() {
+export function GoldPlayoffHeader({ tier }: { tier: Tier }) {
   return (
-    <div className="grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-champ-400 text-center">
-      <div className="col-span-17 my-2 font-varela text-2xl font-extrabold text-champ-900">
-        PGC GOLD PLAYOFF
-      </div>
-      <div className="col-span-16 grid grid-flow-row grid-cols-10 text-center">
-        <div className="place-self-center font-varela text-xs font-bold sm:text-sm">
-          Rank
+    <Popover>
+      <PopoverTrigger className="col-span-7 row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
+        <div className="grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-champ-400 text-center">
+          <div className="col-span-17 my-2 font-varela text-2xl font-extrabold text-champ-900">
+            PGC GOLD PLAYOFF
+          </div>
+          <div className="col-span-16 grid grid-flow-row grid-cols-10 text-center">
+            <div className="place-self-center font-varela text-xs font-bold sm:text-sm">
+              Rank
+            </div>
+            <div className="col-span-5 place-self-center font-varela text-base font-bold sm:text-lg">
+              Name
+            </div>
+            <div className="col-span-2 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
+              Cup Points
+            </div>
+            <div className="col-span-2 place-self-center font-varela text-2xs xs:text-xs sm:text-sm">
+              Starting Strokes
+            </div>
+          </div>
         </div>
-        <div className="col-span-5 place-self-center font-varela text-base font-bold sm:text-lg">
-          Name
-        </div>
-        <div className="col-span-2 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
-          Cup Points
-        </div>
-        <div className="col-span-2 place-self-center font-varela text-2xs xs:text-xs sm:text-sm">
-          Starting Strokes
-        </div>
-      </div>
-    </div>
+      </PopoverTrigger>
+      <PopoverContent className="w-fit">
+        <PointsAndPayoutsPopover {...{ tier }} />
+      </PopoverContent>
+    </Popover>
   );
 }
-export function SilverPlayoffHeader() {
+export function SilverPlayoffHeader({ tier }: { tier: Tier }) {
   return (
-    <div className="mt-12 grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-zinc-300 text-center">
-      <div className="col-span-17 my-2 font-varela text-2xl font-extrabold text-zinc-600">
-        PGC SILVER PLAYOFF
-      </div>
-      <div className="col-span-16 grid grid-flow-row grid-cols-10 text-center">
-        <div className="place-self-center font-varela text-xs font-bold sm:text-sm">
-          Rank
+    <Popover>
+      <PopoverTrigger className="col-span-7 row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
+        <div className="mt-12 grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-zinc-300 text-center">
+          <div className="col-span-17 my-2 font-varela text-2xl font-extrabold text-zinc-600">
+            PGC SILVER PLAYOFF
+          </div>
+          <div className="col-span-16 grid grid-flow-row grid-cols-10 text-center">
+            <div className="place-self-center font-varela text-xs font-bold sm:text-sm">
+              Rank
+            </div>
+            <div className="col-span-5 place-self-center font-varela text-base font-bold sm:text-lg">
+              Name
+            </div>
+            <div className="col-span-2 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
+              Cup Points
+            </div>
+            <div className="col-span-2 place-self-center font-varela text-2xs xs:text-xs sm:text-sm">
+              Starting Strokes
+            </div>
+          </div>
         </div>
-        <div className="col-span-5 place-self-center font-varela text-base font-bold sm:text-lg">
-          Name
-        </div>
-        <div className="col-span-2 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
-          Cup Points
-        </div>
-        <div className="col-span-2 place-self-center font-varela text-2xs xs:text-xs sm:text-sm">
-          Starting Strokes
-        </div>
-      </div>
-    </div>
+      </PopoverTrigger>
+      <PopoverContent className="w-fit">
+        <PointsAndPayoutsPopover {...{ tier }} />
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -356,6 +375,32 @@ export function PlayoffStandingsListing({
       ) : (
         <></>
       )}
+    </div>
+  );
+}
+
+function PointsAndPayoutsPopover({ tier }: { tier: Tier | null | undefined }) {
+  return (
+    <div className="grid w-full grid-cols-3 text-center">
+      {/* Rank Column */}
+      <div className="mx-auto flex flex-col">
+        <div className="text-base font-semibold text-white">Rank</div>
+        {tier?.payouts.slice(0, 35).map((_, i) => (
+          <div key={i} className="text-xs">
+            {formatRank(i + 1)}
+          </div>
+        ))}
+      </div>
+
+      {/* Payouts Column */}
+      <div className="col-span-2 mx-auto flex flex-col">
+        <div className="text-base font-semibold">Payouts</div>
+        {tier?.payouts.slice(0, 35).map((payout) => (
+          <div key={"payout-" + payout} className="text-xs">
+            {formatMoney(payout)}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
