@@ -6,7 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
-import type { Golfer, TourCard, Tournament } from "@prisma/client";
+import type { Course, Golfer, TourCard, Tournament } from "@prisma/client";
 import { Button } from "@/src/app/_components/ui/button";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { api } from "@/src/trpc/react";
@@ -16,14 +16,15 @@ import { GolferGroup } from "../_components/GolferGroup";
 
 // Define Zod schema for form validation
 const golferSchema = z.object({
-  groups: z.array(
-    z.object({
-      golfers: z
-        .array(z.number())
-        .min(2, "You must select exactly 2 golfers.")
-        .max(2, "You must select exactly 2 golfers."),
-    }),
-  ),
+  groups: z
+    .array(
+      z.object({
+        golfers: z
+          .array(z.number())
+          .length(2, "You must select exactly 2 golfers."),
+      }),
+    )
+    .length(5, "All five groups must be filled"),
 });
 
 // Types
@@ -91,21 +92,13 @@ export default function CreateTeamPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 font-varela">
       <Button
-        className="mb-8 flex w-fit flex-row items-center justify-center rounded-md border border-gray-400 px-2 py-0.5 transition-colors hover:bg-gray-100"
+        className="mb-6 flex w-fit flex-row items-center justify-center rounded-md border border-gray-400 px-2 py-0.5 transition-colors hover:bg-gray-100"
         onClick={() => setPickingTeam(false)}
         variant="secondary"
         size="sm"
       >
         <ArrowLeftIcon size={15} className="mr-1" /> Back To Tournament
       </Button>
-
-      <div className="mb-6 text-center">
-        <p className="text-sm text-gray-600">
-          {canCreateTeam
-            ? "Create your team by selecting golfers from each group below"
-            : ""}
-        </p>
-      </div>
 
       {pageError ? (
         <div className="rounded-md bg-red-50 p-4 text-center text-red-800">
@@ -122,7 +115,11 @@ export default function CreateTeamPage({
           <p>This tournament has already begun. Team selection is closed.</p>
         </div>
       ) : (
-        <CreateTeamForm tournament={tournament} tourCard={tourCard} />
+        <CreateTeamForm
+          tournament={tournament}
+          tourCard={tourCard}
+          setPickingTeam={setPickingTeam}
+        />
       )}
     </div>
   );
@@ -134,9 +131,13 @@ export default function CreateTeamPage({
 function CreateTeamForm({
   tournament,
   tourCard,
+  setPickingTeam,
 }: {
-  tournament: Tournament;
+  tournament: Tournament & {
+    course: Course | null;
+  };
   tourCard: TourCard;
+  setPickingTeam: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const utils = api.useUtils();
   const router = useRouter();
@@ -166,31 +167,33 @@ function CreateTeamForm({
         .sort((a, b) => (a.worldRank ?? 9999) - (b.worldRank ?? 9999)),
     }));
   }, [golfersData]);
-
   // Prepare initial group selections from existing team
   const initialGroups = useMemo(() => {
     if (!existingTeam) {
-      return emptyGroups.map(() => ({ golfers: [] }));
+      // Create exactly 5 empty groups with empty golfer arrays
+      return Array(5).fill({ golfers: [] });
     }
 
-    return existingTeam.golferIds.reduce(
-      (acc, golferId, index) => {
-        const groupIndex = Math.floor(index / 2);
-        if (!acc[groupIndex]) {
-          acc[groupIndex] = { golfers: [] };
-        }
-        acc[groupIndex].golfers.push(golferId);
-        return acc;
-      },
-      [] as { golfers: number[] }[],
-    );
-  }, [existingTeam]);
+    // For existing teams, organize golfers into 5 groups
+    const result = Array(5)
+      .fill(null)
+      .map(() => ({ golfers: [] as number[] }));
 
+    existingTeam.golferIds.forEach((golferId, index) => {
+      const groupIndex = Math.floor(index / 2);
+      if (groupIndex < 5) {
+        result[groupIndex]?.golfers.push(golferId);
+      }
+    });
+
+    return result;
+  }, [existingTeam]);
   const {
     control,
     handleSubmit,
     watch,
     setValue,
+    getValues,
     formState: { errors, isValid },
   } = useForm<FormData>({
     defaultValues: {
@@ -199,6 +202,12 @@ function CreateTeamForm({
     resolver: zodResolver(golferSchema),
     mode: "onChange", // Validate on change for better user feedback
   });
+
+  // Debug form state
+  const currentValues = watch();
+  const isFormFilled =
+    currentValues.groups?.every((group) => group.golfers?.length === 2) &&
+    currentValues.groups.length === 5;
 
   /**
    * Handle form submission
@@ -214,6 +223,7 @@ function CreateTeamForm({
         value: data,
       });
 
+      setPickingTeam(false);
       await utils.team.invalidate();
       router.push(`/tournament?id=${tournament.id}`);
     } catch (error) {
@@ -241,16 +251,10 @@ function CreateTeamForm({
   }
 
   return (
-    <div className="mx-auto max-w-4xl rounded-lg bg-white p-6 shadow-md">
-      <h2 className="mb-6 text-center text-2xl font-bold">
+    <div className="mx-auto max-w-4xl rounded-lg bg-white px-2 shadow-md">
+      <h2 className="mb-2 text-center text-2xl font-bold">
         {existingTeam ? "Edit Your Team" : "Create Your Team"}
       </h2>
-
-      {formError && (
-        <div className="mb-4 rounded-md bg-red-50 p-3 text-center text-red-800">
-          {formError}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit(onSubmit, onError)}>
         {groups.map((group, groupIndex) => (
@@ -264,14 +268,18 @@ function CreateTeamForm({
             errors={errors}
           />
         ))}
-
+        {formError && (
+          <div className="mb-4 rounded-md bg-red-50 p-3 text-center text-red-800">
+            {formError}
+          </div>
+        )}
         <div className="mt-8 flex">
           <Button
             type="submit"
             variant="action"
             className="mx-auto w-full max-w-lg text-xl"
             size="xl"
-            disabled={isSubmitting || !isValid}
+            disabled={isSubmitting || (!isValid && !isFormFilled)}
           >
             {isSubmitting ? (
               <>

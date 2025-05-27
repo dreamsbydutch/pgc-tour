@@ -41,11 +41,6 @@ export function GolferGroup({
           Selected: {selectedGolfers.length}/2
         </span>
       </div>
-
-      <div className="mb-4 rounded-md bg-blue-50 p-2 text-sm text-blue-700">
-        Select exactly 2 golfers from this group
-      </div>
-
       <div className="flex flex-col gap-2">
         {group.golfers.map((golfer) => (
           <GolferSelection
@@ -127,14 +122,10 @@ function GolferSelection({
 
       <div className="flex w-full items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-gray-100 px-2 py-1 font-mono text-xs">
-            #{golfer.worldRank ?? "N/A"}
-          </span>
-          <span className="font-medium">{golfer.playerName}</span>
+          <span className="text-sm">#{golfer.worldRank ?? "N/A"}</span>
+          <span className="pr-2 font-medium">{golfer.playerName}</span>
         </div>
-        <span className="rounded-md bg-blue-50 px-2 py-1 text-sm font-medium text-blue-700">
-          {golfer.rating}
-        </span>
+        <span className="text-sm">{golfer.rating}</span>
       </div>
     </label>
   );

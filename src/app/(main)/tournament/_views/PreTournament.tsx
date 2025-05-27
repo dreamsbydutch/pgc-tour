@@ -1,7 +1,7 @@
 "use client";
 
 import TournamentCountdown from "../_components/TournamentCountdown";
-import { cn, formatMoney } from "@/src/lib/utils";
+import { cn, formatMoney, formatRank } from "@/src/lib/utils";
 import { Button } from "../../../_components/ui/button";
 import { useState } from "react";
 import LoadingSpinner from "../../../_components/LoadingSpinner";
@@ -39,7 +39,7 @@ export default function PreTournamentPage({
   const member = useMainStore((state) => state.currentMember);
   const { data: existingTeam, isLoading: isTeamLoading } =
     api.team.getByUserTournament.useQuery({
-      tourCardId: member?.id ?? "",
+      tourCardId: tourCard?.id ?? "",
       tournamentId: tournament.id,
     });
   const { data: allGolfers, isLoading: isGolfersLoading } =
@@ -64,14 +64,7 @@ export default function PreTournamentPage({
     );
   }
 
-  if (
-    !tourCard ||
-    !member ||
-    !allGolfers ||
-    !teamGolfers ||
-    (allGolfers?.length ?? 0) === 0 ||
-    (teamGolfers?.length ?? 0) === 0
-  )
+  if (!tourCard || !member || !allGolfers || (allGolfers?.length ?? 0) === 0)
     return (
       <TournamentCountdown inputTourney={tournament} key={tournament.id} />
     );
@@ -148,7 +141,7 @@ function TeamPickForm({
   tourCard: TourCard;
   member: Member;
   existingTeam: Team | null | undefined;
-  teamGolfers: Golfer[];
+  teamGolfers: Golfer[] | undefined;
   setPickingTeam: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [isOpeningForm, setIsOpeningForm] = useState(false);
@@ -159,7 +152,7 @@ function TeamPickForm({
       {(member?.account ?? 0) > 0 && (
         <div className="mx-auto mb-8 w-5/6 text-center text-lg italic text-red-600">{`Please send ${formatMoney(member?.account ?? 0)} to puregolfcollectivetour@gmail.com to unlock your picks.`}</div>
       )}
-      <div className="text-xl font-bold">{`${tourCard?.position} - ${tourCard?.points} pts${tourCard?.earnings ? " - " + formatMoney(tourCard?.earnings ?? 0) : ""}`}</div>
+      <div className="text-lg font-bold">{`${formatRank(+(tourCard?.position ?? 0))} - ${tourCard?.points.toLocaleString()} pts${tourCard?.earnings ? " - " + formatMoney(tourCard?.earnings ?? 0) : ""}`}</div>
       {teamGolfers
         ?.sort((a, b) => (a.worldRank ?? Infinity) - (b.worldRank ?? Infinity))
         .sort((a, b) => (a.group ?? Infinity) - (b.group ?? Infinity))
