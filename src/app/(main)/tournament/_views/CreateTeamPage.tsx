@@ -6,7 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
-import type { Course, Golfer, TourCard, Tournament } from "@prisma/client";
+import type { Course, TourCard, Tournament } from "@prisma/client";
 import { Button } from "@/src/app/_components/ui/button";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { api } from "@/src/trpc/react";
@@ -26,12 +26,6 @@ const golferSchema = z.object({
     )
     .length(5, "All five groups must be filled"),
 });
-
-// Types
-type InputGroups = {
-  key: string;
-  golfers: Golfer[];
-}[];
 
 /**
  * Form data type for golfer selection

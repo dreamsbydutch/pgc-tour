@@ -47,7 +47,7 @@ export default function HistoryPage() {
   const { data: inputTournaments } = api.tournament.getAll.useQuery();
   const { data: members } = api.member.getAll.useQuery();
   // const { data: tours, isLoading: isTourLoading } = api.tour.getAll.useQuery();
-  const tournaments = inputTournaments!
+  const tournaments = (inputTournaments ?? [])
     .map((tourney: ExtendedTournament) => {
       if (
         tiers?.find((t) => t.id === tourney?.tierId)?.name === "Playoff" &&
@@ -109,7 +109,7 @@ export default function HistoryPage() {
       position: t?.position,
     })),
   );
-  const memberData = members?.map((obj, i: number) => {
+  const memberData = members?.map((obj) => {
     const memberTourCards = tourCards?.filter((tc) => tc.memberId === obj.id);
     const memberTeams = teams?.filter((t) =>
       memberTourCards?.some((tc) => tc.id === t?.tourCardId),
