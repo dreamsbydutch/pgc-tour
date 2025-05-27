@@ -41,17 +41,6 @@ type FormData = {
 };
 
 /**
- * Empty groups template for initialization
- */
-const emptyGroups: InputGroups = [
-  { key: "group1", golfers: [] },
-  { key: "group2", golfers: [] },
-  { key: "group3", golfers: [] },
-  { key: "group4", golfers: [] },
-  { key: "group5", golfers: [] },
-];
-
-/**
  * Main page component for creating a team
  */
 export default function CreateTeamPage({
@@ -85,9 +74,6 @@ export default function CreateTeamPage({
       </div>
     );
   }
-
-  // Determine if team creation is allowed
-  const canCreateTeam = tourCard && !current;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 font-varela">
@@ -168,18 +154,16 @@ function CreateTeamForm({
     }));
   }, [golfersData]);
   // Prepare initial group selections from existing team
-  const initialGroups = useMemo(() => {
+  const initialGroups = useMemo<{ golfers: number[] }[]>(() => {
     if (!existingTeam) {
       // Create exactly 5 empty groups with empty golfer arrays
-      return Array(5).fill({ golfers: [] });
+      return Array.from({ length: 5 }, () => ({ golfers: [] as number[] }));
     }
 
     // For existing teams, organize golfers into 5 groups
-    const result = Array(5)
-      .fill(null)
-      .map(() => ({ golfers: [] as number[] }));
+    const result: { golfers: number[] }[] = Array.from({ length: 5 }, () => ({ golfers: [] as number[] }));
 
-    existingTeam.golferIds.forEach((golferId, index) => {
+    existingTeam.golferIds.forEach((golferId: number, index: number) => {
       const groupIndex = Math.floor(index / 2);
       if (groupIndex < 5) {
         result[groupIndex]?.golfers.push(golferId);
@@ -193,7 +177,6 @@ function CreateTeamForm({
     handleSubmit,
     watch,
     setValue,
-    getValues,
     formState: { errors, isValid },
   } = useForm<FormData>({
     defaultValues: {

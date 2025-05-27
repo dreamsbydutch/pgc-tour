@@ -47,8 +47,8 @@ export default function HistoryPage() {
   const { data: inputTournaments } = api.tournament.getAll.useQuery();
   const { data: members } = api.member.getAll.useQuery();
   // const { data: tours, isLoading: isTourLoading } = api.tour.getAll.useQuery();
-  const tournaments = inputTournaments
-    ?.map((tourney: ExtendedTournament) => {
+  const tournaments = inputTournaments!
+    .map((tourney: ExtendedTournament) => {
       if (
         tiers?.find((t) => t.id === tourney?.tierId)?.name === "Playoff" &&
         tourney?.name !== "TOUR Championship"
@@ -171,7 +171,10 @@ export default function HistoryPage() {
             </TableHead>
             {tournaments?.map((tourney) => {
               return (
-                <TableHead className="text-wrap border-l text-center text-xs font-bold">
+                <TableHead
+                  key={tourney.id}
+                  className="text-wrap border-l text-center text-xs font-bold"
+                >
                   {tourney?.name}
                 </TableHead>
               );
@@ -237,7 +240,7 @@ export default function HistoryPage() {
                   <TableCell className="whitespace-nowrap border-l text-center text-xs">
                     {points?.toLocaleString() ?? 0} pts
                   </TableCell>
-                  {tournaments?.map((tourney) => {
+                  {tournaments?.map((tourney, i) => {
                     const teamData = obj.teams.find(
                       (t) => t?.tournamentId === tourney?.id,
                     );
@@ -245,7 +248,10 @@ export default function HistoryPage() {
                       (t) => t?.tournamentId === tourney?.id,
                     );
                     return (
-                      <TableCell className="whitespace-nowrap border-l text-center text-xs">
+                      <TableCell
+                        key={teamData?.id ?? i}
+                        className="whitespace-nowrap border-l text-center text-xs"
+                      >
                         {`${formatMoney(teamData?.earnings ?? 0)} - ${formatMoney(teamAdjData?.earnings ?? 0)}`}
                       </TableCell>
                     );
@@ -309,8 +315,6 @@ function HistoricalLitteFucker({
 
   return sortedTeams.map((team) => {
     const tourney = tournaments.find((t) => t.id === team.tournamentId);
-    const tier = tiers.find((t) => t.id === tourney?.tierId);
-    const tourCard = tourCards?.find((tc) => tc.id === team.tourCardId);
 
     return (
       <div key={team.id} className="flex flex-col items-center justify-center">
