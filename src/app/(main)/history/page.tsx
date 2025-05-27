@@ -90,7 +90,7 @@ export default function HistoryPage() {
       tourney.teams = tourneyTeams;
       return tourney;
     })
-    .filter((t) => t !== undefined) as ExtendedTournament[];
+    .filter((t) => t !== undefined);
   const teams = tournaments?.map((t) => t.teams).flat();
   console.log(
     "Teams",
