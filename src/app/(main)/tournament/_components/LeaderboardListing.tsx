@@ -358,7 +358,7 @@ export function LeaderboardListing({
           ) : (
             <>
               <div className="col-span-1 place-self-center font-varela text-sm">
-                {team?.today ? formatScore(team.today) : "-"}
+                {team?.today !== null ? formatScore(team.today) : "-"}
               </div>
               <div className="col-span-1 place-self-center whitespace-nowrap font-varela text-sm">
                 {team?.thru === 18 ? "F" : team?.thru}
