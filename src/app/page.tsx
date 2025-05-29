@@ -21,7 +21,6 @@ import Image from "next/image";
 import { useMainStore } from "@/src/lib/store/store";
 
 export default function Home() {
-  useInitStore();
   const tiers = useMainStore((state) => state.currentTiers);
   if (!tiers)
     return (

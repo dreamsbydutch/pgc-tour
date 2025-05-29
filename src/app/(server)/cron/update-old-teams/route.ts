@@ -1,57 +1,74 @@
 // "use server";
 
-// import { api } from "@/src/trpc/server";
-// import { Golfer, Season, TourCard } from "@prisma/client";
-// import { NextResponse } from "next/server";
+import { api } from "@/src/trpc/server";
+import { Team, TourCard, Tournament } from "@prisma/client";
+import { NextResponse } from "next/server";
 
-// export async function GET(request: Request) {
-//   const { searchParams, origin } = new URL(request.url);
-//   const next = searchParams.get("next") ?? "/";
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url);
+  const next = searchParams.get("next") ?? "/";
 
-//   // const res = await fetch(
-//   //   "https://opensheet.elk.sh/1TYcMVDftohm9MqfgKDv2DHMTSbFE6JCfCzcYKB8IA1Y/Output",
-//   // );
-//   // const data = await res.json();
-//   // const teams = data as inputTeams[];
-//   // const tournaments = await api.tournament.getBySeason({
-//   //   seasonId: "cm4w910w1000zdx9kq315wwv8",
-//   // });
+  const members = await api.member.getAll();
+  const season = await api.season.getByYear({ year: 2025 });
+  const tourCards = (await api.tourCard.getAll()).filter(
+    (obj) => obj.seasonId === season?.id,
+  );
+  const allTeams = await api.team.getAll();
+  const tournaments = (await api.tournament.getAll()).filter(
+    (obj) =>
+      obj.seasonId === season?.id && new Date(obj.startDate) < new Date(),
+  );
+  if (!tourCards || !tournaments || !allTeams || !members) {
+    return NextResponse.redirect(`${origin}${next}`);
+  }
+  await updateTourCards({
+    tourCards,
+    allTeams: allTeams
+      .map((team) => {
+        const tournament = tournaments.find((t) => t.id === team.tournamentId);
+        if (!tournament) return null;
+        // Only include the fields expected by the type
+        const {
+          name,
+          id,
+          apiId,
+          createdAt,
+          updatedAt,
+          seasonId,
+          startDate,
+          endDate,
+          tierId,
+          courseId,
+          logoUrl,
+          currentRound,
+          livePlay,
+        } = tournament;
+        return {
+          ...team,
+          tournament: {
+            name,
+            id,
+            apiId,
+            createdAt,
+            updatedAt,
+            seasonId,
+            startDate,
+            endDate,
+            tierId,
+            courseId,
+            logoUrl,
+            currentRound,
+            livePlay,
+          },
+        };
+      })
+      .filter((team) => team !== null),
+  });
 
-//   // const temp = teams
-//   //   .slice(1200)
-//   //   .map(async (team) => createTeam({ tournaments, team }));
+  return NextResponse.redirect(`${origin}${next}`);
+}
 
-//   //------------------------------------------------------------------------------------------
-//   //------------------------------------------------------------------------------------------
-
-//   // const tournaments = await api.tournament.getBySeason({
-//   //   seasonId: "cm4w910jz000gdx9k30u3ihpb",
-//   // });
-//   // tournaments[3] && updateTournamentStats({ tourn: tournaments[3] });
-//   // tournaments.forEach(async (tourn) => updateTournamentStats({ tourn }));
-
-//   //------------------------------------------------------------------------------------------
-//   //------------------------------------------------------------------------------------------
-
-//   const members = await api.member.getAll();
-//   const tourCards = await api.tourCard.getBySeason({
-//     seasonId: "cm4w910w1000zdx9kq315wwv8",
-//   });
-//   const allTeams = await api.team.getBySeason({
-//     seasonId: "cm4w910w1000zdx9kq315wwv8",
-//   });
-//   if (!tourCards || !allTeams || !members) {
-//     return NextResponse.redirect(`${origin}${next}`);
-//   }
-//   await updateTourCards({
-//     tourCards,
-//     allTeams,
-//   });
-
-//   return NextResponse.redirect(`${origin}${next}`);
-// }
-
-// // http://localhost:3000/cron/update-old-teams
+// http://localhost:3000/cron/update-old-teams
 
 // type inputTeams = {
 //   tourneyID: string;
@@ -68,55 +85,51 @@
 //   golferTen: string;
 // };
 
-// // async function updateTourCards({
-// //   tourCards,
-// //   allTeams,
-// // }: {
-// //   tourCards: TourCard[];
-// //   allTeams: TeamData[];
-// // }) {
-// //   const updatedTourCards = tourCards.map(async (card) => {
-// //     const teams = allTeams.filter(
-// //       (team) =>
-// //         team.tourCardId === card.id &&
-// //         team.tournament.tierId !== "cm4w91ot2006pdx9kh75ycrk0",
-// //     );
-// //     const earnings = teams.reduce((sum, team) => sum + (team.earnings ?? 0), 0);
-// //     const points = teams.reduce((sum, team) => sum + (team.points ?? 0), 0);
-// //     const win = teams.filter(
-// //       (team) =>
-// //         (team.position && team.position[0] === "T"
-// //           ? +(team.position?.slice(1) ?? 100)
-// //           : +(team.position ?? 100)) === 1,
-// //     ).length;
-// //     const appearances = teams.length;
-// //     const topTen = teams.filter(
-// //       (team) =>
-// //         (team.position && team.position[0] === "T"
-// //           ? +(team.position?.slice(1) ?? 100)
-// //           : +(team.position ?? 100)) <= 10,
-// //     ).length;
-// //     const madeCut = teams.filter((team) => team.position !== "CUT").length;
-// //     const ties = tourCards.filter((obj) => obj.points === card.points).length;
-// //     const pos =
-// //       tourCards.filter(
-// //         (obj) => (obj.points ?? 0) > points && obj.tourId === card.tourId,
-// //       ).length + 1;
-// //     const position = (ties > 1 ? "T" : "") + pos;
-// //     await api.tourCard.update({
-// //       id: card.id,
-// //       appearances,
-// //       earnings,
-// //       points,
-// //       win,
-// //       topTen,
-// //       position,
-// //       madeCut,
-// //     });
-// //     return card;
-// //   });
-// //   return;
-// // }
+async function updateTourCards({
+  tourCards,
+  allTeams,
+}: {
+  tourCards: TourCard[];
+  allTeams: (Team & { tournament: Tournament })[];
+}) {
+  const updatedTourCards = tourCards.map(async (card) => {
+    const teams = allTeams.filter((team) => team.tourCardId === card.id);
+    const earnings = teams.reduce((sum, team) => sum + (team.earnings ?? 0), 0);
+    const points = teams.reduce((sum, team) => sum + (team.points ?? 0), 0);
+    const win = teams.filter(
+      (team) =>
+        (team.position && team.position[0] === "T"
+          ? +(team.position?.replace("T", "") ?? 100)
+          : +(team.position ?? 100)) === 1,
+    ).length;
+    const appearances = teams.length;
+    const topTen = teams.filter(
+      (team) =>
+        (team.position && team.position[0] === "T"
+          ? +(team.position?.replace("T", "") ?? 100)
+          : +(team.position ?? 100)) <= 10,
+    ).length;
+    const madeCut = teams.filter((team) => team.position !== "CUT").length;
+    const ties = tourCards.filter((obj) => obj.points === card.points).length;
+    const pos =
+      tourCards.filter(
+        (obj) => (obj.points ?? 0) > points && obj.tourId === card.tourId,
+      ).length + 1;
+    const position = (ties > 1 ? "T" : "") + pos;
+    await api.tourCard.update({
+      id: card.id,
+      appearances,
+      earnings,
+      points,
+      win,
+      topTen,
+      position,
+      madeCut,
+    });
+    return card;
+  });
+  return;
+}
 
 // async function createTeam({
 //   tournaments,

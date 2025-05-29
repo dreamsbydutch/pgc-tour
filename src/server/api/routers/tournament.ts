@@ -26,6 +26,7 @@ export const tournamentRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.tournament.findUnique({
         where: { id: input.tournamentId },
+        include: { course: true },
       });
     }),
   getInfo: publicProcedure.query(async ({ ctx }) => {
@@ -34,17 +35,17 @@ export const tournamentRouter = createTRPCRouter({
       current: await ctx.db.tournament.findFirst({
         where: { startDate: { lte: today }, endDate: { gte: today } },
         orderBy: { startDate: "desc" },
-        include:{course:true}
+        include: { course: true },
       }),
       past: await ctx.db.tournament.findFirst({
         where: { endDate: { lte: today } },
         orderBy: { startDate: "desc" },
-        include:{course:true}
+        include: { course: true },
       }),
       next: await ctx.db.tournament.findFirst({
         where: { startDate: { gte: today } },
         orderBy: { startDate: "asc" },
-        include:{course:true}
+        include: { course: true },
       }),
     };
   }),

@@ -43,7 +43,7 @@ import {
 } from "country-flag-icons/react/3x2";
 import { MoveDownIcon, MoveHorizontalIcon, MoveUpIcon } from "lucide-react";
 import TeamGolfersTable from "./TeamTable";
-import { useMainStore } from "@/src/lib/store/store";
+import { useLeaderboardStore, useMainStore } from "@/src/lib/store/store";
 
 /**
  * Constants for country flags
@@ -234,16 +234,21 @@ function PGADropdown({
 export function LeaderboardListing({
   type,
   tournament,
+  tournamentGolfers,
   tourCard,
   golfer,
   team,
 }: {
   type: "PGC" | "PGA";
   tournament: Tournament & { course: Course | null };
+  tournamentGolfers: Golfer[] | null | undefined;
   tourCard: TourCard | null | undefined;
   golfer?: Golfer;
   team?: Team & { tourCard: TourCard | null };
 }) {
+  const course = tournament.course;
+  const teamGolfers =
+    tournamentGolfers?.filter((a) => team?.golferIds.includes(a.apiId)) ?? [];
   const member = useMainStore((state) => state.currentMember);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -332,9 +337,7 @@ export function LeaderboardListing({
         ) : type === "PGA" ? (
           !golfer?.thru || golfer?.thru === 0 ? (
             <div className="col-span-2 place-self-center font-varela text-xs">
-              {tournament.course && golfer
-                ? getGolferTeeTime(golfer)
-                : null}
+              {tournament.course && golfer ? getGolferTeeTime(golfer) : null}
               {golfer?.endHole === 9 ? "*" : ""}
             </div>
           ) : (
@@ -351,9 +354,7 @@ export function LeaderboardListing({
         ) : type === "PGC" ? (
           !team?.thru || team?.thru === 0 ? (
             <div className="col-span-2 place-self-center font-varela text-xs">
-              {tournament.course && team
-                ? getTeamTeeTime(team)
-                : null}
+              {tournament.course && team ? getTeamTeeTime(team) : null}
             </div>
           ) : (
             <>
@@ -414,7 +415,7 @@ export function LeaderboardListing({
               "bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50",
           )}
         >
-          <TeamGolfersTable {...{ team }} />
+          <TeamGolfersTable {...{ team, teamGolfers, course }} />
         </div>
       )}
     </div>

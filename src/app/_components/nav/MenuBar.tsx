@@ -1,7 +1,7 @@
 "use client"; // Indicates that this is a client-side component
 
 import {
-  // ArchiveIcon,
+  ArchiveIcon,
   BookText,
   Home,
   List,
@@ -44,7 +44,7 @@ export default function MenuBar({ className }: { className?: string }) {
     { href: "/tournament", icon: List, label: "LEADERBOARD" },
     { href: "/standings", icon: Trophy, label: "STANDINGS" },
     { href: "/rulebook", icon: BookText, label: "RULEBOOK" },
-    // { href: "/history", icon: ArchiveIcon, label: "RECORDS" },
+    { href: "/history", icon: ArchiveIcon, label: "RECORDS" },
   ];
 
   /**

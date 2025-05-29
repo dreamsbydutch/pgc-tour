@@ -100,10 +100,11 @@ export default function LeaderboardPage({
         {tours.find((tour) => tour.id === activeTour)?.shortForm === "PGA" ? (
           sortGolfersForSpecialPositions(golfers ?? []).map((golfer) => (
             <LeaderboardListing
-              key={golfer.id}
               {...{
+                key: golfer.id,
                 type: "PGA",
                 tournament,
+                tournamentGolfers: storedGolfers,
                 tourCard,
                 golfer,
               }}
@@ -114,8 +115,14 @@ export default function LeaderboardPage({
             .filter((team) => team.tourCard?.tourId === activeTour)
             .map((team) => (
               <LeaderboardListing
-                key={team.id}
-                {...{ type: "PGC", tournament, tourCard, team }}
+                {...{
+                  key: team.id,
+                  type: "PGC",
+                  tournament,
+                  tournamentGolfers: storedGolfers,
+                  tourCard,
+                  team,
+                }}
               />
             ))
         ) : (
@@ -204,6 +211,7 @@ export function HistoricalLeaderboardPage({
               {...{
                 type: "PGA",
                 tournament,
+                tournamentGolfers: golfers,
                 tourCard,
                 golfer,
               }}
@@ -215,7 +223,13 @@ export function HistoricalLeaderboardPage({
             .map((team) => (
               <LeaderboardListing
                 key={team.id}
-                {...{ type: "PGC", tournament, tourCard, team }}
+                {...{
+                  type: "PGC",
+                  tournament,
+                  tournamentGolfers: golfers,
+                  tourCard,
+                  team,
+                }}
               />
             ))
         ) : (
@@ -349,6 +363,7 @@ export function PlayoffLeaderboardPage({
               {...{
                 type: "PGA",
                 tournament,
+                tournamentGolfers: golfers,
                 tourCard,
                 golfer,
               }}
@@ -364,7 +379,13 @@ export function PlayoffLeaderboardPage({
             .map((team) => (
               <LeaderboardListing
                 key={team.id}
-                {...{ type: "PGC", tournament, tourCard, team }}
+                {...{
+                  type: "PGC",
+                  tournament,
+                  tournamentGolfers: golfers,
+                  tourCard,
+                  team,
+                }}
               />
             ))
         ) : (

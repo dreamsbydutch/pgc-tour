@@ -1,9 +1,8 @@
 "use client";
 
 import { Table, TableRow } from "@/src/app/_components/ui/table";
-import { useLeaderboardStore, useMainStore } from "@/src/lib/store/store";
 import { cn, formatScore, getGolferTeeTime } from "@/src/lib/utils";
-import type { Team } from "@prisma/client";
+import type { Course, Golfer, Team } from "@prisma/client";
 
 /**
  * TeamGolfersTable Component
@@ -15,15 +14,15 @@ import type { Team } from "@prisma/client";
  * Props:
  * - team: The team data containing golfer IDs and tournament details.
  */
-export default function TeamGolfersTable({ team }: { team: Team }) {
-  const teamGolfers = useLeaderboardStore((state) => state.golfers)?.filter(
-    (g) =>
-      g.tournamentId === team.tournamentId && team.golferIds.includes(g.apiId),
-  );
-  const course = useMainStore((state) => state.seasonTournaments)?.find(
-    (obj) => obj.id === team.tournamentId,
-  )?.course;
-
+export default function TeamGolfersTable({
+  team,
+  teamGolfers,
+  course,
+}: {
+  team: Team;
+  teamGolfers: Golfer[] | undefined;
+  course?: Course | null | undefined;
+}) {
   return (
     <Table className="scrollbar-hidden mx-auto w-full max-w-3xl border border-gray-700 text-center font-varela">
       {/* Table Header */}
