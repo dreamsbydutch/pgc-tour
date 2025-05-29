@@ -65,7 +65,7 @@ export default function LeaderboardPage({
   ];
 
   return (
-    <div className="mt-2">
+    <div className=" w-full max-w-4xl md:w-11/12 lg:w-8/12 mx-auto mt-2">
       {/* Admin-only link to tournament stats */}
       {member?.role === "admin" && (
         <Link
@@ -442,7 +442,7 @@ function LeaderboardHeaderRow({
       <div className="col-span-1 place-self-center font-varela text-2xs">
         {tournamentOver ? (activeTour === "PGA" ? "Group" : "Points") : "Today"}
       </div>
-      <div className="col-span-1 place-self-center font-varela text-2xs sm:col-span-2">
+      <div className="col-span-1 place-self-center font-varela text-2xs">
         {tournamentOver
           ? activeTour === "PGA"
             ? "Rating"

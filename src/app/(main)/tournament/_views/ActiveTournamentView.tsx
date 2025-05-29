@@ -93,7 +93,7 @@ export default function ActiveTournamentView({
   return (
     <>
       {/* Status bar for live tournaments */}
-      <div className="my-0.5 flex w-full items-center justify-between gap-4">
+      <div className="my-0.5 flex w-full max-w-4xl md:w-11/12 lg:w-8/12 items-center justify-between gap-4">
         <span className="text-2xs text-slate-500">
           {lastUpdated
             ? `Last updated: ${formatLastUpdated(lastUpdated)}`
