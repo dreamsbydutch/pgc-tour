@@ -7,7 +7,7 @@ import { TRPCReactProvider } from "@/trpcLocal/react";
 import MenuBar from "@/components/nav/MenuBar";
 import { cn } from "../lib/utils";
 import Script from "next/script";
-import { InitStoreWrapper } from "../lib/store/InitStoreWrapper";
+import { InitStoreWrapper } from "../lib/store/initStoreWrapper";
 
 const varela = Varela({
   weight: ["400"],

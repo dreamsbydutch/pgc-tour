@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLeaderboardStore } from "@/src/lib/store/store";
 import {
   updateLeaderboardNow,
@@ -21,20 +21,28 @@ export default function ActiveTournamentView({
   const lastUpdated = useLeaderboardStore((state) => state._lastUpdated);
   const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 
+  // Memoize callbacks to prevent infinite re-renders
+  const onSuccess = useCallback(() => {
+    console.log("Leaderboard updated");
+  }, []);
+
+  const onError = useCallback((err: Error) => {
+    console.error("Failed to update leaderboard:", err);
+  }, []);
+
   // Set up polling for live updates
   const { isPolling, refreshNow, isRefetching } = useLeaderboardPolling({
     enabled: true, // Always enabled for active tournaments
     refetchInterval: 120000, // Every 2 minutes
-    onSuccess: () => {
-      console.log("Leaderboard updated");
-    },
-    onError: (err) => console.error("Failed to update leaderboard:", err),
+    onSuccess,
+    onError,
   });
 
   // Load initial data on component mount
   useEffect(() => {
     const initialLoad = async () => {
-      if (!lastUpdated || Date.now() - lastUpdated > 300000) {
+      const currentLastUpdated = useLeaderboardStore.getState()._lastUpdated;
+      if (!currentLastUpdated || Date.now() - currentLastUpdated > 300000) {
         setIsManuallyRefreshing(true);
         await updateLeaderboardNow();
         setIsManuallyRefreshing(false);
@@ -44,10 +52,9 @@ export default function ActiveTournamentView({
     initialLoad().catch((err) =>
       console.error("Error during initial leaderboard load:", err)
     );
-    return 
-  }, [lastUpdated]);
+  }, []); // Empty dependency array - only run once on mount
 
-  const handleManualRefresh = async () => {
+  const handleManualRefresh = useCallback(async () => {
     setIsManuallyRefreshing(true);
 
     if (refreshNow) {
@@ -58,7 +65,7 @@ export default function ActiveTournamentView({
 
     // Add slight delay to prevent flickering
     setTimeout(() => setIsManuallyRefreshing(false), 500);
-  };
+  }, [refreshNow]);
 
   // Format the last updated time as a readable string
   const formatLastUpdated = (timestamp: number | null) => {
@@ -86,7 +93,7 @@ export default function ActiveTournamentView({
   return (
     <>
       {/* Status bar for live tournaments */}
-      <div className="my-0.5 flex w-full items-center justify-between gap-4">
+      <div className="my-0.5 mx-auto flex w-full max-w-4xl md:w-11/12 lg:w-8/12 items-center justify-between gap-4">
         <span className="text-2xs text-slate-500">
           {lastUpdated
             ? `Last updated: ${formatLastUpdated(lastUpdated)}`
