@@ -85,31 +85,7 @@ export default function ActiveTournamentView({
 
   return (
     <>
-      {/* Status bar for live tournaments */}
-      <div className="my-0.5 flex w-full items-center justify-between gap-4">
-        <span className="text-2xs text-slate-500">
-          {lastUpdated
-            ? `Last updated: ${formatLastUpdated(lastUpdated)}`
-            : "Updating..."}
-        </span>
 
-        <div className="flex items-center gap-2">
-          <button
-            className="border-1 rounded-lg bg-slate-100 px-2 py-0.5 text-xs text-slate-600 shadow-md"
-            onClick={handleManualRefresh}
-            disabled={showLoading}
-          >
-            {showLoading ? "Refreshing..." : "Refresh"}
-          </button>
-
-          <span className="badge text-2xs text-slate-500">
-            Live Updates: {isPolling ? "On" : "Off"}
-          </span>
-        </div>
-      </div>
-
-      {/* The actual leaderboard */}
-      <LeaderboardPage tournament={tournament} inputTour={inputTour} />
     </>
   );
 }
