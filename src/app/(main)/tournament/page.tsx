@@ -96,6 +96,13 @@ export default function TournamentPage() {
         <PreTournamentPage tournament={focusTourney} />
       )}
 
+      {isActive && (
+        // Active tournament with polling and live updates
+        <ActiveTournamentView
+          tournament={focusTourney}
+          inputTour={searchParams.get("tour") ?? ""}
+        />
+      )}
 
       {isPast && (
         // Past tournament with static data display
