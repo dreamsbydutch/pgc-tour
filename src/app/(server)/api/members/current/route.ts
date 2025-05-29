@@ -7,9 +7,15 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const supabase = await createClient();
-    const { data } = await supabase.auth.getUser();
+    const { data, error } = await supabase.auth.getUser();
+    
+    // If no user is logged in, return null member instead of error
+    if (error || !data.user) {
+      return NextResponse.json({ member: null });
+    }
+    
     const member = await db.member.findUnique({
-      where: { id: data.user?.id ?? "" },
+      where: { id: data.user.id },
     });
     return NextResponse.json({ member });
   } catch (error) {
