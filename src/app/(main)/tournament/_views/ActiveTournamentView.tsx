@@ -34,7 +34,8 @@ export default function ActiveTournamentView({
   // Load initial data on component mount
   useEffect(() => {
     const initialLoad = async () => {
-      if (!lastUpdated || Date.now() - lastUpdated > 300000) {
+      const currentLastUpdated = useLeaderboardStore.getState()._lastUpdated;
+      if (!currentLastUpdated || Date.now() - currentLastUpdated > 300000) {
         setIsManuallyRefreshing(true);
         await updateLeaderboardNow();
         setIsManuallyRefreshing(false);
@@ -44,8 +45,7 @@ export default function ActiveTournamentView({
     initialLoad().catch((err) =>
       console.error("Error during initial leaderboard load:", err)
     );
-    return 
-  }, [lastUpdated]);
+  }, []); // Empty dependency array - only run once on mount
 
   const handleManualRefresh = async () => {
     setIsManuallyRefreshing(true);
