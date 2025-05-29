@@ -134,7 +134,6 @@ export async function loadInitialData() {
   const updateData = {
     tours: toursData?.tours ?? storeData.tours,
     currentMember: memberData?.member ?? storeData.currentMember,
-    pastTeamsData: pastTeamsData?.pastTeams ?? storeData.pastTeams,
     seasonTournaments:
       tournamentsData?.tournaments.sort(
         (a, b) =>

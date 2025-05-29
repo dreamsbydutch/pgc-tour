@@ -1,9 +1,10 @@
 "use client"
 
-import { useInitStore } from "./useInitStore";
+import { useInitLeaderboardStore, useInitStore } from "./useInitStore";
 
-export default function InitStoreWrapper({children}: {children: React.ReactNode}) {
-        useInitStore();
+export default function InitStoreWrapper({ children }: { children: React.ReactNode }) {
+    useInitStore();
+    useInitLeaderboardStore()
     return <>{children}</>
 
 }

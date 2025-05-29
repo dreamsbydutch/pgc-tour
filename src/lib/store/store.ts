@@ -21,7 +21,6 @@ interface MainStoreState {
   seasonTournaments: TournamentData[] | null;
   tourCards: TourCard[] | null;
   tours: Tour[] | null;
-  pastTeams: (Team & { tourCard: TourCard | null })[] | null;
   pastTournaments:
     | (TournamentData & {
         teams: (Team & { tourCard: TourCard | null })[];
@@ -59,7 +58,6 @@ export const useMainStore = create<MainStoreState>()(
       seasonTournaments: null,
       tourCards: null,
       tours: null,
-      pastTeams: null,
       pastTournaments: null,
       currentTournament: null,
       nextTournament: null,

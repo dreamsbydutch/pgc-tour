@@ -3,7 +3,6 @@
 import { useMainStore } from "@/src/lib/store/store";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { initializeLeaderboardStore } from "@/src/lib/store/leaderboardInit";
 import { LeaderboardHeaderSkeleton } from "@/src/app/(main)/tournament/_components/skeletons/LeaderboardHeaderSkeleton";
 import PreTournamentPage, {
   TeamPickFormSkeleton,
@@ -34,18 +33,6 @@ export default function TournamentPage() {
   const focusTourney = tournamentIdParam
     ? (seasonTournaments?.find((t) => t.id === tournamentIdParam) ?? null)
     : null;
-
-  useEffect(() => {
-    async function initialize() {
-      await initializeLeaderboardStore();
-      setIsLoading(false);
-    }
-
-    initialize().catch((error) => {
-      console.error("Failed to initialize leaderboard store:", error);
-      setIsLoading(false);
-    });
-  }, []);
 
   useEffect(() => {
     if (!tournamentIdParam && !isLoading) {
@@ -88,7 +75,7 @@ export default function TournamentPage() {
   }
 
   // While loading or redirecting, show loading view
-  if (isLoading || !tournamentIdParam || !focusTourney) {
+  if (!tournamentIdParam || !focusTourney) {
     return <TournamentPageLoadingView />;
   }
 
