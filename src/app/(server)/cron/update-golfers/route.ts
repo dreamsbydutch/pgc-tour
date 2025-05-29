@@ -69,7 +69,7 @@ export async function GET(request: Request) {
   await api.tournament.update({
     id: tournament.id,
     currentRound:
-      golfers.filter((obj) => !obj.roundOne).length >= 0
+      golfers.filter((obj) => !obj.roundOne).length > 0
         ? 1
         : golfers.filter((obj) => !obj.roundTwo).length > 0
           ? 2

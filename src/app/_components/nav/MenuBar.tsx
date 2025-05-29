@@ -78,14 +78,12 @@ export default function MenuBar({ className }: { className?: string }) {
         {isSigningOut ? (
           <Skeleton className="h-[1.5rem] w-[1.5rem] rounded-full" />
         ) : member ? (
-          <NavItem href={"/user/" + member.id}>
             <div className="flex items-center justify-center gap-2">
               <UserAccountNav {...{ member, size: "small", setIsSigningOut }} />
               <span className="font-barlow text-2xl font-semibold">
                 {tourCard?.displayName ?? "User"}
               </span>
             </div>
-          </NavItem>
         ) : (
           <div onClick={() => signInWithGoogle({ setIsGoogleLoading })}>
             {isGoogleLoading ? (

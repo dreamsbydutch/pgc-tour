@@ -97,6 +97,13 @@ export default function TournamentPage() {
       )}
 
 
+      {isPast && (
+        // Past tournament with static data display
+        <PastTournamentView
+          tournament={focusTourney}
+          inputTour={searchParams.get("tour") ?? ""}
+        />
+      )}
     </div>
   );
 }
