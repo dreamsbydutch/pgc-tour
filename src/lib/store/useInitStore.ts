@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { loadInitialData } from "./mainInit";
+import { initializeLeaderboardStore } from "./leaderboardInit";
 
 // Create a global variable to track initialization status
 let storeInitialized = false;
@@ -27,6 +28,7 @@ export function useInitStore() {
       const initialize = async () => {
         try {
           await loadInitialData();
+          await initializeLeaderboardStore();
           storeInitialized = true;
           setIsLoading(false);
         } catch (err) {

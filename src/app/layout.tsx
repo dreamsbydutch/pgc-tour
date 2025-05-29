@@ -7,6 +7,7 @@ import { TRPCReactProvider } from "@/trpcLocal/react";
 import MenuBar from "@/components/nav/MenuBar";
 import { cn } from "../lib/utils";
 import Script from "next/script";
+import InitStoreWrapper from "../lib/store/initStoreWrapper";
 
 const varela = Varela({
   weight: ["400"],
@@ -73,8 +74,10 @@ export default async function RootLayout({
         )}
       >
         <TRPCReactProvider>
+        <InitStoreWrapper>
           <main className="mb-24 mt-4 lg:mb-8 lg:mt-20">{children}</main>
           <MenuBar />
+        </InitStoreWrapper>
         </TRPCReactProvider>
       </body>
     </html>

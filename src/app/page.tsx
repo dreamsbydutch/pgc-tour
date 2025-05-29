@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useInitStore } from "@/src/lib/store/useInitStore";
 import ChampionsPopup from "@/src/app/(main)/tournament/_components/ChampionsPopup";
 import TournamentCountdown from "@/src/app/(main)/tournament/_components/TournamentCountdown";
 import { TourCardForm } from "./_components/TourCardForm";
@@ -21,7 +20,6 @@ import Image from "next/image";
 import { useMainStore } from "@/src/lib/store/store";
 
 export default function Home() {
-  useInitStore();
   const tiers = useMainStore((state) => state.currentTiers);
   if (!tiers)
     return (
