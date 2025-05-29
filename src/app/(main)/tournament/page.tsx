@@ -1,8 +1,7 @@
 "use client";
 
 import { useMainStore } from "@/src/lib/store/store";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { LeaderboardHeaderSkeleton } from "@/src/app/(main)/tournament/_components/skeletons/LeaderboardHeaderSkeleton";
 import PreTournamentPage, {
   TeamPickFormSkeleton,
@@ -18,9 +17,7 @@ import HistoricalTournamentView from "./_views/HistoricalTournamentView";
  * Uses query parameter ?id=tournamentId instead of path parameter
  */
 export default function TournamentPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const [hasRedirected, setHasRedirected] = useState(false);
 
   const currentTournament = useMainStore((state) => state.currentTournament);
   const nextTournament = useMainStore((state) => state.nextTournament);
@@ -29,54 +26,41 @@ export default function TournamentPage() {
 
   const tournamentIdParam = searchParams.get("id");
 
-  // Get the tournament data based on the query parameter
-  const focusTourney = tournamentIdParam
-    ? (seasonTournaments?.find((t) => t.id === tournamentIdParam) ?? null)
-    : null;
-
-  useEffect(() => {
-    if (!tournamentIdParam && !hasRedirected && seasonTournaments) {
-      // Determine best tournament to show
-      let bestTournamentId = null;
-
-      if (currentTournament) {
-        bestTournamentId = currentTournament.id;
-      } else if (nextTournament) {
-        bestTournamentId = nextTournament.id;
-      } else if ((pastTournaments ?? []).length > 0) {
-        // Get most recent past tournament
-        const mostRecentPastTournament = pastTournaments?.sort(
-          (a, b) =>
-            new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
-        )[0];
-        bestTournamentId = mostRecentPastTournament?.id;
-      } else if ((seasonTournaments?.length ?? 0) > 0) {
-        bestTournamentId = seasonTournaments?.[0]?.id;
-      }
-
-      // Update URL with query parameter instead of changing path
-      if (bestTournamentId) {
-        setHasRedirected(true);
-        router.replace(`/tournament?id=${bestTournamentId}`);
-      }
+  // Determine which tournament to show
+  const getDisplayTournament = () => {
+    // If there's an ID in search params, try to find that tournament
+    if (tournamentIdParam) {
+      return seasonTournaments?.find((t) => t.id === tournamentIdParam) ?? null;
     }
-  }, [
-    tournamentIdParam,
-    hasRedirected,
-    currentTournament,
-    nextTournament,
-    pastTournaments,
-    seasonTournaments,
-    router,
-  ]);
+
+    // No ID provided - determine best tournament to show
+    if (currentTournament) {
+      return currentTournament;
+    } else if (nextTournament) {
+      return nextTournament;
+    } else if ((pastTournaments ?? []).length > 0) {
+      // Get most recent past tournament
+      const mostRecentPastTournament = pastTournaments?.sort(
+        (a, b) =>
+          new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+      )[0];
+      return mostRecentPastTournament ?? null;
+    } else if ((seasonTournaments?.length ?? 0) > 0) {
+      return seasonTournaments?.[0] ?? null;
+    }
+
+    return null;
+  };
+
+  const focusTourney = getDisplayTournament();
 
   
   if (!focusTourney && tournamentIdParam) {
     return <HistoricalTournamentView tournamentId={tournamentIdParam} />
   }
 
-  // While loading or redirecting, show loading view
-  if (!tournamentIdParam || !focusTourney) {
+  // While loading tournament data, show loading view
+  if (!focusTourney) {
     return <TournamentPageLoadingView />;
   }
 
