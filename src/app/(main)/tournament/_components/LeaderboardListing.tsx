@@ -340,7 +340,7 @@ export function LeaderboardListing({
           ) : (
             <>
               <div className="col-span-1 place-self-center font-varela text-sm">
-                {golfer?.today ? formatScore(golfer?.today) : "-"}
+                {golfer?.today !== null ? formatScore(golfer?.today) : "-"}
               </div>
               <div className="col-span-1 place-self-center whitespace-nowrap font-varela text-sm">
                 {golfer?.thru === 18 ? "F" : golfer?.thru}
