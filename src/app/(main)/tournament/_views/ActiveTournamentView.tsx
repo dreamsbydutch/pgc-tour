@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLeaderboardStore } from "@/src/lib/store/store";
 import {
   updateLeaderboardNow,
@@ -21,14 +21,21 @@ export default function ActiveTournamentView({
   const lastUpdated = useLeaderboardStore((state) => state._lastUpdated);
   const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 
+  // Memoize callbacks to prevent infinite re-renders
+  const onSuccess = useCallback(() => {
+    console.log("Leaderboard updated");
+  }, []);
+
+  const onError = useCallback((err: Error) => {
+    console.error("Failed to update leaderboard:", err);
+  }, []);
+
   // Set up polling for live updates
   const { isPolling, refreshNow, isRefetching } = useLeaderboardPolling({
     enabled: true, // Always enabled for active tournaments
     refetchInterval: 120000, // Every 2 minutes
-    onSuccess: () => {
-      console.log("Leaderboard updated");
-    },
-    onError: (err) => console.error("Failed to update leaderboard:", err),
+    onSuccess,
+    onError,
   });
 
   // Load initial data on component mount
@@ -47,7 +54,7 @@ export default function ActiveTournamentView({
     );
   }, []); // Empty dependency array - only run once on mount
 
-  const handleManualRefresh = async () => {
+  const handleManualRefresh = useCallback(async () => {
     setIsManuallyRefreshing(true);
 
     if (refreshNow) {
@@ -58,7 +65,7 @@ export default function ActiveTournamentView({
 
     // Add slight delay to prevent flickering
     setTimeout(() => setIsManuallyRefreshing(false), 500);
-  };
+  }, [refreshNow]);
 
   // Format the last updated time as a readable string
   const formatLastUpdated = (timestamp: number | null) => {
@@ -85,7 +92,31 @@ export default function ActiveTournamentView({
 
   return (
     <>
+      {/* Status bar for live tournaments */}
+      <div className="my-0.5 flex w-full items-center justify-between gap-4">
+        <span className="text-2xs text-slate-500">
+          {lastUpdated
+            ? `Last updated: ${formatLastUpdated(lastUpdated)}`
+            : "Updating..."}
+        </span>
 
+        <div className="flex items-center gap-2">
+          <button
+            className="border-1 rounded-lg bg-slate-100 px-2 py-0.5 text-xs text-slate-600 shadow-md"
+            onClick={handleManualRefresh}
+            disabled={showLoading}
+          >
+            {showLoading ? "Refreshing..." : "Refresh"}
+          </button>
+
+          <span className="badge text-2xs text-slate-500">
+            Live Updates: {isPolling ? "On" : "Off"}
+          </span>
+        </div>
+      </div>
+
+      {/* The actual leaderboard */}
+      <LeaderboardPage tournament={tournament} inputTour={inputTour} />
     </>
   );
 }
