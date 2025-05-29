@@ -20,7 +20,7 @@ import HistoricalTournamentView from "./_views/HistoricalTournamentView";
 export default function TournamentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [hasRedirected, setHasRedirected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const currentTournament = useMainStore((state) => state.currentTournament);
   const nextTournament = useMainStore((state) => state.nextTournament);
@@ -35,8 +35,7 @@ export default function TournamentPage() {
     : null;
 
   useEffect(() => {
-    // Only redirect if we don't have a tournament ID and haven't already redirected
-    if (!tournamentIdParam && !hasRedirected && seasonTournaments) {
+    if (!tournamentIdParam && !isLoading) {
       // Determine best tournament to show
       let bestTournamentId = null;
 
@@ -57,13 +56,12 @@ export default function TournamentPage() {
 
       // Update URL with query parameter instead of changing path
       if (bestTournamentId) {
-        setHasRedirected(true);
-        router.replace(`/tournament?id=${bestTournamentId}`);
+        router.push(`/tournament?id=${bestTournamentId}`);
       }
     }
   }, [
     tournamentIdParam,
-    hasRedirected,
+    isLoading,
     currentTournament,
     nextTournament,
     pastTournaments,
@@ -98,21 +96,7 @@ export default function TournamentPage() {
         <PreTournamentPage tournament={focusTourney} />
       )}
 
-      {isActive && (
-        // Active tournament with polling and live updates
-        <ActiveTournamentView
-          tournament={focusTourney}
-          inputTour={searchParams.get("tour") ?? ""}
-        />
-      )}
 
-      {isPast && (
-        // Past tournament with static data display
-        <PastTournamentView
-          tournament={focusTourney}
-          inputTour={searchParams.get("tour") ?? ""}
-        />
-      )}
     </div>
   );
 }
