@@ -122,7 +122,12 @@ export function GolferStatsTable() {
                   <GolferRow
                     key={golfer.name}
                     golfer={golfer}
-                    golfersData={golfersData ?? []}
+                    golfersData={
+                      (golfersData ?? []).map((g) => ({
+                        ...g,
+                        group: g.group === null ? 0 : g.group,
+                      }))
+                    }
                     nextTournament={nextTournament}
                     currentTournament={currentTournament}
                     pastTournament={pastTournament ?? null}
