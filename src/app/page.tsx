@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import ChampionsPopup from "@/src/app/(main)/tournament/_components/ChampionsPopup";
-import TournamentCountdown from "@/src/app/(main)/tournament/_components/TournamentCountdown";
+import ChampionsPopup from "@/src/app/(main)/tournament/components/ui/ChampionsPopup";
+import TournamentCountdown from "@/src/app/(main)/tournament/components/ui/TournamentCountdown";
 import { TourCardForm } from "./_components/TourCardForm";
-import HomePageLeaderboard from "./(main)/tournament/_views/HomePageLeaderboard";
+import HomePageLeaderboard from "./(main)/tournament/views/shared/HomePageLeaderboard";
 import SignInPage from "./(auth)/signin/page";
-import HomePageStandings from "./(main)/standings/_views/HomePageStandings";
+import HomePageStandings from "./(main)/standings/views/shared/HomePageStandings";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -62,7 +62,7 @@ export default function Home() {
       <HomePageLeaderboard />
       <TournamentCountdown />
       <HomePageStandings />
-      <TourCardForm />{" "}
+      <TourCardForm />
       <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
         <div className="my-3 flex items-center justify-center gap-3">
           <h2 className="pb-1 font-yellowtail text-5xl sm:text-6xl md:text-7xl">

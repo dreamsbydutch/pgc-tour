@@ -2,7 +2,7 @@
 
 import { cn } from "@/src/lib/utils";
 import Link from "next/link";
-import LeaderboardHeader from "../_components/header/LeaderboardHeader";
+import LeaderboardHeader from "../../components/header/LeaderboardHeader";
 import { useLeaderboardStore, useMainStore } from "@/src/lib/store/store";
 import {
   HomePageList,

@@ -12,7 +12,7 @@ import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { api } from "@/src/trpc/react";
 import { teamCreateOnFormSubmit } from "@/src/server/api/actions/team";
 import { useMainStore } from "@/src/lib/store/store";
-import { GolferGroup } from "../_components/GolferGroup";
+import { GolferGroup } from "../../components/ui/GolferGroup";
 
 // Define Zod schema for form validation
 const golferSchema = z.object({
@@ -155,7 +155,9 @@ function CreateTeamForm({
     }
 
     // For existing teams, organize golfers into 5 groups
-    const result: { golfers: number[] }[] = Array.from({ length: 5 }, () => ({ golfers: [] as number[] }));
+    const result: { golfers: number[] }[] = Array.from({ length: 5 }, () => ({
+      golfers: [] as number[],
+    }));
 
     existingTeam.golferIds.forEach((golferId: number, index: number) => {
       const groupIndex = Math.floor(index / 2);

@@ -1,19 +1,17 @@
 "use client";
 
 import { cn, formatRank } from "@/src/lib/utils";
-import type { Member, Team, TourCard, Tournament } from "@prisma/client";
-import { TournamentLogo } from "../../../_components/OptimizedImage";
+import type { Member, Team, Tournament } from "@prisma/client";
+import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
 import Link from "next/link";
-import LoadingSpinner from "../../../_components/LoadingSpinner";
+import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { useMainStore } from "@/src/lib/store/store";
+import type { StandingsTourCardInfoProps } from "../../types";
 
 export function StandingsTourCardInfo({
   tourCard,
   member,
-}: {
-  tourCard: TourCard;
-  member: Member | null | undefined;
-}) {
+}: StandingsTourCardInfoProps & { member: Member | null | undefined }) {
   // Get all tournaments in the season except playoffs
   const tiers = useMainStore((state) => state.currentTiers)?.find(
     (t) => t.name === "Playoff",

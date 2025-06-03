@@ -9,9 +9,10 @@ import type {
 } from "@prisma/client";
 import { useState } from "react";
 import Link from "next/link";
-import { LeaderboardListing } from "../_components/LeaderboardListing";
+import { LeaderboardListing } from "../../components/leaderboard/LeaderboardListing";
 import { useLeaderboardStore, useMainStore } from "@/src/lib/store/store";
-import { ToursToggleButton } from "../../standings/_components/StandingsPage";
+import { ToursToggleButton } from "../../../standings/components/ui/ToursToggleButton";
+import StatsComponent from "../../components/stats/StatsComponent";
 import { api } from "@/src/trpc/react";
 
 /**
@@ -44,10 +45,8 @@ export default function LeaderboardPage({
   const mainStoreTeams = useLeaderboardStore((state) => state.teams);
   const storedGolfers = pastTournament
     ? pastTournament.golfers
-    : mainStoreGolfers
-  const storedTeams = pastTournament
-    ? pastTournament.teams
-    : mainStoreTeams
+    : mainStoreGolfers;
+  const storedTeams = pastTournament ? pastTournament.teams : mainStoreTeams;
   const golfers = pastTournament ? pastTournament.golfers : storedGolfers;
   const teamsData = pastTournament ? pastTournament.teams : storedTeams;
 
@@ -69,74 +68,86 @@ export default function LeaderboardPage({
       playoffSpots: [],
     },
   ];
-
+  const [showStats, setShowStats] = useState<boolean>(false);
   return (
     <div className="mx-auto mt-2 w-full max-w-4xl md:w-11/12 lg:w-8/12">
-      {/* Admin-only link to tournament stats */}
+      {/* Admin-only button to toggle stats view */}
       {member?.role === "admin" && (
-        <Link
+        <button
           className="mb-8 flex w-fit flex-row items-center justify-center self-start rounded-md border border-gray-400 px-2 py-0.5"
-          href={`/tournament/${tournament.id}/stats`}
+          onClick={() => setShowStats(!showStats)}
         >
-          Tournament Stats
-        </Link>
+          {showStats ? "Back to Leaderboard" : "Tournament Stats"}
+        </button>
       )}
 
-      {/* Tour toggle buttons */}
-      <div className="mx-auto my-4 flex w-full max-w-xl items-center justify-center gap-4">
-        {tours.map((tour) => (
-          <ToursToggleButton
-            key={tour.id}
-            tour={tour}
-            tourToggle={activeTour}
-            setTourToggle={setActiveTour}
-          />
-        ))}
-      </div>
-
-      {/* Leaderboard content */}
-      <div>
-        <LeaderboardHeaderRow
-          {...{
-            tournamentOver: tournament.currentRound === 5,
-            activeTour:
-              tours.find((tour) => tour.id === activeTour)?.shortForm ?? "",
-          }}
+      {showStats && member?.role === "admin" ? (
+        <StatsComponent
+          tournament={tournament}
+          tours={tours}
+          tourCard={tourCard ?? undefined}
+          _onClose={() => setShowStats(false)}
         />
-        {tours.find((tour) => tour.id === activeTour)?.shortForm === "PGA" ? (
-          sortGolfersForSpecialPositions(golfers ?? []).map((golfer) => (
-            <LeaderboardListing
-              key={golfer.id}
+      ) : (
+        <>
+          {/* Tour toggle buttons */}
+          <div className="mx-auto my-4 flex w-full max-w-xl items-center justify-center gap-4">
+            {tours.map((tour) => (
+              <ToursToggleButton
+                key={tour.id}
+                tour={tour}
+                tourToggle={activeTour}
+                setTourToggle={setActiveTour}
+              />
+            ))}
+          </div>
+
+          {/* Leaderboard content */}
+          <div>
+            <LeaderboardHeaderRow
               {...{
-                type: "PGA",
-                tournament,
-                tournamentGolfers: storedGolfers,
-                tourCard,
-                golfer,
+                tournamentOver: tournament.currentRound === 5,
+                activeTour:
+                  tours.find((tour) => tour.id === activeTour)?.shortForm ?? "",
               }}
             />
-          ))
-        ) : tours.find((tour) => tour.id === activeTour) ? (
-          sortTeamsForSpecialPositions(teamsData ?? [])
-            .filter((team) => team.tourCard?.tourId === activeTour)
-            .map((team) => (
-              <LeaderboardListing
-                key={team.id}
-                {...{
-                  type: "PGC",
-                  tournament,
-                  tournamentGolfers: storedGolfers,
-                  tourCard,
-                  team,
-                }}
-              />
-            ))
-        ) : (
-          <div className="py-4 text-center text-lg font-bold">
-            Choose a tour using the toggle buttons
+            {tours.find((tour) => tour.id === activeTour)?.shortForm ===
+            "PGA" ? (
+              sortGolfersForSpecialPositions(golfers ?? []).map((golfer) => (
+                <LeaderboardListing
+                  key={golfer.id}
+                  {...{
+                    type: "PGA",
+                    tournament,
+                    tournamentGolfers: storedGolfers,
+                    tourCard,
+                    golfer,
+                  }}
+                />
+              ))
+            ) : tours.find((tour) => tour.id === activeTour) ? (
+              sortTeamsForSpecialPositions(teamsData ?? [])
+                .filter((team) => team.tourCard?.tourId === activeTour)
+                .map((team) => (
+                  <LeaderboardListing
+                    key={team.id}
+                    {...{
+                      type: "PGC",
+                      tournament,
+                      tournamentGolfers: storedGolfers,
+                      tourCard,
+                      team,
+                    }}
+                  />
+                ))
+            ) : (
+              <div className="py-4 text-center text-lg font-bold">
+                Choose a tour using the toggle buttons
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
@@ -177,73 +188,86 @@ export function HistoricalLeaderboardPage({
     },
   ];
 
+  const [showStats, setShowStats] = useState<boolean>(false);
   return (
     <div className="mt-2">
-      {/* Admin-only link to tournament stats */}
+      {/* Admin-only button to toggle stats view */}
       {member?.role === "admin" && (
-        <Link
+        <button
           className="mb-8 flex w-fit flex-row items-center justify-center self-start rounded-md border border-gray-400 px-2 py-0.5"
-          href={`/tournament/${tournament.id}/stats`}
+          onClick={() => setShowStats(!showStats)}
         >
-          Tournament Stats
-        </Link>
+          {showStats ? "Back to Leaderboard" : "Tournament Stats"}
+        </button>
       )}
 
-      {/* Tour toggle buttons */}
-      <div className="mx-auto my-4 flex w-full max-w-xl items-center justify-center gap-4">
-        {tours.map((tour) => (
-          <ToursToggleButton
-            key={tour.id}
-            tour={tour}
-            tourToggle={activeTour}
-            setTourToggle={setActiveTour}
-          />
-        ))}
-      </div>
-
-      {/* Leaderboard content */}
-      <div>
-        <LeaderboardHeaderRow
-          {...{
-            tournamentOver: tournament.currentRound === 5,
-            activeTour:
-              tours.find((tour) => tour.id === activeTour)?.shortForm ?? "",
-          }}
+      {showStats && member?.role === "admin" ? (
+        <StatsComponent
+          tournament={tournament}
+          tours={tours}
+          tourCard={tourCard ?? undefined}
+          _onClose={() => setShowStats(false)}
         />
-        {tours.find((tour) => tour.id === activeTour)?.shortForm === "PGA" ? (
-          sortGolfersForSpecialPositions(golfers ?? []).map((golfer) => (
-            <LeaderboardListing
-              key={golfer.id}
+      ) : (
+        <>
+          {/* Tour toggle buttons */}
+          <div className="mx-auto my-4 flex w-full max-w-xl items-center justify-center gap-4">
+            {tours.map((tour) => (
+              <ToursToggleButton
+                key={tour.id}
+                tour={tour}
+                tourToggle={activeTour}
+                setTourToggle={setActiveTour}
+              />
+            ))}
+          </div>
+
+          {/* Leaderboard content */}
+          <div>
+            <LeaderboardHeaderRow
               {...{
-                type: "PGA",
-                tournament,
-                tournamentGolfers: golfers,
-                tourCard,
-                golfer,
+                tournamentOver: tournament.currentRound === 5,
+                activeTour:
+                  tours.find((tour) => tour.id === activeTour)?.shortForm ?? "",
               }}
             />
-          ))
-        ) : tours.find((tour) => tour.id === activeTour) ? (
-          sortTeamsForSpecialPositions(teamsData ?? [])
-            .filter((team) => team.tourCard?.tourId === activeTour)
-            .map((team) => (
-              <LeaderboardListing
-                key={team.id}
-                {...{
-                  type: "PGC",
-                  tournament,
-                  tournamentGolfers: golfers,
-                  tourCard,
-                  team,
-                }}
-              />
-            ))
-        ) : (
-          <div className="py-4 text-center text-lg font-bold">
-            Choose a tour using the toggle buttons
+            {tours.find((tour) => tour.id === activeTour)?.shortForm ===
+            "PGA" ? (
+              sortGolfersForSpecialPositions(golfers ?? []).map((golfer) => (
+                <LeaderboardListing
+                  key={golfer.id}
+                  {...{
+                    type: "PGA",
+                    tournament,
+                    tournamentGolfers: golfers,
+                    tourCard,
+                    golfer,
+                  }}
+                />
+              ))
+            ) : tours.find((tour) => tour.id === activeTour) ? (
+              sortTeamsForSpecialPositions(teamsData ?? [])
+                .filter((team) => team.tourCard?.tourId === activeTour)
+                .map((team) => (
+                  <LeaderboardListing
+                    key={team.id}
+                    {...{
+                      type: "PGC",
+                      tournament,
+                      tournamentGolfers: golfers,
+                      tourCard,
+                      team,
+                    }}
+                  />
+                ))
+            ) : (
+              <div className="py-4 text-center text-lg font-bold">
+                Choose a tour using the toggle buttons
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }

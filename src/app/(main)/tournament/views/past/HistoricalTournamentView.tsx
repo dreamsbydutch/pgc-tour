@@ -1,7 +1,10 @@
 "use client";
 
-import LeaderboardHeader from "../_components/header/LeaderboardHeader";
-import { HistoricalLeaderboardPage, PlayoffLeaderboardPage } from "./LeaderboardPage";
+import LeaderboardHeader from "../../components/header/LeaderboardHeader";
+import {
+  HistoricalLeaderboardPage,
+  PlayoffLeaderboardPage,
+} from "../shared/LeaderboardPage";
 import { api } from "@/src/trpc/react";
 
 interface PastTournamentViewProps {

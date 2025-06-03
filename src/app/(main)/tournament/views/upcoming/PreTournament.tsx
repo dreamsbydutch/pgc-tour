@@ -1,10 +1,10 @@
 "use client";
 
-import TournamentCountdown from "../_components/TournamentCountdown";
+import TournamentCountdown from "../../components/ui/TournamentCountdown";
 import { cn, formatMoney, formatRank } from "@/src/lib/utils";
-import { Button } from "../../../_components/ui/button";
+import { Button } from "@/src/app/_components/ui/button";
 import { useState } from "react";
-import LoadingSpinner from "../../../_components/LoadingSpinner";
+import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { useMainStore } from "@/src/lib/store/store";
 import type {
   Course,

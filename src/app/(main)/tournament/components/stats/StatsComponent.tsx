@@ -3,13 +3,8 @@
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { cn, formatScore } from "@/src/lib/utils";
 import { api } from "@/src/trpc/react";
-import { ArrowLeftIcon } from "lucide-react";
-import Link from "next/link";
-import { Suspense, useState, type Dispatch, type SetStateAction } from "react";
-
-import { useMainStore } from "@/src/lib/store/store";
-import { LeaderboardHeaderSkeleton } from "../_components/skeletons/LeaderboardHeaderSkeleton";
-import LeaderboardHeader from "../_components/header/LeaderboardHeader";
+import { useState, type Dispatch, type SetStateAction } from "react";
+import { useMainStore, useLeaderboardStore } from "@/src/lib/store/store";
 import type { Team, Tour, TourCard, Tournament } from "@prisma/client";
 import {
   Table,
@@ -17,85 +12,153 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/app/_components/ui/table";
-import { useSearchParams } from "next/navigation";
 
-// Force dynamic rendering to prevent static generation issues
-export const dynamic = "force-dynamic";
-
-// Component that uses useSearchParams - needs to be wrapped in Suspense
-function StatsPageContent() {
-  const tournaments = useMainStore((state) => state.seasonTournaments);
-  const searchParams = useSearchParams();
-  const tournamentIdParam = searchParams.get("id");
-  const tournament = tournaments?.find(
-    (tournament) => tournament.id === tournamentIdParam,
-  );
-  const tours = useMainStore((state) => state.tours);
-  const tourCard = useMainStore((state) => state.currentTourCard);
-
-  return (
-    <div className="flex w-full flex-col">
-      <Suspense fallback={<LeaderboardHeaderSkeleton />}>
-        {tournament ? <LeaderboardHeader focusTourney={tournament} /> : <></>}
-      </Suspense>
-      <Suspense fallback={<LoadingSpinner />}>
-        {tournament && tours && tourCard && (
-          <StatsPage {...{ tournament, tours, tourCard }} />
-        )}
-      </Suspense>
-    </div>
-  );
-}
-
-export default function Page() {
-  return (
-    <Suspense fallback={<LoadingSpinner />}>
-      <StatsPageContent />
-    </Suspense>
-  );
-}
-
-function StatsPage({
+export default function StatsComponent({
   tournament,
   tours,
   tourCard,
+  _onClose,
 }: {
   tournament: Tournament;
   tours: Tour[];
   tourCard?: TourCard;
+  _onClose: () => void;
 }) {
   const [activeTour, setActiveTour] = useState<string>(tourCard?.tourId ?? "");
-  const { data: teams, isLoading } = api.team.getByTournament.useQuery(
+
+  // First check if we already have the data in the store
+  const pastTournament = useMainStore((state) => state.pastTournaments)?.find(
+    (t) => t.id === tournament.id,
+  );
+  const leaderboardTeams = useLeaderboardStore((state) => state.teams);
+  const mainStoreLastUpdated = useLeaderboardStore(
+    (state) => state._lastUpdated,
+  );
+
+  // Check if stored data is stale (older than 5 minutes)
+  const isDataStale = () => {
+    if (!mainStoreLastUpdated) return true;
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    return mainStoreLastUpdated < fiveMinutesAgo;
+  };
+
+  // Add a state to track when the user manually triggers a refresh
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+  // Fetch teams data if:
+  // 1. No data in store, or
+  // 2. Data is stale, or
+  // 3. User manually refreshes
+  const {
+    data: fetchedTeams,
+    isLoading: isFetchingTeams,
+    refetch: _refetch,
+  } = api.team.getByTournament.useQuery(
     {
       tournamentId: tournament?.id ?? "",
     },
-    { staleTime: 30 * 1000 },
-  );
+    {
+      staleTime: 5 * 60 * 1000, // 5 minutes stale time
+      enabled:
+        !(pastTournament?.teams ?? leaderboardTeams) ||
+        isDataStale() ||
+        refreshTrigger > 0,
+    },
+  ); // Use data from store if available and not stale, otherwise use fetched data
+  const teams = (() => {
+    if (!isDataStale() && (pastTournament?.teams ?? leaderboardTeams)) {
+      return pastTournament?.teams ?? leaderboardTeams;
+    }
+    return fetchedTeams;
+  })();
 
+  const isLoading = isFetchingTeams && !teams;
   // Get the currently active teams for the selected tour
   const tourTeams =
-    teams?.filter((team) => team.tourCard.tourId === activeTour) ?? [];
-
-  // Helper function to get sorted teams based on tour type
+    teams?.filter(
+      (team: Team & { tourCard?: TourCard | null }) =>
+        team.tourCard?.tourId === activeTour,
+    ) ?? []; // Helper function to get sorted teams based on tour type
   const getSortedTeams = () => {
     if (!teams) return [];
 
     const filteredTeams = teams.filter(
-      (team) => team.tourCard.tourId === activeTour,
+      (team: Team & { tourCard?: TourCard | null }) =>
+        team.tourCard?.tourId === activeTour,
     );
     return sortTeamsForSpecialPostions(filteredTeams);
   };
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8">
+        <LoadingSpinner />
+        <p className="mt-4 text-gray-600">Loading tournament statistics...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-2 px-2">
-      <Link
-        className="mb-8 flex w-fit flex-row items-center justify-center self-start rounded-md border border-gray-400 px-2 py-0.5"
-        href={`/tournament/${tournament.id}`}
-      >
-        <ArrowLeftIcon size={15} /> Back To Tournament
-      </Link>
+      {/* Refresh button with last update time */}
+      <div className="mb-2 flex items-center justify-between">
+        <div className="text-xs text-gray-500">
+          {mainStoreLastUpdated && (
+            <span>
+              Last updated:{" "}
+              {new Date(mainStoreLastUpdated).toLocaleTimeString()}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={() => setRefreshTrigger((prev) => prev + 1)}
+          disabled={isFetchingTeams}
+          className="flex items-center justify-center rounded bg-gray-200 px-3 py-1 text-sm hover:bg-gray-300 disabled:opacity-50"
+        >
+          {isFetchingTeams ? (
+            <>
+              <svg
+                className="-ml-1 mr-2 h-4 w-4 animate-spin text-gray-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Refreshing...
+            </>
+          ) : (
+            <>
+              <svg
+                className="mr-1 h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                ></path>
+              </svg>
+              {isDataStale() ? "Update Stale Data" : "Refresh Data"}
+            </>
+          )}
+        </button>
+      </div>
 
       <div className="mx-auto my-4 flex w-11/12 max-w-xl justify-around text-center">
         {tours.map((tour) => (
@@ -183,11 +246,15 @@ function ToggleButton({
   );
 }
 
-function sortTeamsForSpecialPostions(teams: Team[]) {
+function sortTeamsForSpecialPostions(
+  teams: (Team & { tourCard?: TourCard | null })[],
+) {
   return teams
     .sort((a, b) => (a.thru ?? 0) - (b.thru ?? 0))
     .sort((a, b) => {
-      const getAdjustedScore = (team: Team) => {
+      const getAdjustedScore = (
+        team: Team & { tourCard?: TourCard | null },
+      ) => {
         const score = team.score ?? 999;
         if (team.position === "DQ") return 999 + score;
         if (team.position === "WD") return 888 + score;
@@ -204,24 +271,25 @@ function StatsListing({
   teams,
   tourTeams,
 }: {
-  team: Team;
-  teams: Team[];
-  tourTeams: Team[];
+  team: Team & { tourCard?: TourCard | null };
+  teams: (Team & { tourCard?: TourCard | null })[];
+  tourTeams: (Team & { tourCard?: TourCard | null })[];
 }) {
-  const tourCards = useMainStore((state) => state.tourCards);
-  const tourCard = tourCards?.find((card) => card.id === team.tourCardId);
+  const tourCards = useMainStore((state) => state.tourCards); // First try to use the already joined tourCard, fallback to finding it in tourCards
+  const tourCard =
+    team.tourCard ?? tourCards?.find((card) => card.id === team.tourCardId);
+
   return (
     <TableRow className="border-slate-900 text-center">
       <TableCell className="border-l border-slate-900 text-sm">
         {team.position}
-      </TableCell>
+      </TableCell>{" "}
       <TableCell colSpan={4} className="whitespace-nowrap text-sm">
-        {tourCard?.displayName}
+        {tourCard?.displayName ?? "Unknown Team"}
       </TableCell>
       <TableCell className="border-r border-slate-900 text-xs">
         {team.score}
       </TableCell>
-
       <RoundCell
         roundNum={1}
         roundScore={team.roundOne}
@@ -229,7 +297,6 @@ function StatsListing({
         teams={teams}
         tourTeams={tourTeams}
       />
-
       <RoundCell
         roundNum={2}
         roundScore={team.roundTwo}
@@ -237,7 +304,6 @@ function StatsListing({
         teams={teams}
         tourTeams={tourTeams}
       />
-
       <RoundCell
         roundNum={3}
         roundScore={team.roundThree}
@@ -245,7 +311,6 @@ function StatsListing({
         teams={teams}
         tourTeams={tourTeams}
       />
-
       <RoundCell
         roundNum={4}
         roundScore={team.roundFour}
@@ -266,9 +331,9 @@ function RoundCell({
 }: {
   roundNum: 1 | 2 | 3 | 4;
   roundScore: number | null;
-  team: Team;
-  teams: Team[];
-  tourTeams: Team[];
+  team: Team & { tourCard?: TourCard | null };
+  teams: (Team & { tourCard?: TourCard | null })[];
+  tourTeams: (Team & { tourCard?: TourCard | null })[];
 }) {
   // Helper functions
   const getRoundProperty = (team: Team, round: 1 | 2 | 3 | 4) => {

@@ -2,15 +2,18 @@
 
 import { useMainStore } from "@/src/lib/store/store";
 import { useSearchParams } from "next/navigation";
-import { LeaderboardHeaderSkeleton } from "@/src/app/(main)/tournament/_components/skeletons/LeaderboardHeaderSkeleton";
-import PreTournamentPage, {
+import {
+  LeaderboardHeaderSkeleton,
+  TournamentCountdownSkeleton,
+  LeaderboardHeader,
+} from "./components";
+import {
+  PreTournamentPage,
   TeamPickFormSkeleton,
-} from "@/src/app/(main)/tournament/_views/PreTournament";
-import LeaderboardHeader from "@/src/app/(main)/tournament/_components/header/LeaderboardHeader";
-import { TournamentCountdownSkeleton } from "@/src/app/(main)/tournament/_components/TournamentCountdown";
-import ActiveTournamentView from "./_views/ActiveTournamentView";
-import PastTournamentView from "./_views/PastTournamentView";
-import HistoricalTournamentView from "./_views/HistoricalTournamentView";
+  ActiveTournamentView,
+  PastTournamentView,
+  HistoricalTournamentView,
+} from "./views";
 import { Suspense } from "react";
 
 // Force dynamic rendering to prevent static generation issues
