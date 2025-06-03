@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { RotateCcw, Loader2, AlertTriangle } from "lucide-react";
-import { forceCacheInvalidation } from "@/src/lib/store/storeUtils";
+import { forceRefreshCache } from "@/src/lib/store/cacheInvalidation";
 import { useMainStore } from "@/src/lib/store/store";
 
 export default function FloatingResetButton() {
@@ -39,7 +39,7 @@ export default function FloatingResetButton() {
 
     setIsResetting(true);
     try {
-      await forceCacheInvalidation();
+      await forceRefreshCache("global");
       // Small delay to show completion before page potentially refreshes
       setTimeout(() => {
         setIsResetting(false);

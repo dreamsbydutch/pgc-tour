@@ -5,7 +5,10 @@ import { z } from "zod";
 // Input validation schemas
 const PostRequestSchema = z.object({
   source: z.string().optional().default("api"),
-  type: z.string().optional().default("global"),
+  type: z
+    .enum(["global", "tourCards", "tournaments"])
+    .optional()
+    .default("global"),
 });
 
 // Response type interfaces
@@ -25,6 +28,16 @@ interface ErrorResponse {
 interface CacheStatusResponse {
   status: string;
   latestInvalidation: {
+    timestamp: number;
+    source: string;
+    type: string;
+  } | null;
+  latestTourCardInvalidation: {
+    timestamp: number;
+    source: string;
+    type: string;
+  } | null;
+  latestTournamentInvalidation: {
     timestamp: number;
     source: string;
     type: string;
@@ -111,26 +124,54 @@ export async function POST(
 }
 
 /**
- * GET endpoint to check latest cache invalidation
+ * GET endpoint to check latest cache invalidation by type
  */
 export async function GET(): Promise<
   NextResponse<CacheStatusResponse | CacheStatusErrorResponse>
 > {
   try {
-    const latestInvalidation = await db.cacheInvalidation.findFirst({
+    // Get latest invalidation for each type
+    const [latestTourCards, latestTournaments] =
+      await Promise.all([
+        db.cacheInvalidation.findFirst({
+          where: { type: "tourCards" },
+          orderBy: { timestamp: "desc" },
+        }),
+        db.cacheInvalidation.findFirst({
+          where: { type: "tournaments" },
+          orderBy: { timestamp: "desc" },
+        }),
+      ]);
+
+    // Also get the overall latest invalidation
+    const latestOverall = await db.cacheInvalidation.findFirst({
       orderBy: { timestamp: "desc" },
     });
 
     return NextResponse.json({
       status: "active",
-      latestInvalidation: latestInvalidation
+      latestInvalidation: latestOverall
         ? {
-            timestamp: latestInvalidation.timestamp.getTime(),
-            source: latestInvalidation.source ?? "",
-            type: latestInvalidation.type,
+            timestamp: latestOverall.timestamp.getTime(),
+            source: latestOverall.source ?? "",
+            type: latestOverall.type,
           }
         : null,
-      message: "Database-driven cache invalidation system",
+      latestTourCardInvalidation: latestTourCards
+        ? {
+            timestamp: latestTourCards.timestamp.getTime(),
+            source: latestTourCards.source ?? "",
+            type: latestTourCards.type,
+          }
+        : null,
+      latestTournamentInvalidation: latestTournaments
+        ? {
+            timestamp: latestTournaments.timestamp.getTime(),
+            source: latestTournaments.source ?? "",
+            type: latestTournaments.type,
+          }
+        : null,
+      message: "Database-driven cache invalidation system with type support",
     } satisfies CacheStatusResponse);
   } catch (error) {
     console.error("Error fetching cache status:", error);

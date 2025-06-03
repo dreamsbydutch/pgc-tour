@@ -63,9 +63,7 @@ export async function GET(request: Request) {
         });
         return tourCard;
       }),
-    );
-
-    // Notify cache invalidation system that standings have been updated
+    ); // Notify cache invalidation system that standings have been updated
     try {
       const invalidateResponse = await fetch(`${origin}/api/cache/invalidate`, {
         method: "POST",
@@ -73,7 +71,7 @@ export async function GET(request: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          type: "standings",
+          type: "tourCards",
           source: "cron-update-standings",
         }),
       });

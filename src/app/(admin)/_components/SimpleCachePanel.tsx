@@ -20,6 +20,8 @@ import {
 import {
   forceRefreshCache,
   getCacheStatus,
+  invalidateTourCardsCache,
+  invalidateTournamentCache,
 } from "@/src/lib/store/cacheInvalidation";
 import { Trash2, RefreshCw, Database, Clock } from "lucide-react";
 import { api } from "@/src/trpc/react";
@@ -53,8 +55,7 @@ export default function CacheManagementPanel() {
       setIsLoading(null);
     }
   };
-
-  // Database-driven cache invalidation handler
+  // Database-driven cache invalidation handlers
   const handleDatabaseInvalidation = async () => {
     setIsLoading("invalidate-database");
     try {
@@ -64,13 +65,45 @@ export default function CacheManagementPanel() {
       });
 
       // Then force refresh the cache
-      await forceRefreshCache();
+      await forceRefreshCache("global");
 
       // Update UI state
       setCacheInfo(getCacheInfo());
       setCacheStatus(getCacheStatus());
     } catch (error) {
       console.error("Error during database invalidation:", error);
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
+  const handleTourCardInvalidation = async () => {
+    setIsLoading("invalidate-tour-cards");
+    try {
+      await invalidateTourCardsCache("admin-panel");
+      await forceRefreshCache("tourCards");
+
+      // Update UI state
+      setCacheInfo(getCacheInfo());
+      setCacheStatus(getCacheStatus());
+    } catch (error) {
+      console.error("Error during tour card invalidation:", error);
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
+  const handleTournamentInvalidation = async () => {
+    setIsLoading("invalidate-tournaments");
+    try {
+      await invalidateTournamentCache("admin-panel");
+      await forceRefreshCache("tournaments");
+
+      // Update UI state
+      setCacheInfo(getCacheInfo());
+      setCacheStatus(getCacheStatus());
+    } catch (error) {
+      console.error("Error during tournament invalidation:", error);
     } finally {
       setIsLoading(null);
     }
@@ -167,10 +200,49 @@ export default function CacheManagementPanel() {
               </div>
             </div>
           </div>
-        </div>
+        </div>{" "}
         {/* Quick Actions */}
         <div className="space-y-4">
-          <h4 className="text-sm font-medium">Quick Actions</h4>
+          <h4 className="text-sm font-medium">Cache Invalidation</h4>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDatabaseInvalidation}
+              disabled={isLoading === "invalidate-database"}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {isLoading === "invalidate-database"
+                ? "Invalidating..."
+                : "Refresh All Data"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTourCardInvalidation}
+              disabled={isLoading === "invalidate-tour-cards"}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {isLoading === "invalidate-tour-cards"
+                ? "Refreshing..."
+                : "Refresh Tour Cards"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTournamentInvalidation}
+              disabled={isLoading === "invalidate-tournaments"}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {isLoading === "invalidate-tournaments"
+                ? "Refreshing..."
+                : "Refresh Tournaments"}
+            </Button>
+          </div>
+        </div>
+        {/* Store Actions */}
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium">Store Actions</h4>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
             {" "}
             <Button
