@@ -4,12 +4,45 @@ import { useInitStore } from "./useInitStore";
 import EmergencyReset from "@/src/app/_components/EmergencyReset";
 import { OptimizedImage } from "@/src/app/_components/OptimizedImage";
 import { COMMON_IMAGES } from "@/src/lib/utils/image-optimization";
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { forceCacheInvalidation } from "./storeUtils";
+import { useAuthListener } from "@/src/lib/hooks/use-auth-listener";
 
 export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
   const { isLoading, error } = useInitStore();
+  const searchParams = useSearchParams();
+
+  // Listen for authentication state changes
+  useAuthListener();
 
   // Debug logging
   console.log("🔍 InitStoreWrapper render:", { isLoading, error: !!error });
+
+  // Check for successful authentication and refresh store if needed
+  useEffect(() => {
+    const authSuccess = searchParams.get("auth_success");
+    if (authSuccess === "true") {
+      console.log("🔐 Authentication success detected, refreshing store...");
+      // Clear the URL parameters
+      const url = new URL(window.location.href);
+      url.searchParams.delete("auth_success");
+      url.searchParams.delete("timestamp");
+      window.history.replaceState({}, "", url.toString());
+
+      // Force store refresh to get updated user data
+      forceCacheInvalidation()
+        .then(() => {
+          console.log("✅ Store refreshed after authentication");
+        })
+        .catch((err) => {
+          console.error(
+            "❌ Failed to refresh store after authentication:",
+            err,
+          );
+        });
+    }
+  }, [searchParams]);
 
   // Show loading state while initializing
   if (isLoading) {

@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function updateSession(request: NextRequest) {
+  console.log("🔒 Middleware running for:", request.nextUrl.pathname);
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -30,10 +32,18 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
+  // Skip auth checks for callback routes to prevent interference
+  if (request.nextUrl.pathname.startsWith("/auth/callback")) {
+    console.log("🔄 Skipping auth checks for callback route");
+    return supabaseResponse;
+  }
+
   // Get the current user from Supabase
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  console.log("👤 User status in middleware:", !!user, user?.email);
 
   // Redirect non-admin users trying to access admin pages to the home page
   if (
@@ -44,6 +54,7 @@ export async function updateSession(request: NextRequest) {
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
+    console.log("🚫 Redirecting non-admin to home");
     return NextResponse.redirect(url);
   }
 
@@ -51,6 +62,7 @@ export async function updateSession(request: NextRequest) {
   if (user && request.nextUrl.pathname.startsWith("/signin")) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
+    console.log("✅ Redirecting authenticated user away from signin");
     return NextResponse.redirect(url);
   }
 
