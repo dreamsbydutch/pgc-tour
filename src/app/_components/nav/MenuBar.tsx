@@ -44,7 +44,7 @@ export default function MenuBar({ className }: { className?: string }) {
     { href: "/tournament", icon: List, label: "LEADERBOARD" },
     { href: "/standings", icon: Trophy, label: "STANDINGS" },
     { href: "/rulebook", icon: BookText, label: "RULEBOOK" },
-    { href: "/history", icon: ArchiveIcon, label: "RECORDS" },
+    // { href: "/history", icon: ArchiveIcon, label: "RECORDS" },
   ];
 
   /**
@@ -78,12 +78,12 @@ export default function MenuBar({ className }: { className?: string }) {
         {isSigningOut ? (
           <Skeleton className="h-[1.5rem] w-[1.5rem] rounded-full" />
         ) : member ? (
-            <div className="flex items-center justify-center gap-2">
-              <UserAccountNav {...{ member, size: "small", setIsSigningOut }} />
-              <span className="font-barlow text-2xl font-semibold">
-                {tourCard?.displayName ?? "User"}
-              </span>
-            </div>
+          <div className="flex items-center justify-center gap-2">
+            <UserAccountNav {...{ member, size: "small", setIsSigningOut }} />
+            <span className="font-barlow text-2xl font-semibold">
+              {tourCard?.displayName ?? "User"}
+            </span>
+          </div>
         ) : (
           <div onClick={() => signInWithGoogle({ setIsGoogleLoading })}>
             {isGoogleLoading ? (

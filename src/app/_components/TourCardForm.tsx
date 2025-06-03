@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "./ui/button";
-import Image from "next/image";
+import { TourLogo } from "./OptimizedImage";
 import { createTourCard } from "@/src/server/api/actions/tour_card";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import LoadingSpinner from "./LoadingSpinner";
@@ -79,13 +79,8 @@ function TourCardFormButton({
         <LoadingSpinner className="h-fit w-fit" />
       ) : (
         <>
-          <Image
-            src={tour.logoUrl}
-            alt="Tour Logo"
-            width={128}
-            height={128}
-            className="w-4/5"
-          />
+          {" "}
+          <TourLogo src={tour.logoUrl} alt="Tour Logo" className="w-4/5" />
           {tour.name}
           <div className="text-xs text-slate-600">
             {+(process.env.TOUR_MAX_SIZE ?? 75) - (tourCards?.length ?? 0) === 0

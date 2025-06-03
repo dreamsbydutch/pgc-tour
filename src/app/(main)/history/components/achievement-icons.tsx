@@ -1,6 +1,7 @@
 "use client";
 
-import Image from "next/image";
+import { AchievementIcon } from "@/src/app/_components/OptimizedImage";
+import { getTournamentImageUrl } from "@/src/lib/utils/image-optimization";
 import { useMemo } from "react";
 import { cn } from "@/src/lib/utils";
 import type { Member, Team, Tier, Tournament } from "@prisma/client";
@@ -73,18 +74,14 @@ export function AchievementIcons({
             key={team.id}
             className="flex flex-col items-center justify-center"
           >
-            <Image
+            {" "}
+            <AchievementIcon
               key={team.id + "-img"}
-              src={
-                tourney?.name === "RBC Canadian Open"
-                  ? "https://jn9n1jxo7g.ufs.sh/f/3f3580a5-8a7f-4bc3-a16c-53188869acb2-x8pl2f.png"
-                  : tourney?.name === "TOUR Championship"
-                    ? "https://jn9n1jxo7g.ufs.sh/f/94GU8p0EVxqPNsO8w6FZhY1BamONzvl3bLgdn0IXVM8fEoTC"
-                    : (tourney?.logoUrl ?? "")
-              }
+              src={getTournamentImageUrl(
+                tourney?.name ?? "",
+                tourney?.logoUrl ?? undefined,
+              )}
               alt="Tournament Champion Logo"
-              width={512}
-              height={512}
               className={cn(
                 "mx-0.5 inline-block",
                 tourney?.name === "TOUR Championship" ? "h-7 w-7" : "h-5 w-5",

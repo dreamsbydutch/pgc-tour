@@ -74,6 +74,29 @@ export function UpdateTeamsButton() {
     </div>
   );
 }
+export function UpdateStandingsButton() {
+  const [isClicked, setIsClicked] = useState(false);
+  const [effect, setEffect] = useState(false);
+  const router = useRouter();
+
+  const handleButtonClick = () => {
+    setIsClicked(true);
+    router.push("/cron/update-standings");
+  };
+
+  return (
+    <div>
+      <Button
+        className={`${effect && "animate-toggleClick"} h-[2rem]`}
+        onAnimationEnd={() => setEffect(false)}
+        onClick={handleButtonClick}
+        disabled={isClicked}
+      >
+        {isClicked ? <LoadingSpinner /> : "Update Standings"}
+      </Button>
+    </div>
+  );
+}
 
 export function EmailListLinkButton() {
   const [isClicked, setIsClicked] = useState(false);

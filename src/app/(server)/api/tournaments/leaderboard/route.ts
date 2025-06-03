@@ -9,7 +9,8 @@ export async function GET() {
     const currentTourn = tournaments.find(
       (tournament) =>
         new Date(tournament.startDate) <= new Date() &&
-        new Date(tournament.endDate) >= new Date(),
+        new Date(tournament.endDate) >= new Date() &&
+        (tournament.currentRound ?? 0) < 5,
     );
     const currentTournId = currentTourn?.id;
     if (!currentTournId) {

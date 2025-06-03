@@ -33,12 +33,18 @@ export const tournamentRouter = createTRPCRouter({
     const today = new Date();
     return {
       current: await ctx.db.tournament.findFirst({
-        where: { startDate: { lte: today }, endDate: { gte: today } },
+        where: {
+          startDate: { lte: today },
+          endDate: { gte: today },
+          currentRound: { lt: 5 },
+        },
         orderBy: { startDate: "desc" },
         include: { course: true },
       }),
       past: await ctx.db.tournament.findFirst({
-        where: { endDate: { lte: today } },
+        where: {
+          OR: [{ endDate: { lte: today } }, { currentRound: { gte: 5 } }],
+        },
         orderBy: { startDate: "desc" },
         include: { course: true },
       }),
@@ -52,7 +58,11 @@ export const tournamentRouter = createTRPCRouter({
   getActive: publicProcedure.query(async ({ ctx }) => {
     const today = new Date();
     return ctx.db.tournament.findFirst({
-      where: { startDate: { lte: today }, endDate: { gte: today } },
+      where: {
+        startDate: { lte: today },
+        endDate: { gte: today },
+        currentRound: { lt: 5 },
+      },
     });
   }),
   getLeaderboard: publicProcedure

@@ -3,7 +3,7 @@
 import { useMainStore } from "@/src/lib/store/store";
 import { formatScore } from "@/src/lib/utils";
 import type { Golfer, Team, Tournament } from "@prisma/client";
-import Image from "next/image";
+import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
 import Link from "next/link";
 import LittleFucker from "@/src/app/_components/LittleFucker";
 
@@ -37,19 +37,19 @@ export default function ChampionsPopup() {
   return (
     <div className="m-3 rounded-2xl bg-amber-100 bg-opacity-70 shadow-lg md:w-10/12 lg:w-7/12">
       <div className="mx-auto max-w-3xl py-4 text-center">
+        {" "}
         <h1 className="flex items-center justify-center px-3 font-varela text-2xl font-bold sm:text-3xl md:text-4xl">
+          {" "}
           {tournament.logoUrl && (
-            <Image
+            <TournamentLogo
               alt={`${tournament.name} Logo`}
               src={tournament.logoUrl}
               className="h-16 w-16"
-              width={128}
-              height={128}
+              size="large"
             />
           )}
           {tournament.name} Champions
         </h1>
-
         {/* Render each champion's info */}
         {champs.map((champ) => {
           const teamGolfers = tournament.golfers.filter((golfer) =>
@@ -106,13 +106,13 @@ function ChampionSection({
     >
       <div className="my-2 w-full border-b border-slate-800" />
       <div className="flex items-center justify-center gap-4">
+        {" "}
         {tour && (
-          <Image
+          <TournamentLogo
             alt={`${tour.name || "Tour"} Logo`}
             src={tour?.logoUrl || ""}
             className="h-12 w-12"
-            width={128}
-            height={128}
+            size="medium"
           />
         )}
         <div className="text-xl font-semibold">

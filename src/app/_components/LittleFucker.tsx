@@ -2,7 +2,7 @@
 
 import { useMainStore } from "@/src/lib/store/store";
 import type { TourCard } from "@prisma/client";
-import Image from "next/image";
+import { AchievementIcon } from "./OptimizedImage";
 
 export default function LittleFucker({ tourCard }: { tourCard: TourCard }) {
   const tier = useMainStore((state) => state.currentTiers)?.find(
@@ -21,7 +21,7 @@ export default function LittleFucker({ tourCard }: { tourCard: TourCard }) {
     );
     if (!champ) return null;
     return (
-      <Image
+      <AchievementIcon
         key={champ.id}
         src={
           major.name === "RBC Canadian Open"
@@ -29,8 +29,6 @@ export default function LittleFucker({ tourCard }: { tourCard: TourCard }) {
             : (major.logoUrl ?? "")
         }
         alt="Major Champ Logo"
-        width={512}
-        height={512}
         className="mx-0.5 inline-block h-6 w-6"
       />
     );

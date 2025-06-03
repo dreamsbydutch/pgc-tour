@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
 import HeaderDropdown from "./HeaderDropdownMenu";
 import { PopoverTrigger } from "@radix-ui/react-popover";
 import { Popover, PopoverContent } from "@/src/app/_components/ui/popover";
@@ -36,29 +36,27 @@ export default function LeaderboardHeader({
       className="mx-auto w-full max-w-4xl md:w-11/12 lg:w-8/12"
     >
       <div className="mx-auto grid grid-flow-row grid-cols-10 items-center border-b-2 border-gray-800 py-2">
+        {" "}
         {/* Tournament Logo */}
-        <div className="col-span-3 row-span-4 max-h-40 place-self-center px-1 py-2 text-center font-varela">
+        <div className="col-span-3 row-span-4 h-full w-full place-self-center p-2 text-center font-varela">
           {focusTourney.logoUrl && (
-            <Image
+            <TournamentLogo
               src={focusTourney.logoUrl}
-              className="max-h-32"
+              className=""
               alt={`${focusTourney.name} logo`}
-              width={150}
-              height={150}
+              size="xl"
+              fill={true}
             />
           )}
         </div>
-
         {/* Tournament Name */}
         <div className="col-span-5 row-span-2 place-self-center text-center font-varela text-xl font-bold xs:text-2xl sm:text-3xl lg:text-4xl">
           {focusTourney.name}
         </div>
-
         {/* Tournament Dropdown */}
         <div className="col-span-2 row-span-1 place-self-center text-center font-varela text-xs xs:text-sm sm:text-base md:text-lg">
           <HeaderDropdown activeTourney={focusTourney} />
         </div>
-
         {/* Tournament Date Range */}
         <div className="col-span-2 row-span-1 place-self-center text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
           {`${new Date(focusTourney.startDate).toLocaleDateString("en-us", {
@@ -76,7 +74,6 @@ export default function LeaderboardHeader({
                 })
           }`}
         </div>
-
         {/* Course Name Popover */}
         <Popover>
           <PopoverTrigger className="col-span-3 row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
@@ -86,17 +83,14 @@ export default function LeaderboardHeader({
             <CoursePopover {...{ focusTourney }} />
           </PopoverContent>
         </Popover>
-
         {/* Course Location */}
         <div className="col-span-2 row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
           {course?.location}
         </div>
-
         {/* Course Details */}
         <div className="col-span-2 row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
           {`${course?.front} - ${course?.back} - ${course?.par}`}
         </div>
-
         {/* Tier Information Popover */}
         <Popover>
           <PopoverTrigger className="col-span-7 row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">

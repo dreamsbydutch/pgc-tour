@@ -252,3 +252,13 @@ enum TransactionType {
   CharityDonation
   Payment
 }
+
+model CacheInvalidation {
+  id        String   @id @default(cuid())
+  type      String   @default("global") // Type of cache invalidation
+  timestamp DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  source    String? // Source of the invalidation (e.g., "manual", "cron", "admin")
+
+  @@map("cache_invalidations")
+}

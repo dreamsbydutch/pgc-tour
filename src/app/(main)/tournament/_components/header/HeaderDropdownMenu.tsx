@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/src/app/_components/ui/dropdown-menu";
 import Link from "next/link";
-import Image from "next/image";
+import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
 import { cn } from "@/lib/utils";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { useMainStore } from "@/src/lib/store/store";
@@ -228,13 +228,13 @@ function TournamentItem({
         isActive && "font-bold",
       )}
     >
+      {" "}
       <div className="flex items-center justify-start gap-2">
         {tourney.logoUrl && (
-          <Image
+          <TournamentLogo
             src={tourney.logoUrl}
             alt={`${tourney.name} logo`}
-            width={28}
-            height={28}
+            size="small"
             className="h-7 w-7"
           />
         )}

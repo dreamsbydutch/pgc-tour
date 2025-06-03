@@ -16,21 +16,34 @@ import {
   TableHeader,
   TableRow,
 } from "./_components/ui/table";
-import Image from "next/image";
+import { OptimizedImage } from "./_components/OptimizedImage";
+import {
+  COMMON_IMAGES,
+  preloadCriticalImages,
+} from "@/src/lib/utils/image-optimization";
 import { useMainStore } from "@/src/lib/store/store";
+import { useEffect } from "react";
 
 export default function Home() {
   const tiers = useMainStore((state) => state.currentTiers);
+
+  // Preload critical images when component mounts
+  useEffect(() => {
+    preloadCriticalImages();
+  }, []);
+
   if (!tiers)
     return (
       <div className="flex h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100">
         <div className="mx-auto flex animate-pulse items-center justify-center text-center font-varela text-3xl text-slate-600">
-          <Image
-            src={"/logo512.png"}
+          <OptimizedImage
+            src={COMMON_IMAGES.PGC_LOGO}
             alt="PGC Logo"
             width={96}
             height={96}
             className="mx-2"
+            priority={true}
+            sizes="96px"
           />
           <div className="w-44 text-center">Loading Clubhouse Data.....</div>
         </div>
@@ -46,18 +59,11 @@ export default function Home() {
       <HomePageLeaderboard />
       <TournamentCountdown />
       <HomePageStandings />
-      <TourCardForm />
+      <TourCardForm />{" "}
       <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
         <div className="my-3 flex items-center justify-center gap-3">
-          <Image
-            src={"/logo512.png"}
-            alt="PGC Logo"
-            width={512}
-            height={512}
-            className="h-14 w-14"
-          />
           <h2 className="pb-1 font-yellowtail text-5xl sm:text-6xl md:text-7xl">
-            Schedule
+            PGC Schedule
           </h2>
         </div>
         <CurrentSchedule />
@@ -170,13 +176,15 @@ function CurrentSchedule() {
                 tier?.name === "Major" ? "bg-blue-50" : "",
               )}
             >
+              {" "}
               <TableCell className="flex items-center justify-center whitespace-nowrap text-center text-xs">
-                <Image
+                <OptimizedImage
                   src={tourney.logoUrl ?? ""}
                   className="pr-1"
                   alt={tourney.name}
                   width={25}
                   height={25}
+                  sizes="25px"
                 />
                 {tourney.name}
               </TableCell>

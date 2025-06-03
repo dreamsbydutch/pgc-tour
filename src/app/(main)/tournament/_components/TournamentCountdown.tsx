@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { type Tournament } from "@prisma/client";
-import Image from "next/image";
+import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
 import { useMainStore } from "@/src/lib/store/store";
 
 /**
@@ -92,16 +92,13 @@ const CountdownTimer = ({
         <h1 className="px-3 font-varela text-2xl font-bold sm:text-3xl md:text-4xl">
           Countdown until {tourney?.name}
         </h1>
-        <div className="flex w-full items-center justify-center pb-3">
-          <div>
-            <Image
-              className="max-h-32 w-full md:max-h-40"
-              alt="Tourney Logo"
-              src={tourney?.logoUrl ?? ""}
-              width={80}
-              height={80}
-            />
-          </div>
+        <div className="my-4 flex w-full items-center justify-center gap-4">
+          <TournamentLogo
+            className="h-32 w-32 md:h-40 md:w-40"
+            alt="Tourney Logo"
+            src={tourney?.logoUrl ?? ""}
+            size="2xl"
+          />
           <div className="font-varela text-2xl font-bold sm:text-3xl md:text-4xl">
             {twoDigits(timeLeft.days)}:{twoDigits(timeLeft.hours)}:
             {twoDigits(timeLeft.minutes)}:{twoDigits(timeLeft.seconds)}

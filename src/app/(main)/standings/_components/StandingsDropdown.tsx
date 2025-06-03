@@ -2,7 +2,7 @@
 
 import { cn, formatRank } from "@/src/lib/utils";
 import type { Member, Team, TourCard, Tournament } from "@prisma/client";
-import Image from "next/image";
+import { TournamentLogo } from "../../../_components/OptimizedImage";
 import Link from "next/link";
 import LoadingSpinner from "../../../_components/LoadingSpinner";
 import { useMainStore } from "@/src/lib/store/store";
@@ -206,19 +206,18 @@ function TournamentHistoryRow({
             )}
             key={tournament.id}
           >
-            <div className={cn("py-1")}>
+            <div className={cn("w-full p-1")}>
               {/* Tournament Logo */}
               <Link href={"/tournament/" + tournament.id}>
                 {!tournament.logoUrl ? (
                   <LoadingSpinner className="w-4" />
                 ) : (
                   <div className="flex h-8 w-full items-center justify-center xs:h-10 sm:h-12 md:h-14">
-                    <Image
-                      width={512}
-                      height={512}
-                      className="w-8 xs:w-10 sm:w-12 md:w-14"
+                    <TournamentLogo
+                      fill={true}
                       src={tournament.logoUrl}
                       alt={tournament.name}
+                      size="medium"
                     />
                   </div>
                 )}

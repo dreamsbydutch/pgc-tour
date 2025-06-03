@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Image from "next/image";
+import { UserAvatar } from "../OptimizedImage";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { useState, type Dispatch, type SetStateAction } from "react";
@@ -46,14 +46,13 @@ export function UserAccountNav({
   return (
     <div className="w-fit">
       <DropdownMenu>
+        {" "}
         <DropdownMenuTrigger className="flex items-center">
           {user?.user_metadata.avatar_url && (
-            <Image
-              className="grid place-items-center rounded-full bg-border"
+            <UserAvatar
               src={(user?.user_metadata.avatar_url as string) ?? ""}
               alt="User Avatar"
-              width={size === "small" ? 24 : 36}
-              height={size === "small" ? 24 : 36}
+              size={size === "small" ? "small" : "medium"}
             />
           )}
         </DropdownMenuTrigger>

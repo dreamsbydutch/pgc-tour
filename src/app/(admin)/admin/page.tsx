@@ -1,4 +1,5 @@
 import PaymentForm from "../_components/TransactionForm";
+import SimpleCachePanel from "../_components/SimpleCachePanel";
 import type {
   DatagolfFieldInput,
   DataGolfLiveTournament,
@@ -8,6 +9,7 @@ import {
   CreateGroupsButton,
   EmailListLinkButton,
   UpdateGolfersButton,
+  UpdateStandingsButton,
   UpdateTeamsButton,
 } from "../_components/CreateGroupsButton";
 import HistoryButton from "../_components/HistoryButton";
@@ -101,12 +103,14 @@ export default async function AdminDashboard() {
             <UpdateTeamsButton />
           </div>
           <div className="scrollbar-hidden flex w-full flex-row flex-nowrap justify-around overflow-scroll">
+            <UpdateStandingsButton />
             <EmailListLinkButton />
           </div>
         </div>
         <HistoryButton className="mt-4 w-3/4" />
-      </div>
+      </div>{" "}
       <PaymentForm />
+      <SimpleCachePanel />
     </>
   );
 }

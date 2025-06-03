@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../_components/ui/table";
-import Image from "next/image";
+import { TournamentLogo } from "../../_components/OptimizedImage";
 import { useMainStore } from "@/src/lib/store/store";
 
 /**
@@ -288,13 +288,13 @@ function CurrentSchedule() {
                 tier?.name === "Major" ? "bg-blue-50" : "",
               )}
             >
+              {" "}
               <TableCell className="flex items-center justify-center whitespace-nowrap text-center text-xs">
-                <Image
+                <TournamentLogo
                   src={tourney.logoUrl ?? ""}
                   className="pr-1"
                   alt={tourney.name}
-                  width={25}
-                  height={25}
+                  size="small"
                 />
                 {tourney.name}
               </TableCell>

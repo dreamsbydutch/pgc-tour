@@ -8,7 +8,9 @@ export async function GET(request: Request) {
   const { origin } = new URL(request.url);
 
   const season = await api.season.getCurrent();
-  let tourCards = await api.tourCard.getBySeason({ seasonId: season?.id??"" });
+  let tourCards = await api.tourCard.getBySeason({
+    seasonId: season?.id ?? "",
+  });
 
   if (tourCards) {
     tourCards = await Promise.all(
@@ -62,9 +64,30 @@ export async function GET(request: Request) {
         return tourCard;
       }),
     );
+
+    // Notify cache invalidation system that standings have been updated
+    try {
+      const invalidateResponse = await fetch(`${origin}/api/cache/invalidate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "standings",
+          source: "cron-update-standings",
+        }),
+      });
+
+      if (invalidateResponse.ok) {
+        console.log("✅ Cache invalidation notification sent successfully");
+      } else {
+        console.error("❌ Failed to send cache invalidation notification");
+      }
+    } catch (error) {
+      console.error("Error sending cache invalidation notification:", error);
+    }
   }
   return NextResponse.redirect(`${origin}/`);
 }
-
 
 // localhost:3000/cron/update-standings

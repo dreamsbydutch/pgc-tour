@@ -29,10 +29,9 @@ export default function ActiveTournamentView({
   const onError = useCallback((err: Error) => {
     console.error("Failed to update leaderboard:", err);
   }, []);
-
-  // Set up polling for live updates
+  // Set up polling for live updates - only when tournament is live
   const { isPolling, refreshNow, isRefetching } = useLeaderboardPolling({
-    enabled: true, // Always enabled for active tournaments
+    enabled: tournament.livePlay === true, // Only poll when tournament is actively live
     refetchInterval: 120000, // Every 2 minutes
     onSuccess,
     onError,
@@ -50,7 +49,7 @@ export default function ActiveTournamentView({
     };
 
     initialLoad().catch((err) =>
-      console.error("Error during initial leaderboard load:", err)
+      console.error("Error during initial leaderboard load:", err),
     );
   }, []); // Empty dependency array - only run once on mount
 
@@ -89,11 +88,10 @@ export default function ActiveTournamentView({
 
   // Combine all loading states to show the refresh indicator
   const showLoading = isRefetching || isManuallyRefreshing;
-
   return (
     <>
       {/* Status bar for live tournaments */}
-      <div className="my-0.5 mx-auto flex w-full max-w-4xl md:w-11/12 lg:w-8/12 items-center justify-between gap-4">
+      <div className="mx-auto my-0.5 flex w-full max-w-4xl items-center justify-between gap-4 md:w-11/12 lg:w-8/12">
         <span className="text-2xs text-slate-500">
           {lastUpdated
             ? `Last updated: ${formatLastUpdated(lastUpdated)}`
@@ -110,7 +108,9 @@ export default function ActiveTournamentView({
           </button>
 
           <span className="badge text-2xs text-slate-500">
-            Live Updates: {isPolling ? "On" : "Off"}
+            {tournament.livePlay
+              ? `Round ${tournament.currentRound} - ${isPolling ? "Live" : "Not Updating"}`
+              : `Round ${(tournament.currentRound ?? 1) - 1} - Complete`}
           </span>
         </div>
       </div>

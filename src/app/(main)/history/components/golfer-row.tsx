@@ -52,10 +52,7 @@ export function GolferRow({
         {golfer.top10s}
       </TableCell>
       <TableCell className="flex flex-row items-center justify-center gap-1 border-b border-gray-200 p-1 text-center">
-        {golfer.cutsMade}{" "}
-        <span className="text-2xs text-slate-500">
-          ({Math.round((golfer.cutsMade / golfer.apps) * 1000) / 10}%)
-        </span>
+        {Math.round((golfer.cutsMade / golfer.apps) * 1000) / 10}%
       </TableCell>
       <TableCell className="border-b border-gray-200 p-1 text-center">
         {golfer.avgUsage?.toFixed(2) ?? "-"}

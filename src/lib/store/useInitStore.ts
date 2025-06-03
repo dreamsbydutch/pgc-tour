@@ -28,6 +28,19 @@ export function useInitStore() {
       const initialize = async () => {
         try {
           await loadInitialData();
+
+          // Initialize leaderboard store after main store is loaded
+          try {
+            await initializeLeaderboardStore();
+            console.log("✅ Leaderboard store initialized successfully");
+          } catch (leaderboardError) {
+            console.warn(
+              "⚠️ Failed to initialize leaderboard store:",
+              leaderboardError,
+            );
+            // Don't fail the entire initialization if leaderboard fails
+          }
+
           storeInitialized = true;
           setIsLoading(false);
         } catch (err) {
@@ -50,7 +63,6 @@ export function useInitStore() {
   return { isLoading, error };
 }
 
-
 // Create a global variable to track initialization status
 let leaderboardStoreInitialized = false;
 let leaderboardInitializationError: string | null = null;
@@ -61,7 +73,9 @@ export function resetLeaderboardInitialization() {
 }
 export function useInitLeaderboardStore() {
   const [isLoading, setIsLoading] = useState(!leaderboardStoreInitialized);
-  const [error, setError] = useState<string | null>(leaderboardInitializationError);
+  const [error, setError] = useState<string | null>(
+    leaderboardInitializationError,
+  );
 
   useEffect(() => {
     // Skip if already initialized

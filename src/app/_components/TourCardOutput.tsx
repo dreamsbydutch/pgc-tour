@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "./ui/button";
-import Image from "next/image";
+import { UserAvatar } from "./OptimizedImage";
 import type { Tour, TourCard } from "@prisma/client";
 import { deleteTourCard } from "@/src/server/api/actions/tour_card";
 import { useState } from "react";
@@ -40,11 +40,10 @@ export function TourCardOutput({
         {`You have secured your spot on the ${tour.name}. The 2025 season will begin with the Waste Management Open on Feb 6th.`}
       </h2>
       <div className="mx-auto mt-4 flex w-[12rem] min-w-fit flex-col items-center justify-center rounded-lg border-2 border-gray-400 bg-gray-300 p-4 text-center shadow-2xl 2xs:w-[18rem] sm:w-[22rem]">
-        <Image
+        {" "}
+        <UserAvatar
           src={pictureUrl ?? ""}
-          alt="Tour Logo"
-          width={75}
-          height={75}
+          alt="Profile Picture"
           className="h-3/4 max-h-32 w-3/4 max-w-32"
         />
         <h2 className="text-2xl font-bold text-gray-800">{name}</h2>

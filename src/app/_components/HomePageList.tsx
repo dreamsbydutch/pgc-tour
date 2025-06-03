@@ -3,7 +3,7 @@
 import { useMainStore } from "@/src/lib/store/store";
 import { cn, formatMoney, formatScore } from "@/src/lib/utils";
 import type { Team, Tour, TourCard } from "@prisma/client";
-import Image from "next/image";
+import { TourLogo } from "./OptimizedImage";
 import LittleFucker from "./LittleFucker";
 
 export function HomePageList({
@@ -16,12 +16,11 @@ export function HomePageList({
   return (
     <>
       <div className="flex items-center justify-center pb-1 pt-2 text-center text-lg font-semibold">
-        <Image
+        {" "}
+        <TourLogo
           alt="Tour Logo"
           src={tour.logoUrl ?? ""}
           className="mr-2 h-8 w-8"
-          width={128}
-          height={128}
         />
         {tour.shortForm} Tour
       </div>

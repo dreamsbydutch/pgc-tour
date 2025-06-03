@@ -40,8 +40,12 @@ export default function LeaderboardPage({
   );
   const tourCard = useMainStore((state) => state.currentTourCard);
   const member = useMainStore((state) => state.currentMember);
-  const storedGolfers = useLeaderboardStore((state) => state.golfers);
-  const storedTeams = useLeaderboardStore((state) => state.teams);
+  const storedGolfers = pastTournament
+    ? pastTournament.golfers
+    : useLeaderboardStore((state) => state.golfers);
+  const storedTeams = pastTournament
+    ? pastTournament.teams
+    : useLeaderboardStore((state) => state.teams);
   const golfers = pastTournament ? pastTournament.golfers : storedGolfers;
   const teamsData = pastTournament ? pastTournament.teams : storedTeams;
 
@@ -65,7 +69,7 @@ export default function LeaderboardPage({
   ];
 
   return (
-    <div className=" w-full max-w-4xl md:w-11/12 lg:w-8/12 mx-auto mt-2">
+    <div className="mx-auto mt-2 w-full max-w-4xl md:w-11/12 lg:w-8/12">
       {/* Admin-only link to tournament stats */}
       {member?.role === "admin" && (
         <Link
@@ -115,8 +119,8 @@ export default function LeaderboardPage({
             .filter((team) => team.tourCard?.tourId === activeTour)
             .map((team) => (
               <LeaderboardListing
+                key={team.id}
                 {...{
-                  key: team.id,
                   type: "PGC",
                   tournament,
                   tournamentGolfers: storedGolfers,

@@ -10,7 +10,7 @@ import { StandingsTourCardInfo } from "./StandingsDropdown";
 import LittleFucker from "../../../_components/LittleFucker";
 import { useMainStore } from "@/src/lib/store/store";
 import { api } from "@/src/trpc/react";
-import Image from "next/image";
+import { TourLogo } from "../../../_components/OptimizedImage";
 import {
   Popover,
   PopoverContent,
@@ -51,19 +51,15 @@ export function ToursToggleButton({
       }`}
       onAnimationEnd={() => setEffect(false)}
     >
-      <Image
+      {" "}
+      <TourLogo
         key={tour.id}
         src={tour.logoUrl}
         alt="Tour Logo"
-        width={512}
-        height={512}
+        size="small"
         className={cn(
-          "mx-1 inline-block h-6 w-auto",
           tourToggle === tour.id &&
-            tour.id !== "pga" &&
-            tour.id !== "playoffs" &&
-            tour.id !== "gold" &&
-            tour.id !== "silver"
+            !["pga", "playoffs", "gold", "silver"].includes(tour.id)
             ? "invert"
             : "",
         )}
@@ -101,7 +97,7 @@ export function StandingsHeader() {
 export function GoldPlayoffHeader({ tier }: { tier: Tier }) {
   return (
     <Popover>
-      <PopoverTrigger className="col-span-7 w-full row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
+      <PopoverTrigger className="col-span-7 row-span-1 w-full text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
         <div className="grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-champ-400 text-center">
           <div className="col-span-17 my-2 font-varela text-2xl font-extrabold text-champ-900">
             PGC GOLD PLAYOFF
@@ -131,7 +127,7 @@ export function GoldPlayoffHeader({ tier }: { tier: Tier }) {
 export function SilverPlayoffHeader({ tier }: { tier: Tier }) {
   return (
     <Popover>
-      <PopoverTrigger className="col-span-7 w-full row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
+      <PopoverTrigger className="col-span-7 row-span-1 w-full text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
         <div className="mt-12 grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-zinc-300 text-center">
           <div className="col-span-17 my-2 font-varela text-2xl font-extrabold text-zinc-600">
             PGC SILVER PLAYOFF
@@ -244,7 +240,7 @@ export function StandingsListing({
         </div>
 
         {/* Player Name */}
-        <div className="col-span-5 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
+        <div className="col-span-5 flex items-center justify-center gap-0.5 place-self-center font-varela text-lg sm:text-xl">
           {tourCard.displayName}
           {tourCard.win > 0 && <LittleFucker {...{ tourCard }} />}
         </div>
@@ -346,7 +342,7 @@ export function PlayoffStandingsListing({
         </div>
 
         {/* Player Name */}
-        <div className="col-span-5 place-self-center font-varela text-lg sm:text-xl">
+        <div className="col-span-5 flex gap-0.5 place-self-center font-varela text-lg sm:text-xl">
           {tourCard.displayName}
           {tourCard.win > 0 && <LittleFucker {...{ tourCard }} />}
         </div>
@@ -361,14 +357,9 @@ export function PlayoffStandingsListing({
           {startingStrokes ?? "-"}
         </div>
       </div>
-      {/* Player Rank */}
+      {/* Player Rank */}{" "}
       <div className="max-h-8 min-h-6 min-w-6 max-w-8 place-self-center p-1 font-varela text-sm sm:text-base">
-        <Image
-          src={tour?.logoUrl ?? ""}
-          alt="Tour Logo"
-          width={128}
-          height={128}
-        />
+        <TourLogo src={tour?.logoUrl ?? ""} alt="Tour Logo" size="small" />
       </div>
       {isOpen ? (
         <StandingsTourCardInfo {...{ tourCard, member: currentMember }} />

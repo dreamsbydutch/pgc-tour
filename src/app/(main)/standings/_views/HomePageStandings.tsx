@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/src/lib/utils";
-import Image from "next/image";
+import { OptimizedImage } from "@/src/app/_components/OptimizedImage";
 import Link from "next/link";
 import { useMainStore } from "@/src/lib/store/store";
 import { HomePageList } from "@/src/app/_components/HomePageList";
@@ -17,15 +17,8 @@ export default function HomePageStandings() {
   return (
     <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
       <div className="my-3 flex items-center justify-center gap-3">
-        <Image
-          src={"/logo512.png"}
-          alt="PGC Logo"
-          width={512}
-          height={512}
-          className="h-14 w-14"
-        />
         <h2 className="pb-1 font-yellowtail text-5xl sm:text-6xl md:text-7xl">
-          Standings
+          PGC Standings
         </h2>
       </div>
 
