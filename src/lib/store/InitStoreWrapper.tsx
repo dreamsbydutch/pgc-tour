@@ -2,12 +2,39 @@
 
 import { useInitStore } from "./useInitStore";
 import EmergencyReset from "@/src/app/_components/EmergencyReset";
+import { OptimizedImage } from "@/src/app/_components/OptimizedImage";
+import { COMMON_IMAGES } from "@/src/lib/utils/image-optimization";
 
 export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
   const { isLoading, error } = useInitStore();
 
+  // Debug logging
+  console.log("🔍 InitStoreWrapper render:", { isLoading, error: !!error });
+
+  // Show loading state while initializing
+  if (isLoading) {
+    console.log("⏳ Showing loading state");
+    return (
+      <div className="flex h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100">
+        <div className="mx-auto flex animate-pulse items-center justify-center text-center font-varela text-3xl text-slate-600">
+          <OptimizedImage
+            src={COMMON_IMAGES.PGC_LOGO}
+            alt="PGC Logo"
+            width={96}
+            height={96}
+            className="mx-2"
+            priority={true}
+            sizes="96px"
+          />
+          <div className="w-44 text-center">Loading Clubhouse Data.....</div>
+        </div>
+      </div>
+    );
+  }
+
   // Show emergency reset for critical errors
   if (error && !isLoading) {
+    console.log("❌ Showing error state:", error);
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-md">
@@ -29,5 +56,7 @@ export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Render children if no loading or error
+  console.log("✅ Rendering children");
   return <>{children}</>;
 }

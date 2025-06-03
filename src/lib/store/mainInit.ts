@@ -21,31 +21,101 @@ type ProcessedTournament = Tournament & {
 // Cache expiry in milliseconds (1 day)
 const CACHE_EXPIRY = 1000 * 60 * 60 * 24;
 
-// Simplified fetch helper
-async function safeFetch<T>(url: string): Promise<T | null> {
+// Simplified fetch helper with timeout
+async function safeFetch<T>(
+  url: string,
+  timeoutMs: number = 10000,
+): Promise<T | null> {
   try {
-    const response: Response = await fetch(url);
-    if (!response.ok) return null;
-    return (await response.json()) as T;
+    console.log(`🚀 Fetching: ${url}`);
+
+    // Create timeout promise
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(
+        () => reject(new Error(`Timeout after ${timeoutMs}ms`)),
+        timeoutMs,
+      );
+    });
+
+    // Race between fetch and timeout
+    const response: Response = await Promise.race([fetch(url), timeoutPromise]);
+
+    if (!response.ok) {
+      console.error(
+        `❌ ${url} returned ${response.status}: ${response.statusText}`,
+      );
+      return null;
+    }
+
+    const data = (await response.json()) as T;
+    console.log(`✅ ${url} completed successfully`);
+    return data;
   } catch (error) {
-    console.error(`Failed to fetch ${url}:`, error);
+    console.error(`💥 Failed to fetch ${url}:`, error);
     return null;
   }
 }
 
+// Add a simple health check for API endpoints
+async function testAPIHealth() {
+  console.log("🩺 Testing API health...");
+
+  try {
+    const response = await fetch("/api/seasons/current", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (response.ok) {
+      console.log("✅ Basic API connectivity confirmed");
+      return true;
+    } else {
+      console.error(
+        "❌ API health check failed:",
+        response.status,
+        response.statusText,
+      );
+      return false;
+    }
+  } catch (error) {
+    console.error("💥 API health check error:", error);
+    return false;
+  }
+}
+
 export async function loadInitialData() {
+  console.log("🔄 loadInitialData: Starting...");
+
+  // Quick API health check
+  const apiHealthy = await testAPIHealth();
+  if (!apiHealthy) {
+    throw new Error(
+      "API endpoints are not responding. Please check your server connection.",
+    );
+  }
   // First check database-driven cache invalidation
+  console.log("🔍 Checking cache invalidation...");
   const cacheCheck = await checkAndRefreshIfNeeded();
   if (cacheCheck.refreshed) {
     console.log(
       "🔄 Cache refreshed based on database flag:",
       cacheCheck.reason,
     );
-    return useMainStore.getState(); // Return the refreshed state
+    // Don't return early - continue to fetch all missing data
+    console.log(
+      "🔄 Cache partially refreshed, continuing to fetch all data...",
+    );
   }
-
-  // Check if we should use cached data
+  // Check if we should use cached data - only if ALL required data is present
   const storeData = useMainStore.getState();
+  console.log("📦 Current store data:", {
+    hasTours: !!storeData.tours?.length,
+    hasTournaments: !!storeData.seasonTournaments?.length,
+    hasTourCards: !!storeData.tourCards?.length,
+    hasCurrentSeason: !!storeData.currentSeason,
+    hasTiers: !!storeData.currentTiers?.length,
+    lastUpdated: storeData._lastUpdated,
+  });
 
   // Check if current tournament has reached round 5 (completion)
   const currentTournamentCompleted =
@@ -74,29 +144,67 @@ export async function loadInitialData() {
     }
   }
 
+  // Only use cached data if ALL essential data is present and fresh
+  const hasCompleteData = !!(
+    storeData.tours?.length &&
+    storeData.seasonTournaments?.length &&
+    storeData.tourCards?.length &&
+    storeData.currentSeason &&
+    storeData.currentTiers?.length
+  );
+
   if (
+    hasCompleteData &&
     storeData._lastUpdated &&
     Date.now() - storeData._lastUpdated < CACHE_EXPIRY &&
     !currentTournamentCompleted
   ) {
+    console.log("✅ Using cached data (complete and fresh)");
     return storeData;
+  } else if (!hasCompleteData) {
+    console.log("🔄 Incomplete cached data, fetching missing data...");
   }
 
   let publicDataLoaded = false;
   let userDataLoaded = false;
 
   try {
+    console.log("📡 Fetching public data...");
     // Fetch public data (always needed) - this should succeed even for logged-out users
     const [toursData, tournamentsData, seasonData, tiersData] =
       await Promise.all([
-        safeFetch<{ tours: Tour[] }>("/api/tours/all"),
+        safeFetch<{ tours: Tour[] }>("/api/tours/all").then((data) => {
+          console.log(
+            "🏆 Tours API response:",
+            data ? "✅ success" : "❌ failed",
+          );
+          return data;
+        }),
         safeFetch<{
           tournaments: (Tournament & {
             course: Course | null;
           })[];
-        }>("/api/tournaments/all"),
-        safeFetch<{ season: Season }>("/api/seasons/current"),
-        safeFetch<{ tiers: Tier[] }>("/api/tiers/current"),
+        }>("/api/tournaments/all").then((data) => {
+          console.log(
+            "🏌️ Tournaments API response:",
+            data ? "✅ success" : "❌ failed",
+          );
+          return data;
+        }),
+        safeFetch<{ season: Season }>("/api/seasons/current").then((data) => {
+          console.log(
+            "📅 Season API response:",
+            data ? "✅ success" : "❌ failed",
+          );
+          return data;
+        }),
+        safeFetch<{ tiers: Tier[] }>("/api/tiers/current").then((data) => {
+          console.log(
+            "🎯 Tiers API response:",
+            data ? "✅ success" : "❌ failed",
+          );
+          return data;
+        }),
       ]);
 
     publicDataLoaded = !!(
@@ -106,21 +214,50 @@ export async function loadInitialData() {
       tiersData
     );
 
+    console.log("📡 Fetching user data...");
     // Fetch user-specific data (gracefully handle failures for logged-out users)
     const [memberData, pastTeamsData, pastGolfersData, tourCardsData] =
       await Promise.all([
-        safeFetch<{ member: Member }>("/api/members/current"),
+        safeFetch<{ member: Member }>("/api/members/current").then((data) => {
+          console.log(
+            "👤 Member API response:",
+            data?.member ? "✅ logged in" : "👻 not logged in",
+          );
+          return data;
+        }),
         safeFetch<{ pastTeams: (Team & { tourCard: TourCard | null })[] }>(
           "/api/teams/past",
+        ).then((data) => {
+          console.log(
+            "🏌️‍♂️ Past teams API response:",
+            data ? "✅ success" : "❌ failed",
+          );
+          return data;
+        }),
+        safeFetch<{ pastGolfers: Golfer[] }>("/api/golfers/past").then(
+          (data) => {
+            console.log(
+              "⛳ Past golfers API response:",
+              data ? "✅ success" : "❌ failed",
+            );
+            return data;
+          },
         ),
-        safeFetch<{ pastGolfers: Golfer[] }>("/api/golfers/past"),
-        safeFetch<{ tourCards: TourCard[] }>("/api/tourcards/current"),
+        safeFetch<{ tourCards: TourCard[] }>("/api/tourcards/current").then(
+          (data) => {
+            console.log(
+              "🎫 Tour cards API response:",
+              data ? "✅ success" : "❌ failed",
+            );
+            return data;
+          },
+        ),
       ]);
 
     userDataLoaded = !!memberData?.member;
 
     console.log(
-      `Store initialization: Public data ${publicDataLoaded ? "loaded" : "failed"}, User data ${userDataLoaded ? "loaded" : "not available"}`,
+      `📊 Store initialization: Public data ${publicDataLoaded ? "✅ loaded" : "❌ failed"}, User data ${userDataLoaded ? "✅ loaded" : "👻 not available"}`,
     ); // Process tournaments to get past, current, and next
     const now = new Date();
     let pastTournaments: ProcessedTournament[] | null = null;
@@ -249,6 +386,13 @@ export async function loadInitialData() {
       _lastUpdated: Date.now(),
     };
     useMainStore.setState(updateData);
+
+    console.log("✅ Store updated successfully:", {
+      tours: updateData.tours.length,
+      tournaments: updateData.seasonTournaments.length,
+      tourCards: updateData.tourCards.length,
+      currentMember: !!updateData.currentMember,
+    });
 
     return updateData;
   } catch (error) {

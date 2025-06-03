@@ -8,7 +8,15 @@ import { initializeLeaderboardStore } from "./leaderboardInit";
 let storeInitialized = false;
 let initializationError: string | null = null;
 
+// Force reset in development for hot reloading
+if (process.env.NODE_ENV === "development") {
+  // Reset on module reload
+  storeInitialized = false;
+  initializationError = null;
+}
+
 export function resetInitialization() {
+  console.log("🔄 Resetting store initialization state");
   storeInitialized = false;
   initializationError = null;
 }
@@ -20,17 +28,21 @@ export function useInitStore() {
   useEffect(() => {
     // Skip if already initialized
     if (storeInitialized) {
+      console.log("✅ Store already initialized, skipping");
       return;
     }
 
     // Ensure we're only in the browser
     if (typeof window !== "undefined") {
+      console.log("🔄 Starting store initialization...");
       const initialize = async () => {
         try {
+          console.log("📡 Loading initial data...");
           await loadInitialData();
 
           // Initialize leaderboard store after main store is loaded
           try {
+            console.log("📊 Initializing leaderboard store...");
             await initializeLeaderboardStore();
             console.log("✅ Leaderboard store initialized successfully");
           } catch (leaderboardError) {
@@ -42,9 +54,10 @@ export function useInitStore() {
           }
 
           storeInitialized = true;
+          console.log("✅ Store initialization completed");
           setIsLoading(false);
         } catch (err) {
-          console.error("Failed to load initial data:", err);
+          console.error("❌ Failed to load initial data:", err);
           const errorMessage =
             err instanceof Error ? err.message : "Unknown error loading data";
           initializationError = errorMessage;
@@ -55,7 +68,7 @@ export function useInitStore() {
 
       // Initialize immediately - no need for delay since we use a global flag
       initialize().catch((err) => {
-        console.error("Unexpected error during initialization:", err);
+        console.error("💥 Unexpected error during initialization:", err);
       });
     }
   }, []);
