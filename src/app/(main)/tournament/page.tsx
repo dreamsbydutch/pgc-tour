@@ -11,12 +11,13 @@ import { TournamentCountdownSkeleton } from "@/src/app/(main)/tournament/_compon
 import ActiveTournamentView from "./_views/ActiveTournamentView";
 import PastTournamentView from "./_views/PastTournamentView";
 import HistoricalTournamentView from "./_views/HistoricalTournamentView";
+import { Suspense } from "react";
 
-/**
- * Unified tournament page that handles displaying any tournament
- * Uses query parameter ?id=tournamentId instead of path parameter
- */
-export default function TournamentPage() {
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = "force-dynamic";
+
+// Component that uses useSearchParams - needs to be wrapped in Suspense
+function TournamentPageContent() {
   const searchParams = useSearchParams();
 
   const currentTournament = useMainStore((state) => state.currentTournament);
@@ -54,9 +55,8 @@ export default function TournamentPage() {
 
   const focusTourney = getDisplayTournament();
 
-  
   if (!focusTourney && tournamentIdParam) {
-    return <HistoricalTournamentView tournamentId={tournamentIdParam} />
+    return <HistoricalTournamentView tournamentId={tournamentIdParam} />;
   }
 
   // While loading tournament data, show loading view
@@ -108,5 +108,17 @@ function TournamentPageLoadingView() {
       <TournamentCountdownSkeleton />
       <TeamPickFormSkeleton />
     </>
+  );
+}
+
+/**
+ * Unified tournament page that handles displaying any tournament
+ * Uses query parameter ?id=tournamentId instead of path parameter
+ */
+export default function TournamentPage() {
+  return (
+    <Suspense fallback={<TournamentPageLoadingView />}>
+      <TournamentPageContent />
+    </Suspense>
   );
 }

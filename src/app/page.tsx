@@ -24,6 +24,9 @@ import {
 import { useMainStore } from "@/src/lib/store/store";
 import { useEffect } from "react";
 
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   const tiers = useMainStore((state) => state.currentTiers);
 

@@ -14,6 +14,9 @@ import {
 import { TournamentLogo } from "../../_components/OptimizedImage";
 import { useMainStore } from "@/src/lib/store/store";
 
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = "force-dynamic";
+
 /**
  * RulebookPage Component
  *

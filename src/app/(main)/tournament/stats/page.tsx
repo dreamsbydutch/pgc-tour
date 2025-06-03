@@ -19,7 +19,11 @@ import {
 } from "@/src/app/_components/ui/table";
 import { useSearchParams } from "next/navigation";
 
-export default function Page() {
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = "force-dynamic";
+
+// Component that uses useSearchParams - needs to be wrapped in Suspense
+function StatsPageContent() {
   const tournaments = useMainStore((state) => state.seasonTournaments);
   const searchParams = useSearchParams();
   const tournamentIdParam = searchParams.get("id");
@@ -40,6 +44,14 @@ export default function Page() {
         )}
       </Suspense>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <StatsPageContent />
+    </Suspense>
   );
 }
 

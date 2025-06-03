@@ -12,6 +12,9 @@ import {
 } from "./_components/StandingsPage";
 import type { Tour } from "@prisma/client";
 
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = "force-dynamic";
+
 export default function Page({
   searchParams,
 }: {

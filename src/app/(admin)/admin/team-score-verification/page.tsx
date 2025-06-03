@@ -2,6 +2,9 @@
 
 import { api } from "@/src/trpc/react";
 
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = "force-dynamic";
+
 interface Member {
   id: string;
   fullname: string;

@@ -4,22 +4,15 @@ import { useInitStore } from "./useInitStore";
 import EmergencyReset from "@/src/app/_components/EmergencyReset";
 import { OptimizedImage } from "@/src/app/_components/OptimizedImage";
 import { COMMON_IMAGES } from "@/src/lib/utils/image-optimization";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { forceCacheInvalidation } from "./storeUtils";
 import { useAuthListener } from "@/src/lib/hooks/use-auth-listener";
 
-export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
-  const { isLoading, error } = useInitStore();
+// Separate component for search params logic that needs Suspense
+function AuthSuccessHandler() {
   const searchParams = useSearchParams();
 
-  // Listen for authentication state changes
-  useAuthListener();
-
-  // Debug logging
-  console.log("🔍 InitStoreWrapper render:", { isLoading, error: !!error });
-
-  // Check for successful authentication and refresh store if needed
   useEffect(() => {
     const authSuccess = searchParams.get("auth_success");
     if (authSuccess === "true") {
@@ -43,6 +36,18 @@ export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
         });
     }
   }, [searchParams]);
+
+  return null;
+}
+
+export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
+  const { isLoading, error } = useInitStore();
+
+  // Listen for authentication state changes
+  useAuthListener();
+
+  // Debug logging
+  console.log("🔍 InitStoreWrapper render:", { isLoading, error: !!error });
 
   // Show loading state while initializing
   if (isLoading) {
@@ -88,8 +93,14 @@ export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-
   // Render children if no loading or error
   console.log("✅ Rendering children");
-  return <>{children}</>;
+  return (
+    <>
+      <Suspense fallback={null}>
+        <AuthSuccessHandler />
+      </Suspense>
+      {children}
+    </>
+  );
 }

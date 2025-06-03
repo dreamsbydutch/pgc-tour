@@ -20,6 +20,9 @@ import {
 } from "./components/data-hooks";
 import { HistoryTable } from "./components/history-table";
 
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = "force-dynamic";
+
 // Import our refactored component
 import { GolferStatsTable } from "./components/golfer-stats-table";
 

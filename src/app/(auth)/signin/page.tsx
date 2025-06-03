@@ -8,6 +8,9 @@ import { signInWithGoogle } from "./actions";
 import Link from "next/link";
 import { useMainStore } from "@/src/lib/store/store";
 
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = "force-dynamic";
+
 export default function SignInPage() {
   const member = useMainStore((state) => state.currentMember);
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
