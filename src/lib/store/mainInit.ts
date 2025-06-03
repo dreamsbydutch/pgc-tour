@@ -24,7 +24,7 @@ const CACHE_EXPIRY = 1000 * 60 * 60 * 24;
 // Simplified fetch helper with timeout
 async function safeFetch<T>(
   url: string,
-  timeoutMs: number = 10000,
+  timeoutMs = 10000,
 ): Promise<T | null> {
   try {
     console.log(`🚀 Fetching: ${url}`);
