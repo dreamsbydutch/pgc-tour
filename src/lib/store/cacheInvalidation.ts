@@ -72,6 +72,8 @@ export async function checkAndRefreshIfNeeded(): Promise<CacheRefreshResult> {
       };
     }
 
+    //ignore eslint unsafe assignment to avoid type issues
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data: CacheStatusResponse = await response.json();
     const latestInvalidation = data.latestInvalidation;
 
@@ -121,6 +123,8 @@ export async function refreshStandingsData(): Promise<boolean> {
       return false;
     }
 
+    //ignore eslint unsafe assignment to avoid type issues
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data: TourCardsResponse = await response.json();
 
     if (!data.tourCards || !Array.isArray(data.tourCards)) {
