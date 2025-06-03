@@ -1,7 +1,7 @@
 // filepath: c:\Users\choug\OneDrive\Documents\GitHub\pgc-tour\src\app\(main)\history\components\golfer-row.tsx
 import { TableCell, TableRow } from "@/src/app/_components/ui/table";
 import { cn } from "@/src/lib/utils";
-import { Tournament } from "@prisma/client";
+import type { Tournament } from "@prisma/client";
 
 interface GolferData {
   playerName: string;

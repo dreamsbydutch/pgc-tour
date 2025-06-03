@@ -120,17 +120,17 @@ export function GolferStatsTable() {
               <TableBody>
                 {currentPageData.map((golfer) => (
                   <GolferRow
-                    key={golfer.name}
-                    golfer={golfer}
-                    golfersData={
-                      (golfersData ?? []).map((g) => ({
-                        ...g,
-                        group: g.group === null ? 0 : g.group,
-                      }))
-                    }
-                    nextTournament={nextTournament}
-                    currentTournament={currentTournament}
-                    pastTournament={pastTournament ?? null}
+                  key={golfer.name}
+                  golfer={golfer}
+                  golfersData={
+                    (golfersData ?? []).map((g) => ({
+                    ...g,
+                    group: g.group ?? 0,
+                    }))
+                  }
+                  nextTournament={nextTournament}
+                  currentTournament={currentTournament}
+                  pastTournament={pastTournament ?? null}
                   />
                 ))}
               </TableBody>

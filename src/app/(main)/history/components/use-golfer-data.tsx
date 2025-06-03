@@ -63,7 +63,7 @@ function calculateGroupStats(appearances: RawGolferData[]): {
 
   appearances.forEach(({ group }) => {
     if (group !== null) {
-      groupCounts[group] = (groupCounts[group] || 0) + 1;
+      groupCounts[group] = (groupCounts[group] ?? 0) + 1;
       lowGroup = Math.min(lowGroup, group);
       highGroup = Math.max(highGroup, group);
     }
@@ -157,11 +157,11 @@ function processGolferData(
     lowGroup,
     highGroup,
     averageWorldRanking: avgWorldRanking,
-    groupOne: groupPercentages.groupOne,
-    groupTwo: groupPercentages.groupTwo,
-    groupThree: groupPercentages.groupThree,
-    groupFour: groupPercentages.groupFour,
-    groupFive: groupPercentages.groupFive,
+    groupOne: groupPercentages.groupOne ?? null,
+    groupTwo: groupPercentages.groupTwo ?? null,
+    groupThree: groupPercentages.groupThree ?? null,
+    groupFour: groupPercentages.groupFour ?? null,
+    groupFive: groupPercentages.groupFive ?? null,
   };
 }
 

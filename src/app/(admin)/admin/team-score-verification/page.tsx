@@ -187,7 +187,7 @@ export default function TeamScoreVerificationPage() {
               .map((team) => (
                 <tr key={team.id}>
                   <td className="border-b border-gray-200 p-2">
-                    {team.tourCard?.member?.fullname || "Unknown Member"}
+                    {team.tourCard?.member?.fullname ?? "Unknown Member"}
                   </td>
                   <td className="border-b border-gray-200 p-2 text-center">
                     {team.tourCard?.playoff === 1 ? "Gold" : "Silver"}
