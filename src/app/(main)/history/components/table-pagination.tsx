@@ -28,9 +28,6 @@ interface TablePaginationProps {
 export function TablePagination({
   currentPage,
   pageSize,
-  totalItems,
-  startIndex,
-  endIndex,
   totalPages,
   onPageChange,
   onPageSizeChange,

@@ -1,86 +1,186 @@
 import { useMemo } from "react";
-import { Golfer } from "./use-sorted-data";
 
-export function useGolferData(golfersData: any[] | undefined) {
+interface RawGolferData {
+  playerName: string;
+  group: number | null;
+  position: string | null;
+  worldRank: number | null;
+  usage: number | null;
+}
+
+interface ProcessedGolfer {
+  name: string;
+  apps: number;
+  wins: number;
+  top5s: number;
+  top10s: number;
+  cutsMade: number;
+  avgUsage: number | null;
+  groupCounts: Record<number, number>;
+  lowGroup: number | null;
+  highGroup: number | null;
+  averageWorldRanking: number | null;
+  groupOne: number | null;
+  groupTwo: number | null;
+  groupThree: number | null;
+  groupFour: number | null;
+  groupFive: number | null;
+}
+
+function parsePosition(position: string | null): number | null {
+  if (!position || position === "CUT") return null;
+  const cleaned = position.replace("T", "");
+  const parsed = parseInt(cleaned, 10);
+  return isNaN(parsed) ? null : parsed;
+}
+
+function isWin(position: string | null): boolean {
+  return position === "1";
+}
+
+function isTop5(position: string | null): boolean {
+  const pos = parsePosition(position);
+  return pos !== null && pos <= 5;
+}
+
+function isTop10(position: string | null): boolean {
+  const pos = parsePosition(position);
+  return pos !== null && pos <= 10;
+}
+
+function isCutMade(position: string | null): boolean {
+  return position !== "CUT";
+}
+
+function calculateGroupStats(appearances: RawGolferData[]): {
+  groupCounts: Record<number, number>;
+  lowGroup: number | null;
+  highGroup: number | null;
+} {
+  const groupCounts: Record<number, number> = {};
+  let lowGroup = Infinity;
+  let highGroup = -Infinity;
+
+  appearances.forEach(({ group }) => {
+    if (group !== null) {
+      groupCounts[group] = (groupCounts[group] || 0) + 1;
+      lowGroup = Math.min(lowGroup, group);
+      highGroup = Math.max(highGroup, group);
+    }
+  });
+
+  return {
+    groupCounts,
+    lowGroup: lowGroup === Infinity ? null : lowGroup,
+    highGroup: highGroup === -Infinity ? null : highGroup,
+  };
+}
+
+function calculateAverage(
+  appearances: RawGolferData[],
+  getValue: (app: RawGolferData) => number | null,
+  multiplier = 1,
+): number | null {
+  if (appearances.length === 0) return null;
+
+  const validValues = appearances
+    .map(getValue)
+    .filter((value): value is number => value !== null);
+
+  if (validValues.length === 0) return null;
+
+  const sum = validValues.reduce(
+    (total, value) => total + value * multiplier,
+    0,
+  );
+  return sum / validValues.length;
+}
+
+function calculateGroupPercentages(
+  groupCounts: Record<number, number>,
+  totalApps: number,
+): Record<string, number | null> {
+  if (totalApps === 0) {
+    return {
+      groupOne: null,
+      groupTwo: null,
+      groupThree: null,
+      groupFour: null,
+      groupFive: null,
+    };
+  }
+
+  return {
+    groupOne: ((groupCounts[1] ?? 0) / totalApps) * 100,
+    groupTwo: ((groupCounts[2] ?? 0) / totalApps) * 100,
+    groupThree: ((groupCounts[3] ?? 0) / totalApps) * 100,
+    groupFour: ((groupCounts[4] ?? 0) / totalApps) * 100,
+    groupFive: ((groupCounts[5] ?? 0) / totalApps) * 100,
+  };
+}
+
+function processGolferData(
+  golferName: string,
+  golfersData: RawGolferData[],
+): ProcessedGolfer {
+  const appearances = golfersData.filter(
+    (g) => g.playerName === golferName && (g.group ?? 0) > 0,
+  );
+
+  const wins = appearances.filter((g) => isWin(g.position));
+  const top5s = appearances.filter((g) => isTop5(g.position));
+  const top10s = appearances.filter((g) => isTop10(g.position));
+  const cutsMade = appearances.filter((g) => isCutMade(g.position));
+
+  const { groupCounts, lowGroup, highGroup } = calculateGroupStats(appearances);
+
+  const avgWorldRanking = calculateAverage(appearances, (app) => app.worldRank);
+
+  const avgUsage = calculateAverage(
+    appearances,
+    (app) => app.usage,
+    100, // Convert to percentage
+  );
+
+  const totalApps = appearances.length;
+  const groupPercentages = calculateGroupPercentages(groupCounts, totalApps);
+
+  return {
+    name: golferName,
+    apps: totalApps,
+    wins: wins.length,
+    top5s: top5s.length,
+    top10s: top10s.length,
+    cutsMade: cutsMade.length,
+    avgUsage,
+    groupCounts,
+    lowGroup,
+    highGroup,
+    averageWorldRanking: avgWorldRanking,
+    groupOne: groupPercentages.groupOne,
+    groupTwo: groupPercentages.groupTwo,
+    groupThree: groupPercentages.groupThree,
+    groupFour: groupPercentages.groupFour,
+    groupFive: groupPercentages.groupFive,
+  };
+}
+
+export function useGolferData(
+  golfersData: RawGolferData[] | undefined,
+): ProcessedGolfer[] {
   return useMemo(() => {
     if (!golfersData) return [];
 
-    // Process golfers data into a more usable format
-    return [
+    // Get unique golfer names who have participated in groups
+    const uniqueGolfers = [
       ...new Set(
         golfersData.filter((g) => (g.group ?? 0) > 0).map((g) => g.playerName),
       ),
-    ].map((golfer) => {
-      const apps = golfersData.filter(
-        (g) => g.playerName === golfer && (g.group ?? 0) > 0,
-      );
-      const wins = apps?.filter((g) => g.position === "1");
-      const top5s = apps?.filter((g) => {
-        if (g.position === "CUT") return false;
-        const positionNum = parseInt(g.position?.replace("T", "") ?? "", 10);
-        return !isNaN(positionNum) && positionNum <= 5;
-      });
-      const top10s = apps?.filter((g) => {
-        if (g.position === "CUT") return false;
-        const positionNum = parseInt(g.position?.replace("T", "") ?? "", 10);
-        return !isNaN(positionNum) && positionNum <= 10;
-      });
-      const cutsMade = apps?.filter((g) => g.position !== "CUT");
+    ];
 
-      // Find a golfers most frequent group number as well as which group number it is
-      const groups = apps?.map((g) => g.group).filter((g) => g !== null);
-      const groupCounts: Record<number, number> = {};
-      let lowGroup = Infinity;
-      let highGroup = -Infinity;
-      groups?.forEach((group) => {
-        if (group !== null) {
-          groupCounts[group] = (groupCounts[group] || 0) + 1;
-          const groupNum = parseInt(String(group), 10);
-          if (!isNaN(groupNum)) {
-            lowGroup = Math.min(lowGroup, groupNum);
-            highGroup = Math.max(highGroup, groupNum);
-          }
-        }
-      });
-      const avgWorldRanking =
-        apps && apps.length > 0
-          ? apps.reduce((sum, g) => sum + (g.worldRank ?? 0), 0) / apps.length
-          : 0;
-      const avgUsage =
-        apps && apps.length > 0
-          ? apps.reduce((sum, g) => (sum += (g.usage ?? 0) * 100), 0) /
-            apps.length
-          : 0;
-      const totalApps = apps?.length ?? 0;
-
-      // Calculate group percentages for sorting
-      const groupPercentages = {
-        groupOne:
-          totalApps > 0 ? ((groupCounts[1] ?? 0) / totalApps) * 100 : null,
-        groupTwo:
-          totalApps > 0 ? ((groupCounts[2] ?? 0) / totalApps) * 100 : null,
-        groupThree:
-          totalApps > 0 ? ((groupCounts[3] ?? 0) / totalApps) * 100 : null,
-        groupFour:
-          totalApps > 0 ? ((groupCounts[4] ?? 0) / totalApps) * 100 : null,
-        groupFive:
-          totalApps > 0 ? ((groupCounts[5] ?? 0) / totalApps) * 100 : null,
-      };
-
-      return {
-        name: golfer,
-        apps: totalApps,
-        wins: wins?.length ?? 0,
-        top5s: top5s?.length ?? 0,
-        top10s: top10s?.length ?? 0,
-        cutsMade: cutsMade?.length ?? 0,
-        avgUsage: isNaN(avgUsage) ? null : avgUsage,
-        groupCounts: groupCounts,
-        lowGroup: lowGroup === Infinity ? null : lowGroup,
-        highGroup: highGroup === -Infinity ? null : highGroup,
-        averageWorldRanking: isNaN(avgWorldRanking) ? null : avgWorldRanking,
-        ...groupPercentages,
-      } as Golfer;
-    });
+    // Process each golfer's data
+    return uniqueGolfers.map((golferName) =>
+      processGolferData(golferName, golfersData),
+    );
   }, [golfersData]);
 }

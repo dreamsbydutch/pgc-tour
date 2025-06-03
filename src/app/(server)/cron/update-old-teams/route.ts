@@ -1,7 +1,7 @@
 // "use server";
 
 import { api } from "@/src/trpc/server";
-import { Team, TourCard, Tournament } from "@prisma/client";
+import type { Team, TourCard, Tournament } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -92,20 +92,20 @@ async function updateTourCards({
   tourCards: TourCard[];
   allTeams: (Team & { tournament: Tournament })[];
 }) {
-  const updatedTourCards = tourCards.map(async (card) => {
+  tourCards.map(async (card) => {
     const teams = allTeams.filter((team) => team.tourCardId === card.id);
     const earnings = teams.reduce((sum, team) => sum + (team.earnings ?? 0), 0);
     const points = teams.reduce((sum, team) => sum + (team.points ?? 0), 0);
     const win = teams.filter(
       (team) =>
-        (team.position && team.position[0] === "T"
+        (team.position && team.position.startsWith("T")
           ? +(team.position?.replace("T", "") ?? 100)
           : +(team.position ?? 100)) === 1,
     ).length;
     const appearances = teams.length;
     const topTen = teams.filter(
       (team) =>
-        (team.position && team.position[0] === "T"
+        (team.position && team.position.startsWith("T")
           ? +(team.position?.replace("T", "") ?? 100)
           : +(team.position ?? 100)) <= 10,
     ).length;

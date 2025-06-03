@@ -3,7 +3,6 @@ import type {
   Golfer,
   Member,
   Team,
-  Tier,
   TourCard,
   Tournament,
 } from "@prisma/client";

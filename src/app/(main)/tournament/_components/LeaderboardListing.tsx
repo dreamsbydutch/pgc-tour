@@ -43,7 +43,7 @@ import {
 } from "country-flag-icons/react/3x2";
 import { MoveDownIcon, MoveHorizontalIcon, MoveUpIcon } from "lucide-react";
 import TeamGolfersTable from "./TeamTable";
-import { useLeaderboardStore, useMainStore } from "@/src/lib/store/store";
+import { useMainStore } from "@/src/lib/store/store";
 
 /**
  * Constants for country flags

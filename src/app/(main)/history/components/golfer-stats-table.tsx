@@ -122,7 +122,7 @@ export function GolferStatsTable() {
                   <GolferRow
                     key={golfer.name}
                     golfer={golfer}
-                    golfersData={golfersData || []}
+                    golfersData={golfersData ?? []}
                     nextTournament={nextTournament}
                     currentTournament={currentTournament}
                     pastTournament={pastTournament ?? null}

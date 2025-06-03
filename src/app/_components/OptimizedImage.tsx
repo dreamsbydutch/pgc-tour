@@ -66,7 +66,7 @@ export function OptimizedImage({
 
   // Generate responsive sizes if not provided
   const responsiveSizes =
-    sizes ||
+    sizes ??
     (fill
       ? "100vw"
       : width && width <= 64

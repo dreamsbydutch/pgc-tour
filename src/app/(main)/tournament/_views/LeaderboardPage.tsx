@@ -40,12 +40,14 @@ export default function LeaderboardPage({
   );
   const tourCard = useMainStore((state) => state.currentTourCard);
   const member = useMainStore((state) => state.currentMember);
+  const mainStoreGolfers = useLeaderboardStore((state) => state.golfers);
+  const mainStoreTeams = useLeaderboardStore((state) => state.teams);
   const storedGolfers = pastTournament
     ? pastTournament.golfers
-    : useLeaderboardStore((state) => state.golfers);
+    : mainStoreGolfers
   const storedTeams = pastTournament
     ? pastTournament.teams
-    : useLeaderboardStore((state) => state.teams);
+    : mainStoreTeams
   const golfers = pastTournament ? pastTournament.golfers : storedGolfers;
   const teamsData = pastTournament ? pastTournament.teams : storedTeams;
 
@@ -104,8 +106,8 @@ export default function LeaderboardPage({
         {tours.find((tour) => tour.id === activeTour)?.shortForm === "PGA" ? (
           sortGolfersForSpecialPositions(golfers ?? []).map((golfer) => (
             <LeaderboardListing
+              key={golfer.id}
               {...{
-                key: golfer.id,
                 type: "PGA",
                 tournament,
                 tournamentGolfers: storedGolfers,

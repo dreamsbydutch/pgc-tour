@@ -1,7 +1,6 @@
 "use client"; // Indicates that this is a client-side component
 
 import {
-  ArchiveIcon,
   BookText,
   Home,
   List,

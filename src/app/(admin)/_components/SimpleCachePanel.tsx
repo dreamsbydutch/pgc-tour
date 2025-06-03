@@ -21,7 +21,7 @@ import {
   forceRefreshCache,
   getCacheStatus,
 } from "@/src/lib/store/cacheInvalidation";
-import { Trash2, RefreshCw, Database, Info, Clock } from "lucide-react";
+import { Trash2, RefreshCw, Database, Clock } from "lucide-react";
 import { api } from "@/src/trpc/react";
 
 export default function CacheManagementPanel() {
@@ -33,8 +33,8 @@ export default function CacheManagementPanel() {
   const { data: latestInvalidation, refetch: refetchInvalidation } =
     api.cache.getLatestInvalidation.useQuery();
   const invalidateCache = api.cache.invalidateCache.useMutation({
-    onSuccess: () => {
-      refetchInvalidation();
+    onSuccess: async () => {
+      await refetchInvalidation();
     },
   });
   const handleAction = async (
@@ -132,7 +132,7 @@ export default function CacheManagementPanel() {
                     Last:{" "}
                     {new Date(latestInvalidation.timestamp).toLocaleString()}
                   </div>
-                  <div>Source: {latestInvalidation.source || "Unknown"}</div>
+                  <div>Source: {latestInvalidation.source ?? "Unknown"}</div>
                   <div>Type: {latestInvalidation.type}</div>
                 </>
               ) : (

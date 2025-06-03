@@ -13,18 +13,17 @@ export async function updateUsageForTournament({
   const golfers = await api.golfer.getByTournament({
     tournamentId,
   });
-  golfers
-    .filter((a) => a.usage === 0)
-    .forEach(async (golfer) => {
-      const usageTeams = teams.filter((t) =>
-        t.golferIds.includes(golfer.apiId),
-      );
-      if (usageTeams.length === 0) return;
-      updateGolferUsage({
-        golferId: golfer.id,
-        usage: usageTeams.length / teams.length,
-      });
+  const unusedGolfers = golfers.filter((a) => a.usage === 0);
+  for (const golfer of unusedGolfers) {
+    const usageTeams = teams.filter((t) =>
+      t.golferIds.includes(golfer.apiId),
+    );
+    if (usageTeams.length === 0) continue;
+    await updateGolferUsage({
+      golferId: golfer.id,
+      usage: usageTeams.length / teams.length,
     });
+  }
 }
 
 async function updateGolferUsage({

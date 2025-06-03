@@ -100,9 +100,9 @@ export async function loadInitialData() {
       ]);
 
     publicDataLoaded = !!(
-      toursData ||
-      tournamentsData ||
-      seasonData ||
+      toursData ??
+      tournamentsData ??
+      seasonData ??
       tiersData
     );
 

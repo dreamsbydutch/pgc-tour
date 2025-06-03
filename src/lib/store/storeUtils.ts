@@ -186,9 +186,24 @@ export function logCacheInfo() {
   return info;
 }
 
+// Extend the Window interface to include storeUtils
+declare global {
+  interface Window {
+    storeUtils?: {
+      clearAllLocalStorage: typeof clearAllLocalStorage;
+      resetMainStore: typeof resetMainStore;
+      resetLeaderboardStore: typeof resetLeaderboardStore;
+      forceCacheInvalidation: typeof forceCacheInvalidation;
+      developmentReset: typeof developmentReset;
+      getCacheInfo: typeof getCacheInfo;
+      logCacheInfo: typeof logCacheInfo;
+    };
+  }
+}
+
 // Make functions available globally in development
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  (window as any).storeUtils = {
+  window.storeUtils = {
     clearAllLocalStorage,
     resetMainStore,
     resetLeaderboardStore,

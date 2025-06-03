@@ -272,7 +272,6 @@ function setRoundTeeTimesAndScores(
   updateData: Partial<Golfer>,
   liveGolfer: DatagolfLiveGolfer | undefined,
   fieldGolfer: DatagolfFieldGolfer | undefined,
-  fieldData: DatagolfFieldInput,
   tournament: Tournament & { course: Course },
 ) {
   // Round One

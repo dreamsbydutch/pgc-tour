@@ -163,8 +163,8 @@ export function preloadCriticalImages() {
  * Creates a blur data URL for placeholder
  */
 export function createBlurDataURL(
-  width: number = 10,
-  height: number = 10,
+  width = 10,
+  height = 10,
 ): string {
   const canvas = document.createElement("canvas");
   canvas.width = width;
@@ -207,6 +207,6 @@ export function getTournamentImageUrl(
     case "TOUR Championship":
       return COMMON_IMAGES.TOUR_CHAMPIONSHIP;
     default:
-      return logoUrl || "";
+      return logoUrl ?? "";
   }
 }

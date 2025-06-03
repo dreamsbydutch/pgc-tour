@@ -33,7 +33,7 @@ export function calculatePositions(
   let positionCount = 1;
 
   sortedScores.forEach((score) => {
-    const teamsWithScore = teamsByScore.get(score) || [];
+    const teamsWithScore = teamsByScore.get(score) ?? [];
     const positionString =
       teamsWithScore.length > 1 ? `T${positionCount}` : `${positionCount}`;
 
@@ -120,8 +120,8 @@ export function calculateEarningsAndPoints(
     }
 
     return {
-      earnings: tier.payouts[positionIndex] || 0,
-      points: tier.points[positionIndex] || 0,
+      earnings: tier.payouts[positionIndex] ?? 0,
+      points: tier.points[positionIndex] ?? 0,
     };
   }
 }
@@ -199,10 +199,10 @@ export function updateTeamPositions(
   });
 
   // For TOUR Championship, we need to create two separate groups for playoffs
-  let playoff1Teams: Team[] = [];
-  let playoff2Teams: Team[] = [];
-  let playoff1Positions: Map<string, string> = new Map();
-  let playoff2Positions: Map<string, string> = new Map();
+  const playoff1Teams: Team[] = [];
+  const playoff2Teams: Team[] = [];
+  let playoff1Positions: Map<string, string> = new Map<string, string>();
+  let playoff2Positions: Map<string, string> = new Map<string, string>();
 
   if (isTourChampionship) {
     // Split teams into two separate competitions based on playoff status
@@ -250,7 +250,7 @@ export function updateTeamPositions(
 
     // For regular tournaments or non-Tour Championship, use the complete list of teams
     // For Tour Championship, use only the teams in the same playoff group
-    let relevantTeams = teamsByTourId[tourCard.tourId] || [];
+    let relevantTeams = teamsByTourId[tourCard.tourId] ?? [];
 
     // For Tour Championship, filter teams by playoff status
     if (isTourChampionship) {
@@ -261,13 +261,13 @@ export function updateTeamPositions(
     team.position =
       team.position === "CUT"
         ? "CUT"
-        : positions.get(team.id.toString()) || "1";
+        : positions.get(team.id.toString()) ?? "1";
 
     // Set past position from pre-calculated maps
     team.pastPosition =
       team.position === "CUT"
         ? "CUT"
-        : pastPositions.get(team.id.toString()) || "1";
+        : pastPositions.get(team.id.toString()) ?? "1";
 
     // Determine which tier to use based on playoff status
     let tierToUse;

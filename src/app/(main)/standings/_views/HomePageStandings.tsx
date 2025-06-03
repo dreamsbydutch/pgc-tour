@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/src/lib/utils";
-import { OptimizedImage } from "@/src/app/_components/OptimizedImage";
 import Link from "next/link";
 import { useMainStore } from "@/src/lib/store/store";
 import { HomePageList } from "@/src/app/_components/HomePageList";
