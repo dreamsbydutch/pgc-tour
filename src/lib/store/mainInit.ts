@@ -10,7 +10,7 @@ import type {
   Tournament,
 } from "@prisma/client";
 import { useMainStore } from "./store";
-import { checkAndRefreshIfNeeded } from "./cacheInvalidation";
+import { checkAndRefreshIfNeeded, refreshWithMiddlewareCoordination } from "./cacheInvalidation";
 
 type ProcessedTournament = Tournament & {
   course: Course | null;
@@ -59,6 +59,27 @@ async function fetchMemberWithRetry(
   }
   
   return null;
+}
+
+// Enhanced member fetch that checks store authentication state
+async function fetchMemberWithAuthCheck(): Promise<{ member: Member } | null> {
+  const store = useMainStore.getState();
+  
+  // If we already have auth state from AuthContext, use it
+  if (store.isAuthenticated && store.currentMember) {
+    console.log("👤 Using authenticated member from store:", store.currentMember.email);
+    return { member: store.currentMember };
+  }
+  
+  // If explicitly not authenticated, don't try API call
+  if (store.isAuthenticated === false) {
+    console.log("👤 Store indicates not authenticated, skipping API call");
+    return null;
+  }
+  
+  // Otherwise, fetch from API with retry logic
+  console.log("👤 Fetching member data from API...");
+  return fetchMemberWithRetry(3, 800); // Reduced retries since AuthContext handles auth state
 }
 
 // Simplified fetch helper with timeout
@@ -124,7 +145,7 @@ async function testAPIHealth() {
 }
 
 export async function loadInitialData() {
-  console.log("🔄 loadInitialData: Starting...");
+  console.log("🔄 loadInitialData: Starting with enhanced coordination...");
 
   // Quick API health check
   const apiHealthy = await testAPIHealth();
@@ -133,12 +154,34 @@ export async function loadInitialData() {
       "API endpoints are not responding. Please check your server connection.",
     );
   }
-  // First check database-driven cache invalidation
-  console.log("🔍 Checking cache invalidation...");
-  const cacheCheck = await checkAndRefreshIfNeeded();
-  if (cacheCheck.refreshed) {
+  
+  // First check database-driven cache invalidation with middleware coordination
+  console.log("🔍 Checking cache invalidation with middleware coordination...");
+  
+  // Check middleware coordination first if available
+  let middlewareCoordinated = false;
+  if (typeof window !== 'undefined') {
+    try {
+      const middlewareResult = await refreshWithMiddlewareCoordination();
+      middlewareCoordinated = middlewareResult.refreshed;
+      if (middlewareCoordinated) {
+        console.log("🔄 Middleware-coordinated cache refresh:", middlewareResult.reason);
+      }
+    } catch (error) {
+      console.warn("Middleware coordination failed (non-critical):", error);
+    }
+  }
+  
+  // Then check database-driven cache invalidation
+  const cacheCheck = await checkAndRefreshIfNeeded({
+    respectMiddleware: true,
+    source: 'main-init',
+  });
+  
+  if (cacheCheck.refreshed || middlewareCoordinated) {
     console.log(
-      "🔄 Cache refreshed based on database flag:",
+      "🔄 Cache refreshed:",
+      middlewareCoordinated ? "middleware coordination" : "database flags",
       cacheCheck.reason,
     );
     // Don't return early - continue to fetch all missing data
@@ -255,26 +298,12 @@ export async function loadInitialData() {
     );
 
     console.log("📡 Fetching user data...");
-    // Fetch user-specific data (gracefully handle failures for logged-out users)
-    // Check if we have a Supabase session to determine if we should retry member fetch
-    let hasSupabaseSession = false;
-    if (typeof window !== "undefined") {
-      try {
-        const { createClient } = await import("@/src/lib/supabase/client");
-        const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        hasSupabaseSession = !!session;
-        console.log("🔐 Supabase session status:", hasSupabaseSession ? "✅ active" : "❌ none");
-      } catch (error) {
-        console.warn("⚠️ Could not check Supabase session:", error);
-      }
-    }
-
+    // Fetch user-specific data using enhanced auth-aware method
+    
     const [memberData, pastTeamsData, pastGolfersData, tourCardsData] =
       await Promise.all([
-        // Use retry logic for member data to handle auth race conditions
-        // If we have a session but member fetch fails, this suggests a race condition
-        hasSupabaseSession ? fetchMemberWithRetry(5, 1000) : fetchMemberWithRetry(2, 500),
+        // Use enhanced member fetch that checks auth state first
+        fetchMemberWithAuthCheck(),
         safeFetch<{ pastTeams: (Team & { tourCard: TourCard | null })[] }>(
           "/api/teams/past",
         ).then((data) => {
@@ -435,7 +464,13 @@ export async function loadInitialData() {
 
       _lastUpdated: Date.now(),
     };
+    
+    // Update store with main data first
     useMainStore.setState(updateData);
+    
+    // Then update auth state properly to ensure consistency
+    const finalMember = updateData.currentMember;
+    useMainStore.getState().setAuthState(finalMember, !!finalMember);
 
     console.log("✅ Store updated successfully:", {
       tours: updateData.tours.length,
@@ -458,13 +493,12 @@ export async function loadInitialData() {
       currentSeason: storeData.currentSeason,
       currentTiers: storeData.currentTiers ?? [],
       tourCards: storeData.tourCards ?? [], // Keep existing tour cards if available
-      currentMember: null, // Always null on error
-      currentTour: storeData.currentTour,
-      currentTourCard: storeData.currentTourCard,
       _lastUpdated: Date.now(),
     };
 
     useMainStore.setState(fallbackData);
+    // Clear auth state on error to ensure clean state
+    useMainStore.getState().clearAuthState();
     throw error; // Re-throw so the error handling in useInitStore can catch it
   }
 }

@@ -7,9 +7,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/admin",
-    "/auth/callback",
-    "/signin",
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Include all pages and API routes for comprehensive auth handling
+    "/((?!_next/static|_next/image|favicon.ico|sw.js|logo192.png|logo512.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

@@ -1,65 +1,38 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { createClient } from "@/src/lib/supabase/client";
-import { resetInitialization } from "@/src/lib/store/useInitStore";
+import { useEffect } from "react";
+import { useAuth } from "@/src/lib/auth/AuthContext";
+import { authStoreService } from "@/src/lib/auth/AuthStoreService";
 
 /**
- * Hook to listen for authentication state changes and handle store accordingly
+ * Hook to synchronize authentication state with store
+ * This replaces the old auth listener and integrates with the new AuthContext
  */
 export function useAuthListener() {
-  const isInitializing = useRef(false);
+  const { member, isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    const supabase = createClient();
+    // Update store when auth state changes
+    if (!isLoading) {
+      authStoreService.updateStoreForAuth(member, isAuthenticated);
+    }
+  }, [member, isAuthenticated, isLoading]);
 
-    // Listen for auth state changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("🔐 Auth state change:", event, !!session);
-
-      // Prevent recursive calls during initialization
-      if (isInitializing.current) {
-        console.log("⏳ Skipping auth listener - initialization in progress");
-        return;
-      }
-
-      if (event === "SIGNED_IN" && session) {
-        console.log("✅ User signed in, checking for auth success handler...");
-        
-        // Check if we have auth_success parameter indicating redirect from callback
-        const hasAuthSuccess = typeof window !== "undefined" && 
-          new URLSearchParams(window.location.search).get("auth_success") === "true";
-        
-        if (hasAuthSuccess) {
-          console.log("🔗 Auth success parameter detected, letting AuthSuccessHandler handle refresh");
-          return; // Let AuthSuccessHandler handle the refresh
-        }
-        
-        // For direct sign-ins without redirect, wait for session propagation
-        console.log("⏰ Direct sign-in detected, waiting for session propagation...");
-        setTimeout(() => {
-          console.log("🔄 Session propagated, refreshing store...");
-          resetInitialization();
-        }, 2000); // 2 second delay for session propagation
-      } else if (event === "SIGNED_OUT") {
-        console.log("👋 User signed out, marking for store refresh...");
-        // Sign out can be immediate - no session propagation needed
-        resetInitialization();
-      }
+  // Subscribe to auth state changes for other components
+  useEffect(() => {
+    const unsubscribe = authStoreService.onAuthStateChange((update) => {
+      console.log("🔐 Auth state change received:", update);
     });
 
-    // Cleanup subscription on unmount
-    return () => {
-      subscription.unsubscribe();
-    };
+    return unsubscribe;
   }, []);
 
-  // Expose initialization state for other components to check
   return {
-    setInitializing: (value: boolean) => {
-      isInitializing.current = value;
-    }
+    isAuthenticated,
+    member,
+    isLoading,
+    // Expose store service methods for advanced use cases
+    refreshUserData: authStoreService.refreshUserData.bind(authStoreService),
+    hasValidSession: authStoreService.hasValidUserSession.bind(authStoreService),
   };
 }

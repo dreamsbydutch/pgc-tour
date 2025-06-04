@@ -19,6 +19,7 @@ import {
   useSortedMemberData,
 } from "./components/data-hooks";
 import { HistoryTable } from "./components/history-table";
+import { useAuth } from "@/src/lib/auth/AuthContext";
 
 // Force dynamic rendering to prevent static generation issues
 export const dynamic = "force-dynamic";
@@ -75,8 +76,8 @@ function MemberStatsTable() {
     adjustedTeams: adjustedTeams.filter((team) => team !== undefined),
   }).filter((obj) => (obj.teams?.length ?? 0) > 0);
 
-  // Get the current user from the store
-  const currentUser = useMainStore((state) => state.currentMember);
+  // Get the current user from auth
+  const { member: currentUser } = useAuth();
 
   // Filter member data by friends if needed
   const filteredMemberData = showFriendsOnly

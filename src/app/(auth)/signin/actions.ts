@@ -10,21 +10,34 @@ export async function signInWithGoogle({
 }) {
   const supabase = createClient();
   setIsGoogleLoading(true);
+  
+  console.log("🔐 Starting Google OAuth signin...");
+  
   try {
-    const { error } = await supabase.auth.signInWithOAuth({
+    const redirectUrl = `${window.location.origin}/auth/callback`;
+    console.log("🔄 OAuth redirect URL:", redirectUrl);
+    
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectUrl,
       },
     });
+
+    console.log("📡 OAuth response:", { data: !!data, error: !!error });
 
     if (error) {
       throw error;
     }
-  } catch (_error) {
+    
+    // Don't reset loading state here since we're redirecting
+    console.log("✅ OAuth initiated successfully");
+    
+  } catch (error) {
+    console.error("❌ OAuth signin error:", error);
     toast({
       title: "Please try again.",
-      description: "There was an error logging in with Google.",
+      description: error instanceof Error ? error.message : "There was an error logging in with Google.",
       variant: "destructive",
     });
     setIsGoogleLoading(false);

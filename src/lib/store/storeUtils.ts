@@ -7,7 +7,7 @@ import { useMainStore, useLeaderboardStore } from "./store";
 import {
   resetInitialization,
   resetLeaderboardInitialization,
-} from "./useInitStore";
+} from "../hooks/useInitStore";
 import { loadInitialData } from "./mainInit";
 import { initializeLeaderboardStore } from "./leaderboardInit";
 

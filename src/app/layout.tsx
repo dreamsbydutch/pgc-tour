@@ -4,10 +4,11 @@ import { type Metadata } from "next";
 import { Barlow_Condensed, Varela, Yellowtail } from "next/font/google";
 
 import { TRPCReactProvider } from "@/trpcLocal/react";
-import MenuBar from "@/components/nav/MenuBar";
+import MenuBar from "@/src/app/_components/nav/MenuBar";
 import { cn } from "../lib/utils";
 import Script from "next/script";
 import { InitStoreWrapper } from "../lib/store/InitStoreWrapper";
+import { AuthProvider } from "../lib/auth/AuthContext";
 
 const varela = Varela({
   weight: ["400"],
@@ -74,10 +75,12 @@ export default async function RootLayout({
         )}
       >
         <TRPCReactProvider>
-          <InitStoreWrapper>
-            <main className="mb-24 mt-4 lg:mb-8 lg:mt-20">{children}</main>
-            <MenuBar />
-          </InitStoreWrapper>
+          <AuthProvider>
+            <InitStoreWrapper>
+              <main className="mb-24 mt-4 lg:mb-8 lg:mt-20">{children}</main>
+              <MenuBar />
+            </InitStoreWrapper>
+          </AuthProvider>
         </TRPCReactProvider>
       </body>
     </html>

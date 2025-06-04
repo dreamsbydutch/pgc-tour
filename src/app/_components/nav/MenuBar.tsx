@@ -15,6 +15,7 @@ import LoadingSpinner from "../LoadingSpinner"; // Loading spinner component
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signInWithGoogle } from "../../(auth)/signin/actions";
+import { useAuth } from "@/src/lib/auth/AuthContext";
 import { useMainStore } from "@/src/lib/store/store";
 
 /**
@@ -32,7 +33,7 @@ import { useMainStore } from "@/src/lib/store/store";
  * - className (optional): Additional CSS classes to style the component.
  */
 export default function MenuBar({ className }: { className?: string }) {
-  const member = useMainStore((state) => state.currentMember);
+  const { member, isLoading } = useAuth();
   const tourCard = useMainStore((state) => state.currentTourCard);
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false); // State for Google sign-in loading
   const [isSigningOut, setIsSigningOut] = useState(false); // State for sign-out process

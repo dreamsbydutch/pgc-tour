@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/src/app/_components/ui/dropdown-menu";
 import { UserAvatar } from "../OptimizedImage";
 import { Button } from "../ui/button";
 import Link from "next/link";

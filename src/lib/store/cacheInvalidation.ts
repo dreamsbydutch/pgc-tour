@@ -1,6 +1,7 @@
 /**
- * Database-Driven Cache Invalidation System
- * Uses database timestamp flag to determine when to refresh store data
+ * Enhanced Database-Driven Cache Invalidation System
+ * Integrates with centralized auth system and middleware for coordinated data management
+ * Uses database timestamp flags to determine when to refresh store data
  */
 
 import { useMainStore } from "./store";
@@ -93,13 +94,43 @@ interface CacheStatus {
 }
 
 /**
- * Check if store needs refresh based on database invalidation flags
- * Supports separate invalidation for tour cards and tournaments
+ * Enhanced cache coordination options
  */
-export async function checkAndRefreshIfNeeded(): Promise<CacheRefreshResult> {
+interface CacheCoordinationOptions {
+  skipAuthCheck?: boolean;
+  forceRefresh?: boolean;
+  source?: string;
+  respectMiddleware?: boolean;
+}
+
+/**
+ * Check if store needs refresh based on database invalidation flags
+ * Enhanced with auth coordination and middleware integration
+ */
+export async function checkAndRefreshIfNeeded(
+  options: CacheCoordinationOptions = {}
+): Promise<CacheRefreshResult> {
   try {
     const storeState = useMainStore.getState();
     const storeTimestamp = storeState._lastUpdated ?? 0;
+
+    // Check auth state before proceeding with cache refresh
+    if (!options.skipAuthCheck && storeState.isAuthenticated) {
+      // For authenticated users, check if we need user-specific data refresh
+      const authTimestamp = storeState.authLastUpdated ?? 0;
+      if (authTimestamp > storeTimestamp) {
+        console.log("🔄 Auth state newer than cache, coordinating refresh...");
+      }
+    }
+
+    // Check middleware headers for cache hints if available
+    if (options.respectMiddleware && typeof window !== 'undefined') {
+      const cacheHint = getCacheHintFromHeaders();
+      if (cacheHint === 'refresh-after-auth') {
+        console.log("🔄 Middleware suggests cache refresh after auth");
+        options.forceRefresh = true;
+      }
+    }
 
     // Check database invalidation flags via API
     const response = await fetch(`/api/cache/invalidate`);
@@ -118,8 +149,8 @@ export async function checkAndRefreshIfNeeded(): Promise<CacheRefreshResult> {
     const latestTournamentInvalidation = data.latestTournamentInvalidation;
     const latestGlobalInvalidation = data.latestInvalidation;
 
-    let needsTourCardRefresh = false;
-    let needsTournamentRefresh = false;
+    let needsTourCardRefresh = options.forceRefresh || false;
+    let needsTournamentRefresh = options.forceRefresh || false;
 
     // Check if tour cards need refresh
     if (
@@ -153,16 +184,16 @@ export async function checkAndRefreshIfNeeded(): Promise<CacheRefreshResult> {
       };
     }
 
-    // Refresh needed data
+    // Refresh needed data with coordination
     let tourCardSuccess = true;
     let tournamentSuccess = true;
 
     if (needsTourCardRefresh) {
-      tourCardSuccess = await refreshTourCardsData();
+      tourCardSuccess = await refreshTourCardsData(options);
     }
 
     if (needsTournamentRefresh) {
-      tournamentSuccess = await refreshTournamentData();
+      tournamentSuccess = await refreshTournamentData(options);
     }
 
     const refreshed = tourCardSuccess && tournamentSuccess;
@@ -172,6 +203,11 @@ export async function checkAndRefreshIfNeeded(): Promise<CacheRefreshResult> {
         : needsTourCardRefresh
           ? "tourCards"
           : "tournaments";
+
+    // Update auth coordination timestamp if successful
+    if (refreshed && storeState.isAuthenticated) {
+      storeState.setAuthState(storeState.currentMember, true);
+    }
 
     return {
       refreshed,
@@ -192,13 +228,35 @@ export async function checkAndRefreshIfNeeded(): Promise<CacheRefreshResult> {
 }
 
 /**
- * Refresh tour cards data from server
+ * Get cache hint from middleware headers (client-side only)
  */
-export async function refreshTourCardsData(): Promise<boolean> {
+function getCacheHintFromHeaders(): string | null {
+  if (typeof window === 'undefined') return null;
+  
+  // Check if we have middleware headers in document meta or other storage
+  const metaTag = document.querySelector('meta[name="cache-hint"]');
+  return metaTag?.getAttribute('content') || null;
+}
+
+/**
+ * Refresh tour cards data from server with enhanced coordination
+ */
+export async function refreshTourCardsData(
+  options: CacheCoordinationOptions = {}
+): Promise<boolean> {
   try {
+    const headers: Record<string, string> = {
+      "Cache-Control": "no-cache"
+    };
+
+    // Add source information for tracking
+    if (options.source) {
+      headers['X-Cache-Source'] = options.source;
+    }
+
     const response = await fetch("/api/tourcards/current", {
       cache: "no-store",
-      headers: { "Cache-Control": "no-cache" },
+      headers,
     });
 
     if (!response.ok) {
@@ -232,13 +290,24 @@ export async function refreshTourCardsData(): Promise<boolean> {
 }
 
 /**
- * Refresh tournament data from server
+ * Refresh tournament data from server with enhanced coordination
  */
-export async function refreshTournamentData(): Promise<boolean> {
+export async function refreshTournamentData(
+  options: CacheCoordinationOptions = {}
+): Promise<boolean> {
   try {
+    const headers: Record<string, string> = {
+      "Cache-Control": "no-cache"
+    };
+
+    // Add source information for tracking
+    if (options.source) {
+      headers['X-Cache-Source'] = options.source;
+    }
+
     const response = await fetch("/api/tournaments/all", {
       cache: "no-store",
-      headers: { "Cache-Control": "no-cache" },
+      headers,
     });
 
     if (!response.ok) {
@@ -305,27 +374,31 @@ export async function refreshTournamentData(): Promise<boolean> {
 }
 
 /**
- * Refresh standings data from server (legacy function for compatibility)
+ * Refresh standings data from server (enhanced legacy function for compatibility)
  */
-export async function refreshStandingsData(): Promise<boolean> {
-  // Use the new separate refresh functions
-  const tourCardSuccess = await refreshTourCardsData();
-  const tournamentSuccess = await refreshTournamentData();
+export async function refreshStandingsData(
+  options: CacheCoordinationOptions = {}
+): Promise<boolean> {
+  // Use the new separate refresh functions with coordination
+  const tourCardSuccess = await refreshTourCardsData(options);
+  const tournamentSuccess = await refreshTournamentData(options);
   return tourCardSuccess && tournamentSuccess;
 }
 
 /**
  * Force refresh specific data types and trigger cache invalidation flag
+ * Enhanced with auth coordination
  */
 export async function forceRefreshCache(
   dataType: "tourCards" | "tournaments" | "global" = "global",
+  options: CacheCoordinationOptions = {}
 ): Promise<boolean> {
   try {
     console.log(`🔄 Force refreshing cache for: ${dataType}...`);
 
     // First trigger database invalidation flag
     const invalidationRequest: CacheInvalidationRequest = {
-      source: "manual",
+      source: options.source || "manual",
       type: dataType,
     };
 
@@ -342,21 +415,28 @@ export async function forceRefreshCache(
       return false;
     }
 
-    // Then refresh the appropriate data
+    // Then refresh the appropriate data with coordination
     let success = true;
+    const refreshOptions = { ...options, forceRefresh: true };
 
     if (dataType === "global") {
-      const tourCardSuccess = await refreshTourCardsData();
-      const tournamentSuccess = await refreshTournamentData();
+      const tourCardSuccess = await refreshTourCardsData(refreshOptions);
+      const tournamentSuccess = await refreshTournamentData(refreshOptions);
       success = tourCardSuccess && tournamentSuccess;
     } else if (dataType === "tourCards") {
-      success = await refreshTourCardsData();
+      success = await refreshTourCardsData(refreshOptions);
     } else if (dataType === "tournaments") {
-      success = await refreshTournamentData();
+      success = await refreshTournamentData(refreshOptions);
     }
 
     if (success) {
       console.log(`✅ Manual cache refresh completed for: ${dataType}`);
+      
+      // Update auth state coordination if user is authenticated
+      const storeState = useMainStore.getState();
+      if (storeState.isAuthenticated && storeState.currentMember) {
+        storeState.setAuthState(storeState.currentMember, true);
+      }
     } else {
       console.error(`❌ Manual cache refresh failed for: ${dataType}`);
     }
@@ -369,17 +449,18 @@ export async function forceRefreshCache(
 }
 
 /**
- * Trigger tour card cache invalidation (for use by external services)
+ * Trigger tour card cache invalidation (enhanced for auth coordination)
  */
 export async function invalidateTourCardsCache(
   source = "api",
+  options: CacheCoordinationOptions = {}
 ): Promise<boolean> {
   try {
     const response = await fetch(`/api/cache/invalidate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        source,
+        source: options.source || source,
         type: "tourCards",
       }),
     });
@@ -400,17 +481,18 @@ export async function invalidateTourCardsCache(
 }
 
 /**
- * Trigger tournament cache invalidation (for use by external services)
+ * Trigger tournament cache invalidation (enhanced for auth coordination)
  */
 export async function invalidateTournamentCache(
   source = "api",
+  options: CacheCoordinationOptions = {}
 ): Promise<boolean> {
   try {
     const response = await fetch(`/api/cache/invalidate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        source,
+        source: options.source || source,
         type: "tournaments",
       }),
     });
@@ -431,13 +513,61 @@ export async function invalidateTournamentCache(
 }
 
 /**
- * Get cache status for admin panel
+ * Get enhanced cache status for admin panel with auth coordination info
  */
-export function getCacheStatus(): CacheStatus {
+export function getCacheStatus(): CacheStatus & { authCoordinated: boolean } {
+  const storeState = useMainStore.getState();
   return {
-    lastRefresh: useMainStore.getState()._lastUpdated,
+    lastRefresh: storeState._lastUpdated,
     isDatabaseDriven: true, // Database-driven cache invalidation
-    lastTourCardRefresh: useMainStore.getState()._lastUpdated, // For now, using same timestamp
-    lastTournamentRefresh: useMainStore.getState()._lastUpdated, // For now, using same timestamp
+    lastTourCardRefresh: storeState._lastUpdated, // For now, using same timestamp
+    lastTournamentRefresh: storeState._lastUpdated, // For now, using same timestamp
+    authCoordinated: storeState.isAuthenticated && !!storeState.authLastUpdated,
   };
+}
+
+/**
+ * Coordinate cache refresh after authentication events
+ * This function is called by the auth system when auth state changes
+ */
+export async function coordinateCacheAfterAuth(
+  isAuthenticated: boolean,
+  userId?: string
+): Promise<boolean> {
+  try {
+    console.log("🔄 Coordinating cache after auth change:", { isAuthenticated, userId });
+
+    if (isAuthenticated && userId) {
+      // For authenticated users, do a coordinated refresh
+      const options: CacheCoordinationOptions = {
+        source: 'auth-coordination',
+        forceRefresh: false, // Let database flags determine what needs refresh
+        skipAuthCheck: false,
+      };
+
+      const result = await checkAndRefreshIfNeeded(options);
+      console.log("✅ Cache coordination after auth completed:", result);
+      return result.refreshed;
+    } else {
+      // For sign-out, we might want to clear user-specific cache
+      console.log("🧹 User signed out, cache coordination complete");
+      return true;
+    }
+  } catch (error) {
+    console.error("Error coordinating cache after auth:", error);
+    return false;
+  }
+}
+
+/**
+ * Enhanced cache refresh with middleware coordination
+ * This function respects middleware hints and auth state
+ */
+export async function refreshWithMiddlewareCoordination(): Promise<CacheRefreshResult> {
+  const options: CacheCoordinationOptions = {
+    respectMiddleware: true,
+    source: 'middleware-coordination',
+  };
+
+  return await checkAndRefreshIfNeeded(options);
 }

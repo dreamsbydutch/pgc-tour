@@ -7,7 +7,7 @@ import { TourCardForm } from "./_components/TourCardForm";
 import HomePageLeaderboard from "./(main)/tournament/views/shared/HomePageLeaderboard";
 import SignInPage from "./(auth)/signin/page";
 import HomePageStandings from "./(main)/standings/views/shared/HomePageStandings";
-import { cn } from "@/lib/utils";
+import { cn } from "@/src/lib/utils";
 import {
   Table,
   TableBody,

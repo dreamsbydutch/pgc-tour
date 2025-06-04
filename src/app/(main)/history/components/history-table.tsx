@@ -7,6 +7,7 @@ import type { ExtendedMember, ExtendedTournament } from "./types";
 import type { Member, Tier } from "@prisma/client";
 import { calculateMemberStats } from "./member-stats";
 import { useMainStore } from "@/src/lib/store/store";
+import { useAuth } from "@/src/lib/auth/AuthContext";
 import {
   Table,
   TableRow,
@@ -102,7 +103,7 @@ function CustomTableRow({
   showAdjusted,
 }: TableRowProps) {
   const stats = calculateMemberStats(member, showAdjusted, tournaments);
-  const currentMember = useMainStore((state) => state.currentMember);
+  const { member: currentMember } = useAuth();
 
   // Determine if this is the current member or a friend
   const isCurrentMember = currentMember?.id === member.id;

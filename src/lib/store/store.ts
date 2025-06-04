@@ -18,6 +18,7 @@ type TournamentData = Tournament & {
 };
 
 interface MainStoreState {
+  // Core tournament and public data
   seasonTournaments: TournamentData[] | null;
   tourCards: TourCard[] | null;
   tours: Tour[] | null;
@@ -29,13 +30,21 @@ interface MainStoreState {
     | null;
   currentTournament: TournamentData | null;
   nextTournament: TournamentData | null;
+  currentSeason: Season | null;
+  currentTiers: Tier[] | null;
+  
+  // User-specific authentication state
   currentMember: Member | null;
   currentTour: Tour | null;
   currentTourCard: TourCard | null;
-  currentSeason: Season | null;
-  currentTiers: Tier[] | null;
+  isAuthenticated: boolean;
+  authLastUpdated: number | null;
+  
+  // Store management
   batchUpdate: (updates: Partial<MainStoreState>) => void;
-  setCurrentMember: (member: Member) => void;
+  setCurrentMember: (member: Member | null) => void;
+  setAuthState: (member: Member | null, isAuthenticated: boolean) => void;
+  clearAuthState: () => void;
   _lastUpdated: number | null;
 }
 
@@ -55,25 +64,62 @@ interface LeaderboardStoreState {
 export const useMainStore = create<MainStoreState>()(
   persist(
     (set) => ({
+      // Core data
       seasonTournaments: null,
       tourCards: null,
       tours: null,
       pastTournaments: null,
       currentTournament: null,
       nextTournament: null,
+      currentSeason: null,
+      currentTiers: null,
+      
+      // Auth state
       currentMember: null,
       currentTour: null,
       currentTourCard: null,
-      currentSeason: null,
-      currentTiers: null,
+      isAuthenticated: false,
+      authLastUpdated: null,
+      
+      // Store management
       _lastUpdated: null,
+      
       batchUpdate: (updates) =>
         set({
           ...updates,
           _lastUpdated: Date.now(),
         }),
-      setCurrentMember: (member: Member) =>
-        set((state) => ({ ...state, currentMember: member })),
+        
+      setCurrentMember: (member: Member | null) =>
+        set((state) => ({ 
+          ...state, 
+          currentMember: member,
+          isAuthenticated: !!member,
+          authLastUpdated: Date.now(),
+        })),
+        
+      setAuthState: (member: Member | null, isAuthenticated: boolean) =>
+        set((state) => ({
+          ...state,
+          currentMember: member,
+          isAuthenticated,
+          authLastUpdated: Date.now(),
+          // Clear user-specific data if not authenticated
+          ...(isAuthenticated ? {} : {
+            currentTour: null,
+            currentTourCard: null,
+          }),
+        })),
+        
+      clearAuthState: () =>
+        set((state) => ({
+          ...state,
+          currentMember: null,
+          currentTour: null,
+          currentTourCard: null,
+          isAuthenticated: false,
+          authLastUpdated: Date.now(),
+        })),
     }),
     {
       name: "pgc-main-store", // Name for the localStorage key
@@ -156,6 +202,8 @@ export const useMainStore = create<MainStoreState>()(
           currentTourCard,
           currentSeason,
           currentTiers,
+          isAuthenticated,
+          authLastUpdated,
           _lastUpdated,
         } = state;
 
@@ -171,6 +219,8 @@ export const useMainStore = create<MainStoreState>()(
           currentTourCard,
           currentSeason,
           currentTiers,
+          isAuthenticated,
+          authLastUpdated,
           _lastUpdated,
         };
       },

@@ -13,7 +13,7 @@ import {
 } from "@/src/app/_components/ui/dropdown-menu";
 import Link from "next/link";
 import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
-import { cn } from "@/lib/utils";
+import { cn } from "@/src/lib/utils";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { useMainStore } from "@/src/lib/store/store";
 import type { Course, Tier, Tournament } from "@prisma/client";

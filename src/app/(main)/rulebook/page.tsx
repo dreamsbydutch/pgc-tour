@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, formatMoney, formatNumber, formatRank } from "@/lib/utils";
+import { cn, formatMoney, formatNumber, formatRank } from "@/src/lib/utils";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
 import {

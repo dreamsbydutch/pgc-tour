@@ -1,59 +1,33 @@
 "use client";
 
-import { useInitStore } from "./useInitStore";
+import { useInitStore } from "@/src/lib/hooks/useInitStore";
 import EmergencyReset from "@/src/app/_components/EmergencyReset";
 import { OptimizedImage } from "@/src/app/_components/OptimizedImage";
 import { COMMON_IMAGES } from "@/src/lib/utils/image-optimization";
-import { useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { useAuth } from "@/src/lib/auth/AuthContext";
 import { useAuthListener } from "@/src/lib/hooks/use-auth-listener";
 
-// Separate component for search params logic that needs Suspense
-function AuthSuccessHandler() {
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const authSuccess = searchParams.get("auth_success");
-    const timestamp = searchParams.get("timestamp");
-    
-    if (authSuccess === "true") {
-      console.log("🔐 Authentication success detected, triggering store refresh...");
-      
-      // Clear the URL parameters first
-      const url = new URL(window.location.href);
-      url.searchParams.delete("auth_success");
-      url.searchParams.delete("timestamp");
-      window.history.replaceState({}, "", url.toString());
-
-      // Import resetInitialization dynamically to avoid circular imports
-      import("./useInitStore").then(({ resetInitialization }) => {
-        // Add a small delay to ensure session cookies are set
-        setTimeout(() => {
-          console.log("🔄 Triggering store refresh after successful authentication");
-          resetInitialization();
-        }, 1000); // 1 second delay to allow session propagation
-      }).catch((error) => {
-        console.error("❌ Failed to import resetInitialization:", error);
-      });
-
-      console.log("✅ URL params cleared and store refresh scheduled");
-    }
-  }, [searchParams]);
-
-  return null;
-}
-
 export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
-  const { isLoading, error } = useInitStore();
-  const authListener = useAuthListener();
+  const { 
+    isLoading, 
+    error, 
+    retryCount, 
+    isInitialized,
+    forceRefresh, 
+    retry 
+  } = useInitStore();
+  const { isAuthenticated, member } = useAuth();
 
-  // Debug logging
-  console.log("🔍 InitStoreWrapper render:", { isLoading, error: !!error });
-
-  // Mark initialization state for auth listener
-  useEffect(() => {
-    authListener.setInitializing(isLoading);
-  }, [isLoading, authListener]);
+  // Debug logging with enhanced info
+  console.log("🔍 InitStoreWrapper render:", { 
+    isLoading, 
+    error: !!error, 
+    retryCount,
+    isInitialized,
+    isAuthenticated, 
+    memberEmail: member?.email 
+  });
 
   // Show loading state while initializing
   if (isLoading) {
@@ -70,7 +44,9 @@ export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
             priority={true}
             sizes="96px"
           />
-          <div className="w-44 text-center">Loading Clubhouse Data.....</div>
+          <div className="w-44 text-center">
+            {retryCount > 0 ? `Retrying... (${retryCount}/3)` : "Loading Clubhouse Data....."}
+          </div>
         </div>
       </div>
     );
@@ -87,26 +63,43 @@ export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
             message="Unable to load application data. This could be a network issue or corrupted cache."
             size="lg"
           />
-          <div className="mt-4 text-center">
-            <details className="text-sm text-gray-500">
-              <summary className="cursor-pointer">Technical Details</summary>
-              <p className="mt-2 rounded bg-gray-100 p-2 text-left font-mono text-xs">
-                {error}
-              </p>
-            </details>
+          <div className="mt-4 space-y-3">
+            <div className="flex justify-center space-x-2">
+              <button
+                onClick={retry}
+                disabled={isLoading}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                {isLoading ? "Retrying..." : "Retry"}
+              </button>
+              <button
+                onClick={forceRefresh}
+                disabled={isLoading}
+                className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Force Refresh
+              </button>
+            </div>
+            <div className="text-center">
+              <details className="text-sm text-gray-500">
+                <summary className="cursor-pointer">Technical Details</summary>
+                <p className="mt-2 rounded bg-gray-100 p-2 text-left font-mono text-xs">
+                  {error}
+                </p>
+                {retryCount > 0 && (
+                  <p className="mt-1 text-xs text-gray-400">
+                    Retry attempts: {retryCount}/3
+                  </p>
+                )}
+              </details>
+            </div>
           </div>
         </div>
       </div>
     );
   }
+  
   // Render children if no loading or error
   console.log("✅ Rendering children");
-  return (
-    <>
-      <Suspense fallback={null}>
-        <AuthSuccessHandler />
-      </Suspense>
-      {children}
-    </>
-  );
+  return children;
 }
