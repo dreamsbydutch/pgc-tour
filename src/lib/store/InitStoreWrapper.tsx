@@ -4,9 +4,8 @@ import { useInitStore } from "@/src/lib/hooks/useInitStore";
 import EmergencyReset from "@/src/app/_components/EmergencyReset";
 import { OptimizedImage } from "@/src/app/_components/OptimizedImage";
 import { COMMON_IMAGES } from "@/src/lib/utils/image-optimization";
-import { useEffect } from "react";
 import { useAuth } from "@/src/lib/auth/AuthContext";
-import { useAuthListener } from "@/src/lib/hooks/use-auth-listener";
+// Removed unused imports
 
 export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
   const { 

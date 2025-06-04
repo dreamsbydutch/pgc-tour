@@ -1,6 +1,6 @@
 "use client";
 
-import { useMainStore } from "@/src/lib/store/store";
+// Removed unused import: useMainStore
 import { cn, formatMoney, formatScore } from "@/src/lib/utils";
 import type { Team, Tour, TourCard } from "@prisma/client";
 import { TourLogo } from "./OptimizedImage";

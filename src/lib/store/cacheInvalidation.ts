@@ -149,8 +149,8 @@ export async function checkAndRefreshIfNeeded(
     const latestTournamentInvalidation = data.latestTournamentInvalidation;
     const latestGlobalInvalidation = data.latestInvalidation;
 
-    let needsTourCardRefresh = options.forceRefresh || false;
-    let needsTournamentRefresh = options.forceRefresh || false;
+    let needsTourCardRefresh = options.forceRefresh ?? false;
+    let needsTournamentRefresh = options.forceRefresh ?? false;
 
     // Check if tour cards need refresh
     if (
@@ -235,7 +235,7 @@ function getCacheHintFromHeaders(): string | null {
   
   // Check if we have middleware headers in document meta or other storage
   const metaTag = document.querySelector('meta[name="cache-hint"]');
-  return metaTag?.getAttribute('content') || null;
+  return metaTag?.getAttribute('content') ?? null;
 }
 
 /**
@@ -398,7 +398,7 @@ export async function forceRefreshCache(
 
     // First trigger database invalidation flag
     const invalidationRequest: CacheInvalidationRequest = {
-      source: options.source || "manual",
+      source: options.source ?? "manual",
       type: dataType,
     };
 
@@ -460,7 +460,7 @@ export async function invalidateTourCardsCache(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        source: options.source || source,
+        source: options.source ?? source,
         type: "tourCards",
       }),
     });
@@ -492,7 +492,7 @@ export async function invalidateTournamentCache(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        source: options.source || source,
+        source: options.source ?? source,
         type: "tournaments",
       }),
     });

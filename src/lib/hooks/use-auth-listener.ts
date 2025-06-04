@@ -14,7 +14,7 @@ export function useAuthListener() {
   useEffect(() => {
     // Update store when auth state changes
     if (!isLoading) {
-      authStoreService.updateStoreForAuth(member, isAuthenticated);
+      void authStoreService.updateStoreForAuth(member, isAuthenticated);
     }
   }, [member, isAuthenticated, isLoading]);
 

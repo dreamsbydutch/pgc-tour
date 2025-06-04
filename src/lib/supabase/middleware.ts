@@ -116,7 +116,7 @@ export async function updateSession(request: NextRequest) {
   // Add auth headers for client-side coordination
   if (user) {
     supabaseResponse.headers.set(AUTH_HEADERS.USER_ID, user.id);
-    supabaseResponse.headers.set(AUTH_HEADERS.USER_EMAIL, user.email || '');
+    supabaseResponse.headers.set(AUTH_HEADERS.USER_EMAIL, user.email ?? '');
     supabaseResponse.headers.set(AUTH_HEADERS.AUTH_STATUS, 'authenticated');
     supabaseResponse.headers.set(AUTH_HEADERS.SESSION_UPDATED, Date.now().toString());
   } else {
@@ -151,7 +151,7 @@ export async function updateSession(request: NextRequest) {
     // Add cache refresh hint for client
     redirectResponse.headers.set(AUTH_HEADERS.CACHE_HINT, 'refresh-after-auth');
     redirectResponse.headers.set(AUTH_HEADERS.USER_ID, user.id);
-    redirectResponse.headers.set(AUTH_HEADERS.USER_EMAIL, user.email || '');
+    redirectResponse.headers.set(AUTH_HEADERS.USER_EMAIL, user.email ?? '');
     redirectResponse.headers.set(AUTH_HEADERS.AUTH_STATUS, 'authenticated');
     redirectResponse.headers.set(AUTH_HEADERS.SESSION_UPDATED, Date.now().toString());
     
@@ -162,9 +162,11 @@ export async function updateSession(request: NextRequest) {
   if (user && PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
     // Only redirect from auth pages, not from error pages
     // Also check if this is coming from an auth callback to avoid redirect loops
+    const referer = request.headers.get('referer');
     const fromCallback = request.nextUrl.searchParams.has('auth_success') || 
-                        request.headers.get('referer')?.includes('/auth/callback') ||
-                        request.headers.get('referer')?.includes('/signin');
+                        (referer ? referer.includes('/auth/callback') : false) ||
+                        (referer ? referer.includes('/signin') : false);
+    // Note: OR operators are correct here for boolean conditions, not nullish coalescing
     
     if ((pathname.startsWith('/signin') || pathname.startsWith('/signup')) && !fromCallback) {
       console.log("🔄 Would redirect authenticated user, but checking timing...");

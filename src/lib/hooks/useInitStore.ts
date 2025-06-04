@@ -5,11 +5,11 @@
  * Provides unified initialization with proper error handling and coordination
  */
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useMainStore, useLeaderboardStore } from '../store/store';
 import { loadInitialData } from '../store/mainInit';
 import { dataFlowCoordinator } from '../coordination/DataFlowCoordinator';
-import { authStoreService } from '../auth/AuthStoreService';
+// Removed unused import: authStoreService
 import { useAuth } from '../auth/AuthContext';
 
 interface InitializationState {
@@ -51,17 +51,17 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check if store has been initialized recently
-  const isStoreInitialized = () => {
+  const isStoreInitialized = useCallback(() => {
     const storeLastUpdated = store._lastUpdated;
     if (!storeLastUpdated) return false;
     
     // Consider initialized if updated within last 5 minutes
     const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
     return storeLastUpdated > fiveMinutesAgo;
-  };
+  }, [store._lastUpdated]);
 
   // Initialize store data with coordination
-  const initializeStore = async (retryAttempt = 0): Promise<void> => {
+  const initializeStore = useCallback(async (retryAttempt = 0): Promise<void> => {
     if (initializationRef.current) {
       console.log('⏳ Store initialization already in progress, skipping...');
       return;
@@ -131,12 +131,12 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
     } finally {
       initializationRef.current = false;
     }
-  };
+  }, [isAuthenticated, member, opts.autoRetry, opts.maxRetries, opts.retryDelay]);
 
   // Manual retry function
   const retryInitialization = () => {
     console.log('🔄 Manual retry of store initialization requested');
-    initializeStore(0);
+    void initializeStore(0);
   };
 
   // Force refresh function
@@ -151,7 +151,7 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
       
       if (result.success) {
         // Reinitialize after reset
-        await initializeStore(0);
+        void initializeStore(0);
       } else {
         throw new Error(result.message);
       }
@@ -197,8 +197,8 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
       memberEmail: member?.email,
     });
     
-    initializeStore(0);
-  }, [authLoading, isAuthenticated, member?.id]); // Re-run when auth state changes
+    void initializeStore(0);
+  }, [authLoading, isAuthenticated, member?.id, member?.email, store._lastUpdated, isStoreInitialized, initializeStore, opts.skipInitialLoad]); // Include all dependencies
 
   // Register for data flow coordination events
   useEffect(() => {
@@ -206,7 +206,7 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
       console.log('📡 Data flow coordination event:', event.type, event.source);
       
       // Update initialization state based on coordination events
-      if (event.type === 'cache-invalidation' && event.data?.type === 'global') {
+      if (event.type === 'cache-invalidation' && typeof event.data === 'object' && event.data && event.data.type === 'global') {
         console.log('🔄 Global cache invalidation detected, marking for refresh');
         setInitState(prev => ({ ...prev, isInitialized: false }));
       }
@@ -251,7 +251,7 @@ export function resetInitialization() {
   console.log('🔄 Resetting main store initialization state');
   
   // Reset store data to initial state
-  const store = useMainStore.getState();
+  const _store = useMainStore.getState();
   useMainStore.setState({
     seasonTournaments: null,
     tourCards: null,

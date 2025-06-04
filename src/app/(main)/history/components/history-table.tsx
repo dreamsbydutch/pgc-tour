@@ -6,7 +6,7 @@ import { AchievementIcons } from "./achievement-icons";
 import type { ExtendedMember, ExtendedTournament } from "./types";
 import type { Member, Tier } from "@prisma/client";
 import { calculateMemberStats } from "./member-stats";
-import { useMainStore } from "@/src/lib/store/store";
+// Removed unused import: useMainStore
 import { useAuth } from "@/src/lib/auth/AuthContext";
 import {
   Table,

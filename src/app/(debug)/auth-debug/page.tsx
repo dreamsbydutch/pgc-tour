@@ -3,12 +3,12 @@
 import { useAuth } from "@/src/lib/auth/AuthContext";
 import { useEffect, useState } from "react";
 import { createClient } from "@/src/lib/supabase/client";
+import type { User, Session } from "@supabase/supabase-js";
 
 export default function AuthDebugPage() {
   const { member, isLoading, user, session, isAuthenticated } = useAuth();
-  const [supabaseUser, setSupabaseUser] = useState<any>(null);
-  const [supabaseSession, setSupabaseSession] = useState<any>(null);
-  const [headers, setHeaders] = useState<Record<string, string>>({});
+  const [supabaseUser, setSupabaseUser] = useState<User | null>(null);
+  const [supabaseSession, setSupabaseSession] = useState<Session | null>(null);
 
   useEffect(() => {
     // Get current Supabase session directly
@@ -20,23 +20,7 @@ export default function AuthDebugPage() {
       setSupabaseSession(session);
     };
 
-    // Get current headers
-    if (typeof window !== 'undefined') {
-      const currentHeaders: Record<string, string> = {};
-      const headerNames = [
-        'x-auth-user-id',
-        'x-auth-user-email', 
-        'x-auth-status',
-        'x-session-updated',
-        'x-cache-hint'
-      ];
-      
-      // Note: We can't actually read response headers from the client,
-      // but we can check what was set in previous requests via browser dev tools
-      setHeaders(currentHeaders);
-    }
-
-    getSupabaseData();
+    void getSupabaseData();
   }, []);
 
   return (
@@ -91,7 +75,7 @@ export default function AuthDebugPage() {
               <li>Go to Network tab</li>
               <li>Navigate to /signin and try to sign in</li>
               <li>Check the network requests and response headers</li>
-              <li>Look for middleware headers starting with 'x-auth-'</li>
+              <li>Look for middleware headers starting with &apos;x-auth-&apos;</li>
               <li>Check console logs for auth state changes</li>
             </ol>
           </div>

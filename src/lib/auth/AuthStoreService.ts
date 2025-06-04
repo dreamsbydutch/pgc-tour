@@ -13,7 +13,7 @@ interface AuthStoreUpdate {
 }
 
 class AuthStoreService {
-  private updateCallbacks: Set<(update: AuthStoreUpdate) => void> = new Set();
+  private updateCallbacks = new Set<(update: AuthStoreUpdate) => void>();
 
   /**
    * Register a callback for auth state changes
@@ -77,14 +77,14 @@ class AuthStoreService {
       const tourCardsResponse = await fetch("/api/tourcards/current");
       if (tourCardsResponse.ok) {
         const { tourCards } = await tourCardsResponse.json();
-        const currentTourCard = tourCards?.find((tc: any) => tc.memberId === member.id) ?? null;
+        const currentTourCard = tourCards?.find((tc: { memberId: string }) => tc.memberId === member.id) ?? null;
         
         // Load tour data if user has a tour card
         if (currentTourCard) {
           const toursResponse = await fetch("/api/tours/all");
           if (toursResponse.ok) {
             const { tours } = await toursResponse.json();
-            const currentTour = tours?.find((t: any) => t.id === currentTourCard.tourId) ?? null;
+            const currentTour = tours?.find((t: { id: string }) => t.id === currentTourCard.tourId) ?? null;
             
             // Update store with user-specific data
             store.batchUpdate({

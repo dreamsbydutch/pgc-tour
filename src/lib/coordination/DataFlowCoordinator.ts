@@ -13,7 +13,7 @@
 import { useMainStore } from '../store/store';
 import { authStoreService } from '../auth/AuthStoreService';
 import { 
-  checkAndRefreshIfNeeded, 
+  // checkAndRefreshIfNeeded, // Unused import
   refreshWithMiddlewareCoordination,
   coordinateCacheAfterAuth,
   forceRefreshCache
@@ -25,7 +25,10 @@ interface DataFlowEvent {
   type: 'auth-change' | 'middleware-hint' | 'cache-invalidation' | 'manual-refresh';
   source: string;
   timestamp: number;
-  data?: any;
+  data?: {
+    type?: string;
+    [key: string]: unknown;
+  };
 }
 
 interface CoordinationResult {
@@ -270,7 +273,7 @@ class DataFlowCoordinator {
    */
   getCoordinationStatus() {
     const store = useMainStore.getState();
-    const authState = authStoreService.getCurrentAuthState();
+    const _authState = authStoreService.getCurrentAuthState(); // Prefixed with underscore to mark as unused
     
     return {
       storeLastUpdated: store._lastUpdated,

@@ -33,7 +33,7 @@ import { useMainStore } from "@/src/lib/store/store";
  * - className (optional): Additional CSS classes to style the component.
  */
 export default function MenuBar({ className }: { className?: string }) {
-  const { member, isLoading } = useAuth();
+  const { member, /* isLoading unused */ } = useAuth();
   const tourCard = useMainStore((state) => state.currentTourCard);
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false); // State for Google sign-in loading
   const [isSigningOut, setIsSigningOut] = useState(false); // State for sign-out process

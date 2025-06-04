@@ -49,10 +49,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const supabase = createClient();
   const isInitializing = useRef(false);
-  const store = useMainStore();
+  const _store = useMainStore(); // Using underscore prefix to mark as intentionally unused
 
   // Fetch member data from API
-  const fetchMemberData = async (userId: string): Promise<Member | null> => {
+  const fetchMemberData = async (_userId: string): Promise<Member | null> => {
     try {
       const response = await fetch("/api/members/current", {
         cache: "no-store",
@@ -165,7 +165,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    getInitialSession();
+    void getInitialSession(); // Using void operator to acknowledge the floating promise
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -200,7 +200,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase.auth, updateAuthState]);
 
   // Auth context methods with enhanced coordination
   const signOut = async () => {
