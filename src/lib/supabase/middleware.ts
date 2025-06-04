@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import type { User } from "@supabase/supabase-js";
 
 export async function updateSession(request: NextRequest) {
   console.log("🔒 Middleware running for:", request.nextUrl.pathname);
@@ -45,7 +46,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Get the current user from Supabase (with timeout to prevent hanging)
-  let user = null;
+  let user: User | null = null;
   try {
     const userResponse = await Promise.race([
       supabase.auth.getUser(),
@@ -53,7 +54,10 @@ export async function updateSession(request: NextRequest) {
         setTimeout(() => reject(new Error('Auth timeout')), 5000)
       )
     ]);
-    user = (userResponse as any)?.data?.user || null;
+    
+    // Type the response properly
+    const authResponse = userResponse as { data: { user: User | null }, error: any };
+    user = authResponse.data?.user || null;
   } catch (error) {
     console.warn("⚠️ Auth check failed in middleware:", error);
     // Continue without user if auth check fails
