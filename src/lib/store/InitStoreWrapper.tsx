@@ -14,16 +14,29 @@ function AuthSuccessHandler() {
 
   useEffect(() => {
     const authSuccess = searchParams.get("auth_success");
+    const timestamp = searchParams.get("timestamp");
+    
     if (authSuccess === "true") {
-      console.log("🔐 Authentication success detected, clearing URL params...");
-      // Clear the URL parameters without forcing a store refresh
+      console.log("🔐 Authentication success detected, triggering store refresh...");
+      
+      // Clear the URL parameters first
       const url = new URL(window.location.href);
       url.searchParams.delete("auth_success");
       url.searchParams.delete("timestamp");
       window.history.replaceState({}, "", url.toString());
 
-      // Don't force cache invalidation here - let the normal auth listener handle it
-      console.log("✅ URL params cleared after authentication");
+      // Import resetInitialization dynamically to avoid circular imports
+      import("./useInitStore").then(({ resetInitialization }) => {
+        // Add a small delay to ensure session cookies are set
+        setTimeout(() => {
+          console.log("🔄 Triggering store refresh after successful authentication");
+          resetInitialization();
+        }, 1000); // 1 second delay to allow session propagation
+      }).catch((error) => {
+        console.error("❌ Failed to import resetInitialization:", error);
+      });
+
+      console.log("✅ URL params cleared and store refresh scheduled");
     }
   }, [searchParams]);
 

@@ -26,12 +26,26 @@ export function useAuthListener() {
       }
 
       if (event === "SIGNED_IN" && session) {
-        console.log("✅ User signed in, marking for store refresh...");
-        // Just reset initialization flag - let the normal flow handle the refresh
-        resetInitialization();
+        console.log("✅ User signed in, checking for auth success handler...");
+        
+        // Check if we have auth_success parameter indicating redirect from callback
+        const hasAuthSuccess = typeof window !== "undefined" && 
+          new URLSearchParams(window.location.search).get("auth_success") === "true";
+        
+        if (hasAuthSuccess) {
+          console.log("🔗 Auth success parameter detected, letting AuthSuccessHandler handle refresh");
+          return; // Let AuthSuccessHandler handle the refresh
+        }
+        
+        // For direct sign-ins without redirect, wait for session propagation
+        console.log("⏰ Direct sign-in detected, waiting for session propagation...");
+        setTimeout(() => {
+          console.log("🔄 Session propagated, refreshing store...");
+          resetInitialization();
+        }, 2000); // 2 second delay for session propagation
       } else if (event === "SIGNED_OUT") {
         console.log("👋 User signed out, marking for store refresh...");
-        // Just reset initialization flag - let the normal flow handle the refresh
+        // Sign out can be immediate - no session propagation needed
         resetInitialization();
       }
     });

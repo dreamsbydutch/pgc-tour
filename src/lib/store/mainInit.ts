@@ -21,6 +21,46 @@ type ProcessedTournament = Tournament & {
 // Cache expiry in milliseconds (1 day)
 const CACHE_EXPIRY = 1000 * 60 * 60 * 24;
 
+// Retry member data fetch with exponential backoff (for auth race conditions)
+async function fetchMemberWithRetry(
+  maxRetries = 5,
+  baseDelay = 1000,
+): Promise<{ member: Member } | null> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const memberData = await safeFetch<{ member: Member }>("/api/members/current");
+      
+      if (memberData?.member) {
+        console.log(`👤 Member API response (attempt ${attempt}): ✅ logged in as ${memberData.member.email}`);
+        return memberData;
+      } else {
+        console.log(`👤 Member API response (attempt ${attempt}): 👻 not logged in`);
+        // If this is the last attempt, return null
+        if (attempt === maxRetries) {
+          return null;
+        }
+        
+        // Wait before retrying (exponential backoff with jitter)
+        const delay = baseDelay * Math.pow(1.5, attempt - 1) + Math.random() * 500;
+        console.log(`⏳ Retrying member fetch in ${Math.round(delay)}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    } catch (error) {
+      console.error(`❌ Member API error (attempt ${attempt}):`, error);
+      if (attempt === maxRetries) {
+        return null;
+      }
+      
+      // Wait before retrying
+      const delay = baseDelay * Math.pow(1.5, attempt - 1) + Math.random() * 500;
+      console.log(`⏳ Retrying member fetch after error in ${Math.round(delay)}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  return null;
+}
+
 // Simplified fetch helper with timeout
 async function safeFetch<T>(
   url: string,
@@ -216,15 +256,25 @@ export async function loadInitialData() {
 
     console.log("📡 Fetching user data...");
     // Fetch user-specific data (gracefully handle failures for logged-out users)
+    // Check if we have a Supabase session to determine if we should retry member fetch
+    let hasSupabaseSession = false;
+    if (typeof window !== "undefined") {
+      try {
+        const { createClient } = await import("@/src/lib/supabase/client");
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        hasSupabaseSession = !!session;
+        console.log("🔐 Supabase session status:", hasSupabaseSession ? "✅ active" : "❌ none");
+      } catch (error) {
+        console.warn("⚠️ Could not check Supabase session:", error);
+      }
+    }
+
     const [memberData, pastTeamsData, pastGolfersData, tourCardsData] =
       await Promise.all([
-        safeFetch<{ member: Member }>("/api/members/current").then((data) => {
-          console.log(
-            "👤 Member API response:",
-            data?.member ? "✅ logged in" : "👻 not logged in",
-          );
-          return data;
-        }),
+        // Use retry logic for member data to handle auth race conditions
+        // If we have a session but member fetch fails, this suggests a race condition
+        hasSupabaseSession ? fetchMemberWithRetry(5, 1000) : fetchMemberWithRetry(2, 500),
         safeFetch<{ pastTeams: (Team & { tourCard: TourCard | null })[] }>(
           "/api/teams/past",
         ).then((data) => {
@@ -378,8 +428,8 @@ export async function loadInitialData() {
       // Tour cards are public data (needed for standings/leaderboards)
       tourCards: tourCardsData?.tourCards ?? storeData.tourCards ?? [],
 
-      // User-specific data (null if not logged in)
-      currentMember: memberData?.member ?? null,
+      // User-specific data (preserve existing if fetch fails, null only if explicitly logged out)
+      currentMember: memberData?.member ?? storeData.currentMember ?? null,
       currentTour: currentTour ?? storeData.currentTour,
       currentTourCard: currentTourCard ?? storeData.currentTourCard,
 
