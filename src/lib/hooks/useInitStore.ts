@@ -125,7 +125,7 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
         console.log(`⏳ Retrying store initialization in ${delay}ms... (attempt ${nextAttempt}/${opts.maxRetries})`);
         
         retryTimeoutRef.current = setTimeout(() => {
-          initializeStore(nextAttempt);
+          void initializeStore(nextAttempt);
         }, delay);
       }
     } finally {

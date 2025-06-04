@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useRef } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
 import { createClient } from "@/src/lib/supabase/client";
 import { useMainStore } from "@/src/lib/store/store";
 import { authStoreService } from "./AuthStoreService";
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const _store = useMainStore(); // Using underscore prefix to mark as intentionally unused
 
   // Fetch member data from API
-  const fetchMemberData = async (_userId: string): Promise<Member | null> => {
+  const fetchMemberData = useCallback(async (_userId: string): Promise<Member | null> => {
     try {
       const response = await fetch("/api/members/current", {
         cache: "no-store",
@@ -63,16 +63,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error(`Failed to fetch member: ${response.status}`);
       }
       
-      const data = await response.json();
+      const data = await response.json() as { member: Member | null };
       return data.member;
     } catch (error) {
       console.error("Failed to fetch member data:", error);
       return null;
     }
-  };
+  }, []);
 
   // Update both auth context and main store with enhanced coordination
-  const updateAuthState = async (user: User | null, session: Session | null) => {
+  const updateAuthState = useCallback(async (user: User | null, session: Session | null) => {
     if (isInitializing.current) {
       console.log("⏳ Auth update already in progress, skipping...");
       return;
@@ -139,7 +139,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       isInitializing.current = false;
     }
-  };
+  }, [fetchMemberData]);
 
   // Initialize auth state
   useEffect(() => {

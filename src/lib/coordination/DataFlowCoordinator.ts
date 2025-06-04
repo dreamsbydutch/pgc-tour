@@ -42,7 +42,7 @@ interface CoordinationResult {
 class DataFlowCoordinator {
   private eventQueue: DataFlowEvent[] = [];
   private isProcessing = false;
-  private coordinationCallbacks: Set<(event: DataFlowEvent) => void> = new Set();
+  private coordinationCallbacks = new Set<(event: DataFlowEvent) => void>();
 
   /**
    * Register a callback to be notified of coordination events

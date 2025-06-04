@@ -5,11 +5,19 @@
 
 import { useMainStore } from "@/src/lib/store/store";
 import { coordinateCacheAfterAuth, refreshWithMiddlewareCoordination } from "@/src/lib/store/cacheInvalidation";
-import type { Member } from "@prisma/client";
+import type { Member, TourCard, Tour } from "@prisma/client";
 
 interface AuthStoreUpdate {
   member: Member | null;
   isAuthenticated: boolean;
+}
+
+interface TourCardsResponse {
+  tourCards: TourCard[];
+}
+
+interface ToursResponse {
+  tours: Tour[];
 }
 
 class AuthStoreService {
@@ -76,22 +84,22 @@ class AuthStoreService {
       // Load tour cards and find user's current tour card
       const tourCardsResponse = await fetch("/api/tourcards/current");
       if (tourCardsResponse.ok) {
-        const { tourCards } = await tourCardsResponse.json();
-        const currentTourCard = tourCards?.find((tc: { memberId: string }) => tc.memberId === member.id) ?? null;
+        const tourCardsData = await tourCardsResponse.json() as TourCardsResponse;
+        const currentTourCard = tourCardsData.tourCards?.find((tc: TourCard) => tc.memberId === member.id) ?? null;
         
         // Load tour data if user has a tour card
         if (currentTourCard) {
           const toursResponse = await fetch("/api/tours/all");
           if (toursResponse.ok) {
-            const { tours } = await toursResponse.json();
-            const currentTour = tours?.find((t: { id: string }) => t.id === currentTourCard.tourId) ?? null;
+            const toursData = await toursResponse.json() as ToursResponse;
+            const currentTour = toursData.tours?.find((t: Tour) => t.id === currentTourCard.tourId) ?? null;
             
             // Update store with user-specific data
             store.batchUpdate({
               currentTourCard,
               currentTour,
-              tourCards,
-              tours,
+              tourCards: tourCardsData.tourCards,
+              tours: toursData.tours,
             });
           }
         }
@@ -147,11 +155,11 @@ class AuthStoreService {
       });
       
       if (memberResponse.ok) {
-        const { member } = await memberResponse.json();
-        if (member) {
+        const memberData = await memberResponse.json() as { member: Member | null };
+        if (memberData.member) {
           // Update auth state with refreshed member data
-          store.setAuthState(member, true);
-          await this.loadUserSpecificData(member);
+          store.setAuthState(memberData.member, true);
+          await this.loadUserSpecificData(memberData.member);
           console.log("✅ User data refreshed successfully");
         }
       }
