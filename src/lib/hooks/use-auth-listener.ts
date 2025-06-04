@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createClient } from "@/src/lib/supabase/client";
-import { forceCacheInvalidation } from "@/src/lib/store/storeUtils";
+import { resetInitialization } from "@/src/lib/store/useInitStore";
 
 /**
- * Hook to listen for authentication state changes and refresh store accordingly
+ * Hook to listen for authentication state changes and handle store accordingly
  */
 export function useAuthListener() {
+  const isInitializing = useRef(false);
+
   useEffect(() => {
     const supabase = createClient();
 
@@ -17,22 +19,20 @@ export function useAuthListener() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("🔐 Auth state change:", event, !!session);
 
+      // Prevent recursive calls during initialization
+      if (isInitializing.current) {
+        console.log("⏳ Skipping auth listener - initialization in progress");
+        return;
+      }
+
       if (event === "SIGNED_IN" && session) {
-        console.log("✅ User signed in, refreshing store...");
-        try {
-          await forceCacheInvalidation();
-          console.log("✅ Store refreshed after sign-in");
-        } catch (error) {
-          console.error("❌ Failed to refresh store after sign-in:", error);
-        }
+        console.log("✅ User signed in, marking for store refresh...");
+        // Just reset initialization flag - let the normal flow handle the refresh
+        resetInitialization();
       } else if (event === "SIGNED_OUT") {
-        console.log("👋 User signed out, refreshing store...");
-        try {
-          await forceCacheInvalidation();
-          console.log("✅ Store refreshed after sign-out");
-        } catch (error) {
-          console.error("❌ Failed to refresh store after sign-out:", error);
-        }
+        console.log("👋 User signed out, marking for store refresh...");
+        // Just reset initialization flag - let the normal flow handle the refresh
+        resetInitialization();
       }
     });
 
@@ -41,4 +41,11 @@ export function useAuthListener() {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Expose initialization state for other components to check
+  return {
+    setInitializing: (value: boolean) => {
+      isInitializing.current = value;
+    }
+  };
 }

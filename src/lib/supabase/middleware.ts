@@ -38,19 +38,35 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // Get the current user from Supabase
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Skip auth checks for API routes to prevent interference
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    console.log("🔄 Skipping auth checks for API route");
+    return supabaseResponse;
+  }
+
+  // Get the current user from Supabase (with timeout to prevent hanging)
+  let user = null;
+  try {
+    const userResponse = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Auth timeout')), 5000)
+      )
+    ]);
+    user = (userResponse as any)?.data?.user || null;
+  } catch (error) {
+    console.warn("⚠️ Auth check failed in middleware:", error);
+    // Continue without user if auth check fails
+  }
 
   console.log("👤 User status in middleware:", !!user, user?.email);
 
-  // Redirect non-admin users trying to access admin pages to the home page
-  if (
-    !user ||
-    (user &&
-      user.email !== "chough14@gmail.com" &&
-      request.nextUrl.pathname.startsWith("/admin"))
+  // Only redirect for admin pages if we successfully got user data
+  if (user !== null && 
+      !user ||
+      (user &&
+        user.email !== "chough14@gmail.com" &&
+        request.nextUrl.pathname.startsWith("/admin"))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
@@ -58,7 +74,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users attempting to access the sign-in page to the home page
+  // Only redirect authenticated users from signin if we successfully got user data
   if (user && request.nextUrl.pathname.startsWith("/signin")) {
     const url = request.nextUrl.clone();
     url.pathname = "/";

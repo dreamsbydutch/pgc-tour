@@ -27,8 +27,14 @@ function TournamentPageContent() {
   const nextTournament = useMainStore((state) => state.nextTournament);
   const pastTournaments = useMainStore((state) => state.pastTournaments);
   const seasonTournaments = useMainStore((state) => state.seasonTournaments);
+  const isStoreLoaded = useMainStore((state) => state._lastUpdated !== null);
 
   const tournamentIdParam = searchParams.get("id");
+
+  // Show loading state while store is initializing
+  if (!isStoreLoaded) {
+    return <TournamentPageLoadingView />;
+  }
 
   // Determine which tournament to show
   const getDisplayTournament = () => {

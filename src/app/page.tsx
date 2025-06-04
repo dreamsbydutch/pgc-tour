@@ -29,13 +29,15 @@ export const dynamic = "force-dynamic";
 
 export default function Home() {
   const tiers = useMainStore((state) => state.currentTiers);
+  const isStoreLoaded = useMainStore((state) => state._lastUpdated !== null);
 
   // Preload critical images when component mounts
   useEffect(() => {
     preloadCriticalImages();
   }, []);
 
-  if (!tiers)
+  // Show loading state while store is initializing, not just when tiers is null
+  if (!isStoreLoaded || !tiers) {
     return (
       <div className="flex h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100">
         <div className="mx-auto flex animate-pulse items-center justify-center text-center font-varela text-3xl text-slate-600">
@@ -52,6 +54,7 @@ export default function Home() {
         </div>
       </div>
     );
+  }
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-2">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
