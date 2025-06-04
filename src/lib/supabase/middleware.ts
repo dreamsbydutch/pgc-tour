@@ -56,8 +56,8 @@ export async function updateSession(request: NextRequest) {
     ]);
     
     // Type the response properly
-    const authResponse = userResponse as { data: { user: User | null }, error: any };
-    user = authResponse.data?.user || null;
+    const authResponse = userResponse as { data: { user: User | null }, error: Error | null };
+    user = authResponse.data?.user ?? null;
   } catch (error) {
     console.warn("⚠️ Auth check failed in middleware:", error);
     // Continue without user if auth check fails
