@@ -5,6 +5,7 @@
  */
 
 import { useMainStore } from "./store";
+import { initializeLeaderboardStore } from "./leaderboardInit";
 
 // Type definitions for API responses
 interface CacheInvalidationData {
@@ -366,6 +367,24 @@ export async function refreshTournamentData(
     });
 
     console.log("✅ Tournament cache refreshed successfully");
+
+    // Initialize leaderboard store if there's a current tournament
+    if (currentTournament) {
+      console.log("🏆 Current tournament detected after cache refresh, initializing leaderboard store...");
+      try {
+        const leaderboardInitialized = await initializeLeaderboardStore();
+        if (leaderboardInitialized) {
+          console.log("✅ Leaderboard store initialized after cache refresh");
+        } else {
+          console.log("⚠️ Leaderboard store initialization returned false after cache refresh");
+        }
+      } catch (error) {
+        console.error("❌ Failed to initialize leaderboard store after cache refresh:", error);
+      }
+    } else {
+      console.log("📅 No current tournament found after cache refresh, skipping leaderboard initialization");
+    }
+
     return true;
   } catch (error) {
     console.error("Error refreshing tournament data:", error);

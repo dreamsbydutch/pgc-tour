@@ -11,6 +11,7 @@ import { loadInitialData } from '../store/mainInit';
 import { dataFlowCoordinator } from '../coordination/DataFlowCoordinator';
 // Removed unused import: authStoreService
 import { useAuth } from '../auth/AuthContext';
+import { startTournamentTransitionPolling, manualTestTournamentTransitions } from '../store/tournamentTransitions';
 
 interface InitializationState {
   isLoading: boolean;
@@ -49,6 +50,7 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
   const store = useMainStore();
   const initializationRef = useRef<boolean>(false);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const transitionPollingCleanupRef = useRef<(() => void) | null>(null);
 
   // Check if store has been initialized recently
   const isStoreInitialized = useCallback(() => {
@@ -104,6 +106,16 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
       });
 
       console.log('✅ Store initialization completed successfully');
+
+      // Start tournament transition polling after successful initialization
+      if (!transitionPollingCleanupRef.current) {
+        console.log('🔄 Starting tournament transition polling...');
+        const cleanup = startTournamentTransitionPolling(300000); // 5 minutes
+        transitionPollingCleanupRef.current = cleanup;
+        
+        // Register manual test functions for debugging
+        manualTestTournamentTransitions();
+      }
 
     } catch (error) {
       console.error('❌ Store initialization failed:', error);
@@ -220,6 +232,11 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
     return () => {
       if (retryTimeoutRef.current) {
         clearTimeout(retryTimeoutRef.current);
+      }
+      if (transitionPollingCleanupRef.current) {
+        console.log('🛑 Cleaning up tournament transition polling on unmount');
+        transitionPollingCleanupRef.current();
+        transitionPollingCleanupRef.current = null;
       }
     };
   }, []);

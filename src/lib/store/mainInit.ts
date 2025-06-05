@@ -11,6 +11,7 @@ import type {
 } from "@prisma/client";
 import { useMainStore } from "./store";
 import { checkAndRefreshIfNeeded, refreshWithMiddlewareCoordination } from "./cacheInvalidation";
+import { initializeLeaderboardStore } from "./leaderboardInit";
 
 type ProcessedTournament = Tournament & {
   course: Course | null;
@@ -478,6 +479,23 @@ export async function loadInitialData() {
       tourCards: updateData.tourCards.length,
       currentMember: !!updateData.currentMember,
     });
+
+    // Initialize leaderboard store if there's a current tournament
+    if (updateData.currentTournament) {
+      console.log("🏆 Current tournament detected, initializing leaderboard store...");
+      try {
+        const leaderboardInitialized = await initializeLeaderboardStore();
+        if (leaderboardInitialized) {
+          console.log("✅ Leaderboard store initialized successfully");
+        } else {
+          console.log("⚠️ Leaderboard store initialization returned false");
+        }
+      } catch (error) {
+        console.error("❌ Failed to initialize leaderboard store:", error);
+      }
+    } else {
+      console.log("📅 No current tournament found, skipping leaderboard initialization");
+    }
 
     return updateData;
   } catch (error) {
