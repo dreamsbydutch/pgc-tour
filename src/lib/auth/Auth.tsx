@@ -242,7 +242,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        log.auth.stateChange(`Auth state change: ${event}`, !!session);
+        log.auth.stateChange(`Auth state change: ${event}`, { 
+          hasSession: !!session,
+          userEmail: session?.user?.email 
+        });
         
         if (event === 'SIGNED_OUT') {
           setAuthState({

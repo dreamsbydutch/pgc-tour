@@ -10,7 +10,7 @@ import {
 
 // Import debug utilities in development
 if (process.env.NODE_ENV === 'development') {
-  import('./lib/middleware/debug');
+  void import('./lib/middleware/debug');
 }
 
 // Register all middleware functions with their priorities

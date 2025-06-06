@@ -17,7 +17,7 @@ export interface MiddlewareContext {
   /** Skip remaining middleware functions */
   skip: boolean;
   /** Data shared between middleware functions */
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   /** Execution metadata */
   execution: {
     startTime: number;
@@ -241,5 +241,5 @@ export function createMiddleware(
 
 // Export for debugging purposes
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  (window as any).middlewareManager = middlewareManager;
+  (window as unknown as Record<string, unknown>).middlewareManager = middlewareManager;
 }

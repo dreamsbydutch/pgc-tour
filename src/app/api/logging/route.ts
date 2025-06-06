@@ -7,7 +7,7 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { logger, LogCategory, LogLevel } from '@/src/lib/logging';
+import { logger, LogCategory } from '@/src/lib/logging';
 import { z } from 'zod';
 
 // Validation schema for log entries
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
         case LogCategory.API:
           switch (logEntry.level) {
             case 'ERROR':
-              logger.api.error('CLIENT', logEntry.message, new Error(logEntry.message), context);
+              logger.api.requestError('CLIENT', logEntry.message, new Error(logEntry.message), context);
               break;
             default:
               logger.api.info(logEntry.message, context, metadata);

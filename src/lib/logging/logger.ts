@@ -147,7 +147,10 @@ class Logger implements ILogger {
     warn: (message: string, context?: LogContext, metadata?: Record<string, unknown>) => {
       this.log(LogLevel.WARN, LogCategory.API, message, context, undefined, metadata);
     },
-    error: (method: string, url: string, error: Error, context?: LogContext) => {
+    error: (message: string, error?: Error, context?: LogContext) => {
+      this.log(LogLevel.ERROR, LogCategory.API, message, context, error);
+    },
+    requestError: (method: string, url: string, error: Error, context?: LogContext) => {
       this.log(LogLevel.ERROR, LogCategory.API, `${method} ${url} failed`, context, error);
     },
     debug: (message: string, context?: LogContext, metadata?: Record<string, unknown>) => {

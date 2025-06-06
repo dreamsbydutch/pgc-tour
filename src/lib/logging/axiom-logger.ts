@@ -109,7 +109,7 @@ export class AxiomLogger {
         process.on('SIGTERM', gracefulShutdown);
         process.on('SIGINT', gracefulShutdown);
         process.on('beforeExit', gracefulShutdown);
-      } catch (error) {
+      } catch (_error) {
         // Ignore errors in environments where process events aren't supported
         if (this.config.enableConsole) {
           console.warn('⚠️ [LOGGING] Process event handlers not supported in this environment');

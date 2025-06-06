@@ -53,7 +53,7 @@ export const authMiddleware: MiddlewareFunction = async (
  * Adds security headers to all responses
  */
 export const securityMiddleware: MiddlewareFunction = async (
-  request: NextRequest,
+  _request: NextRequest,
   context: MiddlewareContext
 ): Promise<NextResponse | null> => {
   // This middleware modifies the response, doesn't return early
@@ -85,7 +85,7 @@ export const rateLimitMiddleware: MiddlewareFunction = async (
     return null;
   }
   
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.ip ?? request.headers.get('x-forwarded-for') ?? 'unknown';
   const key = `rate_limit:${ip}:${pathname}`;
   
   // In a real implementation, you'd use Redis or similar
@@ -128,7 +128,7 @@ export const analyticsMiddleware: MiddlewareFunction = async (
   
   log.middleware.info("Page view tracked", {
     pathname,
-    isAuthenticated: authData?.isAuthenticated || false,
+    isAuthenticated: authData?.isAuthenticated ?? false,
     hasReferer: !!referer,
     userAgent: userAgent?.slice(0, 50)
   });
@@ -158,7 +158,8 @@ export const responseEnhancementMiddleware: MiddlewareFunction = async (
   });
   
   // Apply security headers if security middleware ran
-  if (context.data.security?.headersApplied) {
+  const securityData = context.data.security as { headersApplied?: boolean } | undefined;
+  if (securityData?.headersApplied) {
     response.headers.set('X-Frame-Options', 'DENY');
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('X-XSS-Protection', '1; mode=block');

@@ -102,8 +102,9 @@ export async function updateSession(request: NextRequest) {
     user = authResponse.data?.user ?? null;
     authError = authResponse.error;
   } catch (error) {
-    log.middleware.error("Auth check failed in middleware", error);
-    authError = error instanceof Error ? error : new Error('Unknown auth error');
+    const authErrorInstance = error instanceof Error ? error : new Error('Unknown auth error');
+    log.middleware.error("Auth check failed in middleware", authErrorInstance);
+    authError = authErrorInstance;
   }
 
   log.middleware.info("User status in middleware", {

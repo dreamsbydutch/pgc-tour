@@ -6,7 +6,7 @@
  */
 
 import type { AxiomConfig, LoggingEnvironment } from './types';
-import { LogLevel, LOG_LEVEL_PRIORITY } from './types';
+import { LogLevel } from './types';
 
 /**
  * Detect the current environment context

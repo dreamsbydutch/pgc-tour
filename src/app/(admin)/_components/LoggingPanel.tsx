@@ -35,7 +35,7 @@ export default function LoggingPanel() {
       
       // API logs
       log.api.request("GET", "/api/tournaments");
-      log.api.error("POST", "/api/scores", new Error("Validation failed"));
+      log.api.requestError("POST", "/api/scores", new Error("Validation failed"));
       
       // Store logs
       log.store.info("Store data refreshed");

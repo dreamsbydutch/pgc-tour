@@ -148,7 +148,10 @@ export interface AuthLogger extends CategoryLogger {
 export interface ApiLogger extends CategoryLogger {
   request(method: string, url: string, context?: LogContext, metadata?: Record<string, unknown>): void;
   success(method: string, url: string, context?: LogContext, metadata?: Record<string, unknown>): void;
-  error(method: string, url: string, error: Error, context?: LogContext): void;
+  // Override the error method with API-specific signature
+  error(message: string, error?: Error, context?: LogContext): void;
+  // Add API-specific error method
+  requestError(method: string, url: string, error: Error, context?: LogContext): void;
 }
 
 export interface CacheLogger extends CategoryLogger {

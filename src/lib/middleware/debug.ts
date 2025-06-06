@@ -6,7 +6,6 @@
  */
 
 import { middlewareManager } from './index';
-import { log } from '@/src/lib/logging';
 
 export interface MiddlewareDebugInfo {
   timestamp: string;
@@ -46,7 +45,7 @@ class MiddlewareDebugger {
       return false;
     }
     
-    const newState = enabled !== undefined ? enabled : !middleware.enabled;
+    const newState = enabled ?? !middleware.enabled;
     middlewareManager.setEnabled(name, newState);
     
     console.log(`Middleware '${name}' ${newState ? 'enabled' : 'disabled'}`);
@@ -127,7 +126,7 @@ export const middlewareDebugger = new MiddlewareDebugger();
 
 // Add to window for browser console access in development
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  (window as any).middlewareDebug = {
+  (window as unknown as Record<string, unknown>).middlewareDebug = {
     status: () => middlewareDebugger.printStatus(),
     toggle: (name: string, enabled?: boolean) => middlewareDebugger.toggleMiddleware(name, enabled),
     history: (limit?: number) => middlewareDebugger.getExecutionHistory(limit),
