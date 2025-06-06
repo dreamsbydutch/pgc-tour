@@ -9,6 +9,7 @@ import { cn } from "../lib/utils";
 import Script from "next/script";
 import { InitStoreWrapper } from "../lib/store/InitStoreWrapper";
 import { AuthProvider } from "../lib/auth/Auth";
+import LoggingProvider from "@/src/app/_components/LoggingProvider";
 
 const varela = Varela({
   weight: ["400"],
@@ -75,12 +76,14 @@ export default async function RootLayout({
         )}
       >
         <TRPCReactProvider>
-          <AuthProvider>
-            <InitStoreWrapper>
-              <main className="mb-24 mt-4 lg:mb-8 lg:mt-20">{children}</main>
-              <MenuBar />
-            </InitStoreWrapper>
-          </AuthProvider>
+          <LoggingProvider>
+            <AuthProvider>
+              <InitStoreWrapper>
+                <main className="mb-24 mt-4 lg:mb-8 lg:mt-20">{children}</main>
+                <MenuBar />
+              </InitStoreWrapper>
+            </AuthProvider>
+          </LoggingProvider>
         </TRPCReactProvider>
       </body>
     </html>

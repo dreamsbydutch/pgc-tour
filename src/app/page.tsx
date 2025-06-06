@@ -46,11 +46,11 @@ export default function Home() {
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      <ChampionsPopup />
+      {/* <ChampionsPopup />
       <HomePageLeaderboard />
       <TournamentCountdown />
       <HomePageStandings />
-      <TourCardForm />
+      <TourCardForm /> */}
       <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
         <div className="my-3 flex items-center justify-center gap-3">
           <h2 className="pb-1 font-yellowtail text-5xl sm:text-6xl md:text-7xl">

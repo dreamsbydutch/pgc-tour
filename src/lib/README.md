@@ -9,6 +9,7 @@ lib/
 ├── auth/                 # Authentication & authorization
 ├── emails/               # Email templates
 ├── hooks/                # Custom React hooks
+├── logging/              # Centralized logging system with Axiom integration
 ├── store/                # State management (Zustand)
 ├── supabase/             # Supabase client configurations
 ├── types/                # TypeScript type definitions
@@ -116,6 +117,40 @@ lib/
 - **Data Formatting:** Currency, dates, golf scores, rankings with locale support
 - **Golf Utilities:** Tee time formatting, position sorting, DataGolf API integration
 - **Validation:** Member profiles, payment transactions, form data validation
+
+## 📊 Logging (`logging/`)
+
+**Purpose:** Centralized logging system with structured logging and Axiom integration.
+
+- **`logger.ts`** - Core Axiom logger implementation (✅ **ACTIVE**)
+- **`utils.ts`** - Simple logging utilities with context (✅ **ACTIVE**)
+- **`index.ts`** - Main export file
+
+**Key Features:**
+- Structured logging with consistent JSON format
+- Axiom integration for production monitoring
+- Context-based organization (auth, tournament, API, etc.)
+- Performance measurement utilities
+- Privacy-conscious PII handling
+- Development vs production-specific behavior
+
+**Usage:**
+```tsx
+import { log, perf, dev } from '@/src/lib/logging';
+
+// Contextual logging
+log.auth.info('User authenticated');
+log.tournament.transition('Round completed', { tournamentId, round });
+log.store.error('State update failed', error);
+
+// Performance tracking
+await perf.measure('API call', async () => {
+  return await fetchData();
+});
+
+// Development-only logs
+dev.log('Debug info', { state });
+```
 
 ## 🔧 Key Integrations
 

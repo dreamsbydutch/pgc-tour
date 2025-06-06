@@ -14,6 +14,7 @@ import {
 } from '../store/leaderboard';
 import { startTournamentTransitionPolling } from '../store/transitions';
 import { useAuth } from '../auth/Auth';
+import { log, perf } from '@/src/lib/logging';
 
 interface InitializationState {
   isLoading: boolean;
@@ -70,7 +71,7 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
   // Initialize store data
   const initializeStore = useCallback(async (retryAttempt = 0): Promise<void> => {
     if (initializationRef.current) {
-      console.log('⏳ Store initialization already in progress, skipping...');
+      log.store.info('Store initialization already in progress, skipping...');
       return;
     }
 
@@ -84,7 +85,8 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
     }));
 
     try {
-      console.log('🔄 Initializing store...');
+      const endTimer = perf.start('Store initialization');
+      log.store.init('Initializing store...', { retryAttempt });
       
       // Clear any existing retry timeout
       if (retryTimeoutRef.current) {
@@ -94,6 +96,8 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
 
       // Load initial data
       await loadInitialData();
+      
+      endTimer(); // End performance measurement
 
       // Update initialization state
       setInitState({
@@ -104,11 +108,11 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
         lastInitialized: Date.now(),
       });
 
-      console.log('✅ Store initialization completed successfully');
+      log.store.info('Store initialization completed successfully');
 
       // Start tournament transition polling
       if (!transitionsCleanupRef.current) {
-        console.log('🔄 Starting tournament transition polling...');
+        log.store.info('Starting tournament transition polling...');
         const cleanup = startTournamentTransitionPolling(300000); // 5 minutes
         transitionsCleanupRef.current = cleanup;
       }
@@ -118,7 +122,7 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
         const currentTournament = useMainStore.getState().currentTournament;
         
         if (currentTournament && shouldPollLeaderboard(currentTournament)) {
-          console.log('🔄 Starting leaderboard polling...');
+          log.store.info('Starting leaderboard polling...');
           const tournamentId = parseInt(currentTournament.id);
           const cleanup = startLeaderboardPolling(tournamentId, 300000); // 5 minutes
           leaderboardCleanupRef.current = cleanup;
@@ -126,7 +130,7 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
       }
 
     } catch (error) {
-      console.error('❌ Store initialization failed:', error);
+      log.store.error('Store initialization failed', error as Error);
       
       const errorMessage = error instanceof Error ? error.message : 'Store initialization failed';
       
@@ -142,7 +146,10 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
         const nextAttempt = retryAttempt + 1;
         const delay = opts.retryDelay * Math.pow(1.5, retryAttempt); // Exponential backoff
         
-        console.log(`⏳ Retrying store initialization in ${delay}ms... (attempt ${nextAttempt}/${opts.maxRetries})`);
+        log.store.init(`Retrying store initialization in ${delay}ms...`, { 
+          retryAttempt: nextAttempt, 
+          maxRetries: opts.maxRetries 
+        });
         
         retryTimeoutRef.current = setTimeout(() => {
           void initializeStore(nextAttempt);
@@ -155,13 +162,13 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
 
   // Manual retry function
   const retryInitialization = () => {
-    console.log('🔄 Manual retry of store initialization requested');
+    log.store.info('Manual retry of store initialization requested');
     void initializeStore(0);
   };
 
   // Force refresh function
   const forceRefresh = async () => {
-    console.log('🔄 Force refresh of store data requested');
+    log.store.info('Force refresh of store data requested');
     
     try {
       setInitState(prev => ({ ...prev, isLoading: true, error: null }));
@@ -187,7 +194,7 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
       // Reinitialize after reset
       void initializeStore(0);
     } catch (error) {
-      console.error('❌ Force refresh failed:', error);
+      log.store.error('Force refresh failed', error as Error);
       setInitState(prev => ({
         ...prev,
         isLoading: false,
@@ -200,19 +207,19 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
   useEffect(() => {
     // Skip if auth is still loading
     if (authLoading) {
-      console.log('⏳ Waiting for auth to finish loading...');
+      log.store.info('Waiting for auth to finish loading...');
       return;
     }
 
     // Skip if explicitly disabled
     if (opts.skipInitialLoad) {
-      console.log('⏭️ Skipping initial load (disabled by options)');
+      log.store.info('Skipping initial load (disabled by options)');
       return;
     }
 
     // Skip if already initialized recently
     if (isStoreInitialized()) {
-      console.log('✅ Store already initialized recently, skipping...');
+      log.store.info('Store already initialized recently, skipping...');
       setInitState(prev => ({
         ...prev,
         isInitialized: true,
@@ -222,10 +229,10 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
     }
 
     // Initialize store
-    console.log('🚀 Starting store initialization...', {
+    log.store.info('Starting store initialization...', {
       authLoaded: !authLoading,
       isAuthenticated,
-      memberEmail: member?.email,
+      memberEmail: member?.email?.split('@')[0] + '@***' // Mask email for privacy
     });
     
     void initializeStore(0);

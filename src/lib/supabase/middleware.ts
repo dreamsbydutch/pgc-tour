@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { User } from "@supabase/supabase-js";
+import { log } from '@/src/lib/logging';
 
 /**
  * Enhanced middleware that integrates with the centralized auth system
@@ -43,7 +44,7 @@ export async function updateSession(request: NextRequest) {
   const hasAuthParams = request.nextUrl.searchParams.has('auth_success');
   const referer = request.headers.get('referer');
   
-  console.log("🔒 Enhanced middleware running for:", {
+  log.middleware.info("Enhanced middleware running", {
     pathname,
     hasAuthParams,
     referer: referer?.split('/').pop(),
@@ -80,7 +81,7 @@ export async function updateSession(request: NextRequest) {
 
   // Skip auth checks for specific routes to prevent interference
   if (SKIP_AUTH_ROUTES.some(route => pathname.startsWith(route))) {
-    console.log("🔄 Skipping auth checks for protected route:", pathname);
+    log.middleware.info("Skipping auth checks for protected route", { pathname });
     return supabaseResponse;
   }
 
@@ -101,13 +102,13 @@ export async function updateSession(request: NextRequest) {
     user = authResponse.data?.user ?? null;
     authError = authResponse.error;
   } catch (error) {
-    console.warn("⚠️ Auth check failed in middleware:", error);
+    log.middleware.error("Auth check failed in middleware", error);
     authError = error instanceof Error ? error : new Error('Unknown auth error');
   }
 
-  console.log("👤 User status in middleware:", {
+  log.middleware.info("User status in middleware", {
     authenticated: !!user,
-    email: user?.email,
+    email: user?.email ? user.email.split('@')[0] + '@***' : undefined, // Mask email
     hasAuthError: !!authError,
     pathname,
     isPublicRoute: isPublicRoute(pathname)
@@ -131,7 +132,7 @@ export async function updateSession(request: NextRequest) {
     if (!user || user.email !== "chough14@gmail.com") {
       const url = request.nextUrl.clone();
       url.pathname = "/";
-      console.log("🚫 Redirecting non-admin user away from admin page");
+      log.middleware.info("Redirecting non-admin user away from admin page");
       return NextResponse.redirect(url);
     }
   }
@@ -143,7 +144,7 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.searchParams.delete('auth_success');
     url.searchParams.delete('timestamp');
-    console.log("🧹 Cleaning auth success parameters from URL");
+    log.middleware.info("Cleaning auth success parameters from URL");
     
     // Create response with redirect
     const redirectResponse = NextResponse.redirect(url);
@@ -169,11 +170,11 @@ export async function updateSession(request: NextRequest) {
     // Note: OR operators are correct here for boolean conditions, not nullish coalescing
     
     if ((pathname.startsWith('/signin') || pathname.startsWith('/signup')) && !fromCallback) {
-      console.log("🔄 Would redirect authenticated user, but checking timing...");
+      log.middleware.info("Would redirect authenticated user, but checking timing...");
       
       // Add a small delay to avoid race conditions with client-side auth
       // Let the client-side auth handle the redirect instead for now
-      console.log("⏳ Letting client-side handle auth redirect to avoid race condition");
+      log.middleware.info("Letting client-side handle auth redirect to avoid race condition");
       
       // Add headers but don't redirect immediately
       supabaseResponse.headers.set(AUTH_HEADERS.CACHE_HINT, 'auth-redirect-suggested');
@@ -187,7 +188,7 @@ export async function updateSession(request: NextRequest) {
     
     // For now, let the client handle auth redirects to avoid breaking the flow
     // The AuthContext will handle redirecting users who need to sign in
-    console.log("ℹ️ Unauthenticated user on protected route, letting client handle");
+    log.middleware.info("Unauthenticated user on protected route, letting client handle", { pathname });
   }
 
   return supabaseResponse;
