@@ -19,12 +19,11 @@ import {
   useSortedMemberData,
 } from "./components/data-hooks";
 import { HistoryTable } from "./components/history-table";
-import { useAuth } from "@/src/lib/auth/AuthContext";
+import { useAuth } from "@/src/lib/auth/Auth";
 
 // Force dynamic rendering to prevent static generation issues
 export const dynamic = "force-dynamic";
 
-// Import our refactored component
 import { GolferStatsTable } from "./components/golfer-stats-table";
 
 /**

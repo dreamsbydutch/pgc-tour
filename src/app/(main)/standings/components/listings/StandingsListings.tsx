@@ -9,7 +9,7 @@ import LittleFucker from "@/src/app/_components/LittleFucker";
 import { useMainStore } from "@/src/lib/store/store";
 import { api } from "@/src/trpc/react";
 import { TourLogo } from "@/src/app/_components/OptimizedImage";
-import { useAuth } from "@/src/lib/auth/AuthContext";
+import { useAuth } from "@/src/lib/auth/Auth";
 import { authStoreService } from "@/src/lib/auth/AuthStoreService";
 import type {
   StandingsListingProps,

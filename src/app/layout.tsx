@@ -8,7 +8,7 @@ import MenuBar from "@/src/app/_components/nav/MenuBar";
 import { cn } from "../lib/utils";
 import Script from "next/script";
 import { InitStoreWrapper } from "../lib/store/InitStoreWrapper";
-import { AuthProvider } from "../lib/auth/AuthContext";
+import { AuthProvider } from "../lib/auth/Auth";
 
 const varela = Varela({
   weight: ["400"],

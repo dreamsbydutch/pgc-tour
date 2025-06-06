@@ -3,9 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLeaderboardStore } from "@/src/lib/store/store";
 import {
-  updateLeaderboardNow,
-  useLeaderboardPolling,
-} from "@/src/lib/store/leaderboardInit";
+  refreshLeaderboard,
+} from "@/src/lib/store/leaderboard";
 import LeaderboardPage from "../shared/LeaderboardPage";
 import type { Course, Tournament } from "@prisma/client";
 
@@ -19,7 +18,6 @@ export default function ActiveTournamentView({
   inputTour,
 }: ActiveTournamentViewProps) {
   const lastUpdated = useLeaderboardStore((state) => state._lastUpdated);
-  const [isManuallyRefreshing, setIsManuallyRefreshing] = useState(false);
 
   // Memoize callbacks to prevent infinite re-renders
   const onSuccess = useCallback(() => {
@@ -30,40 +28,38 @@ export default function ActiveTournamentView({
     console.error("Failed to update leaderboard:", err);
   }, []);
   // Set up polling for live updates - only when tournament is live
-  const { isPolling, refreshNow, isRefetching } = useLeaderboardPolling({
-    enabled: tournament.livePlay === true, // Only poll when tournament is actively live
-    refetchInterval: 120000, // Every 2 minutes
-    onSuccess,
-    onError,
-  });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const tournamentId = parseInt(tournament.id);
+
+  // Manual refresh function
+  const refreshNow = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshLeaderboard(tournamentId);
+      onSuccess();
+    } catch (err) {
+      onError(err as Error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [tournamentId, onSuccess, onError]);
 
   // Load initial data on component mount
   useEffect(() => {
     const initialLoad = async () => {
       const currentLastUpdated = useLeaderboardStore.getState()._lastUpdated;
       if (!currentLastUpdated || Date.now() - currentLastUpdated > 300000) {
-        setIsManuallyRefreshing(true);
-        await updateLeaderboardNow();
-        setIsManuallyRefreshing(false);
+        await refreshNow();
       }
     };
 
     initialLoad().catch((err) =>
       console.error("Error during initial leaderboard load:", err),
     );
-  }, []); // Empty dependency array - only run once on mount
+  }, [refreshNow]); // Empty dependency array - only run once on mount
 
   const handleManualRefresh = useCallback(async () => {
-    setIsManuallyRefreshing(true);
-
-    if (refreshNow) {
-      await refreshNow();
-    } else {
-      await updateLeaderboardNow();
-    }
-
-    // Add slight delay to prevent flickering
-    setTimeout(() => setIsManuallyRefreshing(false), 500);
+    await refreshNow();
   }, [refreshNow]);
 
   // Format the last updated time as a readable string
@@ -87,7 +83,7 @@ export default function ActiveTournamentView({
   };
 
   // Combine all loading states to show the refresh indicator
-  const showLoading = isRefetching || isManuallyRefreshing;
+  const showLoading = isRefreshing;
   return (
     <>
       {/* Status bar for live tournaments */}
@@ -109,7 +105,7 @@ export default function ActiveTournamentView({
 
           <span className="badge text-2xs text-slate-500">
             {tournament.livePlay
-              ? `Round ${tournament.currentRound} - ${isPolling ? "Live" : "Not Updating"}`
+              ? `Round ${tournament.currentRound} - Live`
               : `Round ${(tournament.currentRound ?? 1) - 1} - Complete`}
           </span>
         </div>

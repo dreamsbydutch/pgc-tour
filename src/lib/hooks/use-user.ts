@@ -1,51 +1,29 @@
+/**
+ * Simplified User Hook
+ * 
+ * Streamlined hook that integrates with the new auth system
+ * Use useAuth from Auth.tsx instead for full functionality
+ */
+
 "use client";
 
-import { useEffect, useState } from "react";
-import type { AuthError, Session, User } from "@supabase/supabase-js";
-import { jwtDecode } from "jwt-decode";
-import type { JwtPayload } from "jwt-decode";
+import { useAuth } from "../auth/Auth";
 
-import { createClient } from "@/lib/supabase/client";
-
-type SupabaseJwtPayload = JwtPayload & {
-  app_metadata: {
-    role: string;
-  };
-};
-
+// Legacy hook for backward compatibility
 export function useUser() {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<AuthError | null>(null);
-  const [role, setRole] = useState<string | null>(null);
-  const supabase = createClient();
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        if (session) {
-          setSession(session);
-          setUser(session.user);
-          const decodedJwt = jwtDecode<SupabaseJwtPayload>(
-            session.access_token,
-          );
-          setRole(decodedJwt.app_metadata.role);
-        }
-      } catch (error) {
-        setError(error as AuthError);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser().catch(console.error);
-  }, [supabase.auth]);
-
-  return { loading, error, session, user, role };
+  const { user, session, member, isLoading, error } = useAuth();
+  
+  // Extract role from member data (preferred) or user metadata
+  const role: string | null = member?.role ?? (user?.app_metadata as Record<string, unknown> | undefined)?.role as string ?? null;
+  
+  return { 
+    loading: isLoading, 
+    error: error ? new Error(error) : null, 
+    session, 
+    user, 
+    role,
+    // Additional fields for compatibility
+    member,
+    isAuthenticated: !!user && !!session,
+  };
 }

@@ -15,7 +15,7 @@ import LoadingSpinner from "../LoadingSpinner"; // Loading spinner component
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signInWithGoogle } from "../../(auth)/signin/actions";
-import { useAuth } from "@/src/lib/auth/AuthContext";
+import { useAuth } from "@/src/lib/auth/Auth";
 import { useMainStore } from "@/src/lib/store/store";
 
 /**

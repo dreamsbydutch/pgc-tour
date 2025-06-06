@@ -7,12 +7,12 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useMainStore } from '../store/store';
-import { loadInitialData } from '../store/mainInit';
+import { loadInitialData, refreshTournamentData, initUtils } from '../store/mainInit';
 import { 
   startLeaderboardPolling, 
+  stopLeaderboardPolling, 
   shouldPollLeaderboard 
 } from '../store/leaderboard';
-import { startTournamentTransitionPolling } from '../store/transitions';
 import { useAuth } from '../auth/Auth';
 
 interface InitializationState {
@@ -55,7 +55,6 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
   const initializationRef = useRef<boolean>(false);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const leaderboardCleanupRef = useRef<(() => void) | null>(null);
-  const transitionsCleanupRef = useRef<(() => void) | null>(null);
 
   // Check if store has been initialized recently
   const isStoreInitialized = useCallback(() => {
@@ -106,21 +105,13 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
 
       console.log('✅ Store initialization completed successfully');
 
-      // Start tournament transition polling
-      if (!transitionsCleanupRef.current) {
-        console.log('🔄 Starting tournament transition polling...');
-        const cleanup = startTournamentTransitionPolling(300000); // 5 minutes
-        transitionsCleanupRef.current = cleanup;
-      }
-
       // Start leaderboard polling for current tournament if enabled
       if (opts.enableLeaderboardPolling) {
         const currentTournament = useMainStore.getState().currentTournament;
         
         if (currentTournament && shouldPollLeaderboard(currentTournament)) {
           console.log('🔄 Starting leaderboard polling...');
-          const tournamentId = parseInt(currentTournament.id);
-          const cleanup = startLeaderboardPolling(tournamentId, 300000); // 5 minutes
+          const cleanup = startLeaderboardPolling(parseInt(currentTournament.id), 300000); // 5 minutes
           leaderboardCleanupRef.current = cleanup;
         }
       }
@@ -154,38 +145,22 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
   }, [opts.autoRetry, opts.maxRetries, opts.retryDelay, opts.enableLeaderboardPolling]);
 
   // Manual retry function
-  const retryInitialization = () => {
+  const retryInitialization = useCallback(() => {
     console.log('🔄 Manual retry of store initialization requested');
     void initializeStore(0);
-  };
+  }, [initializeStore]);
 
   // Force refresh function
-  const forceRefresh = async () => {
+  const forceRefresh = useCallback(async () => {
     console.log('🔄 Force refresh of store data requested');
     
     try {
       setInitState(prev => ({ ...prev, isLoading: true, error: null }));
       
-      // Reset store to initial state
-      useMainStore.setState({
-        seasonTournaments: null,
-        tourCards: null,
-        tours: null,
-        pastTournaments: null,
-        currentTournament: null,
-        nextTournament: null,
-        currentMember: null,
-        currentTour: null,
-        currentTourCard: null,
-        currentSeason: null,
-        currentTiers: null,
-        isAuthenticated: false,
-        authLastUpdated: null,
-        _lastUpdated: null,
-      });
+      // Reset store and reinitialize
+      useMainStore.getState().reset();
+      await initializeStore(0);
       
-      // Reinitialize after reset
-      void initializeStore(0);
     } catch (error) {
       console.error('❌ Force refresh failed:', error);
       setInitState(prev => ({
@@ -194,7 +169,19 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
         error: error instanceof Error ? error.message : 'Force refresh failed',
       }));
     }
-  };
+  }, [initializeStore]);
+
+  // Refresh just tournament data
+  const refreshTournaments = useCallback(async () => {
+    console.log('🔄 Refreshing tournament data...');
+    
+    try {
+      await refreshTournamentData();
+      console.log('✅ Tournament data refreshed');
+    } catch (error) {
+      console.error('❌ Tournament data refresh failed:', error);
+    }
+  }, []);
 
   // Initialize on mount and auth changes
   useEffect(() => {
@@ -229,29 +216,33 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
     });
     
     void initializeStore(0);
-  }, [authLoading, isAuthenticated, member?.id, member?.email, store._lastUpdated, isStoreInitialized, initializeStore, opts.skipInitialLoad]); // Include all dependencies
+  }, [authLoading, isAuthenticated, member?.id, member?.email, isStoreInitialized, initializeStore, opts.skipInitialLoad, store._lastUpdated]);
 
-  // Register for auth state changes
+  // Update leaderboard polling when tournament changes
   useEffect(() => {
-    // When auth state changes, we may need to reinitialize
-    if (isAuthenticated && !initState.isInitialized && !authLoading) {
-      console.log('🔄 Auth state changed, checking if reinitialization needed');
-      if (!isStoreInitialized()) {
-        void initializeStore(0);
-      }
+    if (!opts.enableLeaderboardPolling) return;
+
+    const currentTournament = store.currentTournament;
+    
+    // Stop existing polling
+    if (leaderboardCleanupRef.current) {
+      leaderboardCleanupRef.current();
+      leaderboardCleanupRef.current = null;
     }
-  }, [isAuthenticated, authLoading, initState.isInitialized, isStoreInitialized, initializeStore]);
+    
+    // Start new polling if tournament should be polled
+    if (currentTournament && shouldPollLeaderboard(currentTournament)) {
+      console.log('🔄 Starting leaderboard polling for new tournament...');
+      const cleanup = startLeaderboardPolling(parseInt(currentTournament.id), 300000);
+      leaderboardCleanupRef.current = cleanup;
+    }
+  }, [store.currentTournament?.id, store.currentTournament, opts.enableLeaderboardPolling]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (retryTimeoutRef.current) {
         clearTimeout(retryTimeoutRef.current);
-      }
-      if (transitionsCleanupRef.current) {
-        console.log('🛑 Cleaning up tournament transition polling on unmount');
-        transitionsCleanupRef.current();
-        transitionsCleanupRef.current = null;
       }
       if (leaderboardCleanupRef.current) {
         console.log('🛑 Cleaning up leaderboard polling on unmount');
@@ -271,36 +262,47 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
     // Control functions
     retry: retryInitialization,
     forceRefresh,
+    refreshTournaments,
     
     // Store access
     store,
+    
+    // Utils
+    getStatus: initUtils.getStatus,
   };
 }
 
-/**
- * Reset the main store initialization state
- * Used by admin utilities to force re-initialization
- */
+// Simple hook for components that just need to know if store is ready
+export function useStoreReady() {
+  const store = useMainStore();
+  const { isLoading: authLoading } = useAuth();
+  
+  const isReady = !authLoading && 
+                  !!store._lastUpdated && 
+                  !!store.seasonTournaments?.length && 
+                  !!store.tourCards?.length;
+  
+  return {
+    isReady,
+    isLoading: authLoading || !store._lastUpdated,
+    hasData: !!store.seasonTournaments?.length,
+  };
+}
+
+// Reset functions for admin use
 export function resetInitialization() {
   console.log('🔄 Resetting main store initialization state');
   
-  // Reset store data to initial state
-  useMainStore.setState({
-    seasonTournaments: null,
-    tourCards: null,
-    tours: null,
-    pastTournaments: null,
-    currentTournament: null,
-    nextTournament: null,
-    currentMember: null,
-    currentTour: null,
-    currentTourCard: null,
-    currentSeason: null,
-    currentTiers: null,
-    isAuthenticated: false,
-    authLastUpdated: null,
-    _lastUpdated: null,
-  });
+  const store = useMainStore.getState();
+  store.reset();
   
   console.log('✅ Main store initialization reset complete');
+}
+
+export function resetLeaderboardInitialization() {
+  console.log('🔄 Resetting leaderboard store initialization state');
+  
+  stopLeaderboardPolling();
+  
+  console.log('✅ Leaderboard store initialization reset complete');
 }

@@ -21,7 +21,7 @@ import {
   preloadCriticalImages,
 } from "@/src/lib/utils/image-optimization";
 import { useMainStore } from "@/src/lib/store/store";
-import { useAuth } from "@/src/lib/auth/AuthContext";
+import { useAuth } from "@/src/lib/auth/Auth";
 import { useEffect } from "react";
 
 // Force dynamic rendering to prevent static generation issues
