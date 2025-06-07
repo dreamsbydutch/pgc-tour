@@ -1,12 +1,37 @@
 /**
  * Member Statistics View Component
- * Displays comprehensive historical data for all members
+ * 
+ * Displays comprehensive historical data for all members including:
+ * - Career earnings and points tracking
+ * - Tournament participation and performance metrics
+ * - Championship and major tournament achievements
+ * - Win/loss records and placement statistics
+ * 
+ * Features:
+ * - Toggle between regular and adjusted earnings/points
+ * - Friends-only filtering for personalized views
+ * - Comprehensive sorting and pagination
+ * - Real-time data processing with custom hooks
+ * 
+ * Data Processing:
+ * - Fetches tournament, member, tier, and tour card data
+ * - Processes tournaments excluding future dates and playoff tiers
+ * - Calculates both regular and adjusted team statistics
+ * - Applies friend filtering based on current user relationships
+ * 
+ * State Management:
+ * - showAdjusted: Toggle for adjusted earnings calculation
+ * - showFriendsOnly: Filter for friends and current user only
+ * - Uses memoized hooks for optimal performance
+ * 
+ * @component
  */
 "use client";
 
 import { useState } from "react";
 import { useMainStore } from "@/src/lib/store/store";
 import { api } from "@/src/trpc/react";
+import { useAuth } from "@/src/lib/auth/Auth";
 import {
   useProcessedTournaments,
   useProcessedTeams,
@@ -50,11 +75,10 @@ export function MemberStatsView() {
     members,
     tourCards,
     teams: teams.filter((team) => team !== undefined),
-    adjustedTeams: adjustedTeams.filter((team) => team !== undefined),
-  }).filter((obj) => (obj.teams?.length ?? 0) > 0);
+    adjustedTeams: adjustedTeams.filter((team) => team !== undefined),  }).filter((obj) => (obj.teams?.length ?? 0) > 0);
 
-  // Get the current user from the store
-  const currentUser = useMainStore((state) => state.currentMember);
+  // Get the current user from auth
+  const { member: currentUser } = useAuth();
 
   // Filter member data by friends if needed
   const filteredMemberData = showFriendsOnly

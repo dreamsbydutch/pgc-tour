@@ -5,7 +5,7 @@ import { cn, formatMoney } from "@/src/lib/utils";
 import { AchievementIcons } from "../ui/achievement-icons";
 import type { ExtendedMember, ExtendedTournament } from "../../types";
 import type { Member, Tier } from "@prisma/client";
-import { calculateMemberStats } from "./member-stats";
+import { calculateMemberStats } from "../../utils/member-stats";
 // Removed unused import: useMainStore
 import { useAuth } from "@/src/lib/auth/Auth";
 import {

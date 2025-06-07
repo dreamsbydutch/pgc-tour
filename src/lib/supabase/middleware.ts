@@ -41,8 +41,8 @@ const PUBLIC_ROUTES = [
 
 export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const hasAuthParams = request.nextUrl.searchParams.has('auth_success');
-  const referer = request.headers.get('referer');
+  // const hasAuthParams = request.nextUrl.searchParams.has('auth_success');
+  // const referer = request.headers.get('referer');
   // Removed "Enhanced middleware running" log to reduce console noise
 
   let supabaseResponse = NextResponse.next({
