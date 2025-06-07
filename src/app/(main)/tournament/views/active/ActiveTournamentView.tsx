@@ -29,20 +29,19 @@ export default function ActiveTournamentView({
   }, []);
   // Set up polling for live updates - only when tournament is live
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const tournamentId = parseInt(tournament.id);
 
   // Manual refresh function
   const refreshNow = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await refreshLeaderboard(tournamentId);
+      await refreshLeaderboard();
       onSuccess();
     } catch (err) {
       onError(err as Error);
     } finally {
       setIsRefreshing(false);
     }
-  }, [tournamentId, onSuccess, onError]);
+  }, [onSuccess, onError]);
 
   // Load initial data on component mount
   useEffect(() => {

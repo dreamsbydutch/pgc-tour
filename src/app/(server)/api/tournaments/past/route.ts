@@ -39,6 +39,24 @@ export async function GET() {
             thru: true,
           }
         },
+        golfers: {
+          select: {
+            id: true,
+            apiId: true,
+            country: true,
+            score: true,
+            group: true,
+            playerName: true,
+            position: true,
+            rating: true,
+            usage: true,
+            worldRank: true,
+            roundOne: true,
+            roundTwo: true,
+            roundThree: true,
+            roundFour: true,
+          }
+        },
         // Basic course info only
         course: {
           select: {
@@ -54,8 +72,6 @@ export async function GET() {
       orderBy: [
         { startDate: 'desc' }
       ],
-      // Limit to prevent oversized responses - can add pagination later if needed
-      take: 50
     });
 
     // Return optimized data structure
@@ -69,10 +85,9 @@ export async function GET() {
       seasonId: tournament.seasonId,
       courseId: tournament.courseId,
       teams: tournament.teams,
+      golfers: tournament.golfers,
       course: tournament.course,
-      // Note: Removed golfers, tourCards, and adjustedTeams to reduce payload size
-      // These can be fetched separately when needed for detailed views
-    }));
+    }))
 
     return NextResponse.json(optimizedTournaments);
   } catch (error) {

@@ -17,6 +17,7 @@ import type {
   Tournament,
 } from "@prisma/client";
 import { useMainStore } from "./store";
+import { initializeLeaderboard } from "./leaderboard";
 
 type TournamentData = Tournament & {
   course: Course | null;
@@ -144,11 +145,14 @@ export async function loadInitialData(): Promise<void> {
       nextTournament,
       currentSeason,
       currentTiers: coreData.tiers,
-    };
-
-    useMainStore.getState().initializeData(initData);
+    };    useMainStore.getState().initializeData(initData);
     
     console.log('✅ Store initialization completed successfully');
+    
+    // Initialize leaderboard if there's a current tournament
+    if (currentTournament) {
+      await initializeLeaderboard(currentTournament.id).catch(console.error);
+    }
   } catch (error) {
     console.error('❌ Store initialization failed:', error);
     throw error;

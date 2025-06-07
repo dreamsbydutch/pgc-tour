@@ -188,7 +188,7 @@ export async function loadInitialData() {
   
   // Initialize leaderboard if needed
   if (updateData.currentTournament) {
-    await initializeLeaderboard(parseInt(updateData.currentTournament.id)).catch(console.error);
+    await initializeLeaderboard(updateData.currentTournament.id).catch(console.error);
   }
   
   return updateData;

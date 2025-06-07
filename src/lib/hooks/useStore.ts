@@ -111,7 +111,7 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
         
         if (currentTournament && shouldPollLeaderboard(currentTournament)) {
           console.log('🔄 Starting leaderboard polling...');
-          const cleanup = startLeaderboardPolling(parseInt(currentTournament.id), 300000); // 5 minutes
+          const cleanup = startLeaderboardPolling(currentTournament.id, 300000); // 5 minutes
           leaderboardCleanupRef.current = cleanup;
         }
       }
@@ -233,7 +233,7 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
     // Start new polling if tournament should be polled
     if (currentTournament && shouldPollLeaderboard(currentTournament)) {
       console.log('🔄 Starting leaderboard polling for new tournament...');
-      const cleanup = startLeaderboardPolling(parseInt(currentTournament.id), 300000);
+      const cleanup = startLeaderboardPolling(currentTournament.id, 300000);
       leaderboardCleanupRef.current = cleanup;
     }
   }, [store.currentTournament?.id, store.currentTournament, opts.enableLeaderboardPolling]);

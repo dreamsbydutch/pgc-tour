@@ -10,12 +10,12 @@ import { useLeaderboardStore } from "./store";
 type LeaderboardTeam = Team & { tourCard: TourCard | null };
 
 // Fetch leaderboard data
-async function fetchLeaderboardData(tournamentId: number): Promise<{
+async function fetchLeaderboardData(): Promise<{
   teams: LeaderboardTeam[];
   golfers: Golfer[];
 } | null> {
   try {
-    const response = await fetch(`/api/tournaments/${tournamentId}/leaderboard`, {
+    const response = await fetch(`/api/tournaments/leaderboard`, {
       cache: 'no-store'
     });
     
@@ -37,11 +37,11 @@ async function fetchLeaderboardData(tournamentId: number): Promise<{
 }
 
 // Initialize leaderboard for a tournament
-export async function initializeLeaderboard(tournamentId: number): Promise<void> {
+export async function initializeLeaderboard(tournamentId: string): Promise<void> {
   console.log(`📊 Initializing leaderboard for tournament ${tournamentId}...`);
   
   try {
-    const data = await fetchLeaderboardData(tournamentId);
+    const data = await fetchLeaderboardData();
     
     if (data) {
       useLeaderboardStore.getState().update(data.teams, data.golfers);
@@ -56,9 +56,9 @@ export async function initializeLeaderboard(tournamentId: number): Promise<void>
 }
 
 // Refresh leaderboard data
-export async function refreshLeaderboard(tournamentId: number): Promise<void> {
+export async function refreshLeaderboard(): Promise<void> {
   try {
-    const data = await fetchLeaderboardData(tournamentId);
+    const data = await fetchLeaderboardData();
     
     if (data) {
       useLeaderboardStore.getState().update(data.teams, data.golfers);
@@ -74,7 +74,7 @@ export async function refreshLeaderboard(tournamentId: number): Promise<void> {
 let pollingInterval: NodeJS.Timeout | null = null;
 
 export function startLeaderboardPolling(
-  tournamentId: number, 
+  tournamentId: string, 
   intervalMs = 300000 // 5 minutes default
 ): () => void {
   console.log(`🔄 Starting leaderboard polling for tournament ${tournamentId} (${intervalMs}ms interval)`);
@@ -87,7 +87,7 @@ export function startLeaderboardPolling(
   
   // Start polling
   pollingInterval = setInterval(() => {
-    void refreshLeaderboard(tournamentId);
+    void refreshLeaderboard();
   }, intervalMs);
   
   // Return cleanup function
@@ -144,8 +144,8 @@ export function useLeaderboardPolling({
 // Leaderboard utilities
 export const leaderboardUtils = {
   // Manual refresh
-  refresh: async (tournamentId: number) => {
-    await refreshLeaderboard(tournamentId);
+  refresh: async () => {
+    await refreshLeaderboard();
   },
   
   // Start/stop polling

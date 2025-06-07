@@ -110,7 +110,7 @@ class CacheManager {
 
     // Initialize leaderboard if current tournament exists
     if (currentTournament) {
-      await initializeLeaderboard(parseInt(currentTournament.id)).catch(console.error);
+      await initializeLeaderboard(currentTournament.id).catch(console.error);
     }
 
     return true;

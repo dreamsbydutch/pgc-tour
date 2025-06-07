@@ -6,6 +6,7 @@ export async function GET() {
     const tournaments = await db.tournament.findMany({
       where: { season: { year: new Date().getFullYear() } },
       include: { course: true },
+      orderBy: { startDate: "asc" },
     });
     return NextResponse.json({ tournaments });
   } catch (error) {

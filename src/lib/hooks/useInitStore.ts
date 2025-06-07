@@ -123,7 +123,7 @@ export function useInitStore(options: UseInitStoreOptions = {}) {
         
         if (currentTournament && shouldPollLeaderboard(currentTournament)) {
           log.store.info('Starting leaderboard polling...');
-          const tournamentId = parseInt(currentTournament.id);
+          const tournamentId = currentTournament.id
           const cleanup = startLeaderboardPolling(tournamentId, 300000); // 5 minutes
           leaderboardCleanupRef.current = cleanup;
         }
