@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { db } from "@/src/server/db";
-import { updateTeamPositions } from "@/src/app/(main)/history/utils/team-calculations";
-import type { ExtendedTournament } from "@/src/app/(main)/history/types";
 
 export async function GET() {
   try {
     // Get current date to filter past tournaments
     const now = new Date();
-      // Query past tournaments with all related data
+    
+    // Query past tournaments with minimal data - only what's needed
     const pastTournaments = await db.tournament.findMany({
       where: {
         OR: [
@@ -15,78 +14,67 @@ export async function GET() {
           { currentRound: { gte: 5 } }
         ]
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        startDate: true,
+        endDate: true,
+        currentRound: true,
+        tierId: true,
+        seasonId: true,
+        courseId: true,
+        // Only select essential team data without deep nesting
         teams: {
-          include: {
-            tourCard: {
-              include: {
-                member: true
-              }
-            }
+          select: {
+            id: true,
+            tourCardId: true,
+            golferIds: true,
+            score: true,
+            position: true,
+            pastPosition: true,
+            earnings: true,
+            points: true,
+            round: true,
+            today: true,
+            thru: true,
           }
         },
-        course: true,
-        golfers: true
+        // Basic course info only
+        course: {
+          select: {
+            id: true,
+            name: true,
+            location: true,
+            par: true,
+            front: true,
+            back: true,
+          }
+        }
       },
       orderBy: [
         { startDate: 'desc' }
-      ]
-    });    // Get golfers for all tournaments
-    const golfersByTournament = pastTournaments.map(tournament => ({
-      tournamentId: tournament.id,
-      golfers: tournament.golfers
+      ],
+      // Limit to prevent oversized responses - can add pagination later if needed
+      take: 50
+    });
+
+    // Return optimized data structure
+    const optimizedTournaments = pastTournaments.map(tournament => ({
+      id: tournament.id,
+      name: tournament.name,
+      startDate: tournament.startDate,
+      endDate: tournament.endDate,
+      currentRound: tournament.currentRound,
+      tierId: tournament.tierId,
+      seasonId: tournament.seasonId,
+      courseId: tournament.courseId,
+      teams: tournament.teams,
+      course: tournament.course,
+      // Note: Removed golfers, tourCards, and adjustedTeams to reduce payload size
+      // These can be fetched separately when needed for detailed views
     }));
 
-    // Get all tour cards for the seasons
-    const seasonIds = [...new Set(pastTournaments.map(t => t.seasonId))];
-    const allTourCards = await db.tourCard.findMany({
-      where: {
-        seasonId: { in: seasonIds }
-      },
-      include: {
-        member: true
-      }
-    });
-
-    // Get current tiers for calculations
-    const currentTiers = await db.tier.findMany({
-      where: {
-        seasonId: { in: seasonIds }
-      }
-    });
-
-    // Process tournaments to match ExtendedTournament format
-    const processedTournaments: ExtendedTournament[] = pastTournaments.map(tournament => {
-      // Get golfers for this tournament
-      const tournamentGolfers = golfersByTournament.find(
-        g => g.tournamentId === tournament.id
-      )?.golfers ?? [];
-
-      // Get tour cards for this tournament's teams
-      const tournamentTourCards = allTourCards.filter(tc => 
-        tournament.teams.some(team => team.tourCardId === tc.id)
-      );
-
-      // Get tier for this tournament
-      const tier = currentTiers.find(t => t.id === tournament.tierId);
-
-      // Calculate adjusted team positions using current tier values
-      const adjustedTeams = updateTeamPositions(
-        tournament.teams,
-        tournamentTourCards,
-        tier,
-        tournament.name
-      );      return {
-        ...tournament,
-        teams: tournament.teams,
-        golfers: tournamentGolfers,
-        courses: tournament.course ? [tournament.course] : [],
-        tourCards: tournamentTourCards,
-        adjustedTeams: adjustedTeams
-      };
-    });
-
-    return NextResponse.json(processedTournaments);
+    return NextResponse.json(optimizedTournaments);
   } catch (error) {
     console.error("Error fetching past tournaments:", error);
     return NextResponse.json(
