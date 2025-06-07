@@ -6,8 +6,8 @@ import { Table, TableBody } from "@/src/app/_components/ui/table";
 import { TableHeaderComponent } from "./table-header";
 import { TablePagination } from "./table-pagination";
 import { GolferRow } from "./golfer-row";
-import { useGolferData } from "./use-golfer-data";
-import { useSortedData } from "./use-sorted-data";
+import { useGolferData } from "../hooks/use-golfer-data";
+import { useSortedData } from "../hooks/use-sorted-data";
 
 export function GolferStatsTable() {
   // State for pagination
@@ -120,17 +120,15 @@ export function GolferStatsTable() {
               <TableBody>
                 {currentPageData.map((golfer) => (
                   <GolferRow
-                  key={golfer.name}
-                  golfer={golfer}
-                  golfersData={
-                    (golfersData ?? []).map((g) => ({
-                    ...g,
-                    group: g.group ?? 0,
-                    }))
-                  }
-                  nextTournament={nextTournament}
-                  currentTournament={currentTournament}
-                  pastTournament={pastTournament ?? null}
+                    key={golfer.name}
+                    golfer={golfer}
+                    golfersData={(golfersData ?? []).map((g) => ({
+                      ...g,
+                      group: g.group ?? 0,
+                    }))}
+                    nextTournament={nextTournament}
+                    currentTournament={currentTournament}
+                    pastTournament={pastTournament ?? null}
                   />
                 ))}
               </TableBody>

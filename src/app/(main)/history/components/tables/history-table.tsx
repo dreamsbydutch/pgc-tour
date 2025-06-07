@@ -2,10 +2,10 @@
 
 import { useRef } from "react";
 import { cn, formatMoney } from "@/src/lib/utils";
-import { AchievementIcons } from "./achievement-icons";
-import type { ExtendedMember, ExtendedTournament } from "./types";
+import { AchievementIcons } from "../ui/achievement-icons";
+import type { ExtendedMember, ExtendedTournament } from "../../types";
 import type { Member, Tier } from "@prisma/client";
-import { calculateMemberStats } from "./member-stats";
+import { calculateMemberStats } from "../../utils/member-stats";
 import { useMainStore } from "@/src/lib/store/store";
 import {
   Table,
@@ -134,44 +134,38 @@ function CustomTableRow({
           />
         </div>
       </TableCell>
-
       {/* Seasons */}
       <TableCell className="table-cell border-b border-r border-gray-200 p-2 text-center align-middle text-xs">
         {stats.seasons}
-      </TableCell>
-
+      </TableCell>{" "}
       {/* Earnings */}
       <TableCell className="table-cell border-b border-r border-gray-200 p-2 text-center align-middle text-xs">
-        <div className="whitespace-nowrap">{formatMoney(stats.earnings)}</div>
+        <div className="whitespace-nowrap">
+          {formatMoney(stats.earnings ?? 0)}
+        </div>
       </TableCell>
-
       {/* Points */}
       <TableCell className="table-cell border-b border-r border-gray-200 p-2 text-center align-middle text-xs">
         <div className="whitespace-nowrap">
-          {stats.points.toLocaleString()} pts
+          {(stats.points ?? 0).toLocaleString()} pts
         </div>
       </TableCell>
-
       {/* Appearances */}
       <TableCell className="table-cell border-b border-r border-gray-200 p-2 text-center align-middle text-xs">
         {stats.appearances}
       </TableCell>
-
       {/* Wins */}
       <TableCell className="table-cell border-b border-r border-gray-200 p-2 text-center align-middle text-xs">
         {stats.wins}
       </TableCell>
-
       {/* Top 5s */}
       <TableCell className="table-cell border-b border-r border-gray-200 p-2 text-center align-middle text-xs">
         {stats.top5s}
       </TableCell>
-
       {/* Top 10s */}
       <TableCell className="table-cell border-b border-r border-gray-200 p-2 text-center align-middle text-xs">
         {stats.top10s}
       </TableCell>
-
       {/* Cuts Made */}
       <TableCell className="table-cell border-b border-r border-gray-200 p-2 text-center align-middle text-xs">
         {stats.cutsMade} ({Math.round(stats.cutsPercent * 10) / 10}%)

@@ -5,13 +5,13 @@ import { getTournamentImageUrl } from "@/src/lib/utils/image-optimization";
 import { useMemo } from "react";
 import { cn } from "@/src/lib/utils";
 import type { Member, Team, Tier, Tournament } from "@prisma/client";
-import type { ExtendedTourCard } from "./types";
+import type { ExtendedTourCard } from "../../types";
 
 interface AchievementIconsProps {
   teams: Team[];
   tiers: Tier[];
   tournaments: Tournament[];
-  tourCards: (ExtendedTourCard & { member: Member | undefined })[] | undefined;
+  tourCards?: (ExtendedTourCard & { member?: Member })[];
 }
 
 /**

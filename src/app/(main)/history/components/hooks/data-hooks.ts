@@ -1,8 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import type { ExtendedMember, ExtendedTourCard, ExtendedTournament } from "./types";
-import { updateTeamPositions } from "./team-calculations";
+import type {
+  ExtendedMember,
+  ExtendedTourCard,
+  ExtendedTournament,
+} from "../../types";
+import { updateTeamPositions } from "../../utils/team-calculations";
 import type { Member, Team, Tier, TourCard, Tournament } from "@prisma/client";
 
 /**

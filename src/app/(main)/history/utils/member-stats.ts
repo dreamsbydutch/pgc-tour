@@ -1,5 +1,22 @@
-import type { ExtendedMember } from "./types";
-import type { Team, Tournament } from "@prisma/client";
+import type { ExtendedMember, ExtendedTournament } from "../types";
+import type { Team } from "@prisma/client";
+
+/**
+ * Member statistics interface
+ */
+export interface MemberStats {
+  seasons: number;
+  appearances: number;
+  cutsMade: number;
+  cutsPercent: number;
+  top10s: number;
+  top5s: number;
+  wins: number;
+  earnings: number;
+  points: number;
+  avgFinish: number;
+  tourChampionshipFinish: string | null;
+}
 
 /**
  * Calculate statistics for a member
@@ -10,17 +27,14 @@ import type { Team, Tournament } from "@prisma/client";
 export function calculateMemberStats(
   member: ExtendedMember,
   showAdjusted: boolean,
-  tournaments?: Tournament[],
-) {
+  tournaments?: ExtendedTournament[],
+): MemberStats {
   // Get all teams for the member
   const teams = member.teams ?? [];
 
   // Total appearances (tournaments played)
   const seasons = member.tourCards?.length ?? 0;
   const appearances = member.teams?.length ?? 0;
-
-  // Calculate attendance rate: tournaments played / total tournaments available in their seasons
-  // This would require more data than we currently have, so we'll skip for now
 
   // Cuts made (position is not "CUT")
   const cutsMade = teams.filter((team) => team.position !== "CUT").length;
@@ -51,27 +65,27 @@ export function calculateMemberStats(
   ).length;
 
   // Total earnings
-  const earnings = (member.tourCards ?? []).reduce(
-    (p, c) =>
-      (p += showAdjusted ? (c.adjustedEarnings ?? c.earnings) : c.earnings),
-    0,
-  );
+  const earnings = (member.tourCards ?? []).reduce((p, c) => {
+    const earningsValue = showAdjusted
+      ? (c?.adjustedEarnings ?? c?.earnings ?? 0)
+      : (c?.earnings ?? 0);
+    return p + earningsValue;
+  }, 0);
 
   // Total points
-  const points = (member.tourCards ?? []).reduce(
-    (p, c) =>
-      (p += showAdjusted
-        ? (c.adjustedPoints ?? c.points ?? 0)
-        : (c.points ?? 0)),
-    0,
-  );
+  const points = (member.tourCards ?? []).reduce((p, c) => {
+    const pointsValue = showAdjusted
+      ? (c?.adjustedPoints ?? c?.points ?? 0)
+      : (c?.points ?? 0);
+    return p + pointsValue;
+  }, 0);
 
   // Average finish position (excluding CUT)
   const nonCutTeams = teams.filter((team) => team.position !== "CUT");
   const avgFinish = calculateAveragePosition(nonCutTeams);
 
   // 2024 TOUR Championship finish
-  let tourChampionshipFinish = null;
+  let tourChampionshipFinish: string | null = null;
 
   if (tournaments && tournaments.length > 0) {
     // Find the 2024 TOUR Championship tournament
