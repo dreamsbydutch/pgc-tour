@@ -43,13 +43,7 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const hasAuthParams = request.nextUrl.searchParams.has('auth_success');
   const referer = request.headers.get('referer');
-  
-  log.middleware.info("Enhanced middleware running", {
-    pathname,
-    hasAuthParams,
-    referer: referer?.split('/').pop(),
-    userAgent: request.headers.get('user-agent')?.slice(0, 50)
-  });
+  // Removed "Enhanced middleware running" log to reduce console noise
 
   let supabaseResponse = NextResponse.next({
     request,
@@ -78,10 +72,9 @@ export async function updateSession(request: NextRequest) {
       },
     },
   );
-
   // Skip auth checks for specific routes to prevent interference
   if (SKIP_AUTH_ROUTES.some(route => pathname.startsWith(route))) {
-    log.middleware.info("Skipping auth checks for protected route", { pathname });
+    // Removed "Skipping auth checks" log to reduce console noise
     return supabaseResponse;
   }
 
@@ -105,15 +98,7 @@ export async function updateSession(request: NextRequest) {
     const authErrorInstance = error instanceof Error ? error : new Error('Unknown auth error');
     log.middleware.error("Auth check failed in middleware", authErrorInstance);
     authError = authErrorInstance;
-  }
-
-  log.middleware.info("User status in middleware", {
-    authenticated: !!user,
-    email: user?.email ? user.email.split('@')[0] + '@***' : undefined, // Mask email
-    hasAuthError: !!authError,
-    pathname,
-    isPublicRoute: isPublicRoute(pathname)
-  });
+  }  // Removed user status logging to reduce console noise
 
   // Add auth headers for client-side coordination
   if (user) {

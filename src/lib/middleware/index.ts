@@ -36,6 +36,7 @@ interface MiddlewareConfig {
 class CentralizedMiddleware {
   private middlewares: MiddlewareConfig[] = [];
   private debugMode = process.env.NODE_ENV === 'development';
+  private verboseLogging = false; // Disable verbose middleware logging
 
   /**
    * Register a middleware function
@@ -44,30 +45,19 @@ class CentralizedMiddleware {
     const middleware: MiddlewareConfig = {
       enabled: true,
       ...config,
-    };
-
-    this.middlewares.push(middleware);
+    };    this.middlewares.push(middleware);
     this.middlewares.sort((a, b) => a.priority - b.priority);
 
-    if (this.debugMode) {
-      log.middleware.info(`Registered middleware: ${middleware.name}`, {
-        priority: middleware.priority,
-        enabled: middleware.enabled,
-        totalMiddlewares: this.middlewares.length
-      });
-    }
+    // Removed middleware registration logging to reduce console noise
   }
 
   /**
    * Enable or disable a specific middleware
    */
-  setEnabled(name: string, enabled: boolean) {
-    const middleware = this.middlewares.find(m => m.name === name);
+  setEnabled(name: string, enabled: boolean) {    const middleware = this.middlewares.find(m => m.name === name);
     if (middleware) {
       middleware.enabled = enabled;
-      if (this.debugMode) {
-        log.middleware.info(`Middleware ${name} ${enabled ? 'enabled' : 'disabled'}`);
-      }
+      // Removed middleware toggle logging to reduce console noise
     }
   }
 
@@ -98,9 +88,8 @@ class CentralizedMiddleware {
         middlewareCount: enabledMiddlewares.length,
         currentIndex: 0
       }
-    };
-
-    if (this.debugMode) {
+    };    // Only log middleware execution for non-static resources and if verbose logging is enabled
+    if (this.debugMode && this.verboseLogging && !pathname.includes('.') && !pathname.startsWith('/_next/')) {
       log.middleware.info("🚀 Centralized middleware execution started", {
         pathname,
         totalMiddlewares: this.middlewares.length,
@@ -114,10 +103,8 @@ class CentralizedMiddleware {
     try {
       for (let i = 0; i < enabledMiddlewares.length; i++) {
         const middleware = enabledMiddlewares[i]!;
-        context.execution.currentIndex = i;
-
-        if (context.skip) {
-          if (this.debugMode) {
+        context.execution.currentIndex = i;        if (context.skip) {
+          if (this.debugMode && this.verboseLogging && !pathname.includes('.') && !pathname.startsWith('/_next/')) {
             log.middleware.info(`⏭️ Skipping middleware: ${middleware.name}`);
           }
           continue;
@@ -125,7 +112,7 @@ class CentralizedMiddleware {
 
         const middlewareStart = Date.now();
         
-        if (this.debugMode) {
+        if (this.debugMode && this.verboseLogging && !pathname.includes('.') && !pathname.startsWith('/_next/')) {
           log.middleware.info(`▶️ Executing middleware: ${middleware.name}`, {
             priority: middleware.priority,
             index: i + 1,
@@ -134,11 +121,9 @@ class CentralizedMiddleware {
         }
 
         try {
-          response = await middleware.function(request, context);
+          response = await middleware.function(request, context);          const middlewareTime = Date.now() - middlewareStart;
           
-          const middlewareTime = Date.now() - middlewareStart;
-          
-          if (this.debugMode) {
+          if (this.debugMode && this.verboseLogging && !pathname.includes('.') && !pathname.startsWith('/_next/')) {
             log.middleware.info(`✅ Middleware completed: ${middleware.name}`, {
               executionTime: `${middlewareTime}ms`,
               hasResponse: !!response,
@@ -148,7 +133,7 @@ class CentralizedMiddleware {
 
           // If middleware returns a response, stop execution
           if (response) {
-            if (this.debugMode) {
+            if (this.debugMode && this.verboseLogging && !pathname.includes('.') && !pathname.startsWith('/_next/')) {
               log.middleware.info(`🔄 Middleware ${middleware.name} returned response, stopping execution`);
             }
             break;
@@ -179,11 +164,9 @@ class CentralizedMiddleware {
             headers: request.headers,
           },
         });
-      }
-
-      const totalTime = Date.now() - startTime;
+      }      const totalTime = Date.now() - startTime;
       
-      if (this.debugMode) {
+      if (this.debugMode && this.verboseLogging && !pathname.includes('.') && !pathname.startsWith('/_next/')) {
         log.middleware.info("🏁 Centralized middleware execution completed", {
           pathname,
           totalExecutionTime: `${totalTime}ms`,

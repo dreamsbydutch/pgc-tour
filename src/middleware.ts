@@ -8,6 +8,15 @@ import {
   responseEnhancementMiddleware
 } from "./lib/middleware/middlewares";
 
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = "force-dynamic";
+
+// LOGGING CONTROL:
+// To reduce console logging frequency, set these environment variables:
+// - MIDDLEWARE_VERBOSE_LOGGING=false (disables detailed middleware execution logs)
+// - AXIOM_ENABLE_CONSOLE=false (disables all console logging in production)
+// - AXIOM_MIN_LOG_LEVEL=WARN (only shows warnings and errors)
+
 // Import debug utilities in development
 if (process.env.NODE_ENV === 'development') {
   void import('./lib/middleware/debug');
@@ -28,6 +37,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Include all pages and API routes for comprehensive auth handling
-    "/((?!_next/static|_next/image|favicon.ico|sw.js|logo192.png|logo512.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // But exclude more static assets to reduce middleware execution frequency
+    "/((?!_next/static|_next/image|favicon.ico|sw.js|logo192.png|logo512.png|robots.txt|sitemap.xml|manifest.json|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot)$).*)",
   ],
 };

@@ -87,14 +87,16 @@ export const rateLimitMiddleware: MiddlewareFunction = async (
   
   const ip = request.ip ?? request.headers.get('x-forwarded-for') ?? 'unknown';
   const key = `rate_limit:${ip}:${pathname}`;
-  
-  // In a real implementation, you'd use Redis or similar
-  // For now, just log the rate limiting attempt
-  log.middleware.info("Rate limiting check", {
-    ip: ip.split('.').slice(0, 2).join('.') + '.xxx.xxx', // Partially mask IP
-    pathname,
-    key
-  });
+    // In a real implementation, you'd use Redis or similar
+  // For now, just log the rate limiting attempt for POST/PUT/DELETE requests
+  if (request.method !== 'GET') {
+    log.middleware.info("Rate limiting check", {
+      method: request.method,
+      ip: ip.split('.').slice(0, 2).join('.') + '.xxx.xxx', // Partially mask IP
+      pathname,
+      key
+    });
+  }
   
   context.data.rateLimit = {
     checked: true,
@@ -123,15 +125,17 @@ export const analyticsMiddleware: MiddlewareFunction = async (
       pathname.includes('.')) {
     return null;
   }
+    const authData = context.data.auth as { isAuthenticated?: boolean; userId?: string } | undefined;
   
-  const authData = context.data.auth as { isAuthenticated?: boolean; userId?: string } | undefined;
-  
-  log.middleware.info("Page view tracked", {
-    pathname,
-    isAuthenticated: authData?.isAuthenticated ?? false,
-    hasReferer: !!referer,
-    userAgent: userAgent?.slice(0, 50)
-  });
+  // Only log significant page views, not every static resource request
+  if (authData?.isAuthenticated || pathname === '/' || pathname.startsWith('/tournament')) {
+    log.middleware.info("Page view tracked", {
+      pathname,
+      isAuthenticated: authData?.isAuthenticated ?? false,
+      hasReferer: !!referer,
+      userAgent: userAgent?.slice(0, 50)
+    });
+  }
   
   context.data.analytics = {
     tracked: true,

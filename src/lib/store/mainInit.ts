@@ -54,17 +54,16 @@ async function safeFetch<T>(url: string, timeout = 10000): Promise<T | null> {
 // Load core application data
 async function loadCoreData() {
   console.log('📦 Loading core application data...');
-  
-  const [
+    const [
     tourCardsResponse,
     toursResponse,
     seasonsResponse,
     tiersResponse,
   ] = await Promise.all([
-    safeFetch<{ tourCards: TourCard[] }>('/api/tour-cards'),
-    safeFetch<{ tours: Tour[] }>('/api/tours'),
-    safeFetch<{ seasons: Season[] }>('/api/seasons'),
-    safeFetch<{ tiers: Tier[] }>('/api/tiers'),
+    safeFetch<{ tourCards: TourCard[] }>('/api/tourcards/current'),
+    safeFetch<{ tours: Tour[] }>('/api/tours/all'),
+    safeFetch<{ seasons: Season[] }>('/api/seasons/current'),
+    safeFetch<{ tiers: Tier[] }>('/api/tiers/current'),
   ]);
 
   return {
@@ -80,7 +79,7 @@ async function loadTournamentData() {
   console.log('🏆 Loading tournament data...');
   
   const [tournamentResponse, pastTournamentsResponse] = await Promise.all([
-    safeFetch<{ tournaments: TournamentData[] }>('/api/tournaments'),
+    safeFetch<{ tournaments: TournamentData[] }>('/api/tournaments/all'),
     safeFetch<{ tournaments: ProcessedTournament[] }>('/api/tournaments/past'),
   ]);
 
