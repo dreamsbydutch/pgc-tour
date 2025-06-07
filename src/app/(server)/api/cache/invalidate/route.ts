@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/src/server/db";
 import { z } from "zod";
+import type { CacheInvalidation } from "@prisma/client";
+import { log } from "@/src/lib/logging";
 
 // Input validation schemas
 const PostRequestSchema = z.object({
@@ -86,17 +88,16 @@ export async function POST(
     const { source, type } = validationResult.data;
 
     // Create cache invalidation record in database
-    const invalidation = await db.cacheInvalidation.create({
+    const invalidation: CacheInvalidation = await db.cacheInvalidation.create({
       data: {
         source,
         type,
         timestamp: new Date(),
+        updatedAt: new Date(),
       },
     });
 
-    console.log(
-      `🔄 Cache invalidation created: ${type} from ${source} at ${invalidation.timestamp.toISOString()}`,
-    );
+    log.cache.invalidate(type, source, { requestId: crypto.randomUUID() });
 
     return NextResponse.json({
       success: true,
@@ -106,7 +107,7 @@ export async function POST(
       type: invalidation.type,
     } satisfies CacheInvalidationResponse);
   } catch (error) {
-    console.error("Error creating cache invalidation:", error);
+    log.cache.error("Cache invalidation failed", error instanceof Error ? error : new Error(String(error)));
 
     const errorMessage =
       error instanceof Error
@@ -131,7 +132,7 @@ export async function GET(): Promise<
 > {
   try {
     // Get latest invalidation for each type
-    const [latestTourCards, latestTournaments] =
+    const [latestTourCards, latestTournaments]: [CacheInvalidation | null, CacheInvalidation | null] =
       await Promise.all([
         db.cacheInvalidation.findFirst({
           where: { type: "tourCards" },
@@ -144,7 +145,7 @@ export async function GET(): Promise<
       ]);
 
     // Also get the overall latest invalidation
-    const latestOverall = await db.cacheInvalidation.findFirst({
+    const latestOverall: CacheInvalidation | null = await db.cacheInvalidation.findFirst({
       orderBy: { timestamp: "desc" },
     });
 
@@ -174,7 +175,7 @@ export async function GET(): Promise<
       message: "Database-driven cache invalidation system with type support",
     } satisfies CacheStatusResponse);
   } catch (error) {
-    console.error("Error fetching cache status:", error);
+    log.cache.error("Error fetching cache status", error instanceof Error ? error : new Error(String(error)));
 
     const errorMessage =
       error instanceof Error

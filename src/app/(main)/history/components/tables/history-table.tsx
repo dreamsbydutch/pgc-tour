@@ -5,8 +5,9 @@ import { cn, formatMoney } from "@/src/lib/utils";
 import { AchievementIcons } from "../ui/achievement-icons";
 import type { ExtendedMember, ExtendedTournament } from "../../types";
 import type { Member, Tier } from "@prisma/client";
-import { calculateMemberStats } from "../../utils/member-stats";
-import { useMainStore } from "@/src/lib/store/store";
+import { calculateMemberStats } from "./member-stats";
+// Removed unused import: useMainStore
+import { useAuth } from "@/src/lib/auth/Auth";
 import {
   Table,
   TableRow,
@@ -102,7 +103,7 @@ function CustomTableRow({
   showAdjusted,
 }: TableRowProps) {
   const stats = calculateMemberStats(member, showAdjusted, tournaments);
-  const currentMember = useMainStore((state) => state.currentMember);
+  const { member: currentMember } = useAuth();
 
   // Determine if this is the current member or a friend
   const isCurrentMember = currentMember?.id === member.id;

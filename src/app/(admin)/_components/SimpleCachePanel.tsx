@@ -129,23 +129,23 @@ export default function CacheManagementPanel() {
             <div className="flex flex-wrap gap-2">
               <Badge
                 variant={
-                  cacheInfo.mainStore.hasData.tournaments
+                  cacheInfo.main.hasData.tournaments
                     ? "default"
                     : "secondary"
                 }
               >
                 Main Store:{" "}
-                {cacheInfo.mainStore.hasData.tournaments ? "Loaded" : "Empty"}
+                {cacheInfo.main.hasData.tournaments ? "Loaded" : "Empty"}
               </Badge>
               <Badge
                 variant={
-                  cacheInfo.leaderboardStore.hasData.teams
+                  cacheInfo.leaderboard.hasData.teams
                     ? "default"
                     : "secondary"
                 }
               >
                 Leaderboard:{" "}
-                {cacheInfo.leaderboardStore.hasData.teams ? "Loaded" : "Empty"}
+                {cacheInfo.leaderboard.hasData.teams ? "Loaded" : "Empty"}
               </Badge>
               <Badge
                 variant={cacheStatus.isDatabaseDriven ? "default" : "secondary"}
@@ -176,8 +176,8 @@ export default function CacheManagementPanel() {
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Last Updated</h4>
             <p className="text-sm text-muted-foreground">
-              {cacheInfo.mainStore.lastUpdated
-                ? new Date(cacheInfo.mainStore.lastUpdated).toLocaleString()
+              {cacheInfo.main.lastUpdated
+                ? new Date(cacheInfo.main.lastUpdated).toLocaleString()
                 : "Never"}
             </p>
           </div>{" "}
@@ -186,17 +186,17 @@ export default function CacheManagementPanel() {
             <div className="space-y-1 text-sm">
               <div>
                 Tournaments:{" "}
-                {cacheInfo.mainStore.hasData.tournaments ? "✓" : "✗"}
+                {cacheInfo.main.hasData.tournaments ? "✓" : "✗"}
               </div>
               <div>
-                Tour Cards: {cacheInfo.mainStore.hasData.tourCards ? "✓" : "✗"}
+                Tour Cards: {cacheInfo.main.hasData.tourCards ? "✓" : "✗"}
               </div>
               <div>
-                Teams: {cacheInfo.leaderboardStore.hasData.teams ? "✓" : "✗"}
+                Teams: {cacheInfo.leaderboard.hasData.teams ? "✓" : "✗"}
               </div>
               <div>
                 Golfers:{" "}
-                {cacheInfo.leaderboardStore.hasData.golfers ? "✓" : "✗"}
+                {cacheInfo.leaderboard.hasData.golfers ? "✓" : "✗"}
               </div>
             </div>
           </div>

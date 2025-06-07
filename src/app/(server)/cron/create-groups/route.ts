@@ -8,14 +8,10 @@ import type {
   DatagolfRankingInput,
 } from "@/src/lib/types/datagolf_types";
 import { NextResponse } from "next/server";
-// import fs from "fs";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL
   const { origin } = new URL(request.url);
-
-  // Get the authorization code and the 'next' redirect path
-  // const next = searchParams.get("next") ?? "/";
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const rankingsData: DatagolfRankingInput = await fetchDataGolf(

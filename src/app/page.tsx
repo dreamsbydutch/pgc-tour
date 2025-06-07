@@ -7,7 +7,7 @@ import { TourCardForm } from "./_components/TourCardForm";
 import HomePageLeaderboard from "./(main)/tournament/views/shared/HomePageLeaderboard";
 import SignInPage from "./(auth)/signin/page";
 import HomePageStandings from "./(main)/standings/views/shared/HomePageStandings";
-import { cn } from "@/lib/utils";
+import { cn } from "@/src/lib/utils";
 import {
   Table,
   TableBody,
@@ -18,46 +18,34 @@ import {
 } from "./_components/ui/table";
 import { OptimizedImage } from "./_components/OptimizedImage";
 import {
-  COMMON_IMAGES,
   preloadCriticalImages,
 } from "@/src/lib/utils/image-optimization";
 import { useMainStore } from "@/src/lib/store/store";
+import { useAuth } from "@/src/lib/auth/Auth";
 import { useEffect } from "react";
 
 // Force dynamic rendering to prevent static generation issues
 export const dynamic = "force-dynamic";
 
 export default function Home() {
-  const tiers = useMainStore((state) => state.currentTiers);
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   // Preload critical images when component mounts
   useEffect(() => {
     preloadCriticalImages();
   }, []);
 
-  if (!tiers)
-    return (
-      <div className="flex h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100">
-        <div className="mx-auto flex animate-pulse items-center justify-center text-center font-varela text-3xl text-slate-600">
-          <OptimizedImage
-            src={COMMON_IMAGES.PGC_LOGO}
-            alt="PGC Logo"
-            width={96}
-            height={96}
-            className="mx-2"
-            priority={true}
-            sizes="96px"
-          />
-          <div className="w-44 text-center">Loading Clubhouse Data.....</div>
-        </div>
-      </div>
-    );
+  // If not authenticated, show only the sign-in component
+  if (!authLoading && !isAuthenticated) {
+    return <SignInPage />;
+  }
+
+  // For authenticated users, show the main content
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-2">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      <SignInPage />
       <ChampionsPopup />
       <HomePageLeaderboard />
       <TournamentCountdown />

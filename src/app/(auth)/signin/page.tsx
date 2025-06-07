@@ -2,19 +2,20 @@
 
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/src/app/_components/ui/button";
 import { Icons } from "../../_components/Icons";
 import { signInWithGoogle } from "./actions";
 import Link from "next/link";
-import { useMainStore } from "@/src/lib/store/store";
 
 // Force dynamic rendering to prevent static generation issues
 export const dynamic = "force-dynamic";
 
 export default function SignInPage() {
-  const member = useMainStore((state) => state.currentMember);
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
-  if (member) return null;
+  
+  console.log("🔐 SignIn page render:", { 
+    isGoogleLoading 
+  });
   return (
     <div className="flex h-[100vh] flex-col">
       <h2 className="mx-auto my-2 max-w-xl text-center font-varela text-xl text-slate-600">

@@ -1,10 +1,11 @@
 "use client";
 
-import { useMainStore } from "@/src/lib/store/store";
+// Removed unused import: useMainStore
 import { cn, formatMoney, formatScore } from "@/src/lib/utils";
 import type { Team, Tour, TourCard } from "@prisma/client";
 import { TourLogo } from "./OptimizedImage";
 import LittleFucker from "./LittleFucker";
+import { useAuth } from "@/src/lib/auth/Auth";
 
 export function HomePageList({
   tour,
@@ -73,7 +74,7 @@ function SingleListing({
   mainStat: number | string | null;
   secondaryStat: number | string | null;
 }) {
-  const self = useMainStore((state) => state.currentMember);
+  const { member: self } = useAuth();
   const isFriend = self?.friends.includes(memberId);
   const isSelf = self?.id === memberId;
 

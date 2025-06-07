@@ -1,5 +1,6 @@
 import PaymentForm from "../_components/TransactionForm";
 import SimpleCachePanel from "../_components/SimpleCachePanel";
+import LoggingPanel from "../_components/LoggingPanel";
 import type {
   DatagolfFieldInput,
   DataGolfLiveTournament,
@@ -13,7 +14,6 @@ import {
   UpdateTeamsButton,
 } from "../_components/CreateGroupsButton";
 import HistoryButton from "../_components/HistoryButton";
-import Link from "next/link";
 import { api } from "@/src/trpc/server";
 
 export default async function AdminDashboard() {
@@ -31,7 +31,6 @@ export default async function AdminDashboard() {
   return (
     <>
       <div className="mb-2 text-center font-varela">
-        <Link href="/push">Push</Link>
         <div className="mb-4 flex w-full flex-col flex-wrap gap-2">
           <div className="scrollbar-hidden flex w-full flex-row flex-nowrap justify-around overflow-scroll">
             <div className="flex max-w-40 flex-col text-center">
@@ -111,6 +110,9 @@ export default async function AdminDashboard() {
       </div>{" "}
       <PaymentForm />
       <SimpleCachePanel />
+      <div className="mt-6">
+        <LoggingPanel />
+      </div>
     </>
   );
 }

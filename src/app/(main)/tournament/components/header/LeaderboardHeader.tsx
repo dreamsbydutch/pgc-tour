@@ -1,7 +1,6 @@
 import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
 import HeaderDropdown from "./HeaderDropdownMenu";
-import { PopoverTrigger } from "@radix-ui/react-popover";
-import { Popover, PopoverContent } from "@/src/app/_components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/src/app/_components/ui/popover";
 import { cn, fetchDataGolf, formatMoney, formatRank } from "@/src/lib/utils";
 import type { DatagolfCourseInputData } from "@/src/lib/types/datagolf_types";
 import type { Tier, Tournament } from "@prisma/client";

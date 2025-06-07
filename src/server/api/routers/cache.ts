@@ -29,7 +29,7 @@ export const cacheRouter = createTRPCRouter({
     .input(
       z.object({
         source: z.string().default("manual"),
-        type: z.string().default("global"),
+        type: z.enum(["global", "tourCards", "tournaments"]).default("global"),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -45,6 +45,7 @@ export const cacheRouter = createTRPCRouter({
         success: true,
         timestamp: invalidation.timestamp.getTime(),
         source: invalidation.source,
+        type: invalidation.type,
       };
     }),
 
@@ -79,4 +80,132 @@ export const cacheRouter = createTRPCRouter({
         source: latestInvalidation.source,
       };
     }),
+
+  /**
+   * Get latest cache invalidations by type
+   */
+  getLatestByType: publicProcedure
+    .input(
+      z.object({
+        type: z.enum(["global", "tourCards", "tournaments"]).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      if (input.type) {
+        // Get latest for specific type
+        const invalidation = await ctx.db.cacheInvalidation.findFirst({
+          where: { type: input.type },
+          orderBy: { timestamp: "desc" },
+        });
+
+        return {
+          [input.type]: invalidation ? {
+            timestamp: invalidation.timestamp.getTime(),
+            source: invalidation.source,
+            type: invalidation.type,
+          } : null,
+        };
+      }
+
+      // Get latest for all types
+      const [global, tourCards, tournaments] = await Promise.all([
+        ctx.db.cacheInvalidation.findFirst({
+          where: { type: "global" },
+          orderBy: { timestamp: "desc" },
+        }),
+        ctx.db.cacheInvalidation.findFirst({
+          where: { type: "tourCards" },
+          orderBy: { timestamp: "desc" },
+        }),
+        ctx.db.cacheInvalidation.findFirst({
+          where: { type: "tournaments" },
+          orderBy: { timestamp: "desc" },
+        }),
+      ]);
+
+      return {
+        global: global ? {
+          timestamp: global.timestamp.getTime(),
+          source: global.source,
+          type: global.type,
+        } : null,
+        tourCards: tourCards ? {
+          timestamp: tourCards.timestamp.getTime(),
+          source: tourCards.source,
+          type: tourCards.type,
+        } : null,
+        tournaments: tournaments ? {
+          timestamp: tournaments.timestamp.getTime(),
+          source: tournaments.source,
+          type: tournaments.type,
+        } : null,
+      };
+    }),
+
+  /**
+   * Get cache invalidation history
+   */
+  getHistory: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(20),
+        type: z.enum(["global", "tourCards", "tournaments"]).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const where = input.type ? { type: input.type } : {};
+      
+      const invalidations = await ctx.db.cacheInvalidation.findMany({
+        where,
+        orderBy: { timestamp: "desc" },
+        take: input.limit,
+      });
+
+      return invalidations.map((inv) => ({
+        id: inv.id,
+        timestamp: inv.timestamp.getTime(),
+        source: inv.source,
+        type: inv.type,
+      }));
+    }),
+
+  /**
+   * Get cache status overview
+   */
+  getStatus: publicProcedure.query(async ({ ctx }) => {
+    const [latestOverall, latestTourCards, latestTournaments, totalCount] = await Promise.all([
+      ctx.db.cacheInvalidation.findFirst({
+        orderBy: { timestamp: "desc" },
+      }),
+      ctx.db.cacheInvalidation.findFirst({
+        where: { type: "tourCards" },
+        orderBy: { timestamp: "desc" },
+      }),
+      ctx.db.cacheInvalidation.findFirst({
+        where: { type: "tournaments" },
+        orderBy: { timestamp: "desc" },
+      }),
+      ctx.db.cacheInvalidation.count(),
+    ]);
+
+    return {
+      status: "active",
+      totalInvalidations: totalCount,
+      latestInvalidation: latestOverall ? {
+        timestamp: latestOverall.timestamp.getTime(),
+        source: latestOverall.source,
+        type: latestOverall.type,
+      } : null,
+      latestTourCardInvalidation: latestTourCards ? {
+        timestamp: latestTourCards.timestamp.getTime(),
+        source: latestTourCards.source,
+        type: latestTourCards.type,
+      } : null,
+      latestTournamentInvalidation: latestTournaments ? {
+        timestamp: latestTournaments.timestamp.getTime(),
+        source: latestTournaments.source,
+        type: latestTournaments.type,
+      } : null,
+    };
+  }),
 });

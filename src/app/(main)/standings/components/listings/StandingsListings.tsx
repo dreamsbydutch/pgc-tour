@@ -9,6 +9,8 @@ import LittleFucker from "@/src/app/_components/LittleFucker";
 import { useMainStore } from "@/src/lib/store/store";
 import { api } from "@/src/trpc/react";
 import { TourLogo } from "@/src/app/_components/OptimizedImage";
+import { useAuth } from "@/src/lib/auth/Auth";
+import { authStoreService } from "@/src/lib/auth/AuthStoreService";
 import type {
   StandingsListingProps,
   PlayoffStandingsListingProps,
@@ -31,18 +33,22 @@ export function StandingsListing({
 }: StandingsListingProps & { className?: string }) {
   const [isFriendChanging, setIsFriendChanging] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const currentMember = useMainStore((state) => state.currentMember);
-  const setCurrentMember = useMainStore((state) => state.setCurrentMember);
+  const { member: currentMember } = useAuth();
   const addFriend = api.member.addFriend.useMutation();
   const removeFriend = api.member.removeFriend.useMutation();
 
   const handleAddFriend = () => {
     if (!currentMember) return;
     setIsFriendChanging(true);
-    setCurrentMember({
+    
+    const updatedMember = {
       ...currentMember,
       friends: [...currentMember.friends, tourCard.memberId],
-    });
+    };
+    
+    // Update through auth store service for consistency
+    authStoreService.updateCurrentMember(updatedMember);
+    
     addFriend.mutate({
       memberId: currentMember.id,
       friendId: tourCard.memberId,
@@ -54,17 +60,22 @@ export function StandingsListing({
   const handleRemoveFriend = () => {
     if (!currentMember) return;
     setIsFriendChanging(true);
-    setCurrentMember({
+    
+    const updatedFriends = currentMember.friends.filter(
+      (friendId) => friendId !== tourCard.memberId,
+    );
+    
+    const updatedMember = {
       ...currentMember,
-      friends: currentMember.friends.filter(
-        (friendId) => friendId !== tourCard.memberId,
-      ),
-    });
+      friends: updatedFriends,
+    };
+    
+    // Update through auth store service for consistency
+    authStoreService.updateCurrentMember(updatedMember);
+    
     removeFriend.mutate({
       memberId: currentMember.id,
-      friendsList: currentMember.friends.filter(
-        (friendId) => friendId !== tourCard.memberId,
-      ),
+      friendsList: updatedFriends,
     });
 
     setIsFriendChanging(false);

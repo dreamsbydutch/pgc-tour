@@ -2,7 +2,6 @@ import type { Golfer, Team } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { formatDate, formatDistanceToNowStrict } from "date-fns";
 import { twMerge } from "tailwind-merge";
-// import tzLookup from "tz-lookup";
 
 export const groupChatLink = "https://chat.whatsapp.com/EDhyiqWF10jImlvgbLQcVD";
 
