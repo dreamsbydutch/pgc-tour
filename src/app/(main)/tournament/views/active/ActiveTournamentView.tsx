@@ -88,16 +88,13 @@ export default function ActiveTournamentView({
     <>
       {/* Status bar for live tournaments */}
       <div className="mx-auto my-0.5 flex w-full max-w-4xl items-center justify-between gap-4 md:w-11/12 lg:w-8/12">
-        <div className="flex flex-col">
+        <div className="flex flex-row">
           <span className="text-2xs text-slate-500">
             {lastUpdated
               ? `Last updated: ${formatLastUpdated(lastUpdated)}`
               : "Updating..."}
-          </span>          {isPolling && (
-            <span className="text-2xs text-green-600">
-              🔄 Auto-refreshing every 3min
-            </span>
-          )}
+          </span>
+          {isPolling && <span className="px-1 text-2xs">🔄</span>}
         </div>
 
         <div className="flex items-center gap-2">

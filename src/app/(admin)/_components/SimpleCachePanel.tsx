@@ -11,38 +11,41 @@ import {
 } from "@/src/app/_components/ui/card";
 import { Badge } from "@/src/app/_components/ui/badge";
 import { initializeStore } from "@/src/lib/store/init";
-import { resetStoreInitialization, resetLeaderboardInitialization } from "@/src/lib/hooks/useStore";
+import {
+  resetStoreInitialization,
+  resetLeaderboardInitialization,
+} from "@/src/lib/hooks/useStore";
 import { Trash2, RefreshCw, Database, Clock } from "lucide-react";
 import { api } from "@/src/trpc/react";
 import { useMainStore, useLeaderboardStore } from "@/src/lib/store/store";
 
 export default function CacheManagementPanel() {
   const [isLoading, setIsLoading] = useState<string | null>(null);
-  
+
   // Get real store state
   const mainStore = useMainStore();
   const leaderboardStore = useLeaderboardStore();
-  
+
   // Calculate real cache info from store state
   const getCacheInfo = () => ({
-    main: { 
+    main: {
       lastUpdated: mainStore._lastUpdated,
       hasData: {
-        tournaments: !!(mainStore.seasonTournaments?.length),
-        tourCards: !!(mainStore.tourCards?.length),
-        tours: !!(mainStore.tours?.length),
+        tournaments: !!mainStore.seasonTournaments?.length,
+        tourCards: !!mainStore.tourCards?.length,
+        tours: !!mainStore.tours?.length,
         currentSeason: !!mainStore.currentSeason,
-        tiers: !!(mainStore.currentTiers?.length)
-      }
+        tiers: !!mainStore.currentTiers?.length,
+      },
     },
-    leaderboard: { 
+    leaderboard: {
       lastUpdated: leaderboardStore._lastUpdated,
       hasData: {
-        teams: !!(leaderboardStore.teams?.length),
-        golfers: !!(leaderboardStore.golfers?.length)
-      }
+        teams: !!leaderboardStore.teams?.length,
+        golfers: !!leaderboardStore.golfers?.length,
+      },
     },
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
 
   // Use the function to get current cache info
@@ -119,7 +122,7 @@ export default function CacheManagementPanel() {
     setIsLoading("invalidate-tour-cards");
     try {
       await invalidateCache.mutateAsync({
-        source: "admin-panel", 
+        source: "admin-panel",
         type: "tourCards",
       });
       await initializeStore();
@@ -177,7 +180,6 @@ export default function CacheManagementPanel() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {" "}
         {/* Cache Status */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="space-y-2">
@@ -185,28 +187,24 @@ export default function CacheManagementPanel() {
             <div className="flex flex-wrap gap-2">
               <Badge
                 variant={
-                  cacheInfo.main.hasData.tournaments
-                    ? "default"
-                    : "secondary"
+                  cacheInfo.main.hasData.tournaments ? "default" : "secondary"
                 }
               >
-                Main Store:{" "}
+                Main Store:
                 {cacheInfo.main.hasData.tournaments ? "Loaded" : "Empty"}
               </Badge>
               <Badge
                 variant={
-                  cacheInfo.leaderboard.hasData.teams
-                    ? "default"
-                    : "secondary"
+                  cacheInfo.leaderboard.hasData.teams ? "default" : "secondary"
                 }
               >
-                Leaderboard:{" "}
+                Leaderboard:
                 {cacheInfo.leaderboard.hasData.teams ? "Loaded" : "Empty"}
               </Badge>
               <Badge
                 variant={cacheStatus.isDatabaseDriven ? "default" : "secondary"}
               >
-                Cache Type:{" "}
+                Cache Type:
                 {cacheStatus.isDatabaseDriven ? "Database-Driven" : "Static"}
               </Badge>
             </div>
@@ -218,7 +216,7 @@ export default function CacheManagementPanel() {
                 <>
                   <div className="flex items-center gap-2">
                     <Clock className="h-3 w-3" />
-                    Last:{" "}
+                    Last:
                     {new Date(latestInvalidation.timestamp).toLocaleString()}
                   </div>
                   <div>Source: {latestInvalidation.source ?? "Unknown"}</div>
@@ -236,12 +234,12 @@ export default function CacheManagementPanel() {
                 ? new Date(cacheInfo.main.lastUpdated).toLocaleString()
                 : "Never"}
             </p>
-          </div>{" "}
+          </div>
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Data Status</h4>
             <div className="space-y-1 text-sm">
               <div>
-                Tournaments:{" "}
+                Tournaments:
                 {cacheInfo.main.hasData.tournaments ? "✓" : "✗"}
               </div>
               <div>
@@ -251,12 +249,12 @@ export default function CacheManagementPanel() {
                 Teams: {cacheInfo.leaderboard.hasData.teams ? "✓" : "✗"}
               </div>
               <div>
-                Golfers:{" "}
+                Golfers:
                 {cacheInfo.leaderboard.hasData.golfers ? "✓" : "✗"}
               </div>
             </div>
           </div>
-        </div>{" "}
+        </div>
         {/* Quick Actions */}
         <div className="space-y-4">
           <h4 className="text-sm font-medium">Cache Invalidation</h4>
@@ -300,7 +298,6 @@ export default function CacheManagementPanel() {
         <div className="space-y-4">
           <h4 className="text-sm font-medium">Store Actions</h4>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-            {" "}
             <Button
               variant="outline"
               size="sm"
@@ -311,10 +308,13 @@ export default function CacheManagementPanel() {
               {isLoading === "invalidate-database"
                 ? "Invalidating..."
                 : "Invalidate & Refresh"}
-            </Button>            <Button
+            </Button>{" "}
+            <Button
               variant="outline"
               size="sm"
-              onClick={() => handleAction("reset-main", resetStoreInitialization)}
+              onClick={() =>
+                handleAction("reset-main", resetStoreInitialization)
+              }
               disabled={isLoading === "reset-main"}
             >
               <Database className="mr-2 h-4 w-4" />
@@ -324,7 +324,10 @@ export default function CacheManagementPanel() {
               variant="outline"
               size="sm"
               onClick={() =>
-                handleAction("reset-leaderboard", resetLeaderboardInitialization)
+                handleAction(
+                  "reset-leaderboard",
+                  resetLeaderboardInitialization,
+                )
               }
               disabled={isLoading === "reset-leaderboard"}
             >
@@ -338,9 +341,9 @@ export default function CacheManagementPanel() {
               size="sm"
               onClick={() =>
                 handleAction("clear-storage", () => {
-                  if (typeof window !== 'undefined') {
+                  if (typeof window !== "undefined") {
                     window.localStorage.clear();
-                    console.log('🗑️ All localStorage cleared');
+                    console.log("🗑️ All localStorage cleared");
                   }
                 })
               }
@@ -356,23 +359,26 @@ export default function CacheManagementPanel() {
           <h4 className="text-sm font-medium text-orange-600">
             Emergency Actions
           </h4>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">            <Button
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {" "}
+            <Button
               variant="destructive"
               size="sm"
-              onClick={() => handleAction("dev-reset", () => {
-                resetStoreInitialization();
-                resetLeaderboardInitialization();
-                if (typeof window !== 'undefined') {
-                  window.localStorage.clear();
-                }
-                console.log('🔄 Complete development reset');
-              })}
+              onClick={() =>
+                handleAction("dev-reset", () => {
+                  resetStoreInitialization();
+                  resetLeaderboardInitialization();
+                  if (typeof window !== "undefined") {
+                    window.localStorage.clear();
+                  }
+                  console.log("🔄 Complete development reset");
+                })
+              }
               disabled={isLoading === "dev-reset"}
             >
               <Trash2 className="mr-2 h-4 w-4" />
               {isLoading === "dev-reset" ? "Resetting..." : "Full Reset"}
             </Button>
-
             <Button
               variant="outline"
               size="sm"

@@ -51,7 +51,7 @@ export default function StandingsMainView({
   return (
     <>
       <div className="my-2 pb-2 text-center font-yellowtail text-5xl sm:text-6xl md:text-7xl">
-        {standingsToggle === "playoffs" ? "PGC Playoff" : activeTour?.name}{" "}
+        {standingsToggle === "playoffs" ? "PGC Playoff" : activeTour?.name}
         Standings
       </div>
       <div className="font-italic text-center font-varela text-xs sm:text-sm md:text-base">

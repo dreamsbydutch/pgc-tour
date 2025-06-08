@@ -74,7 +74,6 @@ export function AchievementIcons({
             key={team.id}
             className="flex flex-col items-center justify-center"
           >
-            {" "}
             <AchievementIcon
               key={team.id + "-img"}
               src={getTournamentImageUrl(

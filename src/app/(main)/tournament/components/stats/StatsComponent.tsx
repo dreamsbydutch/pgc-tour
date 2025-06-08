@@ -104,7 +104,7 @@ export default function StatsComponent({
         <div className="text-xs text-gray-500">
           {mainStoreLastUpdated && (
             <span>
-              Last updated:{" "}
+              Last updated:
               {new Date(mainStoreLastUpdated).toLocaleTimeString()}
             </span>
           )}
@@ -283,7 +283,7 @@ function StatsListing({
     <TableRow className="border-slate-900 text-center">
       <TableCell className="border-l border-slate-900 text-sm">
         {team.position}
-      </TableCell>{" "}
+      </TableCell>
       <TableCell colSpan={4} className="whitespace-nowrap text-sm">
         {tourCard?.displayName ?? "Unknown Team"}
       </TableCell>

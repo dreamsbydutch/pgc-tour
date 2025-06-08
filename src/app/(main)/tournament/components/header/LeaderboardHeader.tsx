@@ -1,6 +1,10 @@
 import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
 import HeaderDropdown from "./HeaderDropdownMenu";
-import { Popover, PopoverContent, PopoverTrigger } from "@/src/app/_components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/src/app/_components/ui/popover";
 import { cn, fetchDataGolf, formatMoney, formatRank } from "@/src/lib/utils";
 import type { DatagolfCourseInputData } from "@/src/lib/types/datagolf_types";
 import type { Tier, Tournament } from "@prisma/client";
@@ -35,7 +39,6 @@ export default function LeaderboardHeader({
       className="mx-auto w-full max-w-4xl md:w-11/12 lg:w-8/12"
     >
       <div className="mx-auto grid grid-flow-row grid-cols-10 items-center border-b-2 border-gray-800 py-2">
-        {" "}
         {/* Tournament Logo */}
         <div className="col-span-3 row-span-4 h-full w-full place-self-center p-2 text-center font-varela">
           {focusTourney.logoUrl && (
@@ -93,7 +96,7 @@ export default function LeaderboardHeader({
         {/* Tier Information Popover */}
         <Popover>
           <PopoverTrigger className="col-span-7 row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
-            {tier?.name} Tournament -{" "}
+            {tier?.name} Tournament -
             {`1st Place: ${tier?.points[0] ?? 0} pts, ${Intl.NumberFormat(
               "en-US",
               {

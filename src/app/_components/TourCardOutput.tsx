@@ -40,7 +40,6 @@ export function TourCardOutput({
         {`You have secured your spot on the ${tour.name}. The 2025 season will begin with the Waste Management Open on Feb 6th.`}
       </h2>
       <div className="mx-auto mt-4 flex w-[12rem] min-w-fit flex-col items-center justify-center rounded-lg border-2 border-gray-400 bg-gray-300 p-4 text-center shadow-2xl 2xs:w-[18rem] sm:w-[22rem]">
-        {" "}
         <UserAvatar
           src={pictureUrl ?? ""}
           alt="Profile Picture"

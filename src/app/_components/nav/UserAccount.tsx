@@ -46,7 +46,6 @@ export function UserAccountNav({
   return (
     <div className="w-fit">
       <DropdownMenu>
-        {" "}
         <DropdownMenuTrigger className="flex items-center">
           {user?.user_metadata.avatar_url && (
             <UserAvatar

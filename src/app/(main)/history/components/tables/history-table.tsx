@@ -138,7 +138,7 @@ function CustomTableRow({
       {/* Seasons */}
       <TableCell className="table-cell border-b border-r border-gray-200 p-2 text-center align-middle text-xs">
         {stats.seasons}
-      </TableCell>{" "}
+      </TableCell>
       {/* Earnings */}
       <TableCell className="table-cell border-b border-r border-gray-200 p-2 text-center align-middle text-xs">
         <div className="whitespace-nowrap">

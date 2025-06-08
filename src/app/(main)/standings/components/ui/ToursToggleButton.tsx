@@ -30,7 +30,6 @@ export function ToursToggleButton({
       }`}
       onAnimationEnd={() => setEffect(false)}
     >
-      {" "}
       <TourLogo
         key={tour.id}
         src={tour.logoUrl}

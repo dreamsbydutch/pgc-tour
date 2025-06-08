@@ -30,7 +30,7 @@ export function TourCardForm() {
       </div>
       <div className="text-center font-varela text-base text-slate-600">
         Coordinate with your friends to make sure you sign up for the same tour
-        for the best experience. For more info on the PGC Tour, check out the{" "}
+        for the best experience. For more info on the PGC Tour, check out the
         <Link href="/rulebook" className="underline">
           Rulebook.
         </Link>
@@ -79,7 +79,6 @@ function TourCardFormButton({
         <LoadingSpinner className="h-fit w-fit" />
       ) : (
         <>
-          {" "}
           <TourLogo src={tour.logoUrl} alt="Tour Logo" className="w-4/5" />
           {tour.name}
           <div className="text-xs text-slate-600">

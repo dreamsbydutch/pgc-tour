@@ -17,9 +17,7 @@ import {
   TableRow,
 } from "./_components/ui/table";
 import { OptimizedImage } from "./_components/OptimizedImage";
-import {
-  preloadCriticalImages,
-} from "@/src/lib/utils/image-optimization";
+import { preloadCriticalImages } from "@/src/lib/utils/image-optimization";
 import { useMainStore } from "@/src/lib/store/store";
 import { useAuth } from "@/src/lib/auth/Auth";
 import { useEffect } from "react";
@@ -167,7 +165,6 @@ function CurrentSchedule() {
                 tier?.name === "Major" ? "bg-blue-50" : "",
               )}
             >
-              {" "}
               <TableCell className="flex items-center justify-center whitespace-nowrap text-center text-xs">
                 <OptimizedImage
                   src={tourney.logoUrl ?? ""}

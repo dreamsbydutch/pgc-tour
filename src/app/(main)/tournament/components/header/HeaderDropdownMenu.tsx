@@ -228,7 +228,6 @@ function TournamentItem({
         isActive && "font-bold",
       )}
     >
-      {" "}
       <div className="flex items-center justify-start gap-2">
         {tourney.logoUrl && (
           <TournamentLogo

@@ -17,7 +17,6 @@ export function HomePageList({
   return (
     <>
       <div className="flex items-center justify-center pb-1 pt-2 text-center text-lg font-semibold">
-        {" "}
         <TourLogo
           alt="Tour Logo"
           src={tour.logoUrl ?? ""}
