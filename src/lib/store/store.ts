@@ -1,6 +1,6 @@
 /**
  * Streamlined Zustand Store for PGC Tour
- * 
+ *
  * Simplified architecture with direct integration of auth and data management
  */
 
@@ -34,24 +34,24 @@ interface MainStoreState {
         golfers: Golfer[];
       })[]
     | null;
-  
+
   // Dynamic tournament state
   currentTournament: TournamentData | null;
   nextTournament: TournamentData | null;
-  
+
   // Static season data
   currentSeason: Season | null;
   currentTiers: Tier[] | null;
-  
+
   // User-specific state
   currentMember: Member | null;
   currentTour: Tour | null;
   currentTourCard: TourCard | null;
   isAuthenticated: boolean;
-  
+
   // Tracking
   _lastUpdated: number | null;
-  
+
   // Core store actions
   setAuthState: (member: Member | null, isAuthenticated: boolean) => void;
   updateTournamentState: () => void;
@@ -64,7 +64,7 @@ interface LeaderboardStoreState {
   golfers: Golfer[] | null;
   isPolling: boolean;
   _lastUpdated: number | null;
-  
+
   update: (
     teams: (Team & { tourCard: TourCard | null })[] | null,
     golfers: Golfer[] | null,
@@ -93,7 +93,7 @@ export const useMainStore = create<MainStoreState>()(
   persist(
     (set, get) => ({
       ...getInitialMainState(),
-      
+
       setAuthState: (member: Member | null, isAuthenticated: boolean) => {
         set((state) => {
           const newState = {
@@ -103,11 +103,12 @@ export const useMainStore = create<MainStoreState>()(
           };
 
           if (isAuthenticated && member) {
-            const userTourCard = state.tourCards?.find(tc => tc.memberId === member.id) ?? null;
-            const userTour = userTourCard 
-              ? state.tours?.find(t => t.id === userTourCard.tourId) ?? null 
+            const userTourCard =
+              state.tourCards?.find((tc) => tc.memberId === member.id) ?? null;
+            const userTour = userTourCard
+              ? (state.tours?.find((t) => t.id === userTourCard.tourId) ?? null)
               : null;
-            
+
             newState.currentTourCard = userTourCard;
             newState.currentTour = userTour;
           } else {
@@ -125,21 +126,25 @@ export const useMainStore = create<MainStoreState>()(
 
           const now = new Date();
           const tournaments = [...state.seasonTournaments].sort(
-            (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
           );
 
-          const currentTournament = tournaments.find(
-            t => new Date(t.startDate) <= now && 
-                 new Date(t.endDate) >= now && 
-                 (t.currentRound ?? 0) < 5
-          ) ?? null;
+          const currentTournament =
+            tournaments.find(
+              (t) =>
+                new Date(t.startDate) <= now &&
+                new Date(t.endDate) >= now &&
+                (t.currentRound ?? 0) < 5,
+            ) ?? null;
 
-          const nextTournament = tournaments.find(
-            t => new Date(t.startDate) > now
-          ) ?? null;
+          const nextTournament =
+            tournaments.find((t) => new Date(t.startDate) > now) ?? null;
 
-          if (state.currentTournament?.id === currentTournament?.id && 
-              state.nextTournament?.id === nextTournament?.id) {
+          if (
+            state.currentTournament?.id === currentTournament?.id &&
+            state.nextTournament?.id === nextTournament?.id
+          ) {
             return state;
           }
 
@@ -149,13 +154,14 @@ export const useMainStore = create<MainStoreState>()(
             nextTournament,
           };
         });
-      },      initializeData: (data: Partial<MainStoreState>) => {
+      },
+      initializeData: (data: Partial<MainStoreState>) => {
         set((state) => ({
           ...state,
           ...data,
           _lastUpdated: Date.now(),
         }));
-        
+
         get().updateTournamentState();
       },
 
@@ -218,7 +224,7 @@ export const useLeaderboardStore = create<LeaderboardStoreState>((set) => ({
   golfers: null,
   isPolling: false,
   _lastUpdated: null,
-  
+
   update: (
     teams: (Team & { tourCard: TourCard | null })[] | null,
     golfers: Golfer[] | null,
@@ -228,24 +234,28 @@ export const useLeaderboardStore = create<LeaderboardStoreState>((set) => ({
       golfers,
       _lastUpdated: Date.now(),
     }),
-  
+
   setPolling: (isPolling) => set({ isPolling }),
-  
-  reset: () => set({
-    teams: null,
-    golfers: null,
-    isPolling: false,
-    _lastUpdated: null,
-  }),
+
+  reset: () =>
+    set({
+      teams: null,
+      golfers: null,
+      isPolling: false,
+      _lastUpdated: null,
+    }),
 }));
 
 // Tournament state checker
 export const startTournamentStateChecker = () => {
   if (typeof window === "undefined") return;
 
-  const checkInterval = setInterval(() => {
-    useMainStore.getState().updateTournamentState();
-  }, 60 * 60 * 1000); // 1 hour
+  const checkInterval = setInterval(
+    () => {
+      useMainStore.getState().updateTournamentState();
+    },
+    60 * 60 * 1000,
+  ); // 1 hour
 
   const handleVisibilityChange = () => {
     if (!document.hidden) {
@@ -266,15 +276,16 @@ export const authUtils = {
   syncAuthState: async (supabaseUser: User | null): Promise<Member | null> => {
     try {
       if (supabaseUser) {
-        const accessToken = (supabaseUser as unknown as Record<string, unknown>).access_token as string;
+        const accessToken = (supabaseUser as unknown as Record<string, unknown>)
+          .access_token as string;
         const response = await fetch("/api/members/current", {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         });
-        
+
         if (response.ok) {
-          const responseData = await response.json() as { member: Member };
+          const responseData = (await response.json()) as { member: Member };
           const { member } = responseData;
           if (member) {
             useMainStore.getState().setAuthState(member, true);
@@ -282,7 +293,7 @@ export const authUtils = {
           }
         }
       }
-      
+
       useMainStore.getState().setAuthState(null, false);
       return null;
     } catch (error) {
