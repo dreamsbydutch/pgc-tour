@@ -94,7 +94,6 @@ export default function ActiveTournamentView({
               ? `Last updated: ${formatLastUpdated(lastUpdated)}`
               : "Updating..."}
           </span>
-          {isPolling && <span className="px-1 text-2xs">🔄</span>}
         </div>
 
         <div className="flex items-center gap-2">
@@ -108,7 +107,7 @@ export default function ActiveTournamentView({
 
           <span className="badge text-2xs text-slate-500">
             {tournament.livePlay
-              ? `Round ${tournament.currentRound} - Live`
+              ? `Round ${tournament.currentRound} - ${isPolling ? "Live":"Not Updating"}`
               : `Round ${(tournament.currentRound ?? 1) - 1} - Complete`}
           </span>
         </div>
