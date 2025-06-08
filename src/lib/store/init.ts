@@ -1,6 +1,6 @@
 /**
  * Store Initialization
- * 
+ *
  * Single source of truth for loading and initializing all store data.
  */
 
@@ -34,18 +34,18 @@ async function safeFetch<T>(url: string, timeout = 10000): Promise<T | null> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
-    
-    const response = await fetch(url, { 
+
+    const response = await fetch(url, {
       signal: controller.signal,
-      cache: 'no-store'
+      cache: "no-store",
     });
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       return null;
     }
-    
-    return await response.json() as T;
+
+    return (await response.json()) as T;
   } catch (_error) {
     return null;
   }
@@ -53,17 +53,13 @@ async function safeFetch<T>(url: string, timeout = 10000): Promise<T | null> {
 
 // Load core application data
 async function loadCoreData() {
-  const [
-    tourCardsResponse,
-    toursResponse,
-    seasonsResponse,
-    tiersResponse,
-  ] = await Promise.all([
-    safeFetch<{ tourCards: TourCard[] }>('/api/tourcards/current'),
-    safeFetch<{ tours: Tour[] }>('/api/tours/all'),
-    safeFetch<{ seasons: Season[] }>('/api/seasons/current'),
-    safeFetch<{ tiers: Tier[] }>('/api/tiers/current'),
-  ]);
+  const [tourCardsResponse, toursResponse, seasonsResponse, tiersResponse] =
+    await Promise.all([
+      safeFetch<{ tourCards: TourCard[] }>("/api/tourcards/current"),
+      safeFetch<{ tours: Tour[] }>("/api/tours/all"),
+      safeFetch<{ seasons: Season[] }>("/api/seasons/current"),
+      safeFetch<{ tiers: Tier[] }>("/api/tiers/current"),
+    ]);
 
   return {
     tourCards: tourCardsResponse?.tourCards ?? [],
@@ -76,8 +72,8 @@ async function loadCoreData() {
 // Load tournament data
 async function loadTournamentData() {
   const [tournamentResponse, pastTournamentsResponse] = await Promise.all([
-    safeFetch<{ tournaments: TournamentData[] }>('/api/tournaments/all'),
-    safeFetch<{ tournaments: ProcessedTournament[] }>('/api/tournaments/past'),
+    safeFetch<{ tournaments: TournamentData[] }>("/api/tournaments/all"),
+    safeFetch<{ tournaments: ProcessedTournament[] }>("/api/tournaments/past"),
   ]);
 
   return {
@@ -92,15 +88,15 @@ async function loadLeaderboardData(): Promise<{
   golfers: Golfer[];
 } | null> {
   try {
-    const response = await fetch('/api/tournaments/leaderboard', {
-      cache: 'no-store'
+    const response = await fetch("/api/tournaments/leaderboard", {
+      cache: "no-store",
     });
-    
+
     if (!response.ok) {
       return null;
     }
-    
-    return await response.json() as {
+
+    return (await response.json()) as {
       teams: LeaderboardTeam[];
       golfers: Golfer[];
     };
@@ -117,20 +113,21 @@ function updateTournamentState(tournaments: TournamentData[]) {
 
   const now = new Date();
   const sortedTournaments = [...tournaments].sort(
-    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
   );
 
   // Find current tournament (started but not ended, and not completed)
-  const currentTournament = sortedTournaments.find(
-    t => new Date(t.startDate) <= now && 
-         new Date(t.endDate) >= now && 
-         (t.currentRound ?? 0) < 5
-  ) ?? null;
+  const currentTournament =
+    sortedTournaments.find(
+      (t) =>
+        new Date(t.startDate) <= now &&
+        new Date(t.endDate) >= now &&
+        (t.currentRound ?? 0) < 5,
+    ) ?? null;
 
   // Find next tournament (not yet started)
-  const nextTournament = sortedTournaments.find(
-    t => new Date(t.startDate) > now
-  ) ?? null;
+  const nextTournament =
+    sortedTournaments.find((t) => new Date(t.startDate) > now) ?? null;
 
   return { currentTournament, nextTournament };
 }
@@ -146,13 +143,14 @@ export async function initializeStore(): Promise<void> {
 
     // Determine current/next tournaments
     const { currentTournament, nextTournament } = updateTournamentState(
-      tournamentData.seasonTournaments
+      tournamentData.seasonTournaments,
     );
 
     // Get current season (most recent)
-    const currentSeason = coreData.seasons.length > 0 
-      ? coreData.seasons.sort((a, b) => b.year - a.year)[0] 
-      : null;
+    const currentSeason =
+      coreData.seasons.length > 0
+        ? coreData.seasons.sort((a, b) => b.year - a.year)[0]
+        : null;
 
     // Initialize the main store with all data
     const initData = {
@@ -162,8 +160,9 @@ export async function initializeStore(): Promise<void> {
       nextTournament,
       currentSeason,
       currentTiers: coreData.tiers,
-    };    useMainStore.getState().initializeData(initData);
-      // Initialize leaderboard if there's a current tournament
+    };
+    useMainStore.getState().initializeData(initData);
+    // Initialize leaderboard if there's a current tournament
     if (currentTournament) {
       await initializeLeaderboard().catch(() => {
         // Ignore leaderboard initialization errors during main store init
@@ -178,11 +177,11 @@ export async function initializeStore(): Promise<void> {
 export async function initializeLeaderboard(): Promise<void> {
   try {
     const data = await loadLeaderboardData();
-    
+
     if (data) {
       useLeaderboardStore.getState().update(data.teams, data.golfers);
     } else {
-      throw new Error('Failed to fetch leaderboard data');
+      throw new Error("Failed to fetch leaderboard data");
     }
   } catch (error) {
     throw error;
@@ -193,7 +192,7 @@ export async function initializeLeaderboard(): Promise<void> {
 export async function refreshLeaderboard(): Promise<void> {
   try {
     const data = await loadLeaderboardData();
-    
+
     if (data) {
       useLeaderboardStore.getState().update(data.teams, data.golfers);
     }
@@ -205,10 +204,10 @@ export async function refreshLeaderboard(): Promise<void> {
 export async function refreshUserData(member: Member): Promise<void> {
   try {
     const state = useMainStore.getState();
-    
+
     // Find user's tour card and tour
     // const userTourCard = state.tourCards?.find(tc => tc.memberId === member.id) ?? null;
-    
+
     // Update auth state with user data
     state.setAuthState(member, true);
   } catch (error) {
@@ -219,14 +218,14 @@ export async function refreshUserData(member: Member): Promise<void> {
 export async function refreshTournamentData(): Promise<void> {
   try {
     const tournamentData = await loadTournamentData();
-    
+
     // Determine current/next tournaments
     const { currentTournament, nextTournament } = updateTournamentState(
-      tournamentData.seasonTournaments
+      tournamentData.seasonTournaments,
     );
-    
+
     // Update store with new tournament data
-    useMainStore.setState(state => ({
+    useMainStore.setState((state) => ({
       ...state,
       ...tournamentData,
       currentTournament,
@@ -239,88 +238,18 @@ export async function refreshTournamentData(): Promise<void> {
 }
 
 // Check if leaderboard should be actively polling
-export function shouldPollLeaderboard(tournament: { 
-  startDate: string | Date; 
-  endDate: string | Date; 
-  currentRound?: number | null 
+export function shouldPollLeaderboard(tournament: {
+  startDate: string | Date;
+  endDate: string | Date;
+  currentRound?: number | null;
 }): boolean {
   if (!tournament) return false;
-  
+
   const now = new Date();
   const startDate = new Date(tournament.startDate);
   const endDate = new Date(tournament.endDate);
-  
-  return startDate <= now && 
-         endDate >= now && 
-         (tournament.currentRound ?? 0) < 5;
-}
 
-// Polling management
-let pollingInterval: NodeJS.Timeout | null = null;
-
-// Start leaderboard polling
-export function startLeaderboardPolling(intervalMs = 30000): () => void {
-  // Stop any existing polling
-  stopLeaderboardPolling();
-  
-  const currentTournament = useMainStore.getState().currentTournament;
-  
-  if (!currentTournament || !shouldPollLeaderboard(currentTournament)) {
-    return () => {
-      // No cleanup needed
-    };
-  }
-    useLeaderboardStore.getState().setPolling(true);
-  
-  // Initial load
-  void refreshLeaderboard();
-    // Set up interval
-  pollingInterval = setInterval(() => {
-    void (async () => {
-      const tournament = useMainStore.getState().currentTournament;
-      
-      if (!tournament || !shouldPollLeaderboard(tournament)) {
-        stopLeaderboardPolling();
-        return;
-      }
-      
-      await refreshLeaderboard();
-    })();
-  }, intervalMs);
-  
-  return stopLeaderboardPolling;
-}
-
-// Stop leaderboard polling
-export function stopLeaderboardPolling(): void {
-  if (pollingInterval) {
-    clearInterval(pollingInterval);
-    pollingInterval = null;
-    useLeaderboardStore.getState().setPolling(false);
-    console.log('⏹️ Leaderboard polling stopped');
-  }
-}
-
-// Smart polling that adapts to tournament state
-export function startSmartPolling(): () => void {
-  const currentTournament = useMainStore.getState().currentTournament;
-  
-  if (currentTournament && shouldPollLeaderboard(currentTournament)) {
-    // Poll every 30 seconds during active tournaments
-    return startLeaderboardPolling(30000);
-  } else {
-    // Check for tournament changes every 5 minutes
-    const checkInterval = setInterval(() => {
-      const tournament = useMainStore.getState().currentTournament;
-      if (tournament && shouldPollLeaderboard(tournament)) {
-        clearInterval(checkInterval);
-        startLeaderboardPolling(30000);
-      }
-    }, 5 * 60 * 1000);
-    
-    return () => {
-      clearInterval(checkInterval);
-      stopLeaderboardPolling();
-    };
-  }
+  return (
+    startDate <= now && endDate >= now && (tournament.currentRound ?? 0) < 5
+  );
 }

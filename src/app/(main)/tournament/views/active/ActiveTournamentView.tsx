@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useLeaderboardStore } from "@/src/lib/store/store";
-import { manualRefreshLeaderboard, startLeaderboardPolling } from "@/src/lib/store/polling";
+import {
+  manualRefreshLeaderboard,
+  getPollingStatus,
+} from "@/src/lib/store/polling";
 import LeaderboardPage from "../shared/LeaderboardPage";
 import type { Course, Tournament } from "@prisma/client";
 
@@ -16,56 +19,45 @@ export default function ActiveTournamentView({
   inputTour,
 }: ActiveTournamentViewProps) {
   const lastUpdated = useLeaderboardStore((state) => state._lastUpdated);
+  const isPolling = useLeaderboardStore((state) => state.isPolling);
 
-  // Memoize callbacks to prevent infinite re-renders
-  const onSuccess = useCallback(() => {
-    console.log("Leaderboard updated");
-  }, []);
-
-  const onError = useCallback((err: Error) => {
-    console.error("Failed to update leaderboard:", err);
-  }, []);
-  // Set up polling for live updates - only when tournament is live
+  // Manual refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
+
   // Manual refresh function
   const refreshNow = useCallback(async () => {
     setIsRefreshing(true);
     try {
       await manualRefreshLeaderboard();
-      onSuccess();
+      console.log("✅ Manual leaderboard refresh completed");
     } catch (err) {
-      onError(err as Error);
+      console.error("❌ Manual leaderboard refresh failed:", err);
     } finally {
       setIsRefreshing(false);
     }
-  }, [onSuccess, onError]);
-  // Load initial data on component mount
+  }, []);
+
+  // Load initial data on component mount if needed
   useEffect(() => {
     const initialLoad = async () => {
       const currentLastUpdated = useLeaderboardStore.getState()._lastUpdated;
+      // Only load if data is stale (older than 5 minutes) or missing
       if (!currentLastUpdated || Date.now() - currentLastUpdated > 300000) {
+        console.log("🔄 Loading initial leaderboard data...");
         await refreshNow();
       }
     };
 
     initialLoad().catch((err) =>
-      console.error("Error during initial leaderboard load:", err),
+      console.error("❌ Initial leaderboard load failed:", err),
     );
-  }, [refreshNow]); // Empty dependency array - only run once on mount
+  }, []); // Run once on mount
 
-  // Start polling for live tournaments
+  // Log polling status for debugging
   useEffect(() => {
-    if (tournament.livePlay && tournament.currentRound && tournament.currentRound < 5) {
-      console.log('🔄 Starting polling for live tournament');
-      const stopPolling = startLeaderboardPolling(300000); // 5 minutes
-      
-      return () => {
-        console.log('🛑 Stopping polling - component unmount');
-        stopPolling();
-      };
-    }
-  }, [tournament.livePlay, tournament.currentRound]);
-
+    const status = getPollingStatus();
+    console.log("📊 Polling status:", status);
+  }, [isPolling]);
   const handleManualRefresh = useCallback(async () => {
     await refreshNow();
   }, [refreshNow]);
@@ -89,18 +81,24 @@ export default function ActiveTournamentView({
       minute: "2-digit",
     });
   };
-
   // Combine all loading states to show the refresh indicator
   const showLoading = isRefreshing;
+
   return (
     <>
       {/* Status bar for live tournaments */}
       <div className="mx-auto my-0.5 flex w-full max-w-4xl items-center justify-between gap-4 md:w-11/12 lg:w-8/12">
-        <span className="text-2xs text-slate-500">
-          {lastUpdated
-            ? `Last updated: ${formatLastUpdated(lastUpdated)}`
-            : "Updating..."}
-        </span>
+        <div className="flex flex-col">
+          <span className="text-2xs text-slate-500">
+            {lastUpdated
+              ? `Last updated: ${formatLastUpdated(lastUpdated)}`
+              : "Updating..."}
+          </span>          {isPolling && (
+            <span className="text-2xs text-green-600">
+              🔄 Auto-refreshing every 3min
+            </span>
+          )}
+        </div>
 
         <div className="flex items-center gap-2">
           <button
