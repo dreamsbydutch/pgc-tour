@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { User } from "@supabase/supabase-js";
-import { log } from '@/src/lib/logging';
 
 /**
  * Enhanced middleware that integrates with the centralized auth system
@@ -94,9 +93,8 @@ export async function updateSession(request: NextRequest) {
     const authResponse = userResponse as { data: { user: User | null }, error: Error | null };
     user = authResponse.data?.user ?? null;
     authError = authResponse.error;
-  } catch (error) {
-    const authErrorInstance = error instanceof Error ? error : new Error('Unknown auth error');
-    log.middleware.error("Auth check failed in middleware", authErrorInstance);
+  } catch (error) {    const authErrorInstance = error instanceof Error ? error : new Error('Unknown auth error');
+    // Auth check failed in middleware
     authError = authErrorInstance;
   }  // Removed user status logging to reduce console noise
 
@@ -114,23 +112,21 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Admin route protection
-  if (ADMIN_ROUTES.some(route => pathname.startsWith(route))) {
-    if (!user || user.email !== "chough14@gmail.com") {
+  if (ADMIN_ROUTES.some(route => pathname.startsWith(route))) {    if (!user || user.email !== "chough14@gmail.com") {
       const url = request.nextUrl.clone();
       url.pathname = "/";
-      log.middleware.info("Redirecting non-admin user away from admin page");
+      // Redirecting non-admin user away from admin page
       return NextResponse.redirect(url);
     }
   }
 
   // Handle auth success parameter from callback
   const authSuccess = request.nextUrl.searchParams.get('auth_success');
-  if (authSuccess === 'true' && user) {
-    // Remove auth success parameter and redirect to clean URL
+  if (authSuccess === 'true' && user) {    // Remove auth success parameter and redirect to clean URL
     const url = request.nextUrl.clone();
     url.searchParams.delete('auth_success');
     url.searchParams.delete('timestamp');
-    log.middleware.info("Cleaning auth success parameters from URL");
+    // Cleaning auth success parameters from URL
     
     // Create response with redirect
     const redirectResponse = NextResponse.redirect(url);
@@ -154,13 +150,12 @@ export async function updateSession(request: NextRequest) {
                         (referer ? referer.includes('/auth/callback') : false) ||
                         (referer ? referer.includes('/signin') : false);
     // Note: OR operators are correct here for boolean conditions, not nullish coalescing
-    
-    if ((pathname.startsWith('/signin') || pathname.startsWith('/signup')) && !fromCallback) {
-      log.middleware.info("Would redirect authenticated user, but checking timing...");
+      if ((pathname.startsWith('/signin') || pathname.startsWith('/signup')) && !fromCallback) {
+      // Would redirect authenticated user, but checking timing...
       
       // Add a small delay to avoid race conditions with client-side auth
       // Let the client-side auth handle the redirect instead for now
-      log.middleware.info("Letting client-side handle auth redirect to avoid race condition");
+      // Letting client-side handle auth redirect to avoid race condition
       
       // Add headers but don't redirect immediately
       supabaseResponse.headers.set(AUTH_HEADERS.CACHE_HINT, 'auth-redirect-suggested');
@@ -172,9 +167,8 @@ export async function updateSession(request: NextRequest) {
     // Add cache hint that auth is required
     supabaseResponse.headers.set(AUTH_HEADERS.CACHE_HINT, 'auth-required');
     
-    // For now, let the client handle auth redirects to avoid breaking the flow
-    // The AuthContext will handle redirecting users who need to sign in
-    log.middleware.info("Unauthenticated user on protected route, letting client handle", { pathname });
+    // For now, let the client handle auth redirects to avoid breaking the flow    // The AuthContext will handle redirecting users who need to sign in
+    // Unauthenticated user on protected route, letting client handle
   }
 
   return supabaseResponse;

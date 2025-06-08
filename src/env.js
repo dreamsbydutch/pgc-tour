@@ -17,11 +17,7 @@ export const env = createEnv({
     DIRECT_URL: z.string(),
     SUPABASE_JWT_SECRET: z.string(),
     EXTERNAL_DATA_API_URL: z.string(),
-    EXTERNAL_DATA_API_KEY: z.string(),
-    TOUR_MAX_SIZE: z.string(),
-    // Axiom logging configuration
-    AXIOM_TOKEN: z.string().optional(),
-    AXIOM_DATASET: z.string().optional(),
+    EXTERNAL_DATA_API_KEY: z.string(),    TOUR_MAX_SIZE: z.string(),
   },
 
   /**
@@ -51,14 +47,11 @@ export const env = createEnv({
     TOUR_MAX_SIZE: process.env.TOUR_MAX_SIZE,
     SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
     NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-    NEXT_PUBLIC_VAPID_PRIVATE_KEY: process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY,
-    EXTERNAL_DATA_API_URL: process.env.EXTERNAL_DATA_API_URL,
+    NEXT_PUBLIC_VAPID_PRIVATE_KEY: process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY,    EXTERNAL_DATA_API_URL: process.env.EXTERNAL_DATA_API_URL,
     EXTERNAL_DATA_API_KEY: process.env.EXTERNAL_DATA_API_KEY,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_GOOGLE_ANALYTICS: process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS,
-    AXIOM_TOKEN: process.env.AXIOM_TOKEN,
-    AXIOM_DATASET: process.env.AXIOM_DATASET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

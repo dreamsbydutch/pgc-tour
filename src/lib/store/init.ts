@@ -1,3 +1,9 @@
+/**
+ * Store Initialization
+ * 
+ * Single source of truth for loading and initializing all store data.
+ */
+
 import type {
   Course,
   Golfer,
@@ -9,187 +15,312 @@ import type {
   TourCard,
   Tournament,
 } from "@prisma/client";
-import { useMainStore } from "./store";
-import { cacheManager } from "./cache";
-import { initializeLeaderboard } from "./leaderboard";
+import { useMainStore, useLeaderboardStore } from "./store";
 
-type ProcessedTournament = Tournament & {
+// Type definitions
+type TournamentData = Tournament & {
   course: Course | null;
+};
+
+type ProcessedTournament = TournamentData & {
   golfers: Golfer[];
   teams: (Team & { tourCard: TourCard | null })[];
 };
 
-const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+type LeaderboardTeam = Team & { tourCard: TourCard | null };
 
+// Fetch utilities with proper error handling
 async function safeFetch<T>(url: string, timeout = 10000): Promise<T | null> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
     
-    const response = await fetch(url, { signal: controller.signal });
+    const response = await fetch(url, { 
+      signal: controller.signal,
+      cache: 'no-store'
+    });
     clearTimeout(timeoutId);
     
     if (!response.ok) {
-      console.error(`❌ ${url}: ${response.status}`);
       return null;
     }
     
     return await response.json() as T;
-  } catch (error) {
-    console.error(`💥 ${url} failed:`, error);
+  } catch (_error) {
     return null;
   }
 }
 
-async function fetchMemberData(): Promise<{ member: Member } | null> {
-  const store = useMainStore.getState();
-  
-  // Use existing auth state if available
-  if (store.isAuthenticated && store.currentMember) {
-    console.log("👤 Using cached member data");
-    return { member: store.currentMember };
-  }
-  
-  if (store.isAuthenticated === false) {
-    console.log("👤 Not authenticated, skipping member fetch");
-    return null;
-  }
-  
-  console.log("👤 Fetching member data...");
-  return safeFetch<{ member: Member }>("/api/members/current");
-}
-
-export async function loadInitialData() {
-  console.log("🔄 Starting store initialization...");
-  
-  // Quick API health check
-  const healthCheck = await safeFetch("/api/seasons/current", 5000);
-  if (!healthCheck) {
-    throw new Error("API endpoints not responding");
-  }
-  
-  // Check cache first
-  const cacheResult = await cacheManager.checkAndRefresh({ source: "init" });
-  if (cacheResult.success) {
-    console.log("✅ Cache refreshed:", cacheResult.reason);
-  }
-  
-  const store = useMainStore.getState();
-  
-  // Check if we have complete cached data
-  const hasCompleteData = !!(
-    store.tours?.length &&
-    store.seasonTournaments?.length &&
-    store.tourCards?.length &&
-    store.currentSeason &&
-    store.currentTiers?.length
-  );
-  
-  const isFresh = store._lastUpdated && (Date.now() - store._lastUpdated) < CACHE_EXPIRY;
-  
-  if (hasCompleteData && isFresh) {
-    console.log("✅ Using complete cached data");
-    return store;
-  }
-  
-  console.log("📡 Fetching missing data...");
-  
-  // Fetch all required data in parallel
+// Load core application data
+async function loadCoreData() {
   const [
-    toursData,
-    tournamentsData,
-    seasonData,
-    tiersData,
-    memberData,
-    pastTeamsData,
-    pastGolfersData,
-    tourCardsData,
+    tourCardsResponse,
+    toursResponse,
+    seasonsResponse,
+    tiersResponse,
   ] = await Promise.all([
-    safeFetch<{ tours: Tour[] }>("/api/tours/all"),
-    safeFetch<{ tournaments: (Tournament & { course: Course | null })[] }>("/api/tournaments/all"),
-    safeFetch<{ season: Season }>("/api/seasons/current"),
-    safeFetch<{ tiers: Tier[] }>("/api/tiers/current"),
-    fetchMemberData(),
-    safeFetch<{ pastTeams: (Team & { tourCard: TourCard | null })[] }>("/api/teams/past"),
-    safeFetch<{ pastGolfers: Golfer[] }>("/api/golfers/past"),
-    safeFetch<{ tourCards: TourCard[] }>("/api/tourcards/current"),
+    safeFetch<{ tourCards: TourCard[] }>('/api/tourcards/current'),
+    safeFetch<{ tours: Tour[] }>('/api/tours/all'),
+    safeFetch<{ seasons: Season[] }>('/api/seasons/current'),
+    safeFetch<{ tiers: Tier[] }>('/api/tiers/current'),
   ]);
-  
-  // Process tournaments
-  let pastTournaments: ProcessedTournament[] | null = null;
-  let currentTournament = null;
-  let nextTournament = null;
-  
-  if (tournamentsData?.tournaments) {
-    const now = new Date();
-    const tournaments = tournamentsData.tournaments.sort(
-      (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-    );
-    
-    currentTournament = tournaments.find(
-      t => new Date(t.startDate) <= now && 
-           new Date(t.endDate) >= now && 
-           (t.currentRound ?? 0) < 5
-    ) ?? null;
-    
-    nextTournament = tournaments.find(t => new Date(t.startDate) > now) ?? null;
-    
-    // Process past tournaments with related data
-    const pastTournamentsArray = tournaments.filter(
-      t => new Date(t.endDate) < now || (t.currentRound ?? 0) >= 5
-    );
-    
-    const validPastTeams = pastTeamsData?.pastTeams ?? [];
-    const validPastGolfers = pastGolfersData?.pastGolfers ?? [];
-    
-    pastTournaments = pastTournamentsArray.map(t => ({
-      ...t,
-      golfers: validPastGolfers.filter(g => g.tournamentId === t.id),
-      teams: validPastTeams.filter(team => team.tournamentId === t.id),
-    }));
-  }
-  
-  // Process user-specific data
-  const currentTourCard = memberData?.member
-    ? tourCardsData?.tourCards?.find(tc => tc.memberId === memberData.member.id) ?? null
-    : null;
-    
-  const currentTour = currentTourCard
-    ? toursData?.tours?.find(t => t.id === currentTourCard.tourId) ?? null
-    : null;
-  
-  // Update store with all data
-  const updateData = {
-    tours: toursData?.tours ?? store.tours ?? [],
-    seasonTournaments: tournamentsData?.tournaments?.sort(
-      (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-    ) ?? store.seasonTournaments ?? [],
-    pastTournaments: pastTournaments ?? store.pastTournaments ?? [],
-    currentTournament: currentTournament ?? store.currentTournament,
-    nextTournament: nextTournament ?? store.nextTournament,
-    currentSeason: seasonData?.season ?? store.currentSeason,
-    currentTiers: tiersData?.tiers?.sort(
-      (a, b) => (a.payouts[0] ?? 0) - (b.payouts[0] ?? 0)
-    ) ?? store.currentTiers ?? [],
-    tourCards: tourCardsData?.tourCards ?? store.tourCards ?? [],
-    currentMember: memberData?.member ?? store.currentMember ?? null,
-    currentTour: currentTour ?? store.currentTour,
-    currentTourCard: currentTourCard ?? store.currentTourCard,
-    _lastUpdated: Date.now(),
+
+  return {
+    tourCards: tourCardsResponse?.tourCards ?? [],
+    tours: toursResponse?.tours ?? [],
+    seasons: seasonsResponse?.seasons ?? [],
+    tiers: tiersResponse?.tiers ?? [],
   };
-  
-  useMainStore.setState(updateData);
-  
-  // Update auth state
-  const finalMember = updateData.currentMember;
-  useMainStore.getState().setAuthState(finalMember, !!finalMember);
-  
-  console.log("✅ Store initialization complete");
-  
-  // Initialize leaderboard if needed
-  if (updateData.currentTournament) {
-    await initializeLeaderboard(updateData.currentTournament.id).catch(console.error);
+}
+
+// Load tournament data
+async function loadTournamentData() {
+  const [tournamentResponse, pastTournamentsResponse] = await Promise.all([
+    safeFetch<{ tournaments: TournamentData[] }>('/api/tournaments/all'),
+    safeFetch<{ tournaments: ProcessedTournament[] }>('/api/tournaments/past'),
+  ]);
+
+  return {
+    seasonTournaments: tournamentResponse?.tournaments ?? [],
+    pastTournaments: pastTournamentsResponse?.tournaments ?? [],
+  };
+}
+
+// Load leaderboard data
+async function loadLeaderboardData(): Promise<{
+  teams: LeaderboardTeam[];
+  golfers: Golfer[];
+} | null> {
+  try {
+    const response = await fetch('/api/tournaments/leaderboard', {
+      cache: 'no-store'
+    });
+    
+    if (!response.ok) {
+      return null;
+    }
+    
+    return await response.json() as {
+      teams: LeaderboardTeam[];
+      golfers: Golfer[];
+    };
+  } catch (_error) {
+    return null;
   }
+}
+
+// Determine current tournament state
+function updateTournamentState(tournaments: TournamentData[]) {
+  if (!tournaments.length) {
+    return { currentTournament: null, nextTournament: null };
+  }
+
+  const now = new Date();
+  const sortedTournaments = [...tournaments].sort(
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+  );
+
+  // Find current tournament (started but not ended, and not completed)
+  const currentTournament = sortedTournaments.find(
+    t => new Date(t.startDate) <= now && 
+         new Date(t.endDate) >= now && 
+         (t.currentRound ?? 0) < 5
+  ) ?? null;
+
+  // Find next tournament (not yet started)
+  const nextTournament = sortedTournaments.find(
+    t => new Date(t.startDate) > now
+  ) ?? null;
+
+  return { currentTournament, nextTournament };
+}
+
+// Main initialization function
+export async function initializeStore(): Promise<void> {
+  try {
+    // Load core data and tournaments in parallel
+    const [coreData, tournamentData] = await Promise.all([
+      loadCoreData(),
+      loadTournamentData(),
+    ]);
+
+    // Determine current/next tournaments
+    const { currentTournament, nextTournament } = updateTournamentState(
+      tournamentData.seasonTournaments
+    );
+
+    // Get current season (most recent)
+    const currentSeason = coreData.seasons.length > 0 
+      ? coreData.seasons.sort((a, b) => b.year - a.year)[0] 
+      : null;
+
+    // Initialize the main store with all data
+    const initData = {
+      ...coreData,
+      ...tournamentData,
+      currentTournament,
+      nextTournament,
+      currentSeason,
+      currentTiers: coreData.tiers,
+    };    useMainStore.getState().initializeData(initData);
+      // Initialize leaderboard if there's a current tournament
+    if (currentTournament) {
+      await initializeLeaderboard().catch(() => {
+        // Ignore leaderboard initialization errors during main store init
+      });
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Initialize leaderboard for a tournament
+export async function initializeLeaderboard(): Promise<void> {
+  try {
+    const data = await loadLeaderboardData();
+    
+    if (data) {
+      useLeaderboardStore.getState().update(data.teams, data.golfers);
+    } else {
+      throw new Error('Failed to fetch leaderboard data');
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Refresh functions for different data sections
+export async function refreshLeaderboard(): Promise<void> {
+  try {
+    const data = await loadLeaderboardData();
+    
+    if (data) {
+      useLeaderboardStore.getState().update(data.teams, data.golfers);
+    }
+  } catch (_error) {
+    // Silent fail for refresh operations
+  }
+}
+
+export async function refreshUserData(member: Member): Promise<void> {
+  try {
+    const state = useMainStore.getState();
+    
+    // Find user's tour card and tour
+    // const userTourCard = state.tourCards?.find(tc => tc.memberId === member.id) ?? null;
+    
+    // Update auth state with user data
+    state.setAuthState(member, true);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function refreshTournamentData(): Promise<void> {
+  try {
+    const tournamentData = await loadTournamentData();
+    
+    // Determine current/next tournaments
+    const { currentTournament, nextTournament } = updateTournamentState(
+      tournamentData.seasonTournaments
+    );
+    
+    // Update store with new tournament data
+    useMainStore.setState(state => ({
+      ...state,
+      ...tournamentData,
+      currentTournament,
+      nextTournament,
+      _lastUpdated: Date.now(),
+    }));
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Check if leaderboard should be actively polling
+export function shouldPollLeaderboard(tournament: { 
+  startDate: string | Date; 
+  endDate: string | Date; 
+  currentRound?: number | null 
+}): boolean {
+  if (!tournament) return false;
   
-  return updateData;
+  const now = new Date();
+  const startDate = new Date(tournament.startDate);
+  const endDate = new Date(tournament.endDate);
+  
+  return startDate <= now && 
+         endDate >= now && 
+         (tournament.currentRound ?? 0) < 5;
+}
+
+// Polling management
+let pollingInterval: NodeJS.Timeout | null = null;
+
+// Start leaderboard polling
+export function startLeaderboardPolling(intervalMs = 30000): () => void {
+  // Stop any existing polling
+  stopLeaderboardPolling();
+  
+  const currentTournament = useMainStore.getState().currentTournament;
+  
+  if (!currentTournament || !shouldPollLeaderboard(currentTournament)) {
+    return () => {
+      // No cleanup needed
+    };
+  }
+    useLeaderboardStore.getState().setPolling(true);
+  
+  // Initial load
+  void refreshLeaderboard();
+    // Set up interval
+  pollingInterval = setInterval(() => {
+    void (async () => {
+      const tournament = useMainStore.getState().currentTournament;
+      
+      if (!tournament || !shouldPollLeaderboard(tournament)) {
+        stopLeaderboardPolling();
+        return;
+      }
+      
+      await refreshLeaderboard();
+    })();
+  }, intervalMs);
+  
+  return stopLeaderboardPolling;
+}
+
+// Stop leaderboard polling
+export function stopLeaderboardPolling(): void {
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+    pollingInterval = null;
+    useLeaderboardStore.getState().setPolling(false);
+    console.log('⏹️ Leaderboard polling stopped');
+  }
+}
+
+// Smart polling that adapts to tournament state
+export function startSmartPolling(): () => void {
+  const currentTournament = useMainStore.getState().currentTournament;
+  
+  if (currentTournament && shouldPollLeaderboard(currentTournament)) {
+    // Poll every 30 seconds during active tournaments
+    return startLeaderboardPolling(30000);
+  } else {
+    // Check for tournament changes every 5 minutes
+    const checkInterval = setInterval(() => {
+      const tournament = useMainStore.getState().currentTournament;
+      if (tournament && shouldPollLeaderboard(tournament)) {
+        clearInterval(checkInterval);
+        startLeaderboardPolling(30000);
+      }
+    }, 5 * 60 * 1000);
+    
+    return () => {
+      clearInterval(checkInterval);
+      stopLeaderboardPolling();
+    };
+  }
 }

@@ -1,11 +1,10 @@
 /**
  * Middleware Debug Utilities
  * 
- * These utilities help you debug and monitor your centralized middleware system.
- * Available in development mode only.
+ * Development-only debugging tools for the middleware system
  */
 
-import { middlewareManager } from './index';
+import { middlewareManager } from '../core/manager';
 
 export interface MiddlewareDebugInfo {
   timestamp: string;
@@ -115,7 +114,6 @@ class MiddlewareDebugger {
   monitorPerformance(enable = true) {
     if (enable) {
       console.log('🔍 Middleware performance monitoring enabled');
-      // In a real implementation, you might set up performance observers
     } else {
       console.log('🔍 Middleware performance monitoring disabled');
     }
@@ -124,7 +122,7 @@ class MiddlewareDebugger {
 
 export const middlewareDebugger = new MiddlewareDebugger();
 
-// Add to window for browser console access in development
+// Browser console interface for development
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   (window as unknown as Record<string, unknown>).middlewareDebug = {
     status: () => middlewareDebugger.printStatus(),
@@ -153,7 +151,6 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     }
   };
   
-  // Log available commands
   console.log('🔧 Middleware Debug Commands Available:');
   console.log('- middlewareDebug.status() - Show current status');
   console.log('- middlewareDebug.toggle(name, enabled?) - Toggle middleware');

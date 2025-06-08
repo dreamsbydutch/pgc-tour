@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import MemberUpdateForm from "../MemberUpdateForm";
 import { handleLogout } from "../../(auth)/signin/actions";
 import type { Member } from "@prisma/client";
-import { useUser } from "@/src/lib/hooks/use-user";
+import { useUser } from "@/src/lib/hooks/useUser";
 
 /**
  * UserAccountNav Component

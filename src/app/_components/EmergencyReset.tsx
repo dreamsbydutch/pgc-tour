@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { RotateCcw, Loader2, AlertTriangle } from "lucide-react";
-import { forceRefreshCache } from "@/src/lib/store/cacheInvalidation";
+import { initializeStore } from "@/src/lib/store/init";
 
 interface EmergencyResetProps {
   message?: string;
@@ -18,11 +18,10 @@ export default function EmergencyReset({
 }: EmergencyResetProps) {
   const [isResetting, setIsResetting] = useState(false);
 
-  const handleReset = async () => {
-    setIsResetting(true);
+  const handleReset = async () => {    setIsResetting(true);
     try {
       console.log("🚨 Emergency reset triggered");
-      await forceRefreshCache("global");
+      await initializeStore();
       setTimeout(() => {
         setIsResetting(false);
       }, 1000);

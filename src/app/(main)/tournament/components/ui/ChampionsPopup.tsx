@@ -27,12 +27,12 @@ export default function ChampionsPopup() {
     new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
   )
     return null;
-  if (!tournament) return <ChampionSectionSkeleton />;
+  if (!tournament) return null
 
   const champs = tournament.teams.filter(
     (team) => team.position === "1" || team.position === "T1",
   );
-  if (!champs.length) return null;
+  if (!champs.length) return <ChampionSectionSkeleton />;
 
   return (
     <div className="m-3 rounded-2xl bg-amber-100 bg-opacity-70 shadow-lg md:w-10/12 lg:w-7/12">

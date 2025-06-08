@@ -10,8 +10,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { createClient } from "@/src/lib/supabase/client";
 import { useMainStore } from "../store/store";
-import { refreshUserData } from "../store/mainInit";
-import { log } from "@/src/lib/logging";
+import { refreshUserData } from "../store/init";
 import type { User, Session } from "@supabase/supabase-js";
 import type { Member } from "@prisma/client";
 
@@ -113,14 +112,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Refresh user-specific data if authenticated
       if (member && isAuthenticated) {
         await refreshUserData(member);
-      }
-
-      log.auth.stateChange('Auth state updated', { 
-        hasSession: isAuthenticated, 
-        userEmail: member?.email 
-      });
+      }      // Auth state updated successfully
     } catch (error) {
-      log.auth.error("Auth state update failed", error as Error);
+      // Auth state update failed
       
       const errorState: AuthState = {
         user: null,
@@ -240,12 +234,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Listen for auth changes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        log.auth.stateChange(`Auth state change: ${event}`, { 
-          hasSession: !!session,
-          userEmail: session?.user?.email 
-        });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(      async (event, session) => {
+        // Auth state change handled
         
         if (event === 'SIGNED_OUT') {
           setAuthState({

@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useLeaderboardStore } from "@/src/lib/store/store";
-import {
-  refreshLeaderboard,
-} from "@/src/lib/store/leaderboard";
+import { manualRefreshLeaderboard, startLeaderboardPolling } from "@/src/lib/store/polling";
 import LeaderboardPage from "../shared/LeaderboardPage";
 import type { Course, Tournament } from "@prisma/client";
 
@@ -29,12 +27,11 @@ export default function ActiveTournamentView({
   }, []);
   // Set up polling for live updates - only when tournament is live
   const [isRefreshing, setIsRefreshing] = useState(false);
-
   // Manual refresh function
   const refreshNow = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await refreshLeaderboard();
+      await manualRefreshLeaderboard();
       onSuccess();
     } catch (err) {
       onError(err as Error);
@@ -42,7 +39,6 @@ export default function ActiveTournamentView({
       setIsRefreshing(false);
     }
   }, [onSuccess, onError]);
-
   // Load initial data on component mount
   useEffect(() => {
     const initialLoad = async () => {
@@ -56,6 +52,19 @@ export default function ActiveTournamentView({
       console.error("Error during initial leaderboard load:", err),
     );
   }, [refreshNow]); // Empty dependency array - only run once on mount
+
+  // Start polling for live tournaments
+  useEffect(() => {
+    if (tournament.livePlay && tournament.currentRound && tournament.currentRound < 5) {
+      console.log('🔄 Starting polling for live tournament');
+      const stopPolling = startLeaderboardPolling(300000); // 5 minutes
+      
+      return () => {
+        console.log('🛑 Stopping polling - component unmount');
+        stopPolling();
+      };
+    }
+  }, [tournament.livePlay, tournament.currentRound]);
 
   const handleManualRefresh = useCallback(async () => {
     await refreshNow();

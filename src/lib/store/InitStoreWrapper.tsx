@@ -11,7 +11,7 @@ export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
     error, 
     retryCount, 
     forceRefresh, 
-    retry 
+    retryInitialization 
   } = useInitStore();
 
   if (isLoading) {
@@ -44,9 +44,8 @@ export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
             message="Unable to load application data."
             size="lg"
           />
-          <div className="flex justify-center space-x-2">
-            <button
-              onClick={retry}
+          <div className="flex justify-center space-x-2">            <button
+              onClick={retryInitialization}
               disabled={isLoading}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm"
             >
@@ -60,14 +59,6 @@ export function InitStoreWrapper({ children }: { children: React.ReactNode }) {
               Force Refresh
             </button>
           </div>
-          {process.env.NODE_ENV === "development" && (
-            <details className="text-sm text-gray-500">
-              <summary className="cursor-pointer">Technical Details</summary>
-              <p className="mt-2 rounded bg-gray-100 p-2 text-left font-mono text-xs">
-                {error}
-              </p>
-            </details>
-          )}
         </div>
       </div>
     );

@@ -7,48 +7,81 @@ This module provides custom React hooks for common functionality across the PGC 
 ### Active Hooks ✅
 
 #### `useStore.ts`
-**Main store integration hooks**
+**Store utility hooks for common operations**
 
-**Purpose:** Provides optimized hooks for accessing and updating the main Zustand store.
+**Purpose:** Provides focused utility hooks for specific data domains and store operations.
 
 **Key Hooks:**
-```typescript
-// Leaderboard data management
-export const useLeaderboard = () => {
-  const { leaderboardData, isLoading, refreshLeaderboard } = useMainStore();
-  // ... optimized logic
-};
-
-// Tournament data management
-export const useTournament = () => {
-  const { currentTournament, setCurrentTournament } = useMainStore();
-  // ... optimized logic
-};
-
-// Member data management
-export const useMembers = () => {
-  const { members, currentMember, updateMember } = useMainStore();
-  // ... optimized logic
-};
-```
+- `useStoreReady()` - Simple store readiness check
+- `useTournamentData()` - Tournament-specific functionality  
+- `useLeaderboardData()` - Leaderboard-specific functionality
+- `useMemberData()` - Member-specific functionality
+- `useSeasonData()` - Season-specific functionality
 
 **Features:**
-- Optimized selectors to prevent unnecessary re-renders
-- Built-in loading and error state management
-- Automatic dependency tracking
-- Performance monitoring hooks
+- Domain-focused hooks for better organization
+- Memoized returns for performance optimization
+- Clear separation of concerns
+- Admin utilities for resetting state
 
-**Usage Example:**
+#### `useInitStore.ts`
+**Store initialization and loading states**
+
+**Purpose:** Manages the initialization process of the main store and provides loading states.
+
+#### `useUser.ts` (formerly `use-user.ts`)
+**Enhanced user data access hook**
+
+**Purpose:** Provides convenient access to current user and member information with computed properties.
+
+**Features:**
+- Uses `useMemo` for performance optimization
+- Computed properties: `displayName`, `hasProfile`, `isSignedIn`, `isMember`
+- Enhanced type safety and error handling
+- Backward compatibility aliases
+
+#### `useToast.ts` (formerly `use-toast.ts`)
+**Toast notification management**
+
+**Purpose:** Provides a simple interface for showing toast notifications.
+
+## 🎯 Recent Refactoring (2025)
+
+### Changes Made
+1. **File Naming**: Converted from kebab-case to camelCase
+   - `use-toast.ts` → `useToast.ts`
+   - `use-user.ts` → `useUser.ts`
+
+2. **Code Consolidation**: Removed duplicate `useInitStore` from `useStore.ts`
+
+3. **Enhanced Performance**: Added `useMemo` optimizations to `useUser.ts`
+
+4. **Better Organization**: Converted `useStore.ts` to focused utility hooks
+
+### Migration Guide
 ```typescript
-import { useLeaderboard } from "@/src/lib/hooks/useStore";
+// Old way (deprecated)
+import { useInitStore } from "@/src/lib/hooks/useStore";
 
-function LeaderboardComponent() {
-  const { 
-    leaderboard, 
-    isLoading, 
-    error, 
-    refresh 
-  } = useLeaderboard();
+// New way (current)  
+import { useStoreReady } from "@/src/lib/hooks/useStore";
+import { useInitStore } from "@/src/lib/hooks/useInitStore";
+```
+
+## 📋 Usage Guidelines
+
+### Best Practices ✅
+1. Use domain-specific hooks for better organization
+2. Handle loading and error states properly
+3. Use selective store subscriptions to prevent unnecessary re-renders
+
+### File Structure ✅
+- ✅ `useStore.ts` - Store utility hooks
+- ✅ `useInitStore.ts` - Store initialization
+- ✅ `useUser.ts` - User/member data  
+- ✅ `useToast.ts` - Toast notifications
+
+All files now use consistent camelCase naming and have been optimized for performance and readability.
   
   if (isLoading) return <LoadingSpinner />;
   if (error) return <ErrorMessage error={error} />;

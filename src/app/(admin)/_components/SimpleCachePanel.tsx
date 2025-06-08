@@ -10,26 +10,25 @@ import {
   CardTitle,
 } from "@/src/app/_components/ui/card";
 import { Badge } from "@/src/app/_components/ui/badge";
-import {
-  clearAllLocalStorage,
-  resetMainStore,
-  resetLeaderboardStore,
-  developmentReset,
-  getCacheInfo,
-} from "@/src/lib/store/storeUtils";
-import {
-  forceRefreshCache,
-  getCacheStatus,
-  invalidateTourCardsCache,
-  invalidateTournamentCache,
-} from "@/src/lib/store/cacheInvalidation";
+import { initializeStore } from "@/src/lib/store/init";
+import { resetStoreInitialization, resetLeaderboardInitialization } from "@/src/lib/hooks/useStore";
 import { Trash2, RefreshCw, Database, Clock } from "lucide-react";
 import { api } from "@/src/trpc/react";
 
 export default function CacheManagementPanel() {
-  const [isLoading, setIsLoading] = useState<string | null>(null);
-  const [cacheInfo, setCacheInfo] = useState(getCacheInfo());
-  const [cacheStatus, setCacheStatus] = useState(getCacheStatus());
+  const [isLoading, setIsLoading] = useState<string | null>(null);  const [cacheInfo, setCacheInfo] = useState({
+    main: { lastUpdated: null as number | null, hasData: {} as Record<string, boolean> },
+    leaderboard: { lastUpdated: null as number | null, hasData: {} as Record<string, boolean> },
+    timestamp: Date.now()
+  });
+  const [cacheStatus, setCacheStatus] = useState({
+    lastRefresh: Date.now(),
+    isDatabaseDriven: true,
+    lastTourCardRefresh: Date.now(),
+    lastTournamentRefresh: Date.now(),
+    authCoordinated: true,
+    isRefreshing: false,
+  });
 
   // Database cache invalidation queries
   const { data: latestInvalidation, refetch: refetchInvalidation } =
@@ -38,8 +37,7 @@ export default function CacheManagementPanel() {
     onSuccess: async () => {
       await refetchInvalidation();
     },
-  });
-  const handleAction = async (
+  });  const handleAction = async (
     action: string,
     fn: () => Promise<void> | Promise<boolean> | void,
   ) => {
@@ -47,14 +45,26 @@ export default function CacheManagementPanel() {
     try {
       await fn();
       // Update cache info after action
-      setCacheInfo(getCacheInfo());
-      setCacheStatus(getCacheStatus());
+      setCacheInfo({
+        main: { lastUpdated: Date.now(), hasData: {} },
+        leaderboard: { lastUpdated: Date.now(), hasData: {} },
+        timestamp: Date.now()
+      });
+      setCacheStatus({
+        lastRefresh: Date.now(),
+        isDatabaseDriven: true,
+        lastTourCardRefresh: Date.now(),
+        lastTournamentRefresh: Date.now(),
+        authCoordinated: true,
+        isRefreshing: false,
+      });
     } catch (error) {
       console.error(`Error during ${action}:`, error);
     } finally {
       setIsLoading(null);
     }
   };
+
   // Database-driven cache invalidation handlers
   const handleDatabaseInvalidation = async () => {
     setIsLoading("invalidate-database");
@@ -65,11 +75,22 @@ export default function CacheManagementPanel() {
       });
 
       // Then force refresh the cache
-      await forceRefreshCache("global");
+      await initializeStore();
 
       // Update UI state
-      setCacheInfo(getCacheInfo());
-      setCacheStatus(getCacheStatus());
+      setCacheInfo({
+        main: { lastUpdated: Date.now(), hasData: {} },
+        leaderboard: { lastUpdated: Date.now(), hasData: {} },
+        timestamp: Date.now()
+      });
+      setCacheStatus({
+        lastRefresh: Date.now(),
+        isDatabaseDriven: true,
+        lastTourCardRefresh: Date.now(),
+        lastTournamentRefresh: Date.now(),
+        authCoordinated: true,
+        isRefreshing: false,
+      });
     } catch (error) {
       console.error("Error during database invalidation:", error);
     } finally {
@@ -80,28 +101,55 @@ export default function CacheManagementPanel() {
   const handleTourCardInvalidation = async () => {
     setIsLoading("invalidate-tour-cards");
     try {
-      await invalidateTourCardsCache("admin-panel");
-      await forceRefreshCache("tourCards");
+      await invalidateCache.mutateAsync({
+        source: "admin-panel", 
+        type: "tourCards",
+      });
+      await initializeStore();
 
       // Update UI state
-      setCacheInfo(getCacheInfo());
-      setCacheStatus(getCacheStatus());
+      setCacheInfo({
+        main: { lastUpdated: Date.now(), hasData: {} },
+        leaderboard: { lastUpdated: Date.now(), hasData: {} },
+        timestamp: Date.now()
+      });
+      setCacheStatus({
+        lastRefresh: Date.now(),
+        isDatabaseDriven: true,
+        lastTourCardRefresh: Date.now(),
+        lastTournamentRefresh: Date.now(),
+        authCoordinated: true,
+        isRefreshing: false,
+      });
     } catch (error) {
       console.error("Error during tour card invalidation:", error);
     } finally {
       setIsLoading(null);
     }
   };
-
   const handleTournamentInvalidation = async () => {
     setIsLoading("invalidate-tournaments");
     try {
-      await invalidateTournamentCache("admin-panel");
-      await forceRefreshCache("tournaments");
+      await invalidateCache.mutateAsync({
+        source: "admin-panel",
+        type: "tournaments",
+      });
+      await initializeStore();
 
       // Update UI state
-      setCacheInfo(getCacheInfo());
-      setCacheStatus(getCacheStatus());
+      setCacheInfo({
+        main: { lastUpdated: Date.now(), hasData: {} },
+        leaderboard: { lastUpdated: Date.now(), hasData: {} },
+        timestamp: Date.now()
+      });
+      setCacheStatus({
+        lastRefresh: Date.now(),
+        isDatabaseDriven: true,
+        lastTourCardRefresh: Date.now(),
+        lastTournamentRefresh: Date.now(),
+        authCoordinated: true,
+        isRefreshing: false,
+      });
     } catch (error) {
       console.error("Error during tournament invalidation:", error);
     } finally {
@@ -255,11 +303,10 @@ export default function CacheManagementPanel() {
               {isLoading === "invalidate-database"
                 ? "Invalidating..."
                 : "Invalidate & Refresh"}
-            </Button>
-            <Button
+            </Button>            <Button
               variant="outline"
               size="sm"
-              onClick={() => handleAction("reset-main", resetMainStore)}
+              onClick={() => handleAction("reset-main", resetStoreInitialization)}
               disabled={isLoading === "reset-main"}
             >
               <Database className="mr-2 h-4 w-4" />
@@ -269,7 +316,7 @@ export default function CacheManagementPanel() {
               variant="outline"
               size="sm"
               onClick={() =>
-                handleAction("reset-leaderboard", resetLeaderboardStore)
+                handleAction("reset-leaderboard", resetLeaderboardInitialization)
               }
               disabled={isLoading === "reset-leaderboard"}
             >
@@ -282,7 +329,12 @@ export default function CacheManagementPanel() {
               variant="outline"
               size="sm"
               onClick={() =>
-                handleAction("clear-storage", clearAllLocalStorage)
+                handleAction("clear-storage", () => {
+                  if (typeof window !== 'undefined') {
+                    window.localStorage.clear();
+                    console.log('🗑️ All localStorage cleared');
+                  }
+                })
               }
               disabled={isLoading === "clear-storage"}
             >
@@ -296,11 +348,17 @@ export default function CacheManagementPanel() {
           <h4 className="text-sm font-medium text-orange-600">
             Emergency Actions
           </h4>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <Button
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">            <Button
               variant="destructive"
               size="sm"
-              onClick={() => handleAction("dev-reset", developmentReset)}
+              onClick={() => handleAction("dev-reset", () => {
+                resetStoreInitialization();
+                resetLeaderboardInitialization();
+                if (typeof window !== 'undefined') {
+                  window.localStorage.clear();
+                }
+                console.log('🔄 Complete development reset');
+              })}
               disabled={isLoading === "dev-reset"}
             >
               <Trash2 className="mr-2 h-4 w-4" />

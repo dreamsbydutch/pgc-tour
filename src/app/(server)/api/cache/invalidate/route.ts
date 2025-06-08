@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { db } from "@/src/server/db";
 import { z } from "zod";
 import type { CacheInvalidation } from "@prisma/client";
-import { log } from "@/src/lib/logging";
 
 // Input validation schemas
 const PostRequestSchema = z.object({
@@ -94,20 +93,18 @@ export async function POST(
         type,
         timestamp: new Date(),
         updatedAt: new Date(),
-      },
-    });
+      },    });
 
-    log.cache.invalidate(type, source, { requestId: crypto.randomUUID() });
+    // Cache invalidation recorded
 
     return NextResponse.json({
       success: true,
       message: "Cache invalidation recorded in database",
       timestamp: invalidation.timestamp.getTime(),
       source: invalidation.source ?? "",
-      type: invalidation.type,
-    } satisfies CacheInvalidationResponse);
+      type: invalidation.type,    } satisfies CacheInvalidationResponse);
   } catch (error) {
-    log.cache.error("Cache invalidation failed", error instanceof Error ? error : new Error(String(error)));
+    // Cache invalidation failed
 
     const errorMessage =
       error instanceof Error
@@ -172,10 +169,9 @@ export async function GET(): Promise<
             type: latestTournaments.type,
           }
         : null,
-      message: "Database-driven cache invalidation system with type support",
-    } satisfies CacheStatusResponse);
+      message: "Database-driven cache invalidation system with type support",    } satisfies CacheStatusResponse);
   } catch (error) {
-    log.cache.error("Error fetching cache status", error instanceof Error ? error : new Error(String(error)));
+    // Error fetching cache status
 
     const errorMessage =
       error instanceof Error

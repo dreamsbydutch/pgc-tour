@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { RotateCcw, Loader2, AlertTriangle } from "lucide-react";
-import { forceRefreshCache } from "@/src/lib/store/cacheInvalidation";
+import { initializeStore } from "@/src/lib/store/init";
 import { useMainStore } from "@/src/lib/store/store";
 
 export default function FloatingResetButton() {
@@ -35,11 +35,9 @@ export default function FloatingResetButton() {
       // Auto-hide confirmation after 3 seconds
       setTimeout(() => setShowConfirm(false), 3000);
       return;
-    }
-
-    setIsResetting(true);
+    }    setIsResetting(true);
     try {
-      await forceRefreshCache("global");
+      await initializeStore();
       // Small delay to show completion before page potentially refreshes
       setTimeout(() => {
         setIsResetting(false);
