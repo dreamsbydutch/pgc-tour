@@ -88,9 +88,19 @@ async function loadLeaderboardData(): Promise<{
   golfers: Golfer[];
 } | null> {
   try {
-    const response = await fetch("/api/tournaments/leaderboard", {
-      cache: "no-store",
-    });
+    // Add timestamp to bust cache
+    const timestamp = Date.now();
+    const response = await fetch(
+      `/api/tournaments/leaderboard?t=${timestamp}`,
+      {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      },
+    );
 
     if (!response.ok) {
       return null;
@@ -191,12 +201,22 @@ export async function initializeLeaderboard(): Promise<void> {
 // Refresh functions for different data sections
 export async function refreshLeaderboard(): Promise<void> {
   try {
+    console.log("🔄 Starting leaderboard refresh...");
     const data = await loadLeaderboardData();
 
     if (data) {
+      console.log("✅ Leaderboard data received:", {
+        teams: data.teams?.length ?? 0,
+        golfers: data.golfers?.length ?? 0,
+        timestamp: new Date().toISOString(),
+      });
       useLeaderboardStore.getState().update(data.teams, data.golfers);
+      console.log("✅ Leaderboard store updated");
+    } else {
+      console.warn("⚠️ No leaderboard data received from API");
     }
-  } catch (_error) {
+  } catch (error) {
+    console.error("❌ Leaderboard refresh failed:", error);
     // Silent fail for refresh operations
   }
 }

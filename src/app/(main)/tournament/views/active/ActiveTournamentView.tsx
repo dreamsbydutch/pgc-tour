@@ -51,7 +51,7 @@ export default function ActiveTournamentView({
     initialLoad().catch((err) =>
       console.error("❌ Initial leaderboard load failed:", err),
     );
-  }, []); // Run once on mount
+  }, [refreshNow]); // Run once on mount
 
   // Log polling status for debugging
   useEffect(() => {

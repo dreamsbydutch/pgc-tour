@@ -183,7 +183,28 @@ export async function manualRefreshLeaderboard(): Promise<void> {
   console.log("🔄 Manual leaderboard refresh requested");
 
   try {
+    // Log current state before refresh
+    const beforeState = useLeaderboardStore.getState();
+    console.log("📊 Current leaderboard state:", {
+      teams: beforeState.teams?.length ?? 0,
+      golfers: beforeState.golfers?.length ?? 0,
+      lastUpdated: beforeState._lastUpdated
+        ? new Date(beforeState._lastUpdated).toISOString()
+        : "Never",
+    });
+
     await refreshLeaderboard();
+
+    // Log state after refresh
+    const afterState = useLeaderboardStore.getState();
+    console.log("📊 Updated leaderboard state:", {
+      teams: afterState.teams?.length ?? 0,
+      golfers: afterState.golfers?.length ?? 0,
+      lastUpdated: afterState._lastUpdated
+        ? new Date(afterState._lastUpdated).toISOString()
+        : "Never",
+    });
+
     console.log("✅ Manual leaderboard refresh completed");
   } catch (error) {
     console.error("❌ Manual leaderboard refresh failed:", error);
@@ -196,7 +217,46 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   const windowWithUtils = window as Window & {
     pollingUtils?: Record<string, unknown>;
   };
+  // Add a test function to directly check API data
+  const testApiData = async (): Promise<{
+    teams: Array<Record<string, unknown>>;
+    golfers: Array<Record<string, unknown>>;
+  } | null> => {
+    try {
+      console.log("🧪 Testing API directly...");
+      const timestamp = Date.now();
+      const response = await fetch(
+        `/api/tournaments/leaderboard?t=${timestamp}`,
+        {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0",
+          },
+        },
+      );
 
+      if (response.ok) {
+        const data = (await response.json()) as {
+          teams: Array<Record<string, unknown>>;
+          golfers: Array<Record<string, unknown>>;
+        };
+        console.log("🧪 Raw API response:", data);
+        return data;
+      } else {
+        console.error(
+          "🧪 API request failed:",
+          response.status,
+          response.statusText,
+        );
+        return null;
+      }
+    } catch (error) {
+      console.error("🧪 API test failed:", error);
+      return null;
+    }
+  };
   windowWithUtils.pollingUtils = {
     start: startSmartPolling,
     startLeaderboard: startLeaderboardPolling,
@@ -206,6 +266,7 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     status: getPollingStatus,
     checkTransitions: checkTournamentTransitions,
     manualRefresh: manualRefreshLeaderboard,
+    testApi: testApiData, // Add API test function
   };
 
   console.log("🛠️ Polling utilities available at window.pollingUtils");

@@ -1,6 +1,10 @@
 import { db } from "@/src/server/db";
 import { NextResponse } from "next/server";
 
+// Force dynamic rendering and disable caching
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const tournaments = await db.tournament.findMany({
@@ -31,7 +35,18 @@ export async function GET() {
       where: { tournamentId },
       orderBy: { score: "asc" },
     });
-    return NextResponse.json({ teams, golfers });
+
+    // Create response with no-cache headers
+    const response = NextResponse.json({ teams, golfers });
+    response.headers.set(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate",
+    );
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+    response.headers.set("Surrogate-Control", "no-store");
+
+    return response;
   } catch (error) {
     console.error("Error fetching tournament info:", error);
     return NextResponse.json(
