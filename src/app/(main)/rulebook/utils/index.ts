@@ -160,7 +160,7 @@ export function getRulebookData(): RuleCategory[] {
       rules: [
         {
           ruleText:
-            "At the end of the regular season, the top 15 players on each tour qualify for the PGC Gold Playoff tournament, and the next 15 players on each tour qualify for the PGC Silver Playoff Tournament.",
+            "At the end of the regular season, the top 15 players on each tour qualify for the PGC Gold Playoff tournament, and the next 20 players on each tour qualify for the PGC Silver Playoff Tournament.",
         },
         {
           ruleText:

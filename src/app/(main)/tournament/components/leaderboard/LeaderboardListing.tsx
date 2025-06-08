@@ -312,7 +312,7 @@ export function LeaderboardListing({
         golfer?.position === "WD" ||
         golfer?.position === "DQ" ? (
           <div className="col-span-2 sm:col-span-3"></div>
-        ) : team?.round === 5 || golfer?.round === 5 ? (
+        ) : tournament?.currentRound === 5 ? (
           <>
             <div className="col-span-1 place-self-center font-varela text-sm">
               {type === "PGA"
