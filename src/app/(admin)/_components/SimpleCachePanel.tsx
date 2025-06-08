@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/src/app/_components/ui/button";
 import {
   Card,
@@ -14,13 +14,40 @@ import { initializeStore } from "@/src/lib/store/init";
 import { resetStoreInitialization, resetLeaderboardInitialization } from "@/src/lib/hooks/useStore";
 import { Trash2, RefreshCw, Database, Clock } from "lucide-react";
 import { api } from "@/src/trpc/react";
+import { useMainStore, useLeaderboardStore } from "@/src/lib/store/store";
 
 export default function CacheManagementPanel() {
-  const [isLoading, setIsLoading] = useState<string | null>(null);  const [cacheInfo, setCacheInfo] = useState({
-    main: { lastUpdated: null as number | null, hasData: {} as Record<string, boolean> },
-    leaderboard: { lastUpdated: null as number | null, hasData: {} as Record<string, boolean> },
+  const [isLoading, setIsLoading] = useState<string | null>(null);
+  
+  // Get real store state
+  const mainStore = useMainStore();
+  const leaderboardStore = useLeaderboardStore();
+  
+  // Calculate real cache info from store state
+  const getCacheInfo = () => ({
+    main: { 
+      lastUpdated: mainStore._lastUpdated,
+      hasData: {
+        tournaments: !!(mainStore.seasonTournaments?.length),
+        tourCards: !!(mainStore.tourCards?.length),
+        tours: !!(mainStore.tours?.length),
+        currentSeason: !!mainStore.currentSeason,
+        tiers: !!(mainStore.currentTiers?.length)
+      }
+    },
+    leaderboard: { 
+      lastUpdated: leaderboardStore._lastUpdated,
+      hasData: {
+        teams: !!(leaderboardStore.teams?.length),
+        golfers: !!(leaderboardStore.golfers?.length)
+      }
+    },
     timestamp: Date.now()
   });
+
+  // Use the function to get current cache info
+  const cacheInfo = getCacheInfo();
+
   const [cacheStatus, setCacheStatus] = useState({
     lastRefresh: Date.now(),
     isDatabaseDriven: true,
@@ -29,7 +56,6 @@ export default function CacheManagementPanel() {
     authCoordinated: true,
     isRefreshing: false,
   });
-
   // Database cache invalidation queries
   const { data: latestInvalidation, refetch: refetchInvalidation } =
     api.cache.getLatestInvalidation.useQuery();
@@ -37,19 +63,16 @@ export default function CacheManagementPanel() {
     onSuccess: async () => {
       await refetchInvalidation();
     },
-  });  const handleAction = async (
+  });
+
+  const handleAction = async (
     action: string,
     fn: () => Promise<void> | Promise<boolean> | void,
   ) => {
     setIsLoading(action);
     try {
       await fn();
-      // Update cache info after action
-      setCacheInfo({
-        main: { lastUpdated: Date.now(), hasData: {} },
-        leaderboard: { lastUpdated: Date.now(), hasData: {} },
-        timestamp: Date.now()
-      });
+      // Store will be updated automatically, no need to manually set cache info
       setCacheStatus({
         lastRefresh: Date.now(),
         isDatabaseDriven: true,
@@ -64,7 +87,6 @@ export default function CacheManagementPanel() {
       setIsLoading(null);
     }
   };
-
   // Database-driven cache invalidation handlers
   const handleDatabaseInvalidation = async () => {
     setIsLoading("invalidate-database");
@@ -78,11 +100,6 @@ export default function CacheManagementPanel() {
       await initializeStore();
 
       // Update UI state
-      setCacheInfo({
-        main: { lastUpdated: Date.now(), hasData: {} },
-        leaderboard: { lastUpdated: Date.now(), hasData: {} },
-        timestamp: Date.now()
-      });
       setCacheStatus({
         lastRefresh: Date.now(),
         isDatabaseDriven: true,
@@ -108,11 +125,6 @@ export default function CacheManagementPanel() {
       await initializeStore();
 
       // Update UI state
-      setCacheInfo({
-        main: { lastUpdated: Date.now(), hasData: {} },
-        leaderboard: { lastUpdated: Date.now(), hasData: {} },
-        timestamp: Date.now()
-      });
       setCacheStatus({
         lastRefresh: Date.now(),
         isDatabaseDriven: true,
@@ -127,6 +139,7 @@ export default function CacheManagementPanel() {
       setIsLoading(null);
     }
   };
+
   const handleTournamentInvalidation = async () => {
     setIsLoading("invalidate-tournaments");
     try {
@@ -137,11 +150,6 @@ export default function CacheManagementPanel() {
       await initializeStore();
 
       // Update UI state
-      setCacheInfo({
-        main: { lastUpdated: Date.now(), hasData: {} },
-        leaderboard: { lastUpdated: Date.now(), hasData: {} },
-        timestamp: Date.now()
-      });
       setCacheStatus({
         lastRefresh: Date.now(),
         isDatabaseDriven: true,
