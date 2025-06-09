@@ -5,14 +5,11 @@ export async function GET() {
   try {
     // Get current date to filter past tournaments
     const now = new Date();
-    
+
     // Query past tournaments with minimal data - only what's needed
     const pastTournaments = await db.tournament.findMany({
       where: {
-        OR: [
-          { endDate: { lt: now } },
-          { currentRound: { gte: 5 } }
-        ]
+        OR: [{ endDate: { lt: now } }, { currentRound: { gte: 5 } }],
       },
       select: {
         id: true,
@@ -22,8 +19,7 @@ export async function GET() {
         currentRound: true,
         tierId: true,
         seasonId: true,
-        courseId: true,
-        // Only select essential team data without deep nesting
+        courseId: true, // Only select essential team data without deep nesting
         teams: {
           select: {
             id: true,
@@ -37,7 +33,23 @@ export async function GET() {
             round: true,
             today: true,
             thru: true,
-          }
+            roundOne: true,
+            roundTwo: true,
+            roundThree: true,
+            roundFour: true,
+            tourCard: {
+              select: {
+                id: true,
+                displayName: true,
+                tourId: true,
+                memberId: true,
+                points: true,
+                earnings: true,
+                playoff: true,
+                seasonId: true,
+              },
+            },
+          },
         },
         golfers: {
           select: {
@@ -48,14 +60,19 @@ export async function GET() {
             group: true,
             playerName: true,
             position: true,
+            posChange: true,
             rating: true,
             usage: true,
             worldRank: true,
+            today: true,
+            thru: true,
+            round: true,
+            endHole: true,
             roundOne: true,
             roundTwo: true,
             roundThree: true,
             roundFour: true,
-          }
+          },
         },
         // Basic course info only
         course: {
@@ -66,16 +83,14 @@ export async function GET() {
             par: true,
             front: true,
             back: true,
-          }
-        }
+          },
+        },
       },
-      orderBy: [
-        { startDate: 'desc' }
-      ],
+      orderBy: [{ startDate: "desc" }],
     });
 
     // Return optimized data structure
-    const optimizedTournaments = pastTournaments.map(tournament => ({
+    const optimizedTournaments = pastTournaments.map((tournament) => ({
       id: tournament.id,
       name: tournament.name,
       startDate: tournament.startDate,
@@ -87,14 +102,14 @@ export async function GET() {
       teams: tournament.teams,
       golfers: tournament.golfers,
       course: tournament.course,
-    }))
+    }));
 
     return NextResponse.json(optimizedTournaments);
   } catch (error) {
     console.error("Error fetching past tournaments:", error);
     return NextResponse.json(
       { error: "Failed to fetch past tournaments" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
