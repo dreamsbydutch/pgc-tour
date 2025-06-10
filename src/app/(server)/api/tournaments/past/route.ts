@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/src/server/db";
+import { log } from "console";
 
 export async function GET() {
   try {
@@ -9,6 +10,7 @@ export async function GET() {
     // Query past tournaments with minimal data - only what's needed
     const pastTournaments = await db.tournament.findMany({
       where: {
+        season: { year: new Date().getFullYear() }, // Filter by current season
         OR: [{ endDate: { lt: now } }, { currentRound: { gte: 5 } }],
       },
       select: {
@@ -16,14 +18,12 @@ export async function GET() {
         name: true,
         startDate: true,
         endDate: true,
-        currentRound: true,
+        logoUrl: true,
+        apiId: true,
         tierId: true,
-        seasonId: true,
-        courseId: true, // Only select essential team data without deep nesting
         teams: {
           select: {
             id: true,
-            tourCardId: true,
             golferIds: true,
             score: true,
             position: true,
@@ -87,24 +87,21 @@ export async function GET() {
         },
       },
       orderBy: [{ startDate: "desc" }],
-    });
-
-    // Return optimized data structure
+    }); // Return optimized data structure
     const optimizedTournaments = pastTournaments.map((tournament) => ({
       id: tournament.id,
       name: tournament.name,
       startDate: tournament.startDate,
       endDate: tournament.endDate,
-      currentRound: tournament.currentRound,
       tierId: tournament.tierId,
-      seasonId: tournament.seasonId,
-      courseId: tournament.courseId,
+      logoUrl: tournament.logoUrl,
+      apiId: tournament.apiId,
       teams: tournament.teams,
       golfers: tournament.golfers,
       course: tournament.course,
     }));
 
-    return NextResponse.json(optimizedTournaments);
+    return NextResponse.json({ tournaments: optimizedTournaments });
   } catch (error) {
     console.error("Error fetching past tournaments:", error);
     return NextResponse.json(

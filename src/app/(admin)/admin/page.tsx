@@ -1,5 +1,4 @@
 import PaymentForm from "../_components/TransactionForm";
-import SimpleCachePanel from "../_components/SimpleCachePanel";
 import type {
   DatagolfFieldInput,
   DataGolfLiveTournament,
@@ -107,7 +106,7 @@ export default async function AdminDashboard() {
         </div>
         <HistoryButton className="mt-4 w-3/4" />
       </div>
-      <PaymentForm /> <SimpleCachePanel />
+      <PaymentForm />
     </>
   );
 }

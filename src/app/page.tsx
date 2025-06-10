@@ -18,7 +18,7 @@ import {
 } from "./_components/ui/table";
 import { OptimizedImage } from "./_components/OptimizedImage";
 import { preloadCriticalImages } from "@/src/lib/utils/image-optimization";
-import { useMainStore } from "@/src/lib/store/store";
+import { api } from "@/src/trpc/react";
 import { useAuth } from "@/src/lib/auth/Auth";
 import { useEffect } from "react";
 
@@ -127,8 +127,8 @@ export default function Home() {
 // );
 
 function CurrentSchedule() {
-  const tournaments = useMainStore((state) => state.seasonTournaments);
-  const tiers = useMainStore((state) => state.currentTiers);
+  const { data: tournaments } = api.tournament.getAll.useQuery();
+  const { data: tiers } = api.tier.getCurrent.useQuery();
 
   return (
     <Table className="mx-auto w-3/4 text-center font-varela">

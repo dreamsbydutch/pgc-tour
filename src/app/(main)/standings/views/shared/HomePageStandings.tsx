@@ -2,15 +2,35 @@
 
 import { cn } from "@/src/lib/utils";
 import Link from "next/link";
-import { useMainStore } from "@/src/lib/store/store";
+import { api } from "@/src/trpc/react";
 import { HomePageList } from "@/src/app/_components/HomePageList";
 
 /**
  * Displays the standings for the homepage, showing the top players for each tour.
  */
 export default function HomePageStandings() {
-  const tours = useMainStore((state) => state.tours);
-  const tourCards = useMainStore((state) => state.tourCards);
+  // Get current season for tours data
+  const { data: currentSeason } = api.season.getCurrent.useQuery();
+
+  // Get tours for current season
+  const { data: tours } = api.tour.getBySeason.useQuery(
+    {
+      seasonID: currentSeason?.id,
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
+  );
+
+  // Get tour cards for current season
+  const { data: tourCards } = api.tourCard.getBySeason.useQuery(
+    {
+      seasonId: currentSeason?.id ?? "",
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
+  );
 
   if (!tours?.length) return null;
   return (

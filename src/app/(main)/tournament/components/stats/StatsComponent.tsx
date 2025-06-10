@@ -4,7 +4,8 @@ import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { cn, formatScore } from "@/src/lib/utils";
 import { api } from "@/src/trpc/react";
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { useMainStore, useLeaderboardStore } from "@/src/lib/store/store";
+import { useLeaderboardData } from "@/src/lib/store/hooks/useLeaderboardData";
+import { useTournamentData } from "@/src/lib/store/hooks/useTournamentData";
 import type { Team, Tour, TourCard, Tournament } from "@prisma/client";
 import {
   Table,
@@ -26,24 +27,22 @@ export default function StatsComponent({
 }) {
   const [activeTour, setActiveTour] = useState<string>(tourCard?.tourId ?? "");
 
-  // First check if we already have the data in the store
-  const pastTournament = useMainStore((state) => state.pastTournaments)?.find(
-    (t) => t.id === tournament.id,
-  );
-  const leaderboardTeams = useLeaderboardStore((state) => state.teams);
-  const mainStoreLastUpdated = useLeaderboardStore(
-    (state) => state._lastUpdated,
-  );
+  // Use new hooks for data
+  const { pastTournaments } = useTournamentData();
+  const { teams: leaderboardTeams, lastUpdated: mainStoreLastUpdated } =
+    useLeaderboardData(tournament.id);
 
+  // First check if we already have the data in the store
+  const pastTournament = pastTournaments.find((t) => t.id === tournament.id);
   // Check if stored data is stale (older than 5 minutes)
   const isDataStale = () => {
     if (!mainStoreLastUpdated) return true;
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-    return mainStoreLastUpdated < fiveMinutesAgo;
+    return mainStoreLastUpdated.getTime() < fiveMinutesAgo;
   };
-
   // Add a state to track when the user manually triggers a refresh
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+
   // Fetch teams data if:
   // 1. No data in store, or
   // 2. Data is stale, or
@@ -58,15 +57,14 @@ export default function StatsComponent({
     },
     {
       staleTime: 5 * 60 * 1000, // 5 minutes stale time
-      enabled:
-        !(pastTournament?.teams ?? leaderboardTeams) ||
-        isDataStale() ||
-        refreshTrigger > 0,
+      enabled: !leaderboardTeams || isDataStale() || refreshTrigger > 0,
     },
-  ); // Use data from store if available and not stale, otherwise use fetched data
+  );
+
+  // Use data from store if available and not stale, otherwise use fetched data
   const teams = (() => {
-    if (!isDataStale() && (pastTournament?.teams ?? leaderboardTeams)) {
-      return pastTournament?.teams ?? leaderboardTeams;
+    if (!isDataStale() && leaderboardTeams) {
+      return leaderboardTeams;
     }
     return fetchedTeams;
   })();
@@ -275,7 +273,18 @@ function StatsListing({
   teams: (Team & { tourCard?: TourCard | null })[];
   tourTeams: (Team & { tourCard?: TourCard | null })[];
 }) {
-  const tourCards = useMainStore((state) => state.tourCards); // First try to use the already joined tourCard, fallback to finding it in tourCards
+  // Get current season for tour cards data
+  const { data: currentSeason } = api.season.getCurrent.useQuery();
+  const { data: tourCards } = api.tourCard.getBySeason.useQuery(
+    {
+      seasonId: currentSeason?.id ?? "",
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
+  );
+
+  // First try to use the already joined tourCard, fallback to finding it in tourCards
   const tourCard =
     team.tourCard ?? tourCards?.find((card) => card.id === team.tourCardId);
 

@@ -8,7 +8,7 @@ import {
 import { cn, fetchDataGolf, formatMoney, formatRank } from "@/src/lib/utils";
 import type { DatagolfCourseInputData } from "@/src/lib/types/datagolf_types";
 import type { Tier, Tournament } from "@prisma/client";
-import { useMainStore } from "@/src/lib/store/store";
+import { api } from "@/src/trpc/react";
 
 /**
  * LeaderboardHeader Component
@@ -27,12 +27,24 @@ export default function LeaderboardHeader({
 }: {
   focusTourney: Tournament;
 }) {
-  const course = useMainStore((state) => state.seasonTournaments)?.find(
-    (t) => t.id === focusTourney.id,
-  )?.course;
-  const tier = useMainStore((state) => state.currentTiers)?.find(
-    (t) => t.id === focusTourney.tierId,
+  // Get current season
+  const { data: currentSeason } = api.season.getCurrent.useQuery();
+
+  // Get tournaments for current season to find course data
+  const { data: tournaments } = api.tournament.getBySeason.useQuery(
+    {
+      seasonId: currentSeason?.id ?? "",
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
   );
+
+  // Get tiers to find tier data
+  const { data: tiers } = api.tier.getCurrent.useQuery();
+
+  const course = tournaments?.find((t) => t.id === focusTourney.id)?.course;
+  const tier = tiers?.find((t) => t.id === focusTourney.tierId);
   return (
     <div
       id={`leaderboard-header-${focusTourney.id}`}

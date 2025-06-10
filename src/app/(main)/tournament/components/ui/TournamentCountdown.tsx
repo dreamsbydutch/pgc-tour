@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { type Tournament } from "@prisma/client";
 import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
-import { useMainStore } from "@/src/lib/store/store";
+import { useTournamentData } from "@/src/lib/store/hooks/useTournamentData";
 
 /**
  * TournamentCountdown Component
@@ -20,7 +20,7 @@ export default function TournamentCountdown({
 }: {
   inputTourney?: Tournament | undefined;
 }) {
-  const nextTourney = useMainStore((state) => state.nextTournament);
+  const { nextTournament: nextTourney } = useTournamentData();
   let tourney: Tournament | null = null;
   if (!inputTourney) {
     tourney = nextTourney;

@@ -43,7 +43,7 @@ import {
 } from "country-flag-icons/react/3x2";
 import { MoveDownIcon, MoveHorizontalIcon, MoveUpIcon } from "lucide-react";
 import TeamGolfersTable from "./TeamTable";
-import { useMainStore } from "@/src/lib/store/store";
+import { useUserData } from "@/src/lib/store/hooks/useUserData";
 
 /**
  * Constants for country flags
@@ -249,7 +249,7 @@ export function LeaderboardListing({
   const course = tournament.course;
   const teamGolfers =
     tournamentGolfers?.filter((a) => team?.golferIds.includes(a.apiId)) ?? [];
-  const member = useMainStore((state) => state.currentMember);
+  const { currentMember: member } = useUserData();
   const [isOpen, setIsOpen] = useState(false);
 
   const posChange =

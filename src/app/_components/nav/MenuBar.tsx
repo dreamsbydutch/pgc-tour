@@ -1,12 +1,6 @@
 "use client"; // Indicates that this is a client-side component
 
-import {
-  BookText,
-  Home,
-  List,
-  LogInIcon,
-  Trophy,
-} from "lucide-react"; // Importing icons from the lucide-react library
+import { BookText, Home, List, LogInIcon, Trophy } from "lucide-react"; // Importing icons from the lucide-react library
 import { cn } from "@/src/lib/utils"; // Utility function for conditional class names
 import { Skeleton } from "../ui/skeleton"; // Skeleton loader for loading states
 import { UserAccountNav } from "./UserAccount"; // User account navigation component
@@ -16,7 +10,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signInWithGoogle } from "../../(auth)/signin/actions";
 import { useAuth } from "@/src/lib/auth/Auth";
-import { useMainStore } from "@/src/lib/store/store";
+import { useUserData } from "@/src/lib/store/hooks/useUserData";
 
 /**
  * MenuBar Component
@@ -33,8 +27,8 @@ import { useMainStore } from "@/src/lib/store/store";
  * - className (optional): Additional CSS classes to style the component.
  */
 export default function MenuBar({ className }: { className?: string }) {
-  const { member, /* isLoading unused */ } = useAuth();
-  const tourCard = useMainStore((state) => state.currentTourCard);
+  const { member /* isLoading unused */ } = useAuth();
+  const { currentTourCard: tourCard } = useUserData();
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false); // State for Google sign-in loading
   const [isSigningOut, setIsSigningOut] = useState(false); // State for sign-out process
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMainStore } from "@/src/lib/store/store";
+import { api } from "@/src/trpc/react";
 import { formatScore } from "@/src/lib/utils";
 import type { Golfer, Team, Tournament } from "@prisma/client";
 import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
@@ -18,9 +18,14 @@ import LittleFucker from "@/src/app/_components/LittleFucker";
  * Data is fetched from the global store and API when needed.
  */
 export default function ChampionsPopup() {
-  const tournament = useMainStore((state) => state.pastTournaments)?.sort(
-    (a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime(),
-  )[0];
+  // Get all tournaments (includes past tournaments data)
+  const { data: tournaments } = api.tournament.getAll.useQuery();
+
+  const tournament = tournaments
+    ?.filter((tournament) => new Date(tournament.endDate) < new Date())
+    ?.sort(
+      (a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime(),
+    )[0];
 
   if (
     new Date(tournament?.endDate ?? "") <
@@ -35,9 +40,9 @@ export default function ChampionsPopup() {
   if (!champs.length) return <ChampionSectionSkeleton />;
 
   return (
-    <div className="m-3 rounded-2xl bg-amber-100 bg-opacity-70 shadow-lg md:w-10/12 lg:w-7/12">
-      <div className="mx-auto max-w-3xl py-4 text-center">
-        <h1 className="flex items-center justify-center px-3 font-varela text-2xl font-bold sm:text-3xl md:text-4xl">
+    <div className="mx-auto rounded-2xl bg-amber-100 bg-opacity-70 shadow-lg md:w-10/12 lg:w-7/12">
+      <div className="max-w-3xl py-4 text-center">
+        <h1 className="flex items-center justify-center px-3 font-varela text-xl font-bold md:text-3xl">
           {tournament.logoUrl && (
             <TournamentLogo
               alt={`${tournament.name} Logo`}
@@ -89,8 +94,29 @@ function ChampionSection({
   tournament: Tournament;
   golfers: Golfer[];
 }) {
-  const tours = useMainStore((state) => state.tours);
-  const tourCards = useMainStore((state) => state.tourCards);
+  // Get current season for tours and tour cards data
+  const { data: currentSeason } = api.season.getCurrent.useQuery();
+
+  // Get tours for current season
+  const { data: tours } = api.tour.getBySeason.useQuery(
+    {
+      seasonID: currentSeason?.id,
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
+  );
+
+  // Get tour cards for current season
+  const { data: tourCards } = api.tourCard.getBySeason.useQuery(
+    {
+      seasonId: currentSeason?.id ?? "",
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
+  );
+
   const tourCard = tourCards?.find((tc) => tc.id === champion.tourCardId);
   const tour = tours?.find((tour) => tour.id === tourCard?.tourId);
 
@@ -112,7 +138,7 @@ function ChampionSection({
             size="medium"
           />
         )}
-        <div className="text-xl font-semibold">
+        <div className="flex flex-row gap-2 text-xl font-semibold">
           {tourCard?.displayName}
           <LittleFucker tourCard={tourCard} />
         </div>
@@ -128,10 +154,11 @@ function ChampionSection({
             key={golfer.id}
             className="grid grid-cols-7 items-center justify-center"
           >
-            <div className="col-span-6 text-xs">{golfer.playerName}</div>
+            <div className="text-xs">{golfer.position}</div>
+            <div className="col-span-5 text-xs">{golfer.playerName}</div>
             <div className="text-xs">
               {["CUT", "WD", "DQ"].includes(golfer.position ?? "")
-                ? golfer.position
+                ? "-"
                 : formatScore(golfer.score)}
             </div>
           </div>

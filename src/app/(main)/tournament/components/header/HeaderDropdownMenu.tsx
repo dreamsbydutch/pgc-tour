@@ -15,7 +15,7 @@ import Link from "next/link";
 import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
 import { cn } from "@/src/lib/utils";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
-import { useMainStore } from "@/src/lib/store/store";
+import { api } from "@/src/trpc/react";
 import type { Course, Tier, Tournament } from "@prisma/client";
 
 /**
@@ -38,22 +38,39 @@ export default function HeaderDropdown({
   const [dateEffect, setDateEffect] = useState(false);
   const [leaderboardToggle, setLeaderboardToggle] = useState("Date");
 
-  const tiers = useMainStore((state) => state.currentTiers)?.sort(
+  // Get current season
+  const { data: currentSeason } = api.season.getCurrent.useQuery();
+
+  // Get tiers for current season
+  const { data: tiers } = api.tier.getCurrent.useQuery();
+  const sortedTiers = tiers?.sort(
     (a, b) => (b.points[0] ?? 0) - (a.points[0] ?? 0),
   );
-  const tournaments = useMainStore((state) => state.seasonTournaments);
-  const currentTourney = useMainStore((state) => state.currentTournament);
+
+  // Get tournaments for current season
+  const { data: tournaments } = api.tournament.getBySeason.useQuery(
+    {
+      seasonId: currentSeason?.id ?? "",
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
+  );
+
+  // Get tournament info to find current tournament
+  const { data: tournamentInfo } = api.tournament.getInfo.useQuery();
+  const currentTourney = tournamentInfo?.current;
   const tournamentsByTier = currentTourney
     ? [
         [currentTourney],
-        ...(tiers?.map((t) =>
+        ...(sortedTiers?.map((t) =>
           tournaments?.filter((tourney) => tourney.tierId === t.id),
         ) ?? []),
       ]
-    : (tiers?.map((t) =>
+    : (sortedTiers?.map((t) =>
         tournaments?.filter((tourney) => tourney.tierId === t.id),
       ) ?? []);
-  if (!tiers || !tournaments)
+  if (!sortedTiers || !tournaments)
     return (
       <div
         className="inline-flex w-full items-center justify-center rounded-lg bg-slate-600 px-5 py-0.5 text-slate-100 shadow-lg md:px-5 md:py-1"
@@ -104,8 +121,9 @@ export default function HeaderDropdown({
                 <DropdownMenuLabel className="text-center font-bold xs:text-lg lg:text-xl">
                   {groupedTourneys.length === 5 && i === 0
                     ? "Live"
-                    : tiers?.find((tier) => tier.id === group?.[0]?.tierId)
-                        ?.name}
+                    : sortedTiers?.find(
+                        (tier) => tier.id === group?.[0]?.tierId,
+                      )?.name}
                 </DropdownMenuLabel>
               )}
               {group?.map((tourney) => (
@@ -125,7 +143,9 @@ export default function HeaderDropdown({
                   >
                     <TournamentItem
                       tourney={tourney}
-                      tier={tiers?.find((tier) => tier.id === tourney.tierId)}
+                      tier={sortedTiers?.find(
+                        (tier) => tier.id === tourney.tierId,
+                      )}
                       isActive={activeTourney?.id === tourney.id}
                     />
                   </Link>

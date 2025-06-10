@@ -10,8 +10,8 @@ import {
   TableRow,
 } from "@/src/app/_components/ui/table";
 import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
-import { useMainStore } from "@/src/lib/store/store";
 import type { ScheduleTableProps } from "../../types";
+import { api } from "@/src/trpc/react";
 
 /**
  * ScheduleTable Component
@@ -20,8 +20,12 @@ import type { ScheduleTableProps } from "../../types";
  * Shows tournament details including dates, tier, course, and location.
  */
 export function ScheduleTable({ className }: ScheduleTableProps) {
-  const tournaments = useMainStore((state) => state.seasonTournaments);
-  const tiers = useMainStore((state) => state.currentTiers);
+  const season = api.season.getCurrent.useQuery().data;
+  const tournaments = api.tournament.getBySeason.useQuery(
+    season?.id ? { seasonId: season.id } : { seasonId: "" },
+    { enabled: !!season?.id }
+  ).data;
+  const tiers =  api.tier.getCurrent.useQuery().data;
 
   if (!tournaments?.length) {
     return (

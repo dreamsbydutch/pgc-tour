@@ -1,7 +1,7 @@
 "use client";
 
-import { useMainStore } from "@/src/lib/store/store";
 import { useSearchParams } from "next/navigation";
+import { api } from "@/src/trpc/react";
 import {
   LeaderboardHeaderSkeleton,
   TournamentCountdownSkeleton,
@@ -23,11 +23,17 @@ export const dynamic = "force-dynamic";
 function TournamentPageContent() {
   const searchParams = useSearchParams();
 
-  const currentTournament = useMainStore((state) => state.currentTournament);
-  const nextTournament = useMainStore((state) => state.nextTournament);
-  const pastTournaments = useMainStore((state) => state.pastTournaments);
-  const seasonTournaments = useMainStore((state) => state.seasonTournaments);
-  const isStoreLoaded = useMainStore((state) => state._lastUpdated !== null);
+  // Get tournament data using tRPC API (with course relationship)
+  const tournamentsQuery = api.tournament.getInfo.useQuery();
+  const tournaments = tournamentsQuery.data;
+
+  const currentTournament = tournaments?.current;
+  const nextTournament = tournaments?.next;
+  const pastTournaments = tournaments?.past ? [tournaments.past] : [];
+  const seasonTournaments = tournaments
+    ? [tournaments.current, tournaments.next, tournaments.past].filter(Boolean)
+    : [];
+  const isStoreLoaded = !tournamentsQuery.isLoading;
 
   const tournamentIdParam = searchParams.get("id");
 
@@ -35,12 +41,13 @@ function TournamentPageContent() {
   if (!isStoreLoaded) {
     return <TournamentPageLoadingView />;
   }
-
   // Determine which tournament to show
   const getDisplayTournament = () => {
     // If there's an ID in search params, try to find that tournament
     if (tournamentIdParam) {
-      return seasonTournaments?.find((t) => t.id === tournamentIdParam) ?? null;
+      return (
+        seasonTournaments?.find((t) => t?.id === tournamentIdParam) ?? null
+      );
     }
 
     // No ID provided - determine best tournament to show
@@ -52,8 +59,9 @@ function TournamentPageContent() {
       // Get most recent past tournament
       const mostRecentPastTournament = pastTournaments?.sort(
         (a, b) =>
-          new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
-      )[0];
+          new Date(b?.startDate ?? "").getTime() -
+          new Date(a?.startDate ?? "").getTime(),
+      )?.[0];
       return mostRecentPastTournament ?? null;
     } else if ((seasonTournaments?.length ?? 0) > 0) {
       return seasonTournaments?.[0] ?? null;

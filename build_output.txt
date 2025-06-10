@@ -1,0 +1,48 @@
+
+> pgc-tour@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.16
+  - Environments: .env
+  - Experiments (use with caution):
+    · staleTimes
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./src/app/(admin)/_components/SimpleCachePanel.tsx
+Module not found: Can't resolve '@/src/lib/store/init'
+
+https://nextjs.org/docs/messages/module-not-found
+
+./src/app/(admin)/_components/SimpleCachePanel.tsx
+Module not found: Can't resolve '@/src/lib/hooks/useStore'
+
+https://nextjs.org/docs/messages/module-not-found
+
+./src/app/(admin)/_components/SimpleCachePanel.tsx
+Module not found: Can't resolve '@/src/lib/store/store'
+
+https://nextjs.org/docs/messages/module-not-found
+
+./src/app/(main)/history/components/tables/golfer-stats-table.tsx
+Module not found: Can't resolve '@/src/lib/store/store'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/(main)/history/views/HistoryMainView.tsx
+./src/app/(main)/history/views/index.ts
+./src/app/(main)/history/page.tsx
+
+./src/app/(main)/history/views/MemberStatsView.tsx
+Module not found: Can't resolve '@/src/lib/store/store'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/(main)/history/views/index.ts
+./src/app/(main)/history/page.tsx
+
+
+> Build failed because of webpack errors

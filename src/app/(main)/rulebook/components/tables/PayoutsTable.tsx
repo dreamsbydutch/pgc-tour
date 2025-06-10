@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/app/_components/ui/table";
-import { useMainStore } from "@/src/lib/store/store";
 import type { PayoutsTableProps } from "../../types";
 import {
   sortTiersByPayout,
@@ -17,6 +16,7 @@ import {
   getTierDisplayName,
   getTierStyling,
 } from "../../utils";
+import { api } from "@/src/trpc/react";
 
 /**
  * PayoutsTable Component
@@ -25,7 +25,7 @@ import {
  * Includes special handling for Silver tier and playoff styling.
  */
 export function PayoutsTable({ className }: PayoutsTableProps) {
-  const rawTiers = useMainStore((state) => state.currentTiers);
+  const rawTiers = api.tier.getCurrent.useQuery().data;
   let tiers = rawTiers ? sortTiersByPayout(rawTiers) : [];
 
   // Add Silver tier for display if playoff tier exists

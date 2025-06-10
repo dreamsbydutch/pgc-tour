@@ -6,14 +6,29 @@ import { createTourCard } from "@/src/server/api/actions/tour_card";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import Link from "next/link";
-import { useMainStore } from "@/src/lib/store/store";
 import type { Tour } from "@prisma/client";
 import { api } from "@/src/trpc/react";
+import { useUserData } from "@/src/lib/store/hooks/useUserData";
 
 export function TourCardForm() {
-  const tours = useMainStore((state) => state.tours);
-  const currentTourCard = useMainStore((state) => state.currentTourCard);
+  // Get current season for tours data
+  const { data: currentSeason } = api.season.getCurrent.useQuery();
+
+  // Get tours for current season
+  const { data: tours } = api.tour.getBySeason.useQuery(
+    {
+      seasonID: currentSeason?.id,
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
+  );
+
+  // Get current tour card from user store
+  const { currentTourCard } = useUserData();
+
   const [isCreatingTourCard, setIsCreatingTourCard] = useState(false);
+
   if (currentTourCard || !tours?.length) return null;
   return (
     <div className="my-4 flex flex-col items-center justify-center gap-4">
@@ -59,9 +74,9 @@ function TourCardFormButton({
     await utils.tour.invalidate();
     return;
   };
-  const tourCards = useMainStore((state) => state.tourCards)?.filter(
-    (tc) => tc.tourId === tour.id,
-  );
+  const { data: tourCards } = api.tourCard.getByTourId.useQuery({
+    tourId: tour.id,
+  });
 
   return (
     <Button

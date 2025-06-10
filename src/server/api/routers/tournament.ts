@@ -19,6 +19,7 @@ export const tournamentRouter = createTRPCRouter({
       return ctx.db.tournament.findMany({
         where: { seasonId: input.seasonId },
         orderBy: { startDate: "asc" },
+        include: { course: true },
       });
     }),
   getById: publicProcedure

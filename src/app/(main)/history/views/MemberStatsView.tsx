@@ -29,7 +29,6 @@
 "use client";
 
 import { useState } from "react";
-import { useMainStore } from "@/src/lib/store/store";
 import { api } from "@/src/trpc/react";
 import { useAuth } from "@/src/lib/auth/Auth";
 import {
@@ -49,7 +48,7 @@ export function MemberStatsView() {
   const [showFriendsOnly, setShowFriendsOnly] = useState(false);
 
   // Get current tier data from store
-  const currentTiers = useMainStore((state) => state.currentTiers);
+  const currentTiers = api.tier.getCurrent.useQuery().data;
 
   // Fetch all necessary data
   const { data: tourCards } = api.tourCard.getAll.useQuery();

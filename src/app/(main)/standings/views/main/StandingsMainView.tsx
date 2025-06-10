@@ -1,6 +1,5 @@
 "use client";
 
-import { useMainStore } from "@/src/lib/store/store";
 import { useState } from "react";
 import { ToursToggleButton } from "../../components/ui/ToursToggleButton";
 import {
@@ -27,6 +26,8 @@ import {
   createMockTier,
   getInitialStandingsToggle,
 } from "../../utils";
+import { api } from "@/src/trpc/react";
+import { useUserData } from "@/src/lib/store/hooks/useUserData";
 
 /**
  * Main Standings Page Component
@@ -37,16 +38,28 @@ import {
 export default function StandingsMainView({
   searchParams,
 }: StandingsMainViewProps) {
-  const tours = useMainStore((state) => state.tours);
-  const tourCard = useMainStore((state) => state.currentTourCard);
+  // Get current season for tours data
+  const { data: currentSeason } = api.season.getCurrent.useQuery();
 
+  // Get tours for current season
+  const { data: tours } = api.tour.getBySeason.useQuery(
+    {
+      seasonID: currentSeason?.id,
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
+  );
+
+  // Get current tour card from user store
+  const { currentTourCard } = useUserData();
   const [standingsToggle, setStandingsToggle] = useState<string>(
-    getInitialStandingsToggle(searchParams, tourCard, tours),
+    getInitialStandingsToggle(searchParams, currentTourCard, tours ?? null),
   );
 
   const activeTour =
     tours?.find((tour) => tour.id === standingsToggle) ?? tours?.[0];
-  const playoffsTour = createPlayoffsTour(tourCard?.seasonId ?? "");
+  const playoffsTour = createPlayoffsTour(currentTourCard?.seasonId ?? "");
 
   return (
     <>
@@ -78,7 +91,7 @@ export default function StandingsMainView({
         </div>
       )}
       {standingsToggle === "playoffs" ? (
-        <PlayoffStandings tours={tours} />
+        <PlayoffStandings tours={tours ?? null} />
       ) : (
         <TourStandings activeTour={activeTour} />
       )}
@@ -93,7 +106,18 @@ export default function StandingsMainView({
  * including playoff cutlines.
  */
 function TourStandings({ activeTour }: TourStandingsProps) {
-  const tourCards = useMainStore((state) => state.tourCards);
+  // Get current season for tour cards data
+  const { data: currentSeason } = api.season.getCurrent.useQuery();
+
+  // Get tour cards for current season
+  const { data: tourCards } = api.tourCard.getBySeason.useQuery(
+    {
+      seasonId: currentSeason?.id ?? "",
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
+  );
 
   if (!activeTour) {
     return (
@@ -102,8 +126,10 @@ function TourStandings({ activeTour }: TourStandingsProps) {
       </div>
     );
   }
-
-  const filteredTourCards = filterTourCardsByTour(tourCards, activeTour.id);
+  const filteredTourCards = filterTourCardsByTour(
+    tourCards ?? null,
+    activeTour.id,
+  );
   const sortedTourCards = sortTourCardsByPoints(filteredTourCards);
 
   const goldQualifiers = filterByPlayoffRange(
@@ -158,11 +184,23 @@ function TourStandings({ activeTour }: TourStandingsProps) {
  * Displays the playoff standings with gold and silver playoff sections.
  */
 function PlayoffStandings({ tours }: PlayoffStandingsProps) {
-  const tourCards = useMainStore((state) => state.tourCards);
-  const tiers = useMainStore((state) => state.currentTiers);
+  // Get current season for tour cards and tiers data
+  const { data: currentSeason } = api.season.getCurrent.useQuery();
 
-  const goldTeams = getGoldPlayoffTeams(tours, tourCards);
-  const silverTeams = getSilverPlayoffTeams(tours, tourCards);
+  // Get tour cards for current season
+  const { data: tourCards } = api.tourCard.getBySeason.useQuery(
+    {
+      seasonId: currentSeason?.id ?? "",
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
+  );
+
+  // Get current tiers
+  const { data: tiers } = api.tier.getCurrent.useQuery();
+  const goldTeams = getGoldPlayoffTeams(tours, tourCards ?? null);
+  const silverTeams = getSilverPlayoffTeams(tours, tourCards ?? null);
   const playoffTier = tiers?.find((t) => t.name === "Playoff");
 
   const goldTier = createMockTier(

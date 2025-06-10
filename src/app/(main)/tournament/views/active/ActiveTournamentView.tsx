@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useLeaderboardStore } from "@/src/lib/store/store";
-import {
-  manualRefreshLeaderboard,
-  getPollingStatus,
-} from "@/src/lib/store/polling";
+import { useLeaderboardData } from "@/src/lib/store/hooks/useLeaderboardData";
 import LeaderboardPage from "../shared/LeaderboardPage";
 import type { Course, Tournament } from "@prisma/client";
 
@@ -18,8 +14,9 @@ export default function ActiveTournamentView({
   tournament,
   inputTour,
 }: ActiveTournamentViewProps) {
-  const lastUpdated = useLeaderboardStore((state) => state._lastUpdated);
-  const isPolling = useLeaderboardStore((state) => state.isPolling);
+  // Use the new leaderboard data hook
+  const { lastUpdated, isPolling, isLoading, manualRefresh, error } =
+    useLeaderboardData(tournament.id);
 
   // Manual refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -28,21 +25,20 @@ export default function ActiveTournamentView({
   const refreshNow = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await manualRefreshLeaderboard();
+      await manualRefresh();
       console.log("✅ Manual leaderboard refresh completed");
     } catch (err) {
       console.error("❌ Manual leaderboard refresh failed:", err);
     } finally {
       setIsRefreshing(false);
     }
-  }, []);
-
+  }, [manualRefresh]);
   // Load initial data on component mount if needed
   useEffect(() => {
     const initialLoad = async () => {
-      const currentLastUpdated = useLeaderboardStore.getState()._lastUpdated;
       // Only load if data is stale (older than 5 minutes) or missing
-      if (!currentLastUpdated || Date.now() - currentLastUpdated > 300000) {
+      const lastUpdateTimestamp = lastUpdated ? lastUpdated.getTime() : 0;
+      if (!lastUpdated || Date.now() - lastUpdateTimestamp > 300000) {
         console.log("🔄 Loading initial leaderboard data...");
         await refreshNow();
       }
@@ -51,22 +47,25 @@ export default function ActiveTournamentView({
     initialLoad().catch((err) =>
       console.error("❌ Initial leaderboard load failed:", err),
     );
-  }, [refreshNow]); // Run once on mount
+  }, [refreshNow, lastUpdated]); // Run once on mount
 
   // Log polling status for debugging
   useEffect(() => {
-    const status = getPollingStatus();
-    console.log("📊 Polling status:", status);
+    if (isPolling) {
+      console.log("📊 Leaderboard polling is active");
+    } else {
+      console.log("📊 Leaderboard polling is inactive");
+    }
   }, [isPolling]);
+
   const handleManualRefresh = useCallback(async () => {
     await refreshNow();
   }, [refreshNow]);
-
   // Format the last updated time as a readable string
-  const formatLastUpdated = (timestamp: number | null) => {
+  const formatLastUpdated = (timestamp: Date | null) => {
     if (!timestamp) return "Never";
 
-    const date = new Date(timestamp);
+    const date = timestamp;
 
     // For today's dates, show just the time
     if (date.toDateString() === new Date().toDateString()) {
@@ -107,7 +106,7 @@ export default function ActiveTournamentView({
 
           <span className="badge text-2xs text-slate-500">
             {tournament.livePlay
-              ? `Round ${tournament.currentRound} - ${isPolling ? "Live":"Not Updating"}`
+              ? `Round ${tournament.currentRound} - ${isPolling ? "Live" : "Not Updating"}`
               : `Round ${(tournament.currentRound ?? 1) - 1} - Complete`}
           </span>
         </div>

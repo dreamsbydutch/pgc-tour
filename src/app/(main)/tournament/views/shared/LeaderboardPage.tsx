@@ -10,7 +10,9 @@ import type {
 import { useState } from "react";
 import Link from "next/link";
 import { LeaderboardListing } from "../../components/leaderboard/LeaderboardListing";
-import { useLeaderboardStore, useMainStore } from "@/src/lib/store/store";
+import { useLeaderboardData } from "@/src/lib/store/hooks/useLeaderboardData";
+import { useUserData } from "@/src/lib/store/hooks/useUserData";
+import { useTournamentData } from "@/src/lib/store/hooks/useTournamentData";
 import { ToursToggleButton } from "../../../standings/components/ui/ToursToggleButton";
 import StatsComponent from "../../components/stats/StatsComponent";
 import { api } from "@/src/trpc/react";
@@ -35,24 +37,31 @@ export default function LeaderboardPage({
   tournament: Tournament & { course: Course | null };
   inputTour: string;
 }) {
-  let tours = useMainStore((state) => state.tours);
-  const pastTournament = useMainStore((state) => state.pastTournaments)?.find(
-    (t) => t.id === tournament.id,
-  );
-  const tourCard = useMainStore((state) => state.currentTourCard);
-  const member = useMainStore((state) => state.currentMember);
-  const mainStoreGolfers = useLeaderboardStore((state) => state.golfers);
-  const mainStoreTeams = useLeaderboardStore((state) => state.teams);
-  const storedGolfers = pastTournament
-    ? pastTournament.golfers
-    : mainStoreGolfers;
-  const storedTeams = pastTournament ? pastTournament.teams : mainStoreTeams;
-  const golfers = pastTournament ? pastTournament.golfers : storedGolfers;
-  const teamsData = pastTournament ? pastTournament.teams : storedTeams;
+  // Use new hooks for data
+  const { tournaments: allTournaments, pastTournaments } = useTournamentData();
+  const { currentTourCard: tourCard, currentMember: member } = useUserData();
+  const { teams: mainStoreTeams, golfers: mainStoreGolfers } =
+    useLeaderboardData(tournament.id);
 
+  // For past tournaments, we'll use the API directly since the new store
+  // doesn't store historical leaderboard data yet
+  const pastTournament = pastTournaments?.find((t) => t.id === tournament.id);
+
+  // Use current leaderboard data for active tournaments,
+  // API data for historical tournaments
+  const storedGolfers = mainStoreGolfers || [];
+  const storedTeams = mainStoreTeams || [];
+  const golfers = storedGolfers;
+  const teamsData = storedTeams;
   const [activeTour, setActiveTour] = useState<string>(
     inputTour && inputTour !== "" ? inputTour : (tourCard?.tourId ?? ""),
   );
+
+  // Get tours data using API for now (TODO: move to store hooks when available)
+  const toursQuery = api.tour.getBySeason.useQuery({
+    seasonID: tournament?.seasonId ?? "",
+  });
+  let tours = toursQuery.data;
   tours = [
     ...(tours ?? []),
     {
@@ -159,8 +168,7 @@ export function HistoricalLeaderboardPage({
   let tours = api.tour.getBySeason.useQuery({
     seasonID: tournament?.seasonId ?? "",
   }).data;
-  const tourCard = useMainStore((state) => state.currentTourCard);
-  const member = useMainStore((state) => state.currentMember);
+  const { currentTourCard: tourCard, currentMember: member } = useUserData();
   const golfers = api.golfer.getByTournament.useQuery({
     tournamentId: tournament?.id ?? "",
   }).data;
@@ -279,8 +287,7 @@ export function PlayoffLeaderboardPage({
   const actualTours = api.tour.getBySeason.useQuery({
     seasonID: tournament?.seasonId ?? "",
   }).data;
-  const tourCard = useMainStore((state) => state.currentTourCard);
-  const member = useMainStore((state) => state.currentMember);
+  const { currentTourCard: tourCard, currentMember: member } = useUserData();
   const tourCards = api.tourCard.getBySeason.useQuery({
     seasonId: tournament?.seasonId ?? "",
   }).data;

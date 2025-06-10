@@ -5,28 +5,54 @@ import type { Member, Team, Tournament } from "@prisma/client";
 import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
 import Link from "next/link";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
-import { useMainStore } from "@/src/lib/store/store";
 import type { StandingsTourCardInfoProps } from "../../types";
+import { api } from "@/src/trpc/react";
 
 export function StandingsTourCardInfo({
   tourCard,
   member,
 }: StandingsTourCardInfoProps & { member: Member | null | undefined }) {
-  // Get all tournaments in the season except playoffs
-  const tiers = useMainStore((state) => state.currentTiers)?.find(
-    (t) => t.name === "Playoff",
-  );
-  const tourneys = useMainStore((state) => state.seasonTournaments);
-  const pastTourneys = useMainStore((state) => state.pastTournaments);
-  const filteredTourneys = tourneys?.filter((t) => t.tierId !== tiers?.id);
+  // Get current season for tournaments data
+  const { data: currentSeason } = api.season.getCurrent.useQuery();
 
-  // Get all teams associated with this player's tour card
-  const teams = pastTourneys?.reduce((acc, tournament) => {
-    const team = tournament.teams.find(
-      (team) => team.tourCardId === tourCard.id,
-    );
-    if (team) {
-      acc.push(team);
+  // Get tournaments for current season, excluding playoffs
+  const { data: tourneys } = api.tournament.getBySeason.useQuery(
+    {
+      seasonId: currentSeason?.id ?? "",
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
+  );
+
+  // Get tiers to filter out playoff tournaments
+  const { data: tiers } = api.tier.getCurrent.useQuery();
+  const playoffTier = tiers?.find((a) => a.name === "Playoff");
+
+  // Filter out playoff tournaments
+  const filteredTourneys = tourneys?.filter(
+    (t) => t.tierId !== playoffTier?.id,
+  );
+
+  // Get teams for all tournaments to find this player's teams
+  const teamsQueries =
+    filteredTourneys?.map((tournament) => ({
+      tournamentId: tournament.id,
+      query: api.team.getByTournament.useQuery({
+        tournamentId: tournament.id,
+      }),
+    })) ?? [];
+
+  // Get all teams associated with this player's tour card across all tournaments
+  const teams = teamsQueries.reduce((acc, { query }) => {
+    const tournamentTeams = query.data;
+    if (Array.isArray(tournamentTeams)) {
+      const team = tournamentTeams.find(
+        (team) => team.tourCardId === tourCard.id,
+      );
+      if (team) {
+        acc.push(team);
+      }
     }
     return acc;
   }, [] as Team[]);
@@ -152,7 +178,7 @@ function TournamentHistoryRow({
   className?: string;
 }) {
   // Get tiers for displaying tournament importance
-  const tiers = useMainStore((state) => state.currentTiers);
+  const { data: tiers } = api.tier.getCurrent.useQuery();
   if (!tourneys || !teams) {
     // Replace the simple loading spinner with a proper skeleton UI
     return (

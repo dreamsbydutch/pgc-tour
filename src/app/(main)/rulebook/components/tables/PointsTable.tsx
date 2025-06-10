@@ -9,9 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/app/_components/ui/table";
-import { useMainStore } from "@/src/lib/store/store";
 import type { PointsTableProps } from "../../types";
 import { sortTiersByPayout } from "../../utils";
+import { api } from "@/src/trpc/react";
 
 /**
  * PointsTable Component
@@ -20,7 +20,7 @@ import { sortTiersByPayout } from "../../utils";
  * Shows how many points are awarded for each finishing position across different tournament tiers.
  */
 export function PointsTable({ className }: PointsTableProps) {
-  const rawTiers = useMainStore((state) => state.currentTiers);
+  const rawTiers = api.tier.getCurrent.useQuery().data;
   const tiers = rawTiers ? sortTiersByPayout(rawTiers) : [];
 
   if (!tiers.length) {

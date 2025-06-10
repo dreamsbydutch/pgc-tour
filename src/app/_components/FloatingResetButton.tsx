@@ -3,8 +3,11 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { RotateCcw, Loader2, AlertTriangle } from "lucide-react";
-import { initializeStore } from "@/src/lib/store/init";
-import { useMainStore } from "@/src/lib/store/store";
+import { useTournamentStore } from "@/src/lib/store/domains/tournament/store";
+import { useLeaderboardStore } from "@/src/lib/store/domains/leaderboard/store";
+import { useUserStore } from "@/src/lib/store/domains/user/store";
+import { useUIStore } from "@/src/lib/store/domains/ui/store";
+import { api } from "@/src/trpc/react";
 
 export default function FloatingResetButton() {
   const [isResetting, setIsResetting] = useState(false);
@@ -35,7 +38,8 @@ export default function FloatingResetButton() {
       // Auto-hide confirmation after 3 seconds
       setTimeout(() => setShowConfirm(false), 3000);
       return;
-    }    setIsResetting(true);
+    }
+    setIsResetting(true);
     try {
       await initializeStore();
       // Small delay to show completion before page potentially refreshes

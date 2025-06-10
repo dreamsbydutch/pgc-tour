@@ -11,7 +11,8 @@ import { Button } from "@/src/app/_components/ui/button";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { api } from "@/src/trpc/react";
 import { teamCreateOnFormSubmit } from "@/src/server/api/actions/team";
-import { useMainStore } from "@/src/lib/store/store";
+import { useUserData } from "@/src/lib/store/hooks/useUserData";
+import { useTournamentData } from "@/src/lib/store/hooks/useTournamentData";
 import { GolferGroup } from "../../components/ui/GolferGroup";
 
 // Define Zod schema for form validation
@@ -44,13 +45,11 @@ export default function CreateTeamPage({
   tournamentId: string;
   setPickingTeam: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const tourCard = useMainStore((state) => state.currentTourCard);
-  const tournament = useMainStore((state) =>
-    state.seasonTournaments?.find(
-      (tournament) => tournament.id === tournamentId,
-    ),
+  const { currentTourCard: tourCard } = useUserData();
+  const { tournaments, currentTournament: current } = useTournamentData();
+  const tournament = tournaments.find(
+    (tournament) => tournament.id === tournamentId,
   );
-  const current = useMainStore((state) => state.currentTournament);
   const [pageError, setPageError] = useState<string | null>(null);
 
   // Handle errors at the page level

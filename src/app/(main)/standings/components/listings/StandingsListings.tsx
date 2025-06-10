@@ -6,7 +6,6 @@ import { useState } from "react";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { StandingsTourCardInfo } from "../dropdowns/StandingsDropdown";
 import LittleFucker from "@/src/app/_components/LittleFucker";
-import { useMainStore } from "@/src/lib/store/store";
 import { api } from "@/src/trpc/react";
 import { TourLogo } from "@/src/app/_components/OptimizedImage";
 import { useAuth } from "@/src/lib/auth/Auth";
@@ -40,15 +39,15 @@ export function StandingsListing({
   const handleAddFriend = () => {
     if (!currentMember) return;
     setIsFriendChanging(true);
-    
+
     const updatedMember = {
       ...currentMember,
       friends: [...currentMember.friends, tourCard.memberId],
     };
-    
+
     // Update through auth store service for consistency
     authStoreService.updateCurrentMember(updatedMember);
-    
+
     addFriend.mutate({
       memberId: currentMember.id,
       friendId: tourCard.memberId,
@@ -60,19 +59,19 @@ export function StandingsListing({
   const handleRemoveFriend = () => {
     if (!currentMember) return;
     setIsFriendChanging(true);
-    
+
     const updatedFriends = currentMember.friends.filter(
       (friendId) => friendId !== tourCard.memberId,
     );
-    
+
     const updatedMember = {
       ...currentMember,
       friends: updatedFriends,
     };
-    
+
     // Update through auth store service for consistency
     authStoreService.updateCurrentMember(updatedMember);
-    
+
     removeFriend.mutate({
       memberId: currentMember.id,
       friendsList: updatedFriends,
@@ -169,10 +168,22 @@ export function PlayoffStandingsListing({
   className,
 }: PlayoffStandingsListingProps & { className?: string }) {
   const [isOpen, setIsOpen] = useState(false);
-  const currentMember = useMainStore((state) => state.currentMember);
-  const tour = useMainStore((state) => state.tours)?.find(
-    (t) => t.id === tourCard.tourId,
+  const { member: currentMember } = useAuth();
+
+  // Get current season for tours data
+  const { data: currentSeason } = api.season.getCurrent.useQuery();
+
+  // Get tours for current season
+  const { data: tours } = api.tour.getBySeason.useQuery(
+    {
+      seasonID: currentSeason?.id,
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
   );
+
+  const tour = tours?.find((t) => t.id === tourCard.tourId);
 
   const teamsBetterCount = teams?.filter(
     (obj) => (obj.points ?? 0) > (tourCard.points ?? 0),

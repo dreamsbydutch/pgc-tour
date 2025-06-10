@@ -1,14 +1,23 @@
 "use client";
 
-import { useMainStore } from "@/src/lib/store/store";
+import { api } from "@/src/trpc/react";
 import type { TourCard } from "@prisma/client";
 import { AchievementIcon } from "./OptimizedImage";
 
 export default function LittleFucker({ tourCard }: { tourCard: TourCard }) {
-  const tier = useMainStore((state) => state.currentTiers)?.find(
-    (t) => t.name === "Major",
-  );
-  const majors = useMainStore((store) => store.pastTournaments)?.filter(
+  // Get tiers for the current season
+  const tiersQuery = api.tier.getBySeason.useQuery({
+    seasonId: tourCard.seasonId,
+  });
+
+  // Get past tournaments
+  const pastTournamentsQuery = api.tournament.getAll.useQuery();
+
+  const tiers = tiersQuery.data;
+  const allTournaments = pastTournamentsQuery.data;
+
+  const tier = tiers?.find((t) => t.name === "Major");
+  const majors = allTournaments?.filter(
     (t) =>
       (t.name === "RBC Canadian Open" || t.tierId === tier?.id) &&
       new Date(t.endDate) < new Date(),

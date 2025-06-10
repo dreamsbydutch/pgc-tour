@@ -3,16 +3,24 @@
 import { cn } from "@/src/lib/utils";
 import Link from "next/link";
 import LeaderboardHeader from "../../components/header/LeaderboardHeader";
-import { useLeaderboardStore, useMainStore } from "@/src/lib/store/store";
+import { useTournamentData } from "@/src/lib/store/hooks/useTournamentData";
+import { useLeaderboardData } from "@/src/lib/store/hooks/useLeaderboardData";
 import {
   HomePageList,
   HomePageListSkeleton,
 } from "@/src/app/_components/HomePageList";
+import { api } from "@/src/trpc/react";
 
 export default function HomePageLeaderboard() {
-  const tourney = useMainStore((state) => state.currentTournament);
-  const tours = useMainStore((state) => state.tours);
-  const teams = useLeaderboardStore((state) => state.teams);
+  const { currentTournament: tourney } = useTournamentData();
+  const { teams } = useLeaderboardData(tourney?.id);
+
+  // Get tours data using API for now (TODO: move to store hooks when available)
+  const toursQuery = api.tour.getBySeason.useQuery({
+    seasonID: tourney?.seasonId ?? "",
+  });
+  const tours = toursQuery.data;
+
   if (!tourney) return null;
 
   const getTeamsForTour = (tourId: string) =>

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useMainStore } from "@/src/lib/store/store";
 import { api } from "@/src/trpc/react";
 import { Table, TableBody } from "@/src/app/_components/ui/table";
 
@@ -8,6 +7,7 @@ import { TablePagination } from "./table-pagination";
 import { GolferRow } from "./golfer-row";
 import { useGolferData } from "../hooks/use-golfer-data";
 import { useSortedData } from "../hooks/use-sorted-data";
+import { useTournamentData, useUserData } from "@/src/lib/store";
 
 export function GolferStatsTable() {
   // State for pagination
@@ -16,18 +16,13 @@ export function GolferStatsTable() {
   // State for sorting
   const [sortBy, setSortBy] = useState("apps");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-
   // Get the data from the API
   const { data: golfersData, isLoading } = api.golfer.getAll.useQuery();
 
-  // Get tournament data from the store
-  const nextTournament = useMainStore((state) => state.nextTournament);
-  const currentTournament = useMainStore((state) => state.currentTournament);
-  const pastTournament = (
-    useMainStore((state) => state.pastTournaments) ?? []
-  ).sort(
-    (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
-  )[0];
+  // Get tournament data from the new store system
+  const { currentTournament, nextTournament, pastTournaments } =
+    useTournamentData();
+  const { currentTourCard, currentMember } = useUserData();
 
   // Process golfer data
   const allGolfersEver = useGolferData(golfersData); // Define table columns
@@ -128,7 +123,7 @@ export function GolferStatsTable() {
                     }))}
                     nextTournament={nextTournament}
                     currentTournament={currentTournament}
-                    pastTournament={pastTournament ?? null}
+                    pastTournament={pastTournaments?.[0] ?? null}
                   />
                 ))}
               </TableBody>

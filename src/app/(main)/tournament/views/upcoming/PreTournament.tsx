@@ -5,7 +5,7 @@ import { cn, formatMoney, formatRank } from "@/src/lib/utils";
 import { Button } from "@/src/app/_components/ui/button";
 import { useState } from "react";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
-import { useMainStore } from "@/src/lib/store/store";
+import { useUserData } from "@/src/lib/store/hooks/useUserData";
 import type {
   Course,
   Golfer,
@@ -35,8 +35,7 @@ export default function PreTournamentPage({
   tournament: Tournament & { course: Course | null };
 }) {
   const [pickingTeam, setPickingTeam] = useState(false);
-  const tourCard = useMainStore((state) => state.currentTourCard);
-  const member = useMainStore((state) => state.currentMember);
+  const { currentTourCard: tourCard, currentMember: member } = useUserData();
   const { data: existingTeam, isLoading: isTeamLoading } =
     api.team.getByUserTournament.useQuery({
       tourCardId: tourCard?.id ?? "",

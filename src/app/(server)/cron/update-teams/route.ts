@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const next = searchParams.get("next") ?? "/";
 
-  const tournament = (await api.tournament.getInfo()).current;
+  const tournament = (await api.tournament.getInfo()).past;
   if (!tournament) return NextResponse.redirect(`${origin}/`);
   const golfers = await api.golfer.getByTournament({
     tournamentId: tournament.id,
