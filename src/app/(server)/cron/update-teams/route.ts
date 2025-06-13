@@ -79,13 +79,13 @@ function updateTeamData(
     team.roundThreeTeeTime,
     teamGolfers,
     "roundThreeTeeTime",
-    5,
+    4,
   );
   updatedTeam.roundFourTeeTime = assignTeeTime(
     team.roundFourTeeTime,
     teamGolfers,
     "roundFourTeeTime",
-    5,
+    4,
   );
 
   // Calculate team statistics depending on whether live play is enabled.
