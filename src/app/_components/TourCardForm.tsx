@@ -9,10 +9,36 @@ import Link from "next/link";
 import { useMainStore } from "@/src/lib/store/store";
 import type { Tour } from "@prisma/client";
 import { api } from "@/src/trpc/react";
+<<<<<<< Updated upstream
 
 export function TourCardForm() {
   const tours = useMainStore((state) => state.tours);
   const currentTourCard = useMainStore((state) => state.currentTourCard);
+=======
+import { useTourCards, useUser } from "@/src/lib/store";
+
+export function TourCardForm() {
+  // Get current season for tours data
+  const { data: currentSeason } = api.season.getCurrent.useQuery();
+
+  // Get tours for current season
+  const { data: tours } = api.tour.getBySeason.useQuery(
+    {
+      seasonID: currentSeason?.id,
+    },
+    {
+      enabled: !!currentSeason?.id,
+    },
+  );
+
+  // Get current tour card from user store
+  const { user } = useUser();
+  const { tourCards } = useTourCards();
+  const currentTourCard = tourCards?.find(
+    (card) => card.memberId === user?.id && card.seasonId === currentSeason?.id,
+  );
+
+>>>>>>> Stashed changes
   const [isCreatingTourCard, setIsCreatingTourCard] = useState(false);
   if (currentTourCard || !tours?.length) return null;
   return (

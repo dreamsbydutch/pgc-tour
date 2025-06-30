@@ -2,8 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { type Tournament } from "@prisma/client";
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/TournamentCountdown.tsx
 import Image from "next/image";
 import { useMainStore } from "@/src/lib/store/store";
+=======
+import { TournamentLogo } from "@/src/app/_components/OptimizedImage";
+import { useTournaments } from "@/src/lib/store";
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/ui/TournamentCountdown.tsx
 
 /**
  * TournamentCountdown Component
@@ -20,10 +25,17 @@ export default function TournamentCountdown({
 }: {
   inputTourney?: Tournament | undefined;
 }) {
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/TournamentCountdown.tsx
   const nextTourney = useMainStore((state) => state.nextTournament);
+=======
+  const { tournaments } = useTournaments();
+  const nextTourney = tournaments?.find(
+    (tourney) => new Date(tourney.startDate) > new Date(),
+  );
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/ui/TournamentCountdown.tsx
   let tourney: Tournament | null = null;
   if (!inputTourney) {
-    tourney = nextTourney;
+    tourney = nextTourney ?? null;
   } else {
     tourney = inputTourney;
   }

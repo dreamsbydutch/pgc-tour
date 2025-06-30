@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "./_components/ui/table";
+<<<<<<< Updated upstream
 import Image from "next/image";
 import { useMainStore } from "@/src/lib/store/store";
 
@@ -36,17 +37,52 @@ export default function Home() {
         </div>
       </div>
     );
+=======
+import { OptimizedImage } from "./_components/OptimizedImage";
+import { preloadCriticalImages } from "@/src/lib/utils/image-optimization";
+import { useEffect } from "react";
+import { usePGCTourStore } from "../lib/store";
+
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = "force-dynamic";
+
+export default function Home() {
+  const { isAuthenticated, authLoading } = usePGCTourStore((state) => ({
+    isAuthenticated: state.isAuthenticated,
+    authLoading: state.authLoading,
+  }));
+
+  // Preload critical images when component mounts
+  useEffect(() => {
+    preloadCriticalImages();
+  }, []);
+
+  // If not authenticated, show only the sign-in component
+  if (!authLoading && !isAuthenticated) {
+    return <SignInPage />;
+  }
+
+  // For authenticated users, show the main content
+>>>>>>> Stashed changes
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-2">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
+<<<<<<< Updated upstream
       <SignInPage />
       <ChampionsPopup />
       <HomePageLeaderboard />
       <TournamentCountdown />
       <HomePageStandings />
       <TourCardForm />
+=======
+      {/* <ChampionsPopup /> */}
+      {/* <HomePageLeaderboard /> */}
+      {/* <TournamentCountdown /> */}
+      {/* <HomePageStandings /> */}
+      {/* <TourCardForm /> */}
+>>>>>>> Stashed changes
       <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
         <div className="my-3 flex items-center justify-center gap-3">
           <Image
@@ -60,7 +96,7 @@ export default function Home() {
             Schedule
           </h2>
         </div>
-        <CurrentSchedule />
+        {/* <CurrentSchedule /> */}
       </div>
       <div id="footer" className="mt-12 flex flex-col justify-start">
         <Link href={"/privacy"} className="text-xs text-slate-400">
@@ -132,8 +168,29 @@ export default function Home() {
 // );
 
 function CurrentSchedule() {
+<<<<<<< Updated upstream
   const tournaments = useMainStore((state) => state.seasonTournaments);
   const tiers = useMainStore((state) => state.currentTiers);
+=======
+  // Store is now guaranteed to be initialized thanks to StoreLoadingProvider
+  const { tournaments, tiers, courses } = usePGCTourStore((state) => ({
+    tournaments: state.tournaments,
+    tiers: state.tiers,
+    courses: state.courses,
+  }));
+  if (!tournaments || tournaments.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="text-gray-500">No tournaments scheduled.</div>
+      </div>
+    );
+  }
+  // Sort tournaments by start date
+  tournaments.sort(
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+  );
+  const course = courses.find((c) => c.id === tournaments[0]?.courseId);
+>>>>>>> Stashed changes
 
   return (
     <Table className="mx-auto w-3/4 text-center font-varela">
@@ -158,7 +215,7 @@ function CurrentSchedule() {
       </TableHeader>
       <TableBody>
         {tournaments?.map((tourney, i) => {
-          const tier = tiers?.find((t) => t.id === tourney.tierId);
+          const tier = tiers.find((t) => t.id === tourney.tierId);
           const start = new Date(tourney.startDate);
           const end = new Date(tourney.endDate);
           return (
@@ -199,10 +256,10 @@ function CurrentSchedule() {
                 {tier?.name}
               </TableCell>
               <TableCell className="whitespace-nowrap border-l text-center text-xs">
-                {tourney.course?.name}
+                {course?.name}
               </TableCell>
               <TableCell className="whitespace-nowrap border-l text-center text-xs">
-                {tourney.course?.location}
+                {course?.location}
               </TableCell>
             </TableRow>
           );

@@ -2,6 +2,7 @@
 
 import { useMainStore } from "@/src/lib/store/store";
 import { useSearchParams } from "next/navigation";
+<<<<<<< Updated upstream
 import { LeaderboardHeaderSkeleton } from "@/src/app/(main)/tournament/_components/skeletons/LeaderboardHeaderSkeleton";
 import PreTournamentPage, {
   TeamPickFormSkeleton,
@@ -65,39 +66,114 @@ export default function TournamentPage() {
   }
 
   // Determine tournament state
+=======
+import { useTournaments, useActiveTournament } from "../../../lib/store";
+import {
+  LeaderboardHeaderSkeleton,
+  TournamentCountdownSkeleton,
+  LeaderboardHeader,
+} from "./components";
+import {
+  PreTournamentPage,
+  TeamPickFormSkeleton,
+  ActiveTournamentView,
+  PastTournamentView,
+  HistoricalTournamentView,
+} from "./views";
+import { Suspense } from "react";
+import type { Tournament } from "@prisma/client";
+
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = "force-dynamic";
+
+/**
+ * Determine the tournament state based on dates
+ */
+function getTournamentState(tournament: Tournament) {
+>>>>>>> Stashed changes
   const now = new Date();
-  const tournamentStartDate = new Date(focusTourney.startDate);
-  const tournamentEndDate = new Date(focusTourney.endDate);
-  const isUpcoming = tournamentStartDate > now;
-  const isActive = tournamentStartDate <= now && tournamentEndDate >= now;
-  const isPast = tournamentEndDate < now;
+  const tournamentStartDate = new Date(tournament.startDate);
+  const tournamentEndDate = new Date(tournament.endDate);
 
-  return (
-    <div className="mx-4 flex flex-col">
-      <LeaderboardHeader {...{ focusTourney }} />
+  return {
+    isUpcoming: tournamentStartDate > now,
+    isActive: tournamentStartDate <= now && tournamentEndDate >= now,
+    isPast: tournamentEndDate < now,
+  };
+}
 
-      {isUpcoming && (
-        // Upcoming tournament view
-        <PreTournamentPage tournament={focusTourney} />
-      )}
+/**
+ * Organize tournaments into categories: current, next, and past
+ */
+function organizeTournaments(
+  activeTournament: Tournament | null,
+  tournaments: Tournament[],
+) {
+  const currentTournament = activeTournament;
+  const pastTournaments =
+    tournaments?.filter((t) => new Date(t.endDate) < new Date()) ?? [];
+  const nextTournament =
+    tournaments?.find(
+      (t) =>
+        new Date(t.startDate) > new Date() && t.id !== currentTournament?.id,
+    ) ?? null;
 
-      {isActive && (
-        // Active tournament with polling and live updates
-        <ActiveTournamentView
-          tournament={focusTourney}
-          inputTour={searchParams.get("tour") ?? ""}
-        />
-      )}
+  const seasonTournaments = [
+    currentTournament,
+    nextTournament,
+    ...pastTournaments,
+  ].filter(Boolean) as Tournament[];
 
-      {isPast && (
-        // Past tournament with static data display
-        <PastTournamentView
-          tournament={focusTourney}
-          inputTour={searchParams.get("tour") ?? ""}
-        />
-      )}
-    </div>
-  );
+  return {
+    currentTournament,
+    pastTournaments,
+    nextTournament,
+    seasonTournaments,
+    isStoreLoaded: !!(
+      currentTournament ??
+      nextTournament ??
+      pastTournaments.length
+    ),
+  };
+}
+
+/**
+ * Find the tournament to display based on search params and tournament data
+ */
+function getDisplayTournament(
+  tournamentIdParam: string | null,
+  tournamentData: ReturnType<typeof organizeTournaments>,
+) {
+  const {
+    currentTournament,
+    nextTournament,
+    pastTournaments,
+    seasonTournaments,
+  } = tournamentData;
+
+  // If there's an ID in search params, try to find that tournament
+  if (tournamentIdParam) {
+    return seasonTournaments?.find((t) => t?.id === tournamentIdParam) ?? null;
+  }
+
+  // No ID provided - determine best tournament to show
+  if (currentTournament) {
+    return currentTournament;
+  } else if (nextTournament) {
+    return nextTournament;
+  } else if ((pastTournaments ?? []).length > 0) {
+    // Get most recent past tournament
+    const mostRecentPastTournament = pastTournaments?.sort(
+      (a, b) =>
+        new Date(b?.startDate ?? "").getTime() -
+        new Date(a?.startDate ?? "").getTime(),
+    )?.[0];
+    return mostRecentPastTournament ?? null;
+  } else if ((seasonTournaments?.length ?? 0) > 0) {
+    return seasonTournaments?.[0] ?? null;
+  }
+
+  return null;
 }
 
 // Simple loading view component
@@ -110,3 +186,67 @@ function TournamentPageLoadingView() {
     </>
   );
 }
+<<<<<<< Updated upstream
+=======
+
+// Component that uses useSearchParams - needs to be wrapped in Suspense
+function TournamentPageContent() {
+  const searchParams = useSearchParams();
+  // Use main store hooks
+  const { tournaments } = useTournaments();
+  const { tournament: activeTournament } = useActiveTournament();
+
+  // Organize tournament data
+  const tournamentData = organizeTournaments(activeTournament, tournaments);
+  const tournamentIdParam = searchParams.get("id");
+
+  // Show loading state while store is initializing
+  if (!tournamentData.isStoreLoaded) {
+    return <TournamentPageLoadingView />;
+  }
+
+  // Find tournament to display
+  const focusTourney = getDisplayTournament(tournamentIdParam, tournamentData);
+
+  if (!focusTourney && tournamentIdParam) {
+    return <HistoricalTournamentView tournamentId={tournamentIdParam} />;
+  }
+
+  // While loading tournament data, show loading view
+  if (!focusTourney) {
+    return <TournamentPageLoadingView />;
+  }
+
+  // Get tournament state (upcoming, active, past)
+  const { isUpcoming, isActive, isPast } = getTournamentState(focusTourney);
+  const tourParam = searchParams.get("tour") ?? "";
+
+  return (
+    <div className="mx-4 flex flex-col">
+      <LeaderboardHeader focusTourney={focusTourney} />
+
+      {isUpcoming && <PreTournamentPage tournament={focusTourney} />}
+
+      {isActive && (
+        <ActiveTournamentView tournament={focusTourney} inputTour={tourParam} />
+      )}
+
+      {isPast && (
+        <PastTournamentView tournament={focusTourney} inputTour={tourParam} />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Unified tournament page that handles displaying any tournament
+ * Uses query parameter ?id=tournamentId instead of path parameter
+ */
+export default function TournamentPage() {
+  return (
+    <Suspense fallback={<TournamentPageLoadingView />}>
+      <TournamentPageContent />
+    </Suspense>
+  );
+}
+>>>>>>> Stashed changes

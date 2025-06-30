@@ -80,6 +80,38 @@ export const tournamentRouter = createTRPCRouter({
       }
     }),
 
+  getPastData: publicProcedure
+    .input(z.object({ seasonId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Get tournaments that have ended
+      const completedTournaments = await ctx.db.tournament.findMany({
+        where: {
+          seasonId: input.seasonId,
+          OR: [{ endDate: { lt: new Date() } }, { currentRound: { gte: 5 } }],
+        },
+        select: { id: true },
+      });
+
+      if (completedTournaments.length === 0) {
+        return { teams: [], golfers: [] };
+      }
+
+      const tournamentIds = completedTournaments.map((t) => t.id);
+
+      // Fetch teams and golfers for completed tournaments
+      const [teams, golfers] = await Promise.all([
+        ctx.db.team.findMany({
+          where: { tournamentId: { in: tournamentIds } },
+          include: { tourCard: true },
+        }),
+        ctx.db.golfer.findMany({
+          where: { tournamentId: { in: tournamentIds } },
+        }),
+      ]);
+
+      return { teams, golfers };
+    }),
+
   update: publicProcedure
     .input(
       z.object({

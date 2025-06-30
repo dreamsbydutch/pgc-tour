@@ -11,8 +11,20 @@ import { Button } from "@/src/app/_components/ui/button";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
 import { api } from "@/src/trpc/react";
 import { teamCreateOnFormSubmit } from "@/src/server/api/actions/team";
+<<<<<<< Updated upstream:src/app/(main)/tournament/_views/CreateTeamPage.tsx
 import { useMainStore } from "@/src/lib/store/store";
 import { GolferGroup } from "../_components/GolferGroup";
+=======
+import {
+  useGolfersByTournament,
+  useTeamByUserTournament,
+  useTournamentById,
+  useUser,
+  useTourCards,
+  useCourses,
+} from "@/src/lib/store";
+import { GolferGroup } from "../../components/ui/GolferGroup";
+>>>>>>> Stashed changes:src/app/(main)/tournament/views/upcoming/CreateTeamPage.tsx
 
 // Define Zod schema for form validation
 const golferSchema = z.object({
@@ -44,6 +56,7 @@ export default function CreateTeamPage({
   tournamentId: string;
   setPickingTeam: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+<<<<<<< Updated upstream:src/app/(main)/tournament/_views/CreateTeamPage.tsx
   const tourCard = useMainStore((state) => state.currentTourCard);
   const tournament = useMainStore((state) =>
     state.seasonTournaments?.find(
@@ -51,20 +64,82 @@ export default function CreateTeamPage({
     ),
   );
   const current = useMainStore((state) => state.currentTournament);
+=======
+>>>>>>> Stashed changes:src/app/(main)/tournament/views/upcoming/CreateTeamPage.tsx
   const [pageError, setPageError] = useState<string | null>(null);
+  // Use store hooks to get required data
+  const { user, loading: userLoading, error: userError } = useUser();
+  const { tourCards } = useTourCards();
+  const { courses } = useCourses();
+  const {
+    tournament,
+    loading: tournamentLoading,
+    error: tournamentError,
+  } = useTournamentById(tournamentId);
+
+  // Derive member and tourCard from user data
+  const tourCard = tourCards?.find(
+    (card) =>
+      card.memberId === user?.id && card.seasonId === tournament?.seasonId,
+  );
+
+  // Get course data for the tournament
+  const course = courses?.find((c) => c.id === tournament?.courseId);
+
+  // Construct tournament with course data for CreateTeamForm
+  const tournamentWithCourse = tournament
+    ? {
+        ...tournament,
+        course: course ?? null,
+      }
+    : null;
+
+  // Check if tournament is currently active
+  const current =
+    tournament &&
+    new Date(tournament.startDate) <= new Date() &&
+    new Date(tournament.endDate) >= new Date() &&
+    (tournament.currentRound ?? 0) < 5;
 
   // Handle errors at the page level
   useEffect(() => {
-    if (!tournament && !pageError) {
+    if (userError) {
+      setPageError(`User data error: ${userError}`);
+    } else if (tournamentError) {
+      setPageError(`Tournament data error: ${tournamentError}`);
+    } else if (
+      !userLoading &&
+      !tournamentLoading &&
+      !tournament &&
+      !pageError
+    ) {
       setPageError("Tournament not found");
     }
-  }, [tournament, pageError]);
+  }, [
+    tournament,
+    pageError,
+    userError,
+    tournamentError,
+    userLoading,
+    tournamentLoading,
+  ]);
 
-  if (!tournament) {
+  // Show loading state while data is being fetched
+  if (userLoading || tournamentLoading) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center">
         <LoadingSpinner />
         <p className="mt-4 text-gray-600">Loading tournament details...</p>
+      </div>
+    );
+  }
+
+  if (!tournament) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center">
+        <div className="text-red-500">
+          {pageError ?? "Tournament not found"}
+        </div>
       </div>
     );
   }
@@ -94,9 +169,13 @@ export default function CreateTeamPage({
           <h3 className="mb-2 text-xl font-bold">Tournament In Progress</h3>
           <p>This tournament has already begun. Team selection is closed.</p>
         </div>
+      ) : !tournamentWithCourse ? (
+        <div className="rounded-md bg-red-50 p-4 text-center text-red-800">
+          {pageError ?? "Tournament not found"}
+        </div>
       ) : (
         <CreateTeamForm
-          tournament={tournament}
+          tournament={tournamentWithCourse}
           tourCard={tourCard}
           setPickingTeam={setPickingTeam}
         />
@@ -123,20 +202,20 @@ function CreateTeamForm({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  // Fetch golfers data for this tournament
-  const { data: golfersData, isLoading: isLoadingGolfers } =
-    api.golfer.getByTournament.useQuery({
-      tournamentId: tournament.id,
-    });
+  // Use store hooks instead of direct tRPC calls
+  const {
+    golfers: golfersData,
+    loading: isLoadingGolfers,
+    error: golfersError,
+  } = useGolfersByTournament(tournament.id);
 
   // Get user's existing team if they already created one
-  const { data: existingTeam } = api.team.getByUserTournament.useQuery({
-    tourCardId: tourCard?.id ?? "",
-    tournamentId: tournament.id,
-  });
+  const { team: existingTeam, error: teamError } = useTeamByUserTournament(
+    tourCard?.id ?? "",
+    tournament.id,
+  );
 
-  // Organize golfers into their respective groups
+  // Organize golfers into their respective groups - always call this hook
   const groups = useMemo(() => {
     if (!golfersData) return [];
 
@@ -147,7 +226,8 @@ function CreateTeamForm({
         .sort((a, b) => (a.worldRank ?? 9999) - (b.worldRank ?? 9999)),
     }));
   }, [golfersData]);
-  // Prepare initial group selections from existing team
+
+  // Prepare initial group selections from existing team - always call this hook
   const initialGroups = useMemo<{ golfers: number[] }[]>(() => {
     if (!existingTeam) {
       // Create exactly 5 empty groups with empty golfer arrays
@@ -166,6 +246,8 @@ function CreateTeamForm({
 
     return result;
   }, [existingTeam]);
+
+  // Always call useForm hook
   const {
     control,
     handleSubmit,
@@ -185,6 +267,17 @@ function CreateTeamForm({
   const isFormFilled =
     currentValues.groups?.every((group) => group.golfers?.length === 2) &&
     currentValues.groups.length === 5;
+
+  // Handle errors after all hooks are called
+  if (golfersError || teamError) {
+    return (
+      <div className="flex min-h-[50vh] flex-col items-center justify-center">
+        <div className="text-red-500">
+          Error loading data: {golfersError ?? teamError}
+        </div>
+      </div>
+    );
+  }
 
   /**
    * Handle form submission

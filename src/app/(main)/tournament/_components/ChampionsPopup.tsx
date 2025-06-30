@@ -1,11 +1,20 @@
 "use client";
 
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/ChampionsPopup.tsx
 import { useMainStore } from "@/src/lib/store/store";
+=======
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/ui/ChampionsPopup.tsx
 import { formatScore } from "@/src/lib/utils";
 import type { Golfer, Team, Tournament } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import LittleFucker from "@/src/app/_components/LittleFucker";
+import {
+  useHistoricalTournaments,
+  useCurrentSeason,
+  useTours,
+  useTourCards,
+} from "@/src/lib/store";
 
 /**
  * ChampionsPopup Component
@@ -18,16 +27,37 @@ import LittleFucker from "@/src/app/_components/LittleFucker";
  * Data is fetched from the global store and API when needed.
  */
 export default function ChampionsPopup() {
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/ChampionsPopup.tsx
   const tournament = useMainStore((state) => state.pastTournaments)?.sort(
     (a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime(),
   )[0];
+=======
+  // Use store hooks instead of direct tRPC calls
+  const { tournaments, loading: tournamentsLoading } =
+    useHistoricalTournaments();
+
+  // Loading state
+  if (tournamentsLoading) {
+    return <ChampionSectionSkeleton />;
+  }
+
+  const tournament = tournaments
+    ?.filter((tournament) => new Date(tournament.endDate) < new Date())
+    ?.sort(
+      (a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime(),
+    )[0];
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/ui/ChampionsPopup.tsx
 
   if (
     new Date(tournament?.endDate ?? "") <
     new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
   )
     return null;
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/ChampionsPopup.tsx
   if (!tournament) return <ChampionSectionSkeleton />;
+=======
+  if (!tournament || !tournament.teams) return null;
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/ui/ChampionsPopup.tsx
 
   const champs = tournament.teams.filter(
     (team) => team.position === "1" || team.position === "T1",
@@ -49,12 +79,17 @@ export default function ChampionsPopup() {
           )}
           {tournament.name} Champions
         </h1>
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/ChampionsPopup.tsx
 
         {/* Render each champion's info */}
+=======
+        {/* Render each champion's info */}{" "}
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/ui/ChampionsPopup.tsx
         {champs.map((champ) => {
-          const teamGolfers = tournament.golfers.filter((golfer) =>
-            champ.golferIds.includes(golfer.apiId),
-          );
+          const teamGolfers =
+            tournament.golfers?.filter((golfer) =>
+              champ.golferIds.includes(golfer.apiId),
+            ) ?? [];
           return (
             <ChampionSection
               key={champ.id}
@@ -91,10 +126,21 @@ function ChampionSection({
   tournament: Tournament;
   golfers: Golfer[];
 }) {
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/ChampionsPopup.tsx
   const tours = useMainStore((state) => state.tours);
   const tourCards = useMainStore((state) => state.tourCards);
+=======
+  // Use store hooks instead of direct tRPC calls
+  const { season: currentSeason } = useCurrentSeason();
+  const { tours } = useTours();
+  const { tourCards } = useTourCards();
+  // Filter tours for current season
+  const seasonTours =
+    tours?.filter((tour) => tour.seasonId === currentSeason?.id) ?? [];
+
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/ui/ChampionsPopup.tsx
   const tourCard = tourCards?.find((tc) => tc.id === champion.tourCardId);
-  const tour = tours?.find((tour) => tour.id === tourCard?.tourId);
+  const tour = seasonTours?.find((tour) => tour.id === tourCard?.tourId);
 
   // Filter and sort golfers on this champion's team
   const teamGolfers = golfers.sort((a, b) => (a.score ?? 0) - (b.score ?? 0));

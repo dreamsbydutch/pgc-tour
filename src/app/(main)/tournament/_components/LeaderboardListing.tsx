@@ -43,7 +43,11 @@ import {
 } from "country-flag-icons/react/3x2";
 import { MoveDownIcon, MoveHorizontalIcon, MoveUpIcon } from "lucide-react";
 import TeamGolfersTable from "./TeamTable";
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/LeaderboardListing.tsx
 import { useLeaderboardStore, useMainStore } from "@/src/lib/store/store";
+=======
+import { useUser, useMembers, useCourses, useTourCards } from "@/src/lib/store";
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/leaderboard/LeaderboardListing.tsx
 
 /**
  * Constants for country flags
@@ -235,21 +239,32 @@ export function LeaderboardListing({
   type,
   tournament,
   tournamentGolfers,
-  tourCard,
+  userTourCard,
   golfer,
   team,
 }: {
   type: "PGC" | "PGA";
-  tournament: Tournament & { course: Course | null };
+  tournament: Tournament;
   tournamentGolfers: Golfer[] | null | undefined;
-  tourCard: TourCard | null | undefined;
+  userTourCard: TourCard | null | undefined;
   golfer?: Golfer;
-  team?: Team & { tourCard: TourCard | null };
+  team?: Team
 }) {
-  const course = tournament.course;
+  const {tourCards} = useTourCards()
+  const tourCard = tourCards?.find(
+    (tc: TourCard) => tc.id === team?.tourCardId,
+  );
+  const { courses } = useCourses();
+  const course = courses?.find((c: Course) => c.id === tournament.courseId);
   const teamGolfers =
     tournamentGolfers?.filter((a) => team?.golferIds.includes(a.apiId)) ?? [];
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/LeaderboardListing.tsx
   const member = useMainStore((state) => state.currentMember);
+=======
+  const { user } = useUser();
+  const { members } = useMembers();
+  const member = members?.find((m) => m.email === user?.email);
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/leaderboard/LeaderboardListing.tsx
   const [isOpen, setIsOpen] = useState(false);
 
   const posChange =
@@ -272,13 +287,13 @@ export function LeaderboardListing({
         className={cn(
           "col-span-10 grid grid-flow-row grid-cols-10 py-0.5 sm:grid-cols-16",
           type === "PGC" &&
-            team?.tourCard?.id === tourCard?.id &&
+            tourCard?.id === userTourCard?.id &&
             "bg-slate-200 font-semibold",
           type === "PGC" &&
-            member?.friends.includes(team?.tourCard?.memberId ?? "") &&
+            member?.friends.includes(tourCard?.memberId ?? "") &&
             "bg-slate-100",
           type === "PGC" &&
-            member?.friends.includes(team?.tourCard?.memberId ?? "") &&
+            member?.friends.includes(tourCard?.memberId ?? "") &&
             "bg-slate-100",
           type === "PGC" && team?.position === "CUT" && "text-gray-400",
           type === "PGA" &&
@@ -300,7 +315,7 @@ export function LeaderboardListing({
             )}
         </div>
         <div className="col-span-4 place-self-center font-varela text-lg">
-          {type === "PGA" ? golfer?.playerName : team?.tourCard?.displayName}
+          {type === "PGA" ? golfer?.playerName : tourCard?.displayName}
         </div>
         <div className="col-span-2 place-self-center font-varela text-base">
           {type !== "PGA" && team?.position === "CUT"
@@ -337,7 +352,7 @@ export function LeaderboardListing({
         ) : type === "PGA" ? (
           !golfer?.thru || golfer?.thru === 0 ? (
             <div className="col-span-2 place-self-center font-varela text-xs">
-              {tournament.course && golfer ? getGolferTeeTime(golfer) : null}
+              {course && golfer ? getGolferTeeTime(golfer) : null}
               {golfer?.endHole === 9 ? "*" : ""}
             </div>
           ) : (
@@ -354,7 +369,7 @@ export function LeaderboardListing({
         ) : type === "PGC" ? (
           !team?.thru || team?.thru === 0 ? (
             <div className="col-span-2 place-self-center font-varela text-xs">
-              {tournament.course && team ? getTeamTeeTime(team) : null}
+              {course && team ? getTeamTeeTime(team) : null}
             </div>
           ) : (
             <>
@@ -409,9 +424,9 @@ export function LeaderboardListing({
             "col-span-10 w-full border-b border-slate-300 px-2 pb-4 pt-2",
             team.tourCardId === tourCard?.id &&
               "bg-gradient-to-b from-slate-200 via-slate-100 to-slate-100",
-            member?.friends.includes(team?.tourCard?.memberId ?? "") &&
+            member?.friends.includes(tourCard?.memberId ?? "") &&
               "bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50",
-            member?.friends.includes(team?.tourCard?.memberId ?? "") &&
+            member?.friends.includes(tourCard?.memberId ?? "") &&
               "bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50",
           )}
         >

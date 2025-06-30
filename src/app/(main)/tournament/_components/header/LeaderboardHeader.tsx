@@ -5,7 +5,15 @@ import { Popover, PopoverContent } from "@/src/app/_components/ui/popover";
 import { cn, fetchDataGolf, formatMoney, formatRank } from "@/src/lib/utils";
 import type { DatagolfCourseInputData } from "@/src/lib/types/datagolf_types";
 import type { Tier, Tournament } from "@prisma/client";
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/header/LeaderboardHeader.tsx
 import { useMainStore } from "@/src/lib/store/store";
+=======
+import {
+  useCurrentSeason,
+  useTournamentsBySeason,
+  useTiers,
+} from "@/src/lib/store";
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/header/LeaderboardHeader.tsx
 
 /**
  * LeaderboardHeader Component
@@ -24,12 +32,35 @@ export default function LeaderboardHeader({
 }: {
   focusTourney: Tournament;
 }) {
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/header/LeaderboardHeader.tsx
   const course = useMainStore((state) => state.seasonTournaments)?.find(
     (t) => t.id === focusTourney.id,
   )?.course;
   const tier = useMainStore((state) => state.currentTiers)?.find(
     (t) => t.id === focusTourney.tierId,
   );
+=======
+  // Use store hooks instead of direct tRPC calls
+  const { season: currentSeason } = useCurrentSeason();
+  const { tournaments, loading: tournamentsLoading } = useTournamentsBySeason(
+    currentSeason?.id ?? "",
+  );
+  const { tiers, loading: tiersLoading } = useTiers();
+
+  // Loading state
+  if (tournamentsLoading || tiersLoading) {
+    return (
+      <div className="mx-auto w-full max-w-4xl md:w-11/12 lg:w-8/12">
+        <div className="flex h-32 items-center justify-center">
+          Loading tournament header...
+        </div>
+      </div>
+    );
+  }
+
+  const course = tournaments?.find((t) => t.id === focusTourney.id)?.course;
+  const tier = tiers?.find((t) => t.id === focusTourney.tierId);
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/header/LeaderboardHeader.tsx
   return (
     <div
       id={`leaderboard-header-${focusTourney.id}`}

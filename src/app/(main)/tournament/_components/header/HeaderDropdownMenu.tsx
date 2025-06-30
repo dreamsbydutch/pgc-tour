@@ -15,7 +15,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/header/HeaderDropdownMenu.tsx
 import { useMainStore } from "@/src/lib/store/store";
+=======
+import {
+  useCurrentSeason,
+  useTiers,
+  useTournamentsBySeason,
+  useActiveTournament,
+  useCourses,
+} from "@/src/lib/store";
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/header/HeaderDropdownMenu.tsx
 import type { Course, Tier, Tournament } from "@prisma/client";
 
 /**
@@ -38,11 +48,36 @@ export default function HeaderDropdown({
   const [dateEffect, setDateEffect] = useState(false);
   const [leaderboardToggle, setLeaderboardToggle] = useState("Date");
 
+<<<<<<< Updated upstream:src/app/(main)/tournament/_components/header/HeaderDropdownMenu.tsx
   const tiers = useMainStore((state) => state.currentTiers)?.sort(
     (a, b) => (b.points[0] ?? 0) - (a.points[0] ?? 0),
   );
   const tournaments = useMainStore((state) => state.seasonTournaments);
   const currentTourney = useMainStore((state) => state.currentTournament);
+=======
+  // Use store hooks instead of direct tRPC calls
+  const { season: currentSeason, loading: seasonLoading } = useCurrentSeason();
+  const { tiers, loading: tiersLoading } = useTiers();
+  const { tournaments, loading: tournamentsLoading } = useTournamentsBySeason(
+    currentSeason?.id ?? "",
+  );
+  const { tournament: currentTournament } = useActiveTournament();
+
+  // Loading state
+  if (seasonLoading || tiersLoading || tournamentsLoading) {
+    return (
+      <div className="flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  const sortedTiers = tiers?.sort(
+    (a, b) => (b.points[0] ?? 0) - (a.points[0] ?? 0),
+  );
+
+  const currentTourney = currentTournament;
+>>>>>>> Stashed changes:src/app/(main)/tournament/components/header/HeaderDropdownMenu.tsx
   const tournamentsByTier = currentTourney
     ? [
         [currentTourney],
@@ -215,10 +250,12 @@ function TournamentItem({
   tier,
   isActive,
 }: {
-  tourney: Tournament & { course: Course | null };
+  tourney: Tournament;
   tier: Tier | undefined;
   isActive: boolean;
 }) {
+  const { courses } = useCourses();
+  const course = courses?.find((c: Course) => c.id === tourney.courseId);
   return (
     <div
       className={cn(
@@ -255,7 +292,7 @@ function TournamentItem({
               month: "short",
               day: "numeric",
             })
-      } - ${tourney.course?.location}`}</div>
+      } - ${course?.location}`}</div>
     </div>
   );
 }

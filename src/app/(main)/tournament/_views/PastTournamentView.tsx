@@ -1,10 +1,15 @@
 "use client";
 
+<<<<<<< Updated upstream:src/app/(main)/tournament/_views/PastTournamentView.tsx
 import type { Course, Tournament } from "@prisma/client";
 import LeaderboardPage from "./LeaderboardPage";
+=======
+import type { Tournament } from "@prisma/client";
+import LeaderboardPage from "../shared/LeaderboardPage";
+>>>>>>> Stashed changes:src/app/(main)/tournament/views/past/PastTournamentView.tsx
 
 interface PastTournamentViewProps {
-  tournament: Tournament & { course: Course | null };
+  tournament: Tournament;
   inputTour: string;
 }
 

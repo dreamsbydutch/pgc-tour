@@ -23,6 +23,26 @@ export const golferRouter = createTRPCRouter({
         where: { tournamentId: input.tournamentId },
       });
     }),
+  getBySeason: publicProcedure
+    .input(z.object({ seasonId: z.string().optional() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.golfer.findMany({
+        where: {
+          tournament: {
+            seasonId: input.seasonId,
+          },
+        },
+        include: {
+          tournament: {
+            select: {
+              id: true,
+              name: true,
+              seasonId: true,
+            },
+          },
+        },
+      });
+    }),
   update: publicProcedure
     .input(
       z.object({

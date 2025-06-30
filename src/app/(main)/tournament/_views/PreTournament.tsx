@@ -4,17 +4,26 @@ import TournamentCountdown from "../_components/TournamentCountdown";
 import { cn, formatMoney, formatRank } from "@/src/lib/utils";
 import { Button } from "../../../_components/ui/button";
 import { useState } from "react";
+<<<<<<< Updated upstream:src/app/(main)/tournament/_views/PreTournament.tsx
 import LoadingSpinner from "../../../_components/LoadingSpinner";
 import { useMainStore } from "@/src/lib/store/store";
+=======
+import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
+import {
+  useTeamByUserTournament,
+  useGolfersByTournament,
+  useTourCards,
+  useMembers,
+  useUser,
+} from "@/src/lib/store";
+>>>>>>> Stashed changes:src/app/(main)/tournament/views/upcoming/PreTournament.tsx
 import type {
-  Course,
   Golfer,
   Member,
   Team,
   TourCard,
   Tournament,
 } from "@prisma/client";
-import { api } from "@/src/trpc/react";
 import CreateTeamPage from "./CreateTeamPage";
 
 /**
@@ -32,9 +41,10 @@ import CreateTeamPage from "./CreateTeamPage";
 export default function PreTournamentPage({
   tournament,
 }: {
-  tournament: Tournament & { course: Course | null };
+  tournament: Tournament;
 }) {
   const [pickingTeam, setPickingTeam] = useState(false);
+<<<<<<< Updated upstream:src/app/(main)/tournament/_views/PreTournament.tsx
   const tourCard = useMainStore((state) => state.currentTourCard);
   const member = useMainStore((state) => state.currentMember);
   const { data: existingTeam, isLoading: isTeamLoading } =
@@ -47,6 +57,30 @@ export default function PreTournamentPage({
       tournamentId: tournament.id,
     });
   const teamGolfers = allGolfers?.filter((a) =>
+=======
+  const { user } = useUser();
+  const { tourCards } = useTourCards();
+  const { members } = useMembers();
+  const tourCard = tourCards?.find(
+    (card: TourCard) =>
+      card.memberId === user?.id && card.seasonId === tournament.seasonId,
+  );
+  const member = members?.find((m: Member) => m.id === user?.id);
+
+  // Use store hooks instead of direct tRPC calls
+  const {
+    team: existingTeam,
+    loading: isTeamLoading,
+    error: teamError,
+  } = useTeamByUserTournament(tourCard?.id ?? "", tournament.id);
+  const {
+    golfers: allGolfers,
+    loading: isGolfersLoading,
+    error: golfersError,
+  } = useGolfersByTournament(tournament.id);
+
+  const teamGolfers = allGolfers?.filter((a: Golfer) =>
+>>>>>>> Stashed changes:src/app/(main)/tournament/views/upcoming/PreTournament.tsx
     existingTeam?.golferIds.includes(a.apiId),
   );
 
@@ -54,12 +88,25 @@ export default function PreTournamentPage({
     return (
       <CreateTeamPage {...{ tournamentId: tournament.id, setPickingTeam }} />
     );
+
   // Show loading state while fetching data
   if (isTeamLoading || isGolfersLoading) {
     return (
       <>
         <TournamentCountdown inputTourney={tournament} />
-        <TeamPickFormSkeleton existingTeam={existingTeam} />
+        <TeamPickFormSkeleton existingTeam={existingTeam} />{" "}
+      </>
+    );
+  }
+
+  // Show error state if there are any errors
+  if (teamError || golfersError) {
+    return (
+      <>
+        <TournamentCountdown inputTourney={tournament} />
+        <div className="flex h-32 w-full items-center justify-center text-red-500">
+          Error loading tournament data: {teamError ?? golfersError}
+        </div>
       </>
     );
   }

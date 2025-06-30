@@ -6,17 +6,25 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+<<<<<<< Updated upstream
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
+=======
+} from "@/src/app/_components/ui/dropdown-menu";
+>>>>>>> Stashed changes
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { useState, type Dispatch, type SetStateAction } from "react";
 
 import { useRouter } from "next/navigation";
-import MemberUpdateForm from "../MemberUpdateForm";
 import { handleLogout } from "../../(auth)/signin/actions";
+<<<<<<< Updated upstream
 import type { Member } from "@prisma/client";
 import { useUser } from "@/src/lib/hooks/use-user";
+=======
+import { useAuth } from "@/src/lib/store";
+import { UserAvatar } from "../OptimizedImage";
+>>>>>>> Stashed changes
 
 /**
  * UserAccountNav Component
@@ -31,26 +39,33 @@ import { useUser } from "@/src/lib/hooks/use-user";
  * - setIsSigningOut: Function to set the signing-out state.
  */
 export function UserAccountNav({
-  member,
   size,
   setIsSigningOut,
 }: {
-  member: Member | null;
   size?: "small" | "large";
   setIsSigningOut: Dispatch<SetStateAction<boolean>>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
-  const { user } = useUser();
+
+  // Get user from store
+  const { user, member } = useAuth();
+  const avatarUrl = user?.user_metadata?.avatar_url as string ?? "";
 
   return (
     <div className="w-fit">
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center">
+<<<<<<< Updated upstream
           {user?.user_metadata.avatar_url && (
             <Image
               className="grid place-items-center rounded-full bg-border"
               src={(user?.user_metadata.avatar_url as string) ?? ""}
+=======
+          {avatarUrl && (
+            <UserAvatar
+              src={avatarUrl}
+>>>>>>> Stashed changes
               alt="User Avatar"
               width={size === "small" ? 24 : 36}
               height={size === "small" ? 24 : 36}
@@ -62,11 +77,13 @@ export function UserAccountNav({
           <div className="flex items-center justify-start gap-2 p-2">
             <div className="flex flex-col gap-1 space-y-1 leading-none">
               <p className="w-[200px] truncate text-base font-bold text-slate-800">
-                {member?.fullname}
+                {member?.fullname ?? user?.user_metadata.full_name ?? "User"}
               </p>
               <p className="w-[200px] truncate text-sm text-slate-800">
-                {member?.email}
+                {member?.email ?? user?.user_metadata.email}
               </p>
+
+              {/* Edit user info section */}
               {!isEditing && (
                 <div
                   onClick={() => setIsEditing(true)}
@@ -75,7 +92,7 @@ export function UserAccountNav({
                   Edit user info
                 </div>
               )}
-              {isEditing && <MemberUpdateForm {...{ user, setIsEditing }} />}
+              {/* {isEditing && <MemberUpdateForm {...{ user, setIsEditing }} />} */}
             </div>
           </div>
 

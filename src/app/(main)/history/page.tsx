@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 /**
  * Tournament History Page
  *
@@ -19,11 +20,18 @@ import {
   useSortedMemberData,
 } from "./components/data-hooks";
 import { HistoryTable } from "./components/history-table";
+=======
+"use client";
+
+import { HistoryTable } from "./HistoryTable";
+import { GolferStatsTable } from "./GolferStatsTable";
+>>>>>>> Stashed changes
 
 // Import our refactored component
 import { GolferStatsTable } from "./components/golfer-stats-table";
 
 /**
+<<<<<<< Updated upstream
  * History Page Component
  * Displays comprehensive historical data for all members and tournaments
  */
@@ -139,6 +147,21 @@ function MemberStatsTable() {
         tiers={tiers}
         members={members}
       />
+=======
+ * Simplified History Page
+ *
+ * Combines member statistics and golfer statistics in a single page.
+ * Much simpler than the original implementation with views, hooks, utils, etc.
+ */
+export default function HistoryPage() {
+  return (
+    <div className="container mx-auto space-y-12 py-8">
+      {/* Member Statistics */}
+      <HistoryTable />
+
+      {/* Golfer Statistics */}
+      <GolferStatsTable />
+>>>>>>> Stashed changes
     </div>
   );
 }

@@ -7,7 +7,11 @@ import { TRPCReactProvider } from "@/trpcLocal/react";
 import MenuBar from "@/components/nav/MenuBar";
 import { cn } from "../lib/utils";
 import Script from "next/script";
+<<<<<<< Updated upstream
 import { InitStoreWrapper } from "../lib/store/initStoreWrapper";
+=======
+import { PGCTourStoreProvider } from "../lib/store";
+>>>>>>> Stashed changes
 
 const varela = Varela({
   weight: ["400"],
@@ -74,10 +78,17 @@ export default async function RootLayout({
         )}
       >
         <TRPCReactProvider>
+<<<<<<< Updated upstream
           <InitStoreWrapper>
             <main className="mb-24 mt-4 lg:mb-8 lg:mt-20">{children}</main>
             <MenuBar />
           </InitStoreWrapper>
+=======
+          <PGCTourStoreProvider>
+            <main className="mb-24 mt-4 lg:mb-8 lg:mt-20">{children}</main>
+            {/* <MenuBar /> */}
+          </PGCTourStoreProvider>
+>>>>>>> Stashed changes
         </TRPCReactProvider>
       </body>
     </html>
