@@ -16,6 +16,7 @@ const createContext = cache(() => {
   const heads = new Headers(headers());
   heads.set("x-trpc-source", "rsc");
 
+  // Provide a dummy Request object since we're in a server component context
   return createTRPCContext({
     headers: heads,
   });

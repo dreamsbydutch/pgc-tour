@@ -26,10 +26,7 @@ import { createServerClient } from "@supabase/ssr";
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: {
-  req: Request;
-  headers: Headers;
-}) => {
+export const createTRPCContext = async (opts: { headers: Headers }) => {
   const cookieStore = cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -45,7 +42,7 @@ export const createTRPCContext = async (opts: {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const cronSecret = opts.req.headers.get("x-cron-secret");
+  const cronSecret = opts.headers.get("x-cron-secret");
 
   return {
     db,

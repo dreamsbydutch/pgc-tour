@@ -6,25 +6,16 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-<<<<<<< Updated upstream
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
-=======
-} from "@/src/app/_components/ui/dropdown-menu";
->>>>>>> Stashed changes
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { useState, type Dispatch, type SetStateAction } from "react";
 
 import { useRouter } from "next/navigation";
 import { handleLogout } from "../../(auth)/signin/actions";
-<<<<<<< Updated upstream
-import type { Member } from "@prisma/client";
 import { useUser } from "@/src/lib/hooks/useUser";
-=======
-import { useAuth } from "@/src/lib/store";
-import { UserAvatar } from "../OptimizedImage";
->>>>>>> Stashed changes
+import { useSeasonalStore } from "@/src/lib/store/seasonalStore";
 
 /**
  * UserAccountNav Component
@@ -49,23 +40,19 @@ export function UserAccountNav({
   const router = useRouter();
 
   // Get user from store
-  const { user, member } = useAuth();
-  const avatarUrl = user?.user_metadata?.avatar_url as string ?? "";
+  const { user } = useUser();
+  const { member } = useSeasonalStore((state) => ({
+    member: state.member,
+  }));
 
   return (
     <div className="w-fit">
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center">
-<<<<<<< Updated upstream
           {user?.user_metadata.avatar_url && (
             <Image
               className="grid place-items-center rounded-full bg-border"
               src={(user?.user_metadata.avatar_url as string) ?? ""}
-=======
-          {avatarUrl && (
-            <UserAvatar
-              src={avatarUrl}
->>>>>>> Stashed changes
               alt="User Avatar"
               width={size === "small" ? 24 : 36}
               height={size === "small" ? 24 : 36}

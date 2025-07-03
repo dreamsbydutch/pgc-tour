@@ -12,7 +12,10 @@ import { useSeasonalStore } from "@/src/lib/store/seasonalStore";
 
 export function TourCardForm() {
   const [isCreatingTourCard, setIsCreatingTourCard] = useState(false);
-  const {tours} = useSeasonalStore
+  const { tours, currentTourCard } = useSeasonalStore((state) => ({
+    tours: state.tours,
+    currentTourCard: state.tourCard,
+  }));
   if (currentTourCard || !tours?.length) return null;
   return (
     <div className="my-4 flex flex-col items-center justify-center gap-4">
@@ -58,6 +61,9 @@ function TourCardFormButton({
     await utils.tour.invalidate();
     return;
   };
+  const { tourCards } = useSeasonalStore((state) => ({
+    tourCards: state.allTourCards,
+  }));
 
   return (
     <Button

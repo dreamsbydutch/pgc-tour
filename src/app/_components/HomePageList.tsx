@@ -5,10 +5,6 @@ import { cn, formatMoney, formatScore } from "@/src/lib/utils";
 import type { Team, Tour, TourCard } from "@prisma/client";
 import Image from "next/image";
 import LittleFucker from "./LittleFucker";
-<<<<<<< Updated upstream
-=======
-import { useAuth } from "@/src/lib/store";
->>>>>>> Stashed changes
 
 export function HomePageList({
   tour,

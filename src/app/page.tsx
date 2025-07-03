@@ -23,20 +23,6 @@ export const dynamic = "force-dynamic";
 
 export default function Home() {
   if (true) return <></>;
-  const { isAuthenticated, authLoading } = usePGCTourStore((state) => ({
-    isAuthenticated: state.isAuthenticated,
-    authLoading: state.authLoading,
-  }));
-
-  // Preload critical images when component mounts
-  useEffect(() => {
-    preloadCriticalImages();
-  }, []);
-
-  // If not authenticated, show only the sign-in component
-  if (!authLoading && !isAuthenticated) {
-    return <SignInPage />;
-  }
 
   // For authenticated users, show the main content
   return (

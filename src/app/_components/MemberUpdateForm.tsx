@@ -39,7 +39,8 @@ export default function MemberUpdateForm({
   const router = useRouter();
   const utils = api.useUtils();
   const allMembers = api.member.getAll.useQuery().data;
-  const member = api.member.getById.useQuery({ memberId: user?.id }).data;
+  const member =
+    user && api.member.getById.useQuery({ memberId: user.id }).data;
 
   const form = useForm({
     defaultValues: member ?? emptyMember,
