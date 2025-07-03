@@ -1,11 +1,12 @@
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { createClient } from "@/src/lib/supabase/server";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 
 export const tourCardRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.tourCard.findMany({ include: { member: true } });
+    return ctx.db.tourCard.findMany({
+      include: { member: true },
+    });
   }),
 
   getByDisplayName: publicProcedure
@@ -13,6 +14,7 @@ export const tourCardRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return await ctx.db.tourCard.findFirst({
         where: { displayName: input.name, seasonId: input.seasonId },
+        include: { member: true },
       });
     }),
 
@@ -21,15 +23,16 @@ export const tourCardRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.tourCard.findUnique({
         where: { id: input.tourCardId },
+        include: { member: true },
       });
     }),
 
   getByUserId: publicProcedure
-    .input(z.object({ userId: z.string().optional() }))
+    .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
-      if (!input.userId) return;
       return await ctx.db.tourCard.findMany({
         where: { memberId: input.userId },
+        include: { member: true },
       });
     }),
 
@@ -43,29 +46,29 @@ export const tourCardRouter = createTRPCRouter({
     }),
 
   getByTourId: publicProcedure
-    .input(z.object({ tourId: z.string().optional() }))
+    .input(z.object({ tourId: z.string() }))
     .query(async ({ ctx, input }) => {
-      if (!input.tourId) return;
       return await ctx.db.tourCard.findMany({
         where: { tourId: input.tourId },
+        include: { member: true },
       });
     }),
-  getOwnBySeason: publicProcedure
+  getSelfBySeason: publicProcedure
     .input(
       z.object({
         seasonId: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const supabase = await createClient();
-      const user = await supabase.auth.getUser();
-      if (!user) return null;
-      const season = await ctx.db.season.findUnique({ where: { year: 2025 } });
+      const season = await ctx.db.season.findUnique({
+        where: { year: new Date().getFullYear() },
+      });
       return await ctx.db.tourCard.findFirst({
         where: {
           seasonId: input.seasonId ?? season?.id,
-          memberId: user.data.user?.id,
+          memberId: ctx.user?.id,
         },
+        include: { member: true },
       });
     }),
   getAllCurrent: publicProcedure.query(async ({ ctx }) => {
@@ -74,41 +77,40 @@ export const tourCardRouter = createTRPCRouter({
       where: {
         seasonId: season?.id,
       },
+      include: { member: true },
     });
   }),
 
-  getOwnCurrent: publicProcedure.query(async ({ ctx }) => {
-    const supabase = await createClient();
-    const user = await supabase.auth.getUser();
-    if (!user) return null;
+  getSelfCurrent: publicProcedure.query(async ({ ctx }) => {
     const season = await ctx.db.season.findUnique({ where: { year: 2025 } });
     return await ctx.db.tourCard.findFirst({
       where: {
         seasonId: season?.id,
-        memberId: user.data.user?.id,
+        memberId: ctx.user?.id,
       },
+      include: { member: true },
     });
   }),
 
   getByUserSeason: publicProcedure
     .input(
       z.object({
-        userId: z.string().optional(),
+        userId: z.string(),
         seasonId: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      if (!input.userId) return;
       const season = await ctx.db.season.findUnique({ where: { year: 2025 } });
       return await ctx.db.tourCard.findFirst({
         where: {
           seasonId: input.seasonId ?? season?.id,
           memberId: input.userId,
         },
+        include: { member: true },
       });
     }),
 
-  create: publicProcedure
+  create: protectedProcedure
     .input(
       z.object({
         seasonId: z.string().min(1),
@@ -131,7 +133,7 @@ export const tourCardRouter = createTRPCRouter({
       });
     }),
 
-  update: publicProcedure
+  update: protectedProcedure
     .input(
       z.object({
         id: z.string().min(1),
@@ -163,7 +165,7 @@ export const tourCardRouter = createTRPCRouter({
       });
     }),
 
-  delete: publicProcedure
+  delete: protectedProcedure
     .input(z.object({ tourCardId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.tourCard.delete({

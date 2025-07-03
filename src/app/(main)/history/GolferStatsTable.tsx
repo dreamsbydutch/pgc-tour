@@ -10,7 +10,6 @@ import {
   TableRow,
 } from "@/src/app/_components/ui/table";
 import { Button } from "@/src/app/_components/ui/button";
-import { useGolferStats } from "@/src/lib/store";
 
 interface GolferStats {
   id: string;
@@ -37,7 +36,6 @@ export function GolferStatsTable() {
   const itemsPerPage = 20;
 
   // Use the optimized hook that pre-computes statistics with aggressive caching
-  const { golferStats, loading, error } = useGolferStats();
 
   // Only sort the pre-computed data
   const sortedStats = useMemo(() => {

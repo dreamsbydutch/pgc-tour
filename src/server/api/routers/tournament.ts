@@ -1,14 +1,16 @@
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  publicProcedure,
+} from "@/server/api/trpc";
 
 export const tournamentRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.tournament.findMany({
       orderBy: { startDate: "asc" },
       include: {
-        teams: true,
-        golfers: true,
         course: true,
       },
     });
@@ -18,6 +20,9 @@ export const tournamentRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.tournament.findMany({
         where: { seasonId: input.seasonId },
+        include: {
+          course: true,
+        },
         orderBy: { startDate: "asc" },
       });
     }),
@@ -53,66 +58,13 @@ export const tournamentRouter = createTRPCRouter({
     const today = new Date();
     return ctx.db.tournament.findFirst({
       where: { startDate: { lte: today }, endDate: { gte: today } },
+      include: {
+        course: true,
+      },
     });
   }),
-  getLeaderboard: publicProcedure
-    .input(z.object({ tournamentId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const { tournamentId } = input;
 
-      try {
-        // fetch teams by tournamentId
-        const teams = await ctx.db.team.findMany({
-          where: { tournamentId },
-          include: {
-            tourCard: true,
-          },
-        });
-        // fetch golfers by tournamentId
-        const golfers = await ctx.db.golfer.findMany({
-          where: { tournamentId },
-        });
-
-        return { teams, golfers };
-      } catch (error) {
-        console.error("Error in tRPC leaderboard fetch:", error);
-        throw error;
-      }
-    }),
-
-  getPastData: publicProcedure
-    .input(z.object({ seasonId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      // Get tournaments that have ended
-      const completedTournaments = await ctx.db.tournament.findMany({
-        where: {
-          seasonId: input.seasonId,
-          OR: [{ endDate: { lt: new Date() } }, { currentRound: { gte: 5 } }],
-        },
-        select: { id: true },
-      });
-
-      if (completedTournaments.length === 0) {
-        return { teams: [], golfers: [] };
-      }
-
-      const tournamentIds = completedTournaments.map((t) => t.id);
-
-      // Fetch teams and golfers for completed tournaments
-      const [teams, golfers] = await Promise.all([
-        ctx.db.team.findMany({
-          where: { tournamentId: { in: tournamentIds } },
-          include: { tourCard: true },
-        }),
-        ctx.db.golfer.findMany({
-          where: { tournamentId: { in: tournamentIds } },
-        }),
-      ]);
-
-      return { teams, golfers };
-    }),
-
-  update: publicProcedure
+  update: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -123,7 +75,7 @@ export const tournamentRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.tournament.update({ where: { id: input.id }, data: input });
     }),
-  create: publicProcedure
+  create: adminProcedure
     .input(
       z.object({
         name: z.string(),
@@ -154,7 +106,7 @@ export const tournamentRouter = createTRPCRouter({
         },
       });
     }),
-  delete: publicProcedure
+  delete: adminProcedure
     .input(z.object({ tournamentId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.tournament.delete({ where: { id: input.tournamentId } });

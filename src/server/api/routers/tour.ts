@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  publicProcedure,
+} from "@/server/api/trpc";
 
 export const tourRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -15,7 +19,7 @@ export const tourRouter = createTRPCRouter({
     }),
   getActive: publicProcedure.query(async ({ ctx }) => {
     const activeSeason = await ctx.db.season.findUnique({
-      where: { year: 2025 },
+      where: { year: new Date().getFullYear() },
     });
     return await ctx.db.tour.findMany({
       where: { seasonId: activeSeason?.id },
@@ -29,7 +33,7 @@ export const tourRouter = createTRPCRouter({
       });
     }),
 
-  create: publicProcedure
+  create: adminProcedure
     .input(
       z.object({
         name: z.string(),
@@ -54,7 +58,7 @@ export const tourRouter = createTRPCRouter({
         },
       });
     }),
-  update: publicProcedure
+  update: adminProcedure
     .input(
       z.object({
         id: z.string().min(1),
@@ -72,7 +76,7 @@ export const tourRouter = createTRPCRouter({
         data: input.data,
       });
     }),
-  delete: publicProcedure
+  delete: adminProcedure
     .input(z.object({ tourID: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.tour.delete({ where: { id: input.tourID } });

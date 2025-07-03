@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "@/server/api/trpc";
 
 export const teamRouter = createTRPCRouter({
   getAll: publicProcedure.query(
@@ -19,19 +23,17 @@ export const teamRouter = createTRPCRouter({
           },
         }),
     ),
-  getBySeason: publicProcedure
-    .input(z.object({ seasonId: z.string().optional() }))
-    .query(
-      async ({ ctx, input }) =>
-        await ctx.db.team.findMany({
-          where: {
-            tournament: {
-              seasonId: input.seasonId,
-            },
+  getBySeason: publicProcedure.input(z.object({ seasonId: z.string() })).query(
+    async ({ ctx, input }) =>
+      await ctx.db.team.findMany({
+        where: {
+          tournament: {
+            seasonId: input.seasonId,
           },
-          orderBy: { score: "asc" },
-        }),
-    ),
+        },
+        orderBy: { score: "asc" },
+      }),
+  ),
   getByTournament: publicProcedure
     .input(z.object({ tournamentId: z.string() }))
     .query(
@@ -58,21 +60,28 @@ export const teamRouter = createTRPCRouter({
           orderBy: { score: "asc" },
         }),
     ),
-  create: publicProcedure
+  create: protectedProcedure
     .input(
       z.object({
         golferIds: z.array(z.number()),
-        tourCardId: z.string(),
         tournamentId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const tourCard = await ctx.db.tourCard.findFirst({
+        where: {
+          memberId: ctx.user.id,
+          season: { year: new Date().getFullYear() },
+        },
+      });
+      if (!tourCard) {
+        throw new Error("Tour card not found for the current user.");
+      }
       const existingTeam = await ctx.db.team.findFirst({
         where: {
-          tourCardId: input.tourCardId,
+          tourCardId: tourCard.id,
           tournamentId: input.tournamentId,
         },
-        orderBy: { score: "asc" },
       });
       if (existingTeam) {
         await ctx.db.team.update({
@@ -83,14 +92,14 @@ export const teamRouter = createTRPCRouter({
         await ctx.db.team.create({
           data: {
             golferIds: input.golferIds,
-            tourCardId: input.tourCardId,
+            tourCardId: tourCard.id,
             tournamentId: input.tournamentId,
           },
         });
       }
       return true;
     }),
-  update: publicProcedure
+  update: protectedProcedure
     .input(
       z.object({
         id: z.number(),
@@ -143,6 +152,14 @@ export const teamRouter = createTRPCRouter({
           topThree: input.topThree,
           win: input.win,
         },
+      });
+      return true;
+    }),
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.team.delete({
+        where: { id: input.id },
       });
       return true;
     }),

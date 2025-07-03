@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { adminProcedure, createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 
 export const courseRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -19,7 +19,7 @@ export const courseRouter = createTRPCRouter({
       return ctx.db.course.findUnique({ where: { name: input.name } });
     }),
 
-  create: publicProcedure
+  create: adminProcedure
     .input(
       z.object({
         apiId: z.string(),
@@ -42,7 +42,7 @@ export const courseRouter = createTRPCRouter({
         },
       });
     }),
-  update: publicProcedure
+  update: adminProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -62,5 +62,10 @@ export const courseRouter = createTRPCRouter({
           back: input.back,
         },
       });
+    }),
+  delete: adminProcedure
+    .input(z.object({ courseID: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.course.delete({ where: { id: input.courseID } });
     }),
 });

@@ -1,7 +1,6 @@
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { createClient } from "@/src/lib/supabase/server";
+import { adminProcedure, createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 
 export const memberRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -22,22 +21,19 @@ export const memberRouter = createTRPCRouter({
       });
     }),
   getSelf: publicProcedure.query(async ({ ctx }) => {
-    const supabase = await createClient();
-    const user = await supabase.auth.getUser();
-    if (!user || !user.data.user) return null;
+    if (!ctx.user) return null;
     return await ctx.db.member.findUnique({
-      where: { id: user.data.user.id },
+      where: { id: ctx.user.id },
     });
   }),
   getById: publicProcedure
-    .input(z.object({ memberId: z.string().optional() }))
+    .input(z.object({ memberId: z.string() }))
     .query(async ({ ctx, input }) => {
-      if (!input.memberId) return null;
       return await ctx.db.member.findUnique({
         where: { id: input.memberId },
       });
     }),
-  create: publicProcedure
+  create: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -59,7 +55,7 @@ export const memberRouter = createTRPCRouter({
       });
       return updatedUser;
     }),
-  update: publicProcedure
+  update: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -85,16 +81,15 @@ export const memberRouter = createTRPCRouter({
       });
       return updatedUser;
     }),
-  addFriend: publicProcedure
+  addFriend: protectedProcedure
     .input(
       z.object({
-        memberId: z.string(),
         friendId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const updatedUser = await ctx.db.member.update({
-        where: { id: input.memberId },
+        where: { id: ctx.user.id },
         data: {
           friends: {
             push: input.friendId,
@@ -103,16 +98,15 @@ export const memberRouter = createTRPCRouter({
       });
       return updatedUser;
     }),
-  removeFriend: publicProcedure
+  removeFriend: protectedProcedure
     .input(
       z.object({
-        memberId: z.string(),
         friendsList: z.array(z.string()),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const updatedUser = await ctx.db.member.update({
-        where: { id: input.memberId },
+        where: { id: ctx.user.id },
         data: {
           friends: {
             set: input.friendsList

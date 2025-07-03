@@ -16,37 +16,13 @@ import {
   TableHeader,
   TableRow,
 } from "./_components/ui/table";
-<<<<<<< Updated upstream
-import Image from "next/image";
-import { useMainStore } from "@/src/lib/store/store";
-
-export default function Home() {
-  const tiers = useMainStore((state) => state.currentTiers);
-  if (!tiers)
-    return (
-      <div className="flex h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100">
-        <div className="mx-auto flex animate-pulse items-center justify-center text-center font-varela text-3xl text-slate-600">
-          <Image
-            src={"/logo512.png"}
-            alt="PGC Logo"
-            width={96}
-            height={96}
-            className="mx-2"
-          />
-          <div className="w-44 text-center">Loading Clubhouse Data.....</div>
-        </div>
-      </div>
-    );
-=======
-import { OptimizedImage } from "./_components/OptimizedImage";
-import { preloadCriticalImages } from "@/src/lib/utils/image-optimization";
 import { useEffect } from "react";
-import { usePGCTourStore } from "../lib/store";
 
 // Force dynamic rendering to prevent static generation issues
 export const dynamic = "force-dynamic";
 
 export default function Home() {
+  if (true) return <></>;
   const { isAuthenticated, authLoading } = usePGCTourStore((state) => ({
     isAuthenticated: state.isAuthenticated,
     authLoading: state.authLoading,
@@ -63,26 +39,16 @@ export default function Home() {
   }
 
   // For authenticated users, show the main content
->>>>>>> Stashed changes
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-2">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-<<<<<<< Updated upstream
-      <SignInPage />
-      <ChampionsPopup />
-      <HomePageLeaderboard />
-      <TournamentCountdown />
-      <HomePageStandings />
-      <TourCardForm />
-=======
       {/* <ChampionsPopup /> */}
       {/* <HomePageLeaderboard /> */}
       {/* <TournamentCountdown /> */}
       {/* <HomePageStandings /> */}
       {/* <TourCardForm /> */}
->>>>>>> Stashed changes
       <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
         <div className="my-3 flex items-center justify-center gap-3">
           <Image
@@ -168,10 +134,6 @@ export default function Home() {
 // );
 
 function CurrentSchedule() {
-<<<<<<< Updated upstream
-  const tournaments = useMainStore((state) => state.seasonTournaments);
-  const tiers = useMainStore((state) => state.currentTiers);
-=======
   // Store is now guaranteed to be initialized thanks to StoreLoadingProvider
   const { tournaments, tiers, courses } = usePGCTourStore((state) => ({
     tournaments: state.tournaments,
@@ -190,7 +152,6 @@ function CurrentSchedule() {
     (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
   );
   const course = courses.find((c) => c.id === tournaments[0]?.courseId);
->>>>>>> Stashed changes
 
   return (
     <Table className="mx-auto w-3/4 text-center font-varela">

@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 import { handleLogout } from "../../(auth)/signin/actions";
 <<<<<<< Updated upstream
 import type { Member } from "@prisma/client";
-import { useUser } from "@/src/lib/hooks/use-user";
+import { useUser } from "@/src/lib/hooks/useUser";
 =======
 import { useAuth } from "@/src/lib/store";
 import { UserAvatar } from "../OptimizedImage";

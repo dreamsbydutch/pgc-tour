@@ -3,15 +3,12 @@ import "@/styles/globals.css";
 import { type Metadata } from "next";
 import { Barlow_Condensed, Varela, Yellowtail } from "next/font/google";
 
-import { TRPCReactProvider } from "@/trpcLocal/react";
-import MenuBar from "@/components/nav/MenuBar";
 import { cn } from "../lib/utils";
 import Script from "next/script";
-<<<<<<< Updated upstream
-import { InitStoreWrapper } from "../lib/store/initStoreWrapper";
-=======
-import { PGCTourStoreProvider } from "../lib/store";
->>>>>>> Stashed changes
+import { AuthProvider } from "../lib/providers/AuthProvider";
+import { TRPCReactProvider } from "../trpc/react";
+import { LoadSeasonalData } from "../lib/store/loadSeasonalData";
+import MenuBar from "./_components/nav/MenuBar";
 
 const varela = Varela({
   weight: ["400"],
@@ -35,40 +32,24 @@ export const metadata: Metadata = {
     default: "PGC Tour",
   },
   description: "Pure Golf Collective Fantasy Golf Tour",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: [
+    { rel: "icon", url: "/favicon.ico" },
+    { rel: "apple-touch-icon", url: "/favicon.ico" },
+    { rel: "apple-touch-startup-image", url: "/favicon.ico" },
+  ],
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "mobile-web-app-title": "PGC Clubhouse",
+    "apple-mobile-web-app-title": "PGC Clubhouse",
+    "google-site-verification": "k_L19BEXJjcWOM7cHFMPMpK9MBdcv2uQ6qFt3HGPEbc",
+  },
 };
-
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta
-          name="google-site-verification"
-          content="k_L19BEXJjcWOM7cHFMPMpK9MBdcv2uQ6qFt3HGPEbc"
-        />
-        <meta name="mobile-web-app-capable" content="yes"></meta>
-        <meta name="apple-mobile-web-app-capable" content="yes"></meta>
-        <link rel="apple-touch-icon" href="/favicon.ico"></link>
-        <link rel="apple-touch-startup-image" href="/favicon.ico"></link>
-        <meta name="mobile-web-app-title" content="PGC Clubhouse"></meta>
-        <meta name="apple-mobile-web-app-title" content="PGC Clubhouse"></meta>
-
-        <Script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-E7NY2W59JZ"
-        />
-
-        <Script id="google-analytics">
-          {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-GN6YJK2E0Q');
-          `}
-        </Script>
-      </head>
       <body
         className={cn(
           varela.variable,
@@ -78,18 +59,26 @@ export default async function RootLayout({
         )}
       >
         <TRPCReactProvider>
-<<<<<<< Updated upstream
-          <InitStoreWrapper>
+          <AuthProvider>
+            <LoadSeasonalData />
             <main className="mb-24 mt-4 lg:mb-8 lg:mt-20">{children}</main>
             <MenuBar />
-          </InitStoreWrapper>
-=======
-          <PGCTourStoreProvider>
-            <main className="mb-24 mt-4 lg:mb-8 lg:mt-20">{children}</main>
-            {/* <MenuBar /> */}
-          </PGCTourStoreProvider>
->>>>>>> Stashed changes
+          </AuthProvider>
         </TRPCReactProvider>
+
+        {/* ✅ Google Analytics Scripts */}
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-E7NY2W59JZ"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-GN6YJK2E0Q');
+          `}
+        </Script>
       </body>
     </html>
   );

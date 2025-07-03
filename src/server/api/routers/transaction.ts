@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  publicProcedure,
+} from "@/server/api/trpc";
 
 export const transactionRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -14,7 +18,7 @@ export const transactionRouter = createTRPCRouter({
       });
     }),
 
-  create: publicProcedure
+  create: adminProcedure
     .input(
       z.object({
         amount: z.number(),
@@ -40,6 +44,43 @@ export const transactionRouter = createTRPCRouter({
           transactionType: input.transactionType,
           userId: input.userId,
         },
+      });
+    }),
+  update: adminProcedure
+    .input(
+      z.object({
+        transactionId: z.number(),
+        amount: z.number().optional(),
+        description: z.string().optional(),
+        seasonId: z.string().optional(),
+        transactionType: z
+          .enum([
+            "TourCardFee",
+            "TournamentWinnings",
+            "Withdrawal",
+            "LeagueDonation",
+            "CharityDonation",
+            "Payment",
+          ])
+          .optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.transactions.update({
+        where: { id: input.transactionId },
+        data: {
+          amount: input.amount,
+          description: input.description,
+          seasonId: input.seasonId,
+          transactionType: input.transactionType,
+        },
+      });
+    }),
+  delete: adminProcedure
+    .input(z.object({ transactionId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.transactions.delete({
+        where: { id: input.transactionId },
       });
     }),
 });

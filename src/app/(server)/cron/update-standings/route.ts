@@ -3,8 +3,6 @@
 import { api } from "@/src/trpc/server";
 import { NextResponse } from "next/server";
 
-<<<<<<< Updated upstream
-=======
 /**
  * Calculates statistics for a tour card based on completed teams
  */
@@ -215,7 +213,6 @@ async function notifyCacheInvalidation(origin: string): Promise<void> {
 /**
  * Main function to update standings for all tour cards
  */
->>>>>>> Stashed changes
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL
   const { origin } = new URL(request.url);

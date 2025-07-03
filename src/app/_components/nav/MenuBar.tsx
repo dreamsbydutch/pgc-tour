@@ -16,11 +16,7 @@ import LoadingSpinner from "../LoadingSpinner"; // Loading spinner component
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signInWithGoogle } from "../../(auth)/signin/actions";
-<<<<<<< Updated upstream
-import { useMainStore } from "@/src/lib/store/store";
-=======
-import { usePGCTourStore } from "@/src/lib/store";
->>>>>>> Stashed changes
+import { useUser } from "@/src/lib/hooks/useUser";
 
 /**
  * MenuBar Component
@@ -37,21 +33,9 @@ import { usePGCTourStore } from "@/src/lib/store";
  * - className (optional): Additional CSS classes to style the component.
  */
 export default function MenuBar({ className }: { className?: string }) {
-<<<<<<< Updated upstream
-  const member = useMainStore((state) => state.currentMember);
-  const tourCard = useMainStore((state) => state.currentTourCard);
-=======
-  const { member, tourCards, season } = usePGCTourStore((state) => ({
-    member: state.member,
-    tourCards: state.tourCards,
-    season: state.currentSeason,
-  })); // Extracting member, tourCards, and current season from the store
-  const tourCard = tourCards?.find(
-    (card) => card.memberId === member?.id && card.seasonId === season?.id,
-  );
->>>>>>> Stashed changes
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false); // State for Google sign-in loading
   const [isSigningOut, setIsSigningOut] = useState(false); // State for sign-out process
+  const { user, session, isLoading } = useUser();
 
   // Configuration for navigation items
   const navItems = [
@@ -76,7 +60,7 @@ export default function MenuBar({ className }: { className?: string }) {
         <div className="flex min-w-[2.5rem] items-center justify-center">
           {isSigningOut ? (
             <Skeleton className="h-[2.5rem] w-[2.5rem] rounded-full" />
-          ) : member ? (
+          ) : user ? (
             <UserAccountNav {...{ setIsSigningOut }} />
           ) : (
             <div onClick={() => signInWithGoogle({ setIsGoogleLoading })}>
@@ -92,22 +76,13 @@ export default function MenuBar({ className }: { className?: string }) {
       <div className="hidden lg:flex">
         {isSigningOut ? (
           <Skeleton className="h-[1.5rem] w-[1.5rem] rounded-full" />
-        ) : member ? (
-<<<<<<< Updated upstream
-            <div className="flex items-center justify-center gap-2">
-              <UserAccountNav {...{ member, size: "small", setIsSigningOut }} />
-              <span className="font-barlow text-2xl font-semibold">
-                {tourCard?.displayName ?? "User"}
-              </span>
-            </div>
-=======
+        ) : user ? (
           <div className="flex items-center justify-center gap-2">
             <UserAccountNav {...{ size: "small", setIsSigningOut }} />
             <span className="font-barlow text-2xl font-semibold">
-              {tourCard?.displayName ?? "User"}
+              {user.user_metadata.name ?? "User"}
             </span>
           </div>
->>>>>>> Stashed changes
         ) : (
           <div onClick={() => signInWithGoogle({ setIsGoogleLoading })}>
             {isGoogleLoading ? (

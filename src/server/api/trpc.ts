@@ -11,6 +11,8 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "@/server/db";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 
 /**
  * 1. CONTEXT
@@ -24,9 +26,31 @@ import { db } from "@/server/db";
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+export const createTRPCContext = async (opts: {
+  req: Request;
+  headers: Headers;
+}) => {
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+      },
+    },
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const cronSecret = opts.req.headers.get("x-cron-secret");
+
   return {
     db,
+    user,
+    isCronJob: cronSecret === process.env.CRON_SECRET,
     ...opts,
   };
 };
@@ -104,3 +128,35 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
+export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
+  if (!ctx.user) {
+    throw new Error("Unauthorized");
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      user: ctx.user,
+    },
+  });
+});
+
+export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
+  if (ctx.isCronJob) {
+    return next({
+      ctx: {
+        ...ctx,
+        user: ctx.user,
+      },
+    });
+  }
+  if (!ctx.user?.role || ctx.user.role !== "admin") {
+    throw new Error("Unauthorized");
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      user: ctx.user,
+    },
+  });
+});

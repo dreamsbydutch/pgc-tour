@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  publicProcedure,
+} from "@/server/api/trpc";
 
 export const golferRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -37,13 +41,13 @@ export const golferRouter = createTRPCRouter({
             select: {
               id: true,
               name: true,
-              seasonId: true,
+              logoUrl: true,
             },
           },
         },
       });
     }),
-  update: publicProcedure
+  update: adminProcedure
     .input(
       z.object({
         id: z.number(),
@@ -98,7 +102,7 @@ export const golferRouter = createTRPCRouter({
         },
       });
     }),
-  create: publicProcedure
+  create: adminProcedure
     .input(
       z.object({
         apiId: z.number(),
@@ -120,5 +124,10 @@ export const golferRouter = createTRPCRouter({
           rating: input.rating,
         },
       });
+    }),
+  delete: adminProcedure
+    .input(z.object({ golferId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.golfer.delete({ where: { id: input.golferId } });
     }),
 });

@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { api } from "@/src/trpc/react";
-import { useAuth } from "@/src/lib/store";
 import {
   Table,
   TableBody,

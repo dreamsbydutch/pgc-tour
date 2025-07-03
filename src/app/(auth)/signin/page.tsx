@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "../../_components/Icons";
 import { signInWithGoogle } from "./actions";
 import Link from "next/link";
-import { useMainStore } from "@/src/lib/store/store";
+import { useUser } from "@/src/lib/hooks/useUser";
 
 export default function SignInPage() {
-  const member = useMainStore((state) => state.currentMember);
+  const { user, isLoading } = useUser();
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
-  if (member) return null;
+  if (user) return null;
   return (
     <div className="flex h-[100vh] flex-col">
       <h2 className="mx-auto my-2 max-w-xl text-center font-varela text-xl text-slate-600">
@@ -21,10 +21,10 @@ export default function SignInPage() {
         type="button"
         variant="secondary"
         onClick={() => signInWithGoogle({ setIsGoogleLoading })}
-        disabled={isGoogleLoading}
+        disabled={isGoogleLoading || isLoading}
         className="mx-auto my-6 h-[3.5rem] w-[15rem] border-2"
       >
-        {isGoogleLoading ? (
+        {isGoogleLoading || isLoading ? (
           <Icons.loaderCircle className="mr-2 size-4 animate-spin" />
         ) : (
           <Icons.google className="size-6" />

@@ -16,6 +16,7 @@ export const env = createEnv({
     DATABASE_URL: z.string(),
     DIRECT_URL: z.string(),
     SUPABASE_JWT_SECRET: z.string(),
+    CRON_SECRET: z.string().optional(),
     // POSTGRES_URL: z.string(),
     // POSTGRES_PRISMA_URL: z.string(),
     // POSTGRES_URL_NO_SSL: z.string(),
