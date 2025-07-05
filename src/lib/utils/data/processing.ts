@@ -33,6 +33,34 @@ export function sortItems<T>(
 }
 
 /**
+ * Advanced sorting function with multiple criteria support
+ * @param items - Items to sort
+ * @param criteria - Array of sort criteria
+ * @returns Sorted array
+ * @example
+ * sortBy(teams, [{ key: 'position', direction: 'asc' }, { key: 'score', direction: 'desc' }])
+ */
+export function sortBy<T>(
+  items: T[],
+  criteria: Array<{ key: keyof T; direction?: "asc" | "desc" }>,
+): T[] {
+  return [...items].sort((a, b) => {
+    for (const { key, direction = "asc" } of criteria) {
+      const aVal = a[key];
+      const bVal = b[key];
+
+      if (aVal == null && bVal == null) continue;
+      if (aVal == null) return direction === "asc" ? -1 : 1;
+      if (bVal == null) return direction === "asc" ? 1 : -1;
+
+      if (aVal < bVal) return direction === "asc" ? -1 : 1;
+      if (aVal > bVal) return direction === "asc" ? 1 : -1;
+    }
+    return 0;
+  });
+}
+
+/**
  * Generic filter function that applies multiple filter criteria
  * @param items - Items to filter
  * @param filters - Filter criteria object
@@ -186,4 +214,19 @@ export function createCrudOps<T extends { id: string }>() {
       updates: Array<{ id: string; updates: Partial<T> }>,
     ) => batchUpdateItems(items, updates),
   };
+}
+
+/**
+ * Generic filter function with predicate support
+ * @param items - Items to filter
+ * @param predicate - Filter function
+ * @returns Filtered array
+ * @example
+ * filterItems(golfers, g => team.golferIds.includes(g.apiId))
+ */
+export function filterByPredicate<T>(
+  items: T[],
+  predicate: (item: T) => boolean,
+): T[] {
+  return items.filter(predicate);
 }
