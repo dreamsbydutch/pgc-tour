@@ -58,10 +58,11 @@ export async function fetchDataGolf(
     const data = await request.json();
     return data;
   } catch (error) {
-    console.error("fetchDataGolf: Error fetching data", {
+    // Log critical DataGolf API failures for debugging
+    console.error("DataGolf API Error:", {
       queryType,
       queryParameters,
-      error,
+      error: error instanceof Error ? error.message : error,
     });
     throw error;
   }
@@ -110,6 +111,13 @@ export async function fetchWithRetry(
     }
   }
 
+  // Log when all retries are exhausted
+  console.error("Fetch failed after all retries:", {
+    url,
+    retries,
+    error: lastError?.message,
+  });
+
   throw lastError;
 }
 
@@ -144,7 +152,6 @@ export async function postData<T = unknown>(
 
     return (await response.json()) as T;
   } catch (error) {
-    console.error("postData: Error posting data", { url, data, error });
     throw error;
   }
 }
@@ -188,7 +195,6 @@ export async function getData<T = unknown>(
 
     return (await response.json()) as T;
   } catch (error) {
-    console.error("getData: Error getting data", { url, params, error });
     throw error;
   }
 }
@@ -224,7 +230,6 @@ export async function putData<T = unknown>(
 
     return (await response.json()) as T;
   } catch (error) {
-    console.error("putData: Error putting data", { url, data, error });
     throw error;
   }
 }
@@ -263,7 +268,6 @@ export async function deleteData<T = unknown>(
       return {} as T;
     }
   } catch (error) {
-    console.error("deleteData: Error deleting data", { url, error });
     throw error;
   }
 }
@@ -327,11 +331,6 @@ export async function downloadFile(
 
     URL.revokeObjectURL(objectUrl);
   } catch (error) {
-    console.error("downloadFile: Error downloading file", {
-      url,
-      filename,
-      error,
-    });
     throw error;
   }
 }

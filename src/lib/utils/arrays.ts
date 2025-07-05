@@ -128,26 +128,34 @@ export function difference<T>(
 }
 
 /**
- * Gets a random item from an array
+ * Gets a deterministic item from an array using a random number generator
  * @param array - Array to pick from
- * @returns Random item or undefined if array is empty
+ * @param rng - Random number generator function that returns 0-1
+ * @returns Item or undefined if array is empty
  * @example
- * sample([1, 2, 3, 4, 5]) // 3 (random)
+ * const deterministicRng = () => 0.5; // Constant for testing
+ * sample([1, 2, 3, 4, 5], deterministicRng) // 3 (deterministic)
  */
-export function sample<T>(array: T[]): T | undefined {
+export function sample<T>(array: T[], rng: () => number): T | undefined {
   if (array.length === 0) return undefined;
-  return array[Math.floor(Math.random() * array.length)];
+  return array[Math.floor(rng() * array.length)];
 }
 
 /**
- * Gets multiple random items from an array
+ * Gets multiple deterministic items from an array using a random number generator
  * @param array - Array to pick from
  * @param count - Number of items to pick
- * @returns Array of random items
+ * @param rng - Random number generator function that returns 0-1
+ * @returns Array of items
  * @example
- * sampleSize([1, 2, 3, 4, 5], 3) // [2, 4, 1] (random)
+ * const deterministicRng = () => 0.5; // Constant for testing
+ * sampleSize([1, 2, 3, 4, 5], 3, deterministicRng) // [3, 3, 3] (deterministic)
  */
-export function sampleSize<T>(array: T[], count: number): T[] {
+export function sampleSize<T>(
+  array: T[],
+  count: number,
+  rng: () => number,
+): T[] {
   if (count <= 0 || array.length === 0) return [];
   if (count >= array.length) return [...array];
 
@@ -155,7 +163,7 @@ export function sampleSize<T>(array: T[], count: number): T[] {
   const indices = new Set<number>();
 
   while (result.length < count) {
-    const index = Math.floor(Math.random() * array.length);
+    const index = Math.floor(rng() * array.length);
     if (!indices.has(index)) {
       indices.add(index);
       result.push(array[index]!);

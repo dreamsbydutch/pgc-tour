@@ -3,6 +3,8 @@ import { getLatestTournament, getCurrentSeasonData } from "./tournamentActions";
 import { cache } from "react";
 import {
   sortGolfers,
+  sortTeams,
+  sortByPosition,
   isEmpty,
   isDefined,
   getDaysBetween,
@@ -287,11 +289,18 @@ export const getLatestChampions = cache(async () => {
     }
 
     // Extract champions from leaderboard
-    const champs = leaderboard.teamsByTour.flatMap((tourGroup) =>
-      tourGroup.teams.filter(
-        (team) => team.position === "1" || team.position === "T1",
-      ),
-    );
+    const champs = leaderboard.teamsByTour
+      .flatMap((tourGroup) =>
+        tourGroup.teams.filter(
+          (team) => team.position === "1" || team.position === "T1",
+        ),
+      )
+      .sort((a, b) => {
+        // Sort champions by score (lower is better)
+        const aScore = a.score ?? 999;
+        const bScore = b.score ?? 999;
+        return aScore - bScore;
+      });
 
     return {
       tournament: lastTournament,
@@ -406,6 +415,18 @@ const getHistoricalTournamentLeaderboard = cache(
               tourCard: team.tourCard,
               golfers: sortGolfers(teamGolfers),
             };
+          })
+          .sort((a, b) => {
+            // Primary sort: by position (if available)
+            if (a.position && b.position) {
+              const posSort = sortByPosition(a.position, b.position);
+              if (posSort !== 0) return posSort;
+            }
+
+            // Secondary sort: by score (lower is better)
+            const aScore = a.score ?? 999;
+            const bScore = b.score ?? 999;
+            return aScore - bScore;
           });
 
         return {
@@ -510,7 +531,19 @@ function buildTeamsByTour(
             golfers: sortGolfers(teamGolfers),
           };
         })
-        .filter(isDefined);
+        .filter(isDefined)
+        .sort((a, b) => {
+          // Primary sort: by position (if available)
+          if (a.position && b.position) {
+            const posSort = sortByPosition(a.position, b.position);
+            if (posSort !== 0) return posSort;
+          }
+
+          // Secondary sort: by score (lower is better)
+          const aScore = a.score ?? 999;
+          const bScore = b.score ?? 999;
+          return aScore - bScore;
+        });
 
       return {
         tour,

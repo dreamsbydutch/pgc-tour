@@ -19,7 +19,7 @@ export const tournamentRouter = createTRPCRouter({
   getBySeason: publicProcedure
     .input(z.object({ seasonId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.tournament.findMany({
+      const tournaments = await ctx.db.tournament.findMany({
         where: { seasonId: input.seasonId },
         include: {
           course: true,
@@ -27,6 +27,38 @@ export const tournamentRouter = createTRPCRouter({
         },
         orderBy: { startDate: "asc" },
       });
+
+      // Get teams and golfers for each tournament
+      const tournamentsWithTeamsAndGolfers = await Promise.all(
+        tournaments.map(async (tournament) => {
+          const [teams, golfers] = await Promise.all([
+            ctx.db.team.findMany({
+              where: { tournamentId: tournament.id },
+              include: {
+                tourCard: {
+                  include: {
+                    tour: true,
+                    member: true,
+                  },
+                },
+              },
+              orderBy: [{ position: "asc" }, { score: "asc" }],
+            }),
+            ctx.db.golfer.findMany({
+              where: { tournamentId: tournament.id },
+              orderBy: { position: "asc" },
+            }),
+          ]);
+
+          return {
+            ...tournament,
+            teams,
+            golfers,
+          };
+        }),
+      );
+
+      return tournamentsWithTeamsAndGolfers;
     }),
   getById: publicProcedure
     .input(z.object({ tournamentId: z.string() }))

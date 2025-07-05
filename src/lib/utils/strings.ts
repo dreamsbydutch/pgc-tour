@@ -8,7 +8,34 @@
  * @param input - String to slugify
  * @returns URL-friendly slug
  * @example
- * slugify("Hello World!") // "hello-world"
+ * slugify("Hello World!") /**
+ * Generates a deterministic random string using a provided random number generator
+ * @param length - Length of the string
+ * @param rng - Random number generator function that returns 0-1
+ * @param charset - Character set to use (optional)
+ * @returns Random string
+ * @example
+ * const deterministicRng = () => 0.5; // Constant for testing
+ * randomString(8, deterministicRng) // Deterministic result
+ */
+export function randomString(
+  length: number,
+  rng: () => number,
+  charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+): string {
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += charset.charAt(Math.floor(rng() * charset.length));
+  }
+  return result;
+}
+
+/**
+ * Converts strings to URL-friendly slugs
+ * @param input - String to slugify
+ * @returns Slug string
+ * @example
+ * slugify("Hello World") // "hello-world"
  * slugify("Special@Characters#123") // "specialcharacters123"
  */
 export function slugify(input: string): string {
@@ -296,23 +323,4 @@ export function escapeHtml(str: string): string {
   };
 
   return str.replace(/[&<>"']/g, (match) => htmlEscapes[match] || match);
-}
-
-/**
- * Generates a random string of specified length
- * @param length - Length of string to generate
- * @param charset - Character set to use (default: alphanumeric)
- * @returns Random string
- * @example
- * randomString(8) // "a7bC9xYz"
- */
-export function randomString(
-  length: number,
-  charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
-): string {
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += charset.charAt(Math.floor(Math.random() * charset.length));
-  }
-  return result;
 }

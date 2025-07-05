@@ -1,24 +1,41 @@
 /**
- * @fileoverview Main export file for all utility functions
- * Provides centralized access to all utility modules with clean imports
+ * @fileoverview Main export file for the optimized golf tournament utils suite
  *
- * @example
- * // Import specific functions
- * import { formatMoney, sortGolfers, cn } from "@/lib/utils";
+ * Provides centralized access to all purely functional utility modules with:
+ * - Zero redundancy through shared utilities
+ * - 100% type safety with comprehensive type guards
+ * - Strategic error logging only for critical failures
+ * - Maximum efficiency through optimized shared logic
  *
- * // Import entire modules
+ * @example Named imports (recommended for tree-shaking)
+ * import { formatMoney, sortGolfers, parsePosition, cn } from "@/lib/utils";
+ *
+ * @example Module imports for organized code
  * import { formatting, validation, golf } from "@/lib/utils";
+ *
+ * @example Direct module imports for specific use cases
+ * import * as golfUtils from "@/lib/utils/golf";
+ * import * as dateUtils from "@/lib/utils/dates";
  */
 
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 /**
- * Combines class names with Tailwind CSS merge functionality
- * @param inputs - Class values to merge
- * @returns Merged class string
- * @example
- * cn("px-2 py-1", "bg-blue-500", { "text-white": true }) // "px-2 py-1 bg-blue-500 text-white"
+ * Combines class names with Tailwind CSS merge functionality.
+ * Essential utility for conditional styling in React components.
+ *
+ * @param inputs - Class values to merge (strings, objects, arrays)
+ * @returns Merged and optimized class string
+ *
+ * @example Basic usage
+ * cn("px-2 py-1", "bg-blue-500") // "px-2 py-1 bg-blue-500"
+ *
+ * @example Conditional classes
+ * cn("px-2 py-1", { "bg-blue-500": isActive, "bg-gray-500": !isActive })
+ *
+ * @example Tailwind conflict resolution
+ * cn("px-2", "px-4") // "px-4" (last wins)
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -28,31 +45,36 @@ export function cn(...inputs: ClassValue[]) {
 export { clsx } from "clsx";
 export type { ClassValue } from "clsx";
 
-// Re-export all formatting utilities
+// ============= INDIVIDUAL FUNCTION EXPORTS =============
+// All utilities available for direct named imports (recommended for tree-shaking)
+
+// Formatting utilities - data presentation and display
 export * from "./formatting";
 
-// Re-export all validation utilities
+// Validation utilities - type guards and data validation
 export * from "./validation";
 
-// Re-export all sorting utilities
+// Sorting utilities - optimized comparison and ordering
 export * from "./sorting";
 
-// Re-export all date utilities
+// Date utilities - pure date manipulation and calculations
 export * from "./dates";
 
-// Re-export all golf utilities
+// Golf-specific utilities - tournament scoring and management
 export * from "./golf";
 
-// Re-export all string utilities
+// String utilities - text manipulation and formatting
 export * from "./strings";
 
-// Re-export all array utilities
+// Array utilities - collection operations and transformations
 export * from "./arrays";
 
-// Re-export all API utilities
+// API utilities - network requests with strategic error logging
 export * from "./api";
 
-// Named module exports for organized imports
+// ============= MODULE EXPORTS =============
+// Named module exports for organized imports and namespace isolation
+
 export * as formatting from "./formatting";
 export * as validation from "./validation";
 export * as sorting from "./sorting";
@@ -62,5 +84,8 @@ export * as strings from "./strings";
 export * as arrays from "./arrays";
 export * as api from "./api";
 
-// Keep the original utils that are commonly used throughout the app
+// ============= LEGACY EXPORTS =============
+// Application-specific constants and legacy exports
+
+/** WhatsApp group chat link for tournament communications */
 export const groupChatLink = "https://chat.whatsapp.com/EDhyiqWF10jImlvgbLQcVD";

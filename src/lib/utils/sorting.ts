@@ -4,9 +4,31 @@
  */
 
 import type { Golfer, Team } from "@prisma/client";
+import { parsePosition } from "./golf";
 
 /**
- * Sorts golfers by position and score with comprehensive handling for all tournament scenarios
+ * Sorts golfers by position a/**
+ * Deterministically shuffles an array using a provided random number generator
+ * @param array - Array to shuffle
+ * @param rng - Random number generator function that returns 0-1
+ * @returns New shuffled array
+ * @example
+ * const deterministicRng = () => 0.5; // Constant for testing
+ * shuffle([1, 2, 3, 4, 5], deterministicRng) // Deterministic result
+ */
+export function shuffle<T>(array: T[], rng: () => number): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    const temp = shuffled[i];
+    shuffled[i] = shuffled[j]!;
+    shuffled[j] = temp!;
+  }
+  return shuffled;
+}
+
+/**
+ * Sorts golfers by position, total score, and rounds completed with comprehensive handling for all tournament scenarios
  * @param golfers - Array of golfer objects
  * @param round - Optional round number (1, 2, 3, 4) to sort by specific round score
  * @param isLiveRound - Whether the specified round is currently live (affects scoring logic)
@@ -22,26 +44,6 @@ export function sortGolfers(
   isLiveRound?: boolean,
 ): Golfer[] {
   return golfers.sort((a, b) => {
-    // Helper function to parse position strings
-    const parsePosition = (position: string | null): number => {
-      if (!position) return 999;
-
-      // Handle special positions
-      if (position === "CUT") return 1000;
-      if (position === "WD") return 1001;
-      if (position === "DQ") return 1002;
-
-      // Handle tied positions (T5, T10, etc.)
-      if (position.startsWith("T")) {
-        const num = parseInt(position.substring(1));
-        return isNaN(num) ? 999 : num;
-      }
-
-      // Handle regular numeric positions
-      const num = parseInt(position);
-      return isNaN(num) ? 999 : num;
-    };
-
     // Helper function to get score for comparison
     const getScoreForRound = (golfer: Golfer): number => {
       if (!round) {
@@ -149,6 +151,31 @@ export function sortTeams(
 }
 
 /**
+ * Sorts teams by position and score consistently for leaderboard display
+ * Handles tied positions (T1, T5, etc.) and fallback to score for tiebreaking
+ * @param teams - Array of team objects with position and score
+ * @returns Sorted array of teams (position first, then score as tiebreaker)
+ * @example
+ * sortTeamsByLeaderboard(teams) // Sort by position, then score
+ */
+export function sortTeamsByLeaderboard<
+  T extends { position?: string | null; score?: number | null },
+>(teams: T[]): T[] {
+  return teams.sort((a, b) => {
+    // Primary sort: by position (if available)
+    if (a.position && b.position) {
+      const posSort = sortByPosition(a.position, b.position);
+      if (posSort !== 0) return posSort;
+    }
+
+    // Secondary sort: by score (lower is better)
+    const aScore = a.score ?? 999;
+    const bScore = b.score ?? 999;
+    return aScore - bScore;
+  });
+}
+
+/**
  * Sorts dates in ascending or descending order
  * @param a - First date
  * @param b - Second date
@@ -162,7 +189,7 @@ export function sortByDate(
   b: Date,
   direction: "asc" | "desc" = "asc",
 ): number {
-  const comparison = new Date(a).getTime() - new Date(b).getTime();
+  const comparison = a.getTime() - b.getTime();
   return direction === "desc" ? -comparison : comparison;
 }
 
@@ -273,7 +300,7 @@ export function sortMultiple<T extends Record<string, any>>(
           comparison = Number(aVal) - Number(bVal);
           break;
         case "date":
-          comparison = new Date(aVal).getTime() - new Date(bVal).getTime();
+          comparison = sortByDate(new Date(aVal), new Date(bVal), "asc");
           break;
         case "string":
         default:
@@ -287,22 +314,4 @@ export function sortMultiple<T extends Record<string, any>>(
     }
     return 0;
   });
-}
-
-/**
- * Shuffles an array randomly using Fisher-Yates algorithm
- * @param array - Array to shuffle
- * @returns New shuffled array
- * @example
- * shuffle([1, 2, 3, 4, 5]) // [3, 1, 5, 2, 4]
- */
-export function shuffle<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const temp = shuffled[i];
-    shuffled[i] = shuffled[j]!;
-    shuffled[j] = temp!;
-  }
-  return shuffled;
 }

@@ -3,11 +3,52 @@ import { useSeasonalStore } from "../store/seasonalStore";
 import { useCurrentTournament, useLastTournament } from "./useTournamentHooks";
 import {
   sortGolfers,
+  sortTeams,
+  sortByPosition,
+  sortTeamsByLeaderboard,
+  enhanceTourCard,
+  enhanceTournament,
   isEmpty,
   isDefined,
   getDaysBetween,
   getTournamentStatus,
 } from "@/lib/utils";
+import type {
+  Tournament,
+  Tour,
+  TourCard,
+  Member,
+  Team,
+  Golfer,
+  Tier,
+  Course,
+} from "@prisma/client";
+import type {
+  TournamentLeaderboardResult,
+  MemberHistoryResult,
+  TourCardHistoryResult,
+  SeasonPlayoffsResult,
+  LatestChampionsResult,
+  CurrentTournamentLeaderboardResult,
+  EnhancedTeam,
+  TeamsByTour,
+  DataSource,
+  HookStatus,
+  StoreData,
+  APITournamentData,
+  APIMemberData,
+  APITourCardData,
+  MemberHistoryOptions,
+  TourCardHistoryOptions,
+  TournamentLeaderboardOptions,
+  EnhancedTournament,
+  TourCardTeamHistory,
+  MemberTeamHistory,
+  MissedTournament,
+  PlayoffTeam,
+  PlayoffsByTour,
+  TournamentStatus,
+} from "@/lib/types/hooks";
 
 /**
  * Smart hook that returns tournament leaderboard data.
@@ -21,25 +62,20 @@ import {
  */
 export function useTournamentLeaderboard(
   tournamentId: string | undefined,
-  options?: {
-    forceAPI?: boolean; // Force API call even for current season
-    refreshInterval?: number; // Refresh interval for current tournament (default: 2 min)
-  },
-) {
+  options?: TournamentLeaderboardOptions,
+): TournamentLeaderboardResult {
   const tournaments = useSeasonalStore((state) => state.tournaments);
   const tours = useSeasonalStore((state) => state.tours);
   const tourCards = useSeasonalStore((state) => state.allTourCards);
-  const currentSeason = useSeasonalStore((state) => state.currentSeason);
 
-  // Early validation
   if (!tournamentId) {
     return {
       tournament: undefined,
       teamsByTour: [],
       error: "No tournament ID provided",
       isLoading: false,
-      status: "error" as const,
-      dataSource: "none" as const,
+      status: "error",
+      dataSource: "none",
     };
   }
 
@@ -47,7 +83,6 @@ export function useTournamentLeaderboard(
   const isCurrentSeason =
     !options?.forceAPI && tournaments?.some((t) => t.id === tournamentId);
 
-  // Use seasonal store for current season tournaments
   if (isCurrentSeason && tournaments && tours && tourCards) {
     const tournament = tournaments.find((t) => t.id === tournamentId)!;
     const tournamentStatus = getTournamentStatus(
@@ -55,11 +90,8 @@ export function useTournamentLeaderboard(
       new Date(tournament.endDate),
     );
 
-    // For current/active tournaments, optionally use API with refresh
-    const shouldUseRefreshAPI =
-      tournamentStatus === "current" && options?.refreshInterval;
-
-    if (shouldUseRefreshAPI) {
+    // For current/active tournaments with refresh, use API
+    if (tournamentStatus === "current" && options?.refreshInterval) {
       return useCurrentTournamentWithRefresh(
         tournamentId,
         options.refreshInterval,
@@ -70,7 +102,7 @@ export function useTournamentLeaderboard(
     return buildLeaderboardFromStore(tournament, tours, tourCards, "store");
   }
 
-  // Use API for historical tournaments or when forced
+  // Use API for historical tournaments
   return useHistoricalTournamentAPI(tournamentId);
 }
 
@@ -85,33 +117,30 @@ export function useTournamentLeaderboard(
  */
 export function useMemberHistory(
   memberId: string | undefined,
-  options?: {
-    seasonId?: string; // Specific season, or undefined for current season
-    allSeasons?: boolean; // Get all seasons (forces API)
-    includeMissed?: boolean; // Include missed tournaments (current season only)
-  },
-) {
-  const tournaments = useSeasonalStore((state) => state.tournaments);
-  const tours = useSeasonalStore((state) => state.tours);
-  const tourCards = useSeasonalStore((state) => state.allTourCards);
-  const tiers = useSeasonalStore((state) => state.tiers);
-  const currentSeason = useSeasonalStore((state) => state.currentSeason);
+  options?: MemberHistoryOptions,
+): MemberHistoryResult {
+  const {
+    tournaments,
+    tours,
+    allTourCards: tourCards,
+    tiers,
+    season,
+  } = useSeasonalStore();
 
-  // Early validation
   if (!memberId) {
     return {
       teams: [],
       error: "No member ID provided",
       isLoading: false,
-      status: "error" as const,
-      dataSource: "none" as const,
+      status: "error",
+      dataSource: "none",
     };
   }
 
-  // Use API for all seasons or specific historical season
+  // Use API for all seasons or historical seasons
   if (
     options?.allSeasons ||
-    (options?.seasonId && options.seasonId !== currentSeason?.id)
+    (options?.seasonId && options.seasonId !== season?.id)
   ) {
     return useMemberHistoryAPI(memberId, options);
   }
@@ -121,56 +150,45 @@ export function useMemberHistory(
     return buildMemberHistoryFromStore(
       memberId,
       { tournaments, tours, tourCards, tiers },
-      options,
+      options || {},
     );
   }
 
-  // Loading state
   return {
     teams: [],
     error: "Seasonal data not loaded yet",
     isLoading: true,
-    status: "loading" as const,
-    dataSource: "store" as const,
+    status: "loading",
+    dataSource: "store",
   };
 }
 
-/**
- * Smart hook for tour card teams.
- * Automatically chooses data source based on what's needed.
- *
- * @param tourCardId - The tour card ID
- * @param options - Configuration options
- */
 export function useTourCardHistory(
   tourCardId: string | undefined,
-  options?: {
-    seasonId?: string; // Specific season, undefined for current
-    allSeasons?: boolean; // Get all seasons
-    currentSeasonOnly?: boolean; // Force current season only
-  },
-) {
-  const tournaments = useSeasonalStore((state) => state.tournaments);
-  const tours = useSeasonalStore((state) => state.tours);
-  const tourCards = useSeasonalStore((state) => state.allTourCards);
-  const tiers = useSeasonalStore((state) => state.tiers);
-  const currentSeason = useSeasonalStore((state) => state.currentSeason);
+  options?: TourCardHistoryOptions,
+): TourCardHistoryResult {
+  const {
+    tournaments,
+    tours,
+    allTourCards: tourCards,
+    tiers,
+    season,
+  } = useSeasonalStore();
 
-  // Early validation
   if (!tourCardId) {
     return {
       teams: [],
       error: "No tour card ID provided",
       isLoading: false,
-      status: "error" as const,
-      dataSource: "none" as const,
+      status: "error",
+      dataSource: "none",
     };
   }
 
-  // Use API for historical seasons or all seasons
+  // Use API for historical seasons
   if (
     options?.allSeasons ||
-    (options?.seasonId && options.seasonId !== currentSeason?.id)
+    (options?.seasonId && options.seasonId !== season?.id)
   ) {
     return useTourCardHistoryAPI(tourCardId, options);
   }
@@ -185,30 +203,25 @@ export function useTourCardHistory(
     });
   }
 
-  // Loading state
   return {
     teams: [],
     error: "Seasonal data not loaded yet",
     isLoading: true,
-    status: "loading" as const,
-    dataSource: "store" as const,
+    status: "loading",
+    dataSource: "store",
   };
 }
 
-/**
- * Smart hook for playoff teams.
- * Automatically chooses data source based on season.
- *
- * @param seasonId - Season ID, undefined for current season
- */
-export function useSeasonPlayoffs(seasonId?: string) {
-  const tournaments = useSeasonalStore((state) => state.tournaments);
-  const tours = useSeasonalStore((state) => state.tours);
-  const tourCards = useSeasonalStore((state) => state.allTourCards);
-  const currentSeason = useSeasonalStore((state) => state.currentSeason);
+export function useSeasonPlayoffs(seasonId?: string): SeasonPlayoffsResult {
+  const {
+    tournaments,
+    tours,
+    allTourCards: tourCards,
+    season,
+  } = useSeasonalStore();
 
   // Use API for historical seasons
-  if (seasonId && seasonId !== currentSeason?.id) {
+  if (seasonId && seasonId !== season?.id) {
     return useHistoricalPlayoffsAPI(seasonId);
   }
 
@@ -217,23 +230,18 @@ export function useSeasonPlayoffs(seasonId?: string) {
     return buildPlayoffsFromStore({ tournaments, tours, tourCards });
   }
 
-  // Loading state
   return {
     playoffsByTour: [],
     error: "Seasonal data not loaded yet",
     isLoading: true,
-    status: "loading" as const,
-    dataSource: "store" as const,
+    status: "loading",
+    dataSource: "store",
   };
 }
 
-/**
- * Specialized hook for current tournament leaderboard with real-time updates.
- * Only works for active tournaments.
- */
 export function useCurrentTournamentLeaderboard(
   refreshInterval: number = 120000,
-) {
+): CurrentTournamentLeaderboardResult {
   const currentTournament = useCurrentTournament();
 
   if (!currentTournament) {
@@ -242,32 +250,27 @@ export function useCurrentTournamentLeaderboard(
       teamsByTour: [],
       error: "No active tournament",
       isLoading: false,
-      dataSource: "none" as const,
+      status: "error",
+      dataSource: "none",
     };
   }
 
   return useTournamentLeaderboard(currentTournament.id, { refreshInterval });
 }
 
-/**
- * Specialized hook for latest champions (last 3 days).
- */
-export function useLatestChampions() {
+export function useLatestChampions(): LatestChampionsResult {
   const lastTournament = useLastTournament();
-  const tours = useSeasonalStore((state) => state.tours);
-  const tourCards = useSeasonalStore((state) => state.allTourCards);
+  const { tours, allTourCards: tourCards } = useSeasonalStore();
 
-  // Early validation - check if we have required data
-  if (!isDefined(lastTournament) || isEmpty(tours) || isEmpty(tourCards)) {
+  if (!lastTournament || !tours || !tourCards) {
     return {
       tournament: undefined,
       champs: [],
       error: "Missing required data",
-      dataSource: "store" as const,
+      dataSource: "store",
     };
   }
 
-  // Check if tournament is completed and within the 3-day window
   const now = new Date();
   const tournamentEndDate = new Date(lastTournament.endDate);
   const daysSinceEnd = getDaysBetween(tournamentEndDate, now);
@@ -278,64 +281,55 @@ export function useLatestChampions() {
       tournament: lastTournament,
       champs: [],
       error: "Tournament not yet completed",
-      dataSource: "store" as const,
+      dataSource: "store",
     };
   }
-
   if (daysSinceEnd > 3) {
     return {
       tournament: lastTournament,
       champs: [],
       error: "Champion display window expired (3 days after tournament)",
-      dataSource: "store" as const,
+      dataSource: "store",
     };
   }
 
-  // Get winning teams (position 1 or T1)
-  const winningTeams = lastTournament.teams.filter(
-    (team) => team.position === "1" || team.position === "T1",
-  );
-
-  if (isEmpty(winningTeams)) {
-    return {
-      tournament: lastTournament,
-      champs: [],
-      error: "No champions found",
-      dataSource: "store" as const,
-    };
-  }
-
-  // Enrich winning teams with tour and tourCard data
-  const champs = winningTeams
+  // Get winning teams and enrich with data
+  const champs = lastTournament.teams
+    .filter((team) => team.position === "1" || team.position === "T1")
     .map((team) => {
-      const tourCard = tourCards?.find((card) => card.id === team.tourCardId);
-      const tour = tours?.find((t) => t.id === tourCard?.tourId);
+      const tourCard = tourCards.find((card) => card.id === team.tourCardId);
+      const tour = tours.find((t) => t.id === tourCard?.tourId);
 
-      // Skip teams with incomplete data
-      if (!isDefined(tour) || !isDefined(tourCard)) {
-        return null;
-      }
-
-      // Get and sort team golfers
-      const teamGolfers = lastTournament.golfers.filter((golfer) =>
-        team.golferIds.includes(golfer.apiId),
-      );
+      if (!tour || !tourCard) return null;
 
       return {
         ...team,
         tour,
-        tourCard,
-        golfers: sortGolfers(teamGolfers),
+        tourCard: enhanceTourCard(tourCard),
+        golfers: sortGolfers(
+          lastTournament.golfers.filter((golfer) =>
+            team.golferIds.includes(golfer.apiId),
+          ),
+        ),
       };
     })
-    .filter(isDefined); // Remove null entries
+    .filter(isDefined);
+
+  if (!champs.length) {
+    return {
+      tournament: lastTournament,
+      champs: [],
+      error: "No champions found",
+      dataSource: "store",
+    };
+  }
 
   return {
     tournament: lastTournament,
-    champs,
+    champs: sortTeamsByLeaderboard(champs),
     error: null,
     daysRemaining: 3 - daysSinceEnd,
-    dataSource: "store" as const,
+    dataSource: "store",
   };
 }
 
@@ -344,14 +338,13 @@ export function useLatestChampions() {
 function useCurrentTournamentWithRefresh(
   tournamentId: string,
   refreshInterval: number,
-) {
-  const tours = useSeasonalStore((state) => state.tours);
-  const tourCards = useSeasonalStore((state) => state.allTourCards);
+): TournamentLeaderboardResult {
+  const { tours, allTourCards: tourCards, tournaments } = useSeasonalStore();
 
   const {
     data: teams,
     isLoading,
-    error: queryError,
+    error,
   } = api.team.getByTournament.useQuery(
     { tournamentId },
     {
@@ -364,16 +357,16 @@ function useCurrentTournamentWithRefresh(
     },
   );
 
-  const tournaments = useSeasonalStore((state) => state.tournaments);
   const tournament = tournaments?.find((t) => t.id === tournamentId);
 
-  if (queryError) {
+  if (error) {
     return {
       tournament,
       teamsByTour: [],
-      error: `Failed to fetch teams: ${queryError.message}`,
+      error: `Failed to fetch teams: ${error.message}`,
       isLoading,
-      dataSource: "api" as const,
+      status: "error",
+      dataSource: "api",
     };
   }
 
@@ -383,36 +376,38 @@ function useCurrentTournamentWithRefresh(
       teamsByTour: [],
       error: null,
       isLoading: true,
-      dataSource: "api" as const,
+      status: "loading",
+      dataSource: "api",
     };
   }
 
-  // Group teams by tour with enriched data
-  const teamsByTour = buildTeamsByTour(teams, tours, tourCards, tournament);
-
   return {
     tournament,
-    teamsByTour,
+    teamsByTour: buildTeamsByTour(
+      teams,
+      tours ?? [],
+      tourCards ?? [],
+      tournament,
+    ),
     error: null,
     isLoading: false,
-    status: "success" as const,
-    dataSource: "api" as const,
+    status: "success",
+    dataSource: "api",
     totalTeams: teams.length,
     lastUpdated: new Date(),
   };
 }
 
-function useHistoricalTournamentAPI(tournamentId: string) {
+function useHistoricalTournamentAPI(
+  tournamentId: string,
+): TournamentLeaderboardResult {
   const {
     data: tournamentData,
     isLoading,
     error,
   } = api.tournament.getByIdWithLeaderboard.useQuery(
     { tournamentId },
-    {
-      staleTime: 1000 * 60 * 30, // Cache for 30 minutes
-      gcTime: 1000 * 60 * 60, // Keep in cache for 1 hour
-    },
+    { staleTime: 1000 * 60 * 30, gcTime: 1000 * 60 * 60 },
   );
 
   if (isLoading) {
@@ -421,8 +416,8 @@ function useHistoricalTournamentAPI(tournamentId: string) {
       teamsByTour: [],
       error: null,
       isLoading: true,
-      status: "loading" as const,
-      dataSource: "api" as const,
+      status: "loading",
+      dataSource: "api",
     };
   }
 
@@ -432,8 +427,8 @@ function useHistoricalTournamentAPI(tournamentId: string) {
       teamsByTour: [],
       error: `Failed to fetch tournament data: ${error.message}`,
       isLoading: false,
-      status: "error" as const,
-      dataSource: "api" as const,
+      status: "error",
+      dataSource: "api",
     };
   }
 
@@ -443,8 +438,8 @@ function useHistoricalTournamentAPI(tournamentId: string) {
       teamsByTour: [],
       error: "Tournament not found",
       isLoading: false,
-      status: "error" as const,
-      dataSource: "api" as const,
+      status: "error",
+      dataSource: "api",
     };
   }
 
@@ -453,122 +448,128 @@ function useHistoricalTournamentAPI(tournamentId: string) {
     new Date(tournament.startDate),
     new Date(tournament.endDate),
   );
+  const enhancedTournament = {
+    ...tournament,
+    course: tournament.course,
+    teams: teams || [],
+    golfers: golfers || [],
+  };
 
-  // Handle case where no teams exist
-  if (!teams || isEmpty(teams)) {
-    const noTeamsMessage =
+  if (!teams?.length) {
+    const message =
       tournamentStatus === "upcoming"
         ? "No teams registered yet (tournament hasn't started)"
-        : tournamentStatus === "completed"
-          ? "No teams found for this tournament"
-          : "No teams found for current tournament";
+        : "No teams found for this tournament";
 
     return {
-      tournament,
+      tournament: enhancedTournament,
       teamsByTour: [],
       error: null,
       isLoading: false,
-      status: "empty" as const,
+      status: "empty",
       tournamentStatus,
-      message: noTeamsMessage,
+      message,
       totalTeams: 0,
-      dataSource: "api" as const,
+      dataSource: "api",
     };
   }
 
-  // Group teams by tour
+  // Group teams by tour with proper sorting
   const teamsByTour = tours
     .map((tour) => {
       const tourTeams = teams
         .filter((team) => team.tourCard.tourId === tour.id)
-        .map((team) => {
-          const teamGolfers = (golfers ?? []).filter((golfer) =>
-            team.golferIds.includes(golfer.apiId),
-          );
-
-          return {
-            ...team,
-            tour,
-            tourCard: team.tourCard,
-            golfers: sortGolfers(teamGolfers),
-          };
-        });
+        .map((team) => ({
+          ...team,
+          tour,
+          tourCard: team.tourCard,
+          golfers: sortGolfers(
+            (golfers ?? []).filter((golfer) =>
+              team.golferIds.includes(golfer.apiId),
+            ),
+          ),
+        }));
 
       return {
         tour,
-        teams: tourTeams,
+        teams: sortTeamsByLeaderboard(tourTeams),
         teamCount: tourTeams.length,
       };
     })
     .filter((tourGroup) => tourGroup.teamCount > 0);
 
   return {
-    tournament,
+    tournament: enhancedTournament,
     teamsByTour,
     error: null,
     isLoading: false,
-    status: "success" as const,
+    status: "success",
     tournamentStatus,
     totalTeams: teams.length,
     lastUpdated: new Date(),
-    dataSource: "api" as const,
+    dataSource: "api",
   };
 }
 
 function buildLeaderboardFromStore(
-  tournament: any,
-  tours: any[],
-  tourCards: any[],
-  dataSource: string,
-) {
+  tournament: Tournament & {
+    teams: Team[];
+    golfers: Golfer[];
+    course?: Course;
+  },
+  tours: Tour[],
+  tourCards: TourCard[],
+  dataSource: DataSource,
+): TournamentLeaderboardResult {
   const tournamentStatus = getTournamentStatus(
     new Date(tournament.startDate),
     new Date(tournament.endDate),
   );
+  const enhancedTournament = enhanceTournament(tournament);
 
-  const teams = tournament.teams;
-  if (!teams || isEmpty(teams)) {
-    const noTeamsMessage =
+  if (!tournament.teams?.length) {
+    const message =
       tournamentStatus === "upcoming"
         ? "No teams registered yet (tournament hasn't started)"
-        : tournamentStatus === "completed"
-          ? "No teams found for this tournament"
-          : "No teams found for current tournament";
+        : "No teams found for this tournament";
 
     return {
-      tournament,
+      tournament: enhancedTournament,
       teamsByTour: [],
       error: null,
       isLoading: false,
-      status: "empty" as const,
+      status: "empty",
       tournamentStatus,
-      message: noTeamsMessage,
+      message,
       totalTeams: 0,
       dataSource,
     };
   }
 
-  const teamsByTour = buildTeamsByTour(teams, tours, tourCards, tournament);
-
   return {
-    tournament,
-    teamsByTour,
+    tournament: enhancedTournament,
+    teamsByTour: buildTeamsByTour(
+      tournament.teams,
+      tours,
+      tourCards,
+      tournament,
+    ),
     error: null,
     isLoading: false,
-    status: "success" as const,
+    status: "success",
     tournamentStatus,
-    totalTeams: teams.length,
+    totalTeams: tournament.teams.length,
     lastUpdated: new Date(),
     dataSource,
   };
 }
 
 function buildTeamsByTour(
-  teams: any[],
-  tours: any[],
-  tourCards: any[],
-  tournament: any,
-) {
+  teams: Team[],
+  tours: Tour[],
+  tourCards: (TourCard & { member?: Member })[],
+  tournament: Tournament & { golfers: Golfer[] },
+): TeamsByTour[] {
   return tours
     .map((tour) => {
       const tourTeams = teams
@@ -582,41 +583,42 @@ function buildTeamsByTour(
           const tourCard = tourCards.find(
             (card) => card.id === team.tourCardId,
           );
-          if (!isDefined(tourCard)) return null;
+          if (!tourCard) return null;
 
-          const teamGolfers = tournament.golfers.filter((golfer: any) =>
-            team.golferIds.includes(golfer.apiId),
-          );
+          const teamGolfers =
+            tournament.golfers?.filter((golfer) =>
+              team.golferIds.includes(golfer.apiId),
+            ) ?? [];
 
           return {
             ...team,
             tour,
-            tourCard,
+            tourCard: enhanceTourCard(tourCard, tourCard.member),
             golfers: sortGolfers(teamGolfers),
-          };
+          } as EnhancedTeam;
         })
         .filter(isDefined);
 
       return {
         tour,
-        teams: tourTeams,
+        teams: sortTeamsByLeaderboard(tourTeams),
         teamCount: tourTeams.length,
       };
     })
     .filter((tourGroup) => tourGroup.teamCount > 0);
 }
 
-function useMemberHistoryAPI(memberId: string, options: any) {
+function useMemberHistoryAPI(
+  memberId: string,
+  options: MemberHistoryOptions,
+): MemberHistoryResult {
   const {
     data: memberData,
     isLoading,
     error,
   } = api.member.getAllTimeTeams.useQuery(
     { memberId },
-    {
-      staleTime: 1000 * 60 * 10,
-      gcTime: 1000 * 60 * 30,
-    },
+    { staleTime: 1000 * 60 * 10, gcTime: 1000 * 60 * 30 },
   );
 
   if (isLoading) {
@@ -629,20 +631,10 @@ function useMemberHistoryAPI(memberId: string, options: any) {
     };
   }
 
-  if (error) {
+  if (error || !memberData) {
     return {
       teams: [],
-      error: `Failed to fetch member history: ${error.message}`,
-      isLoading: false,
-      status: "error" as const,
-      dataSource: "api" as const,
-    };
-  }
-
-  if (!memberData) {
-    return {
-      teams: [],
-      error: "Member not found",
+      error: error?.message || "Member not found",
       isLoading: false,
       status: "error" as const,
       dataSource: "api" as const,
@@ -650,6 +642,7 @@ function useMemberHistoryAPI(memberId: string, options: any) {
   }
 
   return {
+    teams: [], // API uses different structure (teamsBySeason)
     teamsBySeason: memberData.teamsBySeason,
     allTimeStatistics: memberData.statistics,
     member: memberData.member,
@@ -663,35 +656,30 @@ function useMemberHistoryAPI(memberId: string, options: any) {
 
 function buildMemberHistoryFromStore(
   memberId: string,
-  storeData: {
-    tournaments: any[];
-    tours: any[];
-    tourCards: any[];
-    tiers: any[];
-  },
-  options: any,
-) {
+  storeData: StoreData,
+  options: MemberHistoryOptions,
+): MemberHistoryResult {
   const { tournaments, tours, tourCards, tiers } = storeData;
 
-  // Find the member's tour cards
-  const memberTourCards = tourCards.filter(
-    (card) => card.memberId === memberId,
-  );
+  // Find and enhance member's tour cards
+  const memberTourCards = tourCards
+    .filter((card) => card.memberId === memberId)
+    .map((card) => enhanceTourCard(card));
 
-  if (isEmpty(memberTourCards)) {
+  if (!memberTourCards.length) {
     return {
       teams: [],
       error: "Member has no tour cards for this season",
       isLoading: false,
-      status: "error" as const,
-      dataSource: "store" as const,
+      status: "error",
+      dataSource: "store",
     };
   }
 
-  // Process tournaments to build history
-  const teams: any[] = [];
-  const missedTournaments: any[] = [];
+  const teams: MemberTeamHistory[] = [];
+  const missedTournaments: MissedTournament[] = [];
 
+  // Process tournaments chronologically
   tournaments
     .map((tournament) => ({
       ...tournament,
@@ -704,53 +692,52 @@ function buildMemberHistoryFromStore(
         tournament.startDate,
         tournament.endDate,
       );
-
-      const memberTeams = tournament.teams.filter((team: any) =>
+      const memberTeams = tournament.teams.filter((team: Team) =>
         memberTourCards.some((card) => card.id === team.tourCardId),
       );
 
       if (memberTeams.length > 0) {
-        memberTeams.forEach((team: any) => {
+        memberTeams.forEach((team: Team) => {
           const tourCard = tourCards.find(
             (card) => card.id === team.tourCardId,
           );
           const tour = tours.find((t) => t.id === tourCard?.tourId);
           const tier = tiers.find((t) => t.id === tournament.tierId);
 
-          if (tourCard && tour) {
-            const teamGolfers = tournament.golfers.filter((golfer: any) =>
-              team.golferIds.includes(golfer.apiId),
-            );
-
+          if (tourCard && tour && tier) {
             teams.push({
               team,
-              tournament,
+              tournament: enhanceTournament(tournament),
               tour,
-              tourCard,
+              tourCard: enhanceTourCard(tourCard),
               tier,
-              golfers: sortGolfers(teamGolfers),
+              golfers: sortGolfers(
+                tournament.golfers.filter((golfer: Golfer) =>
+                  team.golferIds.includes(golfer.apiId),
+                ),
+              ),
               tournamentStatus,
             });
           }
         });
       } else if (options?.includeMissed) {
-        // Add missed tournament logic here if needed
         const eligibleTours = tours.filter((tour) =>
           memberTourCards.some((card) => card.tourId === tour.id),
         );
-
         if (eligibleTours.length > 0) {
           const tier = tiers.find((t) => t.id === tournament.tierId);
-          missedTournaments.push({
-            tournament,
-            tier,
-            eligibleTours,
-            reason:
-              tournamentStatus === "upcoming"
-                ? "Not yet registered"
-                : "Did not participate",
-            tournamentStatus,
-          });
+          if (tier) {
+            missedTournaments.push({
+              tournament: enhanceTournament(tournament),
+              tier,
+              eligibleTours,
+              reason:
+                tournamentStatus === "upcoming"
+                  ? "Not yet registered"
+                  : "Did not participate",
+              tournamentStatus,
+            });
+          }
         }
       }
     });
@@ -771,23 +758,23 @@ function buildMemberHistoryFromStore(
     memberTourCards,
     error: null,
     isLoading: false,
-    status: "success" as const,
+    status: "success",
     lastUpdated: new Date(),
-    dataSource: "store" as const,
+    dataSource: "store",
   };
 }
 
-function useTourCardHistoryAPI(tourCardId: string, options: any) {
+function useTourCardHistoryAPI(
+  tourCardId: string,
+  options: TourCardHistoryOptions,
+): TourCardHistoryResult {
   const {
     data: tourCardData,
     isLoading,
     error,
   } = api.tourCard.getHistoricalTeams.useQuery(
     { tourCardId },
-    {
-      staleTime: 1000 * 60 * 30,
-      gcTime: 1000 * 60 * 60,
-    },
+    { staleTime: 1000 * 60 * 30, gcTime: 1000 * 60 * 60 },
   );
 
   if (isLoading) {
@@ -811,7 +798,7 @@ function useTourCardHistoryAPI(tourCardId: string, options: any) {
   }
 
   return {
-    teams: tourCardData.teams,
+    teams: tourCardData.teams as unknown as TourCardTeamHistory[], // API structure differs from store structure
     statistics: tourCardData.statistics,
     tourCard: tourCardData.tourCard,
     error: null,
@@ -825,14 +812,13 @@ function useTourCardHistoryAPI(tourCardId: string, options: any) {
 function buildTourCardHistoryFromStore(
   tourCardId: string,
   storeData: {
-    tournaments: any[];
-    tours: any[];
-    tourCards: any[];
-    tiers: any[];
+    tournaments: EnhancedTournament[];
+    tours: Tour[];
+    tourCards: TourCard[];
+    tiers: Tier[];
   },
 ) {
   const { tournaments, tours, tourCards, tiers } = storeData;
-
   const tourCard = tourCards.find((card) => card.id === tourCardId);
   const tour = tours.find((t) => t.id === tourCard?.tourId);
 
@@ -846,44 +832,40 @@ function buildTourCardHistoryFromStore(
     };
   }
 
-  const teams: any[] = [];
-
-  tournaments
+  // Process tournaments chronologically and build teams
+  const teams: TourCardTeamHistory[] = tournaments
     .map((tournament) => ({
       ...tournament,
       startDate: new Date(tournament.startDate),
       endDate: new Date(tournament.endDate),
     }))
     .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
-    .forEach((tournament) => {
+    .flatMap((tournament) => {
       const tournamentStatus = getTournamentStatus(
         tournament.startDate,
         tournament.endDate,
       );
-
-      const tourCardTeams = tournament.teams.filter(
-        (team: any) => team.tourCardId === tourCardId,
-      );
-
-      tourCardTeams.forEach((team: any) => {
-        const teamGolfers = tournament.golfers.filter((golfer: any) =>
-          team.golferIds.includes(golfer.apiId),
-        );
-        const tier = tiers.find((t) => t.id === tournament.tierId);
-
-        teams.push({
-          team,
-          tournament,
-          tour: tour!,
-          tourCard,
-          tier,
-          golfers: sortGolfers(teamGolfers),
-          tournamentStatus,
+      return tournament.teams
+        .filter((team: Team) => team.tourCardId === tourCardId)
+        .map((team: Team) => {
+          const tier = tiers.find((t) => t.id === tournament.tierId);
+          return {
+            team,
+            tournament,
+            tour: tour!,
+            tourCard,
+            tier: tier!,
+            golfers: sortGolfers(
+              tournament.golfers.filter((golfer: Golfer) =>
+                team.golferIds.includes(golfer.apiId),
+              ),
+            ),
+            tournamentStatus,
+          };
         });
-      });
     });
 
-  // Calculate statistics
+  // Calculate statistics efficiently
   const statistics = {
     totalTeams: teams.length,
     wins: teams.filter(
@@ -931,10 +913,7 @@ function useHistoricalPlayoffsAPI(seasonId: string) {
     error,
   } = api.season.getPlayoffTeams.useQuery(
     { seasonId },
-    {
-      staleTime: 1000 * 60 * 30,
-      gcTime: 1000 * 60 * 60,
-    },
+    { staleTime: 1000 * 60 * 30, gcTime: 1000 * 60 * 60 },
   );
 
   if (isLoading) {
@@ -958,11 +937,11 @@ function useHistoricalPlayoffsAPI(seasonId: string) {
   }
 
   const totalGoldTeams = playoffData.playoffsByTour.reduce(
-    (sum: number, tour: any) => sum + tour.goldTeams.length,
+    (sum: number, tour: PlayoffsByTour) => sum + tour.goldTeams.length,
     0,
   );
   const totalSilverTeams = playoffData.playoffsByTour.reduce(
-    (sum: number, tour: any) => sum + tour.silverTeams.length,
+    (sum: number, tour: PlayoffsByTour) => sum + tour.silverTeams.length,
     0,
   );
 
@@ -980,9 +959,9 @@ function useHistoricalPlayoffsAPI(seasonId: string) {
 }
 
 function buildPlayoffsFromStore(storeData: {
-  tournaments: any[];
-  tours: any[];
-  tourCards: any[];
+  tournaments: EnhancedTournament[];
+  tours: Tour[];
+  tourCards: TourCard[];
 }) {
   const { tournaments, tours, tourCards } = storeData;
 
@@ -990,23 +969,21 @@ function buildPlayoffsFromStore(storeData: {
     // Get all teams for this tour across all tournaments
     const tourTeams = tournaments.flatMap((tournament) =>
       tournament.teams
-        .filter((team: any) => {
+        .filter((team: Team) => {
           const tourCard = tourCards.find(
             (card) => card.id === team.tourCardId,
           );
           return tourCard?.tourId === tour.id;
         })
-        .map((team: any) => {
-          const tourCard = tourCards.find(
-            (card) => card.id === team.tourCardId,
-          );
-          return { ...team, tournament, tourCard };
-        }),
+        .map((team: Team) => ({
+          ...team,
+          tournament,
+          tourCard: tourCards.find((card) => card.id === team.tourCardId),
+        })),
     );
 
-    // Group teams by tour card and calculate season totals
+    // Group teams by tour card and calculate season totals efficiently
     const teamsByTourCard = new Map();
-
     tourTeams.forEach((team) => {
       const tourCardId = team.tourCardId;
       if (!teamsByTourCard.has(tourCardId)) {
@@ -1037,10 +1014,9 @@ function buildPlayoffsFromStore(storeData: {
 
     // Sort teams by points then earnings
     const sortedTeams = Array.from(teamsByTourCard.values()).sort((a, b) => {
-      if (b.totalPoints !== a.totalPoints) {
-        return b.totalPoints - a.totalPoints;
-      }
-      return b.totalEarnings - a.totalEarnings;
+      return b.totalPoints !== a.totalPoints
+        ? b.totalPoints - a.totalPoints
+        : b.totalEarnings - a.totalEarnings;
     });
 
     // Determine playoff spots
@@ -1048,28 +1024,29 @@ function buildPlayoffsFromStore(storeData: {
     const goldSpots = playoffSpots[0] || 0;
     const silverSpots = playoffSpots[1] || 0;
 
-    let goldTeams: any[] = [];
-    let silverTeams: any[] = [];
-
-    if (playoffSpots.length === 1) {
-      goldTeams = sortedTeams.slice(0, goldSpots);
-    } else if (playoffSpots.length === 2) {
-      goldTeams = sortedTeams.slice(0, goldSpots);
-      silverTeams = sortedTeams.slice(goldSpots, goldSpots + silverSpots);
-    }
-
-    return {
-      tour,
-      goldTeams: goldTeams.map((team, index) => ({
+    const goldTeams: PlayoffTeam[] = sortedTeams
+      .slice(0, goldSpots)
+      .map((team, index) => ({
         ...team,
         playoffPosition: index + 1,
         playoffType: "gold" as const,
-      })),
-      silverTeams: silverTeams.map((team, index) => ({
-        ...team,
-        playoffPosition: index + 1,
-        playoffType: "silver" as const,
-      })),
+      }));
+
+    const silverTeams: PlayoffTeam[] =
+      playoffSpots.length === 2
+        ? sortedTeams
+            .slice(goldSpots, goldSpots + silverSpots)
+            .map((team, index) => ({
+              ...team,
+              playoffPosition: index + 1,
+              playoffType: "silver" as const,
+            }))
+        : [];
+
+    return {
+      tour,
+      goldTeams,
+      silverTeams,
       totalTeams: sortedTeams.length,
       playoffSpots,
     };
