@@ -128,34 +128,26 @@ export function difference<T>(
 }
 
 /**
- * Gets a deterministic item from an array using a random number generator
+ * Gets a random item from an array
  * @param array - Array to pick from
- * @param rng - Random number generator function that returns 0-1
- * @returns Item or undefined if array is empty
+ * @returns Random item or undefined if array is empty
  * @example
- * const deterministicRng = () => 0.5; // Constant for testing
- * sample([1, 2, 3, 4, 5], deterministicRng) // 3 (deterministic)
+ * sample([1, 2, 3, 4, 5]) // 3 (random)
  */
-export function sample<T>(array: T[], rng: () => number): T | undefined {
+export function sample<T>(array: T[]): T | undefined {
   if (array.length === 0) return undefined;
-  return array[Math.floor(rng() * array.length)];
+  return array[Math.floor(Math.random() * array.length)];
 }
 
 /**
- * Gets multiple deterministic items from an array using a random number generator
+ * Gets multiple random items from an array
  * @param array - Array to pick from
  * @param count - Number of items to pick
- * @param rng - Random number generator function that returns 0-1
- * @returns Array of items
+ * @returns Array of random items
  * @example
- * const deterministicRng = () => 0.5; // Constant for testing
- * sampleSize([1, 2, 3, 4, 5], 3, deterministicRng) // [3, 3, 3] (deterministic)
+ * sampleSize([1, 2, 3, 4, 5], 3) // [2, 4, 1] (random)
  */
-export function sampleSize<T>(
-  array: T[],
-  count: number,
-  rng: () => number,
-): T[] {
+export function sampleSize<T>(array: T[], count: number): T[] {
   if (count <= 0 || array.length === 0) return [];
   if (count >= array.length) return [...array];
 
@@ -163,7 +155,7 @@ export function sampleSize<T>(
   const indices = new Set<number>();
 
   while (result.length < count) {
-    const index = Math.floor(rng() * array.length);
+    const index = Math.floor(Math.random() * array.length);
     if (!indices.has(index)) {
       indices.add(index);
       result.push(array[index]!);

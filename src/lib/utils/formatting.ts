@@ -36,6 +36,7 @@ export function formatNumber(
       maximumFractionDigits: Math.max(0, Math.min(20, maxFractionDigits)), // Clamp between 0-20
     }).format(num);
   } catch (error) {
+    console.warn("formatNumber: Error formatting number", { input: n, error });
     return num.toString();
   }
 }
@@ -59,6 +60,10 @@ export function formatCompactNumber(
       maximumFractionDigits: 1,
     }).format(num);
   } catch (error) {
+    console.warn("formatCompactNumber: Error formatting number", {
+      input: n,
+      error,
+    });
     return formatNumber(num);
   }
 }
@@ -107,6 +112,10 @@ export function formatMoney(
       }).format(num);
     }
   } catch (error) {
+    console.warn("formatMoney: Error formatting money", {
+      input: number,
+      error,
+    });
     return "-";
   }
 }
@@ -151,6 +160,10 @@ export function formatScore(
       return numScore; // Negative scores show as-is
     }
   } catch (error) {
+    console.warn("formatScore: Error formatting score", {
+      input: score,
+      error,
+    });
     return null;
   }
 }
@@ -196,6 +209,11 @@ export function formatThru(
     // Handle not started (thru <= 0)
     return teetime ?? "N/A";
   } catch (error) {
+    console.warn("formatThru: Error formatting thru", {
+      input: thru,
+      teetime,
+      error,
+    });
     return teetime ?? "N/A";
   }
 }
@@ -223,6 +241,10 @@ export function formatPercentage(
       maximumFractionDigits: 1,
     }).format(asDecimal ? num : num / 100);
   } catch (error) {
+    console.warn("formatPercentage: Error formatting percentage", {
+      input: value,
+      error,
+    });
     return `${percentage.toFixed(1)}%`;
   }
 }
@@ -268,16 +290,19 @@ export function formatRank(number: number | string | null | undefined): string {
  * formatTime(new Date()) // "10:30 AM"
  */
 export function formatTime(time: Date | string | null | undefined): string {
-  const date = safeDate(time);
-  if (!date) return "N/A";
+  if (!time) return "N/A";
 
   try {
+    const date = typeof time === "string" ? new Date(time) : time;
+    if (isNaN(date.getTime())) return "N/A";
+
     return date.toLocaleString("en-US", {
       hour: "numeric",
       minute: "numeric",
       hour12: true,
     });
   } catch (error) {
+    console.warn("formatTime: Error formatting time", { input: time, error });
     return "N/A";
   }
 }
@@ -295,14 +320,17 @@ export function formatDate(
   date: Date | string | null | undefined,
   format: "short" | "medium" | "long" | "full" = "short",
 ): string {
-  const dateObj = safeDate(date);
-  if (!dateObj) return "N/A";
+  if (!date) return "N/A";
 
   try {
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return "N/A";
+
     return dateObj.toLocaleDateString("en-US", {
       dateStyle: format,
     });
   } catch (error) {
+    console.warn("formatDate: Error formatting date", { input: date, error });
     return "N/A";
   }
 }
@@ -323,22 +351,3 @@ export function safeNumber(value: unknown, fallback = 0): number {
 
   return isNaN(num) || !isFinite(num) ? fallback : num;
 }
-
-/**
- * Safely converts a date-like value to a valid Date object
- * @param dateValue - Date, string, or null value
- * @returns Valid Date object or null if invalid
- */
-function safeDate(dateValue: Date | string | null | undefined): Date | null {
-  if (!dateValue) return null;
-
-  try {
-    const date =
-      typeof dateValue === "string" ? new Date(dateValue) : dateValue;
-    return isNaN(date.getTime()) ? null : date;
-  } catch {
-    return null;
-  }
-}
-
-// ============= FORMATTING FUNCTIONS =============

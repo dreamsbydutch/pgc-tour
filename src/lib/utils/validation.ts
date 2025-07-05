@@ -97,20 +97,16 @@ export function isValidUrl(url: unknown): url is string {
 /**
  * Validates if a date is within a reasonable range for golf tournaments
  * @param date - Date to validate
- * @param referenceDate - Reference date for current year calculation
  * @returns True if date is reasonable for golf tournaments
  * @example
- * isValidTournamentDate(new Date(), new Date()) // true
- * isValidTournamentDate(new Date("1900-01-01"), new Date()) // false
+ * isValidTournamentDate(new Date()) // true
+ * isValidTournamentDate(new Date("1900-01-01")) // false
  */
-export function isValidTournamentDate(
-  date: unknown,
-  referenceDate: Date,
-): date is Date {
+export function isValidTournamentDate(date: unknown): date is Date {
   if (!(date instanceof Date) || isNaN(date.getTime())) return false;
 
   const year = date.getFullYear();
-  const currentYear = referenceDate.getFullYear();
+  const currentYear = new Date().getFullYear();
 
   // Allow dates from 1950 to 50 years in the future
   return year >= 1950 && year <= currentYear + 50;

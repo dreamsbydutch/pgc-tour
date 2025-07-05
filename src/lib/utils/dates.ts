@@ -4,33 +4,6 @@
  */
 
 /**
- * Adds or subtracts time from a date with various units
- * @param date - Base date
- * @param timeConfig - Configuration for time modification
- * @returns New date with time modified
- */
-function modifyDate(
-  date: Date,
-  timeConfig: {
-    weeks?: number;
-    days?: number;
-    hours?: number;
-    minutes?: number;
-  },
-): Date {
-  const { weeks = 0, days = 0, hours = 0, minutes = 0 } = timeConfig;
-
-  const timeToModify =
-    (weeks * 7 + days) * 24 * 60 * 60 * 1000 +
-    hours * 60 * 60 * 1000 +
-    minutes * 60 * 1000;
-
-  const modifiedDate = new Date(date);
-  modifiedDate.setTime(modifiedDate.getTime() + timeToModify);
-  return modifiedDate;
-}
-
-/**
  * Configuration options for tournament timeline filtering
  */
 export interface TournamentTimelineConfig {
@@ -86,12 +59,14 @@ export function subtractTimeFromDate({
   hoursToSubtract?: number;
   minutesToSubtract?: number;
 }): Date {
-  return modifyDate(date, {
-    weeks: -weeksToSubtract,
-    days: -daysToSubtract,
-    hours: -hoursToSubtract,
-    minutes: -minutesToSubtract,
-  });
+  const timeToSubtract =
+    (weeksToSubtract * 7 + daysToSubtract) * 24 * 60 * 60 * 1000 +
+    hoursToSubtract * 60 * 60 * 1000 +
+    minutesToSubtract * 60 * 1000;
+
+  const pastDate = new Date(date);
+  pastDate.setTime(pastDate.getTime() - timeToSubtract);
+  return pastDate;
 }
 
 /**
@@ -114,12 +89,14 @@ export function addTimeToDate({
   hoursToAdd?: number;
   minutesToAdd?: number;
 }): Date {
-  return modifyDate(date, {
-    weeks: weeksToAdd,
-    days: daysToAdd,
-    hours: hoursToAdd,
-    minutes: minutesToAdd,
-  });
+  const timeToAdd =
+    (weeksToAdd * 7 + daysToAdd) * 24 * 60 * 60 * 1000 +
+    hoursToAdd * 60 * 60 * 1000 +
+    minutesToAdd * 60 * 1000;
+
+  const futureDate = new Date(date);
+  futureDate.setTime(futureDate.getTime() + timeToAdd);
+  return futureDate;
 }
 
 /**
@@ -192,7 +169,7 @@ export function getTournamentTimeline<
 >(
   tournaments: T[],
   config: TournamentTimelineConfig = {},
-  referenceDate: Date,
+  referenceDate: Date = new Date(),
 ): TournamentTimeline<T> {
   const {
     preStartBuffer = 3,
@@ -304,13 +281,13 @@ export const tournamentUtils = {
   /**
    * Get current tournament with custom buffers
    * @example
-   * const current = tournamentUtils.getCurrent(tournaments, 3, 1, new Date());
+   * const current = tournamentUtils.getCurrent(tournaments, 3, 1);
    */
   getCurrent: <T extends { startDate: Date; endDate: Date }>(
     tournaments: T[],
-    preBuffer: number,
-    postBuffer: number,
-    referenceDate: Date,
+    preBuffer = 3,
+    postBuffer = 1,
+    referenceDate = new Date(),
   ) => {
     return getTournamentTimeline(
       tournaments,
@@ -325,12 +302,12 @@ export const tournamentUtils = {
   /**
    * Get previous tournament with custom buffer
    * @example
-   * const previous = tournamentUtils.getPrevious(tournaments, 3, new Date());
+   * const previous = tournamentUtils.getPrevious(tournaments, 3);
    */
   getPrevious: <T extends { startDate: Date; endDate: Date }>(
     tournaments: T[],
-    bufferDays: number,
-    referenceDate: Date,
+    bufferDays = 3,
+    referenceDate = new Date(),
   ) => {
     return getTournamentTimeline(
       tournaments,
@@ -344,12 +321,12 @@ export const tournamentUtils = {
   /**
    * Get upcoming tournament with custom buffer
    * @example
-   * const upcoming = tournamentUtils.getUpcoming(tournaments, 3, new Date());
+   * const upcoming = tournamentUtils.getUpcoming(tournaments, 3);
    */
   getUpcoming: <T extends { startDate: Date; endDate: Date }>(
     tournaments: T[],
-    bufferDays: number,
-    referenceDate: Date,
+    bufferDays = 3,
+    referenceDate = new Date(),
   ) => {
     return getTournamentTimeline(
       tournaments,
@@ -389,11 +366,11 @@ export const tournamentUtils = {
   /**
    * Check if tournament is currently active (during tournament dates)
    * @example
-   * const isActive = tournamentUtils.isActive(tournament, new Date());
+   * const isActive = tournamentUtils.isActive(tournament);
    */
   isActive: <T extends { startDate: Date; endDate: Date }>(
     tournament: T,
-    referenceDate: Date,
+    referenceDate = new Date(),
   ) => {
     const now = referenceDate.getTime();
     return (

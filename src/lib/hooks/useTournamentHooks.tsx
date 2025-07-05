@@ -10,8 +10,11 @@ export function useLastTournament() {
         endDate: new Date(t.endDate),
       };
     })
-    ?.filter((t) => t.endDate < new Date()) // Only past tournaments
-    ?.sort((a, b) => b.endDate.getTime() - a.endDate.getTime())?.[0]; // Sort by most recent end date // Get the most recent one
+    ?.find(
+      (t) =>
+        t.endDate < new Date() &&
+        t.endDate > new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    );
   return lastTournament;
 }
 export function useCurrentTournament() {

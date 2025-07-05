@@ -5,7 +5,6 @@ import HomePageStandings from "../lib/components/smartComponents/HomePageStandin
 import TournamentCountdown from "../lib/components/smartComponents/TournamentCountdown";
 import { getCurrentSchedule } from "../lib/actions/tournamentActions";
 import HomePageLeaderboard from "../lib/components/smartComponents/HomePageLeaderboard";
-import DebugTournaments from "../lib/components/DebugTournaments";
 
 export default async function Home() {
   const tournaments = await getCurrentSchedule();
