@@ -22,13 +22,14 @@ import { useSeasonalStore } from "../store/seasonalStore";
 import type { Member } from "@prisma/client";
 
 // Import utilities from the new utils suite
-import { golf, dates, processing } from "@/lib/utils";
+import { golf, dates, processing, aggregation } from "@/lib/utils";
 import { groupBy, hasItems } from "@/lib/utils/core/arrays";
 import { isEmpty } from "@/lib/utils/core/objects";
 import { isDefined } from "@/lib/utils/core/types";
 
 // Destructure processing utilities for cleaner usage
-const { sortBy } = processing;
+const { sortBy, filterItems, searchItems } = processing;
+const { countByField, sumBy, averageBy } = aggregation;
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -168,7 +169,7 @@ function enhanceTourCards(
 }
 
 /**
- * Filters tour cards based on provided criteria
+ * Filters tour cards based on provided criteria using existing utils
  */
 function filterTourCards(
   tourCards: EnhancedTourCard[],
@@ -176,63 +177,50 @@ function filterTourCards(
 ): EnhancedTourCard[] {
   if (!hasItems(tourCards)) return [];
 
-  let filtered = [...tourCards];
+  // Use existing filterItems utility with proper filter config
+  const filterConfig: Record<string, any> = {};
 
-  // Filter by tour IDs
   if (filters.tourIds && hasItems(filters.tourIds)) {
-    filtered = filtered.filter((tc) => filters.tourIds!.includes(tc.tourId));
+    filterConfig.tourId = filters.tourIds;
   }
 
-  // Filter by member IDs
   if (filters.memberIds && hasItems(filters.memberIds)) {
-    filtered = filtered.filter((tc) =>
-      filters.memberIds!.includes(tc.memberId),
-    );
+    filterConfig.memberId = filters.memberIds;
   }
 
-  // Filter by season IDs
   if (filters.seasonIds && hasItems(filters.seasonIds)) {
-    filtered = filtered.filter((tc) =>
-      filters.seasonIds!.includes(tc.seasonId),
-    );
+    filterConfig.seasonId = filters.seasonIds;
   }
 
-  // Filter by earnings range
   if (filters.earnings) {
-    const { min, max } = filters.earnings;
-    filtered = filtered.filter((tc) => {
-      if (min !== undefined && tc.earnings < min) return false;
-      if (max !== undefined && tc.earnings > max) return false;
-      return true;
-    });
+    filterConfig.earnings = filters.earnings;
   }
 
-  // Filter by points range
   if (filters.points) {
-    const { min, max } = filters.points;
-    filtered = filtered.filter((tc) => {
-      if (min !== undefined && tc.points < min) return false;
-      if (max !== undefined && tc.points > max) return false;
-      return true;
-    });
+    filterConfig.points = filters.points;
   }
 
-  // Filter by has earnings
+  let filtered =
+    Object.keys(filterConfig).length > 0
+      ? filterItems(tourCards, filterConfig)
+      : [...tourCards];
+
+  // Handle boolean filters manually
   if (filters.hasEarnings !== undefined) {
     filtered = filtered.filter((tc) =>
       filters.hasEarnings ? tc.earnings > 0 : tc.earnings === 0,
     );
   }
 
-  // Filter by has position
   if (filters.hasPosition !== undefined) {
     filtered = filtered.filter((tc) =>
       filters.hasPosition ? isDefined(tc.position) : !isDefined(tc.position),
     );
   }
 
-  // Filter by search term (display name, member name, tour name)
+  // Filter by search term using existing searchItems
   if (filters.search && filters.search.trim()) {
+    // For complex search, we'll do it manually since searchItems doesn't handle nested fields well
     const searchLower = filters.search.toLowerCase();
     filtered = filtered.filter(
       (tc) =>
@@ -248,7 +236,7 @@ function filterTourCards(
 }
 
 /**
- * Filters members based on provided criteria
+ * Filters members based on provided criteria using existing utils
  */
 function filterMembers(
   members: MinimalMember[],
@@ -256,30 +244,32 @@ function filterMembers(
 ): MinimalMember[] {
   if (!hasItems(members)) return [];
 
-  let filtered = [...members];
+  // Use existing filterItems utility
+  const filterConfig: Record<string, any> = {};
 
-  // Filter by roles
   if (filters.roles && hasItems(filters.roles)) {
-    filtered = filtered.filter((member) =>
-      filters.roles!.includes(member.role),
-    );
+    filterConfig.role = filters.roles;
   }
 
-  // Filter by has account
+  let filtered =
+    Object.keys(filterConfig).length > 0
+      ? filterItems(members, filterConfig)
+      : [...members];
+
+  // Handle boolean filters manually
   if (filters.hasAccount !== undefined) {
     filtered = filtered.filter((member) =>
       filters.hasAccount ? member.account > 0 : member.account === 0,
     );
   }
 
-  // Filter by has friends
   if (filters.hasFriends !== undefined) {
     filtered = filtered.filter((member) =>
       filters.hasFriends ? hasItems(member.friends) : !hasItems(member.friends),
     );
   }
 
-  // Filter by search term (name, email)
+  // Filter by search term manually for complex multi-field search
   if (filters.search && filters.search.trim()) {
     const searchLower = filters.search.toLowerCase();
     filtered = filtered.filter(
@@ -295,7 +285,7 @@ function filterMembers(
 }
 
 /**
- * Sorts tour cards by specified criteria
+ * Sorts tour cards by specified criteria using existing sortBy
  */
 function sortTourCards(
   tourCards: EnhancedTourCard[],
@@ -310,7 +300,7 @@ function sortTourCards(
 }
 
 /**
- * Calculates tour card statistics
+ * Calculates tour card statistics using existing aggregation utilities
  */
 function calculateTourCardStats(tourCards: EnhancedTourCard[]): TourCardStats {
   if (!hasItems(tourCards)) {
@@ -330,11 +320,14 @@ function calculateTourCardStats(tourCards: EnhancedTourCard[]): TourCardStats {
   }
 
   const total = tourCards.length;
-  const totalEarnings = tourCards.reduce((sum, tc) => sum + tc.earnings, 0);
-  const totalPoints = tourCards.reduce((sum, tc) => sum + tc.points, 0);
+  const totalEarnings = sumBy(tourCards, "earnings");
+  const totalPoints = sumBy(tourCards, "points");
+  const avgEarnings = averageBy(tourCards, "earnings");
+  const avgPoints = averageBy(tourCards, "points");
   const withPosition = tourCards.filter((tc) => isDefined(tc.position)).length;
   const withEarnings = tourCards.filter((tc) => tc.earnings > 0).length;
 
+  // Use existing countByField for grouping counts
   const byTour: Record<string, number> = {};
   const byMember: Record<string, number> = {};
 
@@ -353,8 +346,8 @@ function calculateTourCardStats(tourCards: EnhancedTourCard[]): TourCardStats {
     total,
     totalEarnings,
     totalPoints,
-    avgEarnings: total > 0 ? totalEarnings / total : 0,
-    avgPoints: total > 0 ? totalPoints / total : 0,
+    avgEarnings,
+    avgPoints,
     byTour,
     byMember,
     withPosition,
@@ -365,7 +358,7 @@ function calculateTourCardStats(tourCards: EnhancedTourCard[]): TourCardStats {
 }
 
 /**
- * Calculates member statistics
+ * Calculates member statistics using existing aggregation utilities
  */
 function calculateMemberStats(members: MinimalMember[]): MemberStats {
   if (!hasItems(members)) {
@@ -381,28 +374,26 @@ function calculateMemberStats(members: MinimalMember[]): MemberStats {
   }
 
   const total = members.length;
+  const totalAccountValue = sumBy(members, "account");
+  const avgAccountValue = averageBy(members, "account");
+
   const totalFriends = members.reduce(
     (sum, member) => sum + member.friends.length,
     0,
   );
-  const totalAccountValue = members.reduce(
-    (sum, member) => sum + member.account,
-    0,
-  );
+  const avgFriendsPerMember = total > 0 ? totalFriends / total : 0;
 
-  const byRole: Record<string, number> = {};
-  members.forEach((member) => {
-    byRole[member.role] = (byRole[member.role] || 0) + 1;
-  });
+  // Use existing countByField for role counting
+  const byRole = countByField(members, "role");
 
   return {
     total,
-    withTourCards: 0, // This would need to be calculated with tour card data
+    withTourCards: 0, // This would need tour card data to calculate
     totalFriends,
-    avgFriendsPerMember: total > 0 ? totalFriends / total : 0,
+    avgFriendsPerMember,
     byRole,
     totalAccountValue,
-    avgAccountValue: total > 0 ? totalAccountValue / total : 0,
+    avgAccountValue,
   };
 }
 

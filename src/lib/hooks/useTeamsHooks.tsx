@@ -3,7 +3,7 @@ import { useSeasonalStore } from "../store/seasonalStore";
 import { useCurrentTournament, useLastTournament } from "./useTournamentHooks";
 
 // Import utilities from the new utils suite
-import { golf, dates, processing } from "@/lib/utils";
+import { golf, dates, processing, aggregation } from "@/lib/utils";
 
 // Direct imports from the core index
 import { groupBy, hasItems, isEmpty, isDefined } from "@/lib/utils/core/index";
@@ -108,11 +108,13 @@ interface TourGroup {
  * Validates if required seasonal data is available
  */
 function validateSeasonalData(
-  tours: MinimalTour[],
-  tourCards: MinimalTourCard[],
+  dataArrays: { name: string; data: any[] }[],
 ): string | null {
-  if (isEmpty(tours)) return "No tours data available";
-  if (isEmpty(tourCards)) return "No tour cards data available";
+  for (const { name, data } of dataArrays) {
+    if (isEmpty(data)) {
+      return `No ${name} data available`;
+    }
+  }
   return null;
 }
 
@@ -125,7 +127,7 @@ function validateChampionWindow(tournament: MinimalTournament): {
   daysSinceEnd?: number;
   daysRemaining?: number;
 } {
-  if (!tournament || !tournament.endDate) {
+  if (!tournament?.endDate) {
     return { isValid: false, error: "Invalid tournament data" };
   }
 
@@ -156,6 +158,28 @@ function validateChampionWindow(tournament: MinimalTournament): {
     daysSinceEnd,
     daysRemaining: 3 - daysSinceEnd,
   };
+}
+
+/**
+ * Query configuration for different tournament states
+ */
+function getQueryConfig(isActive: boolean) {
+  return isActive
+    ? {
+        // Active tournaments: frequent updates
+        staleTime: 1000 * 60 * 1, // 1 minute
+        gcTime: 1000 * 60 * 5, // 5 minutes
+        refetchInterval: 1000 * 60 * 2, // 2 minutes
+        refetchIntervalInBackground: true,
+        refetchOnWindowFocus: true,
+        retry: 3,
+      }
+    : {
+        // Completed tournaments: cache longer
+        staleTime: 1000 * 60 * 30, // 30 minutes
+        gcTime: 1000 * 60 * 60, // 1 hour
+        retry: 2,
+      };
 }
 
 /**
@@ -199,7 +223,7 @@ function enrichTeamsWithTourData(
 }
 
 /**
- * Groups enriched teams by tour
+ * Groups enriched teams by tour using manual grouping (type-safe for Team entity)
  */
 function groupTeamsByTour(enrichedTeams: EnrichedTeam[]): TourGroup[] {
   if (!hasItems(enrichedTeams)) return [];
@@ -227,28 +251,6 @@ function groupTeamsByTour(enrichedTeams: EnrichedTeam[]): TourGroup[] {
   return validGroups.sort((a, b) => a.tour.name.localeCompare(b.tour.name));
 }
 
-/**
- * Query configuration for different tournament states
- */
-function getQueryConfig(isActive: boolean) {
-  return isActive
-    ? {
-        // Active tournaments: frequent updates
-        staleTime: 1000 * 60 * 1, // 1 minute
-        gcTime: 1000 * 60 * 5, // 5 minutes
-        refetchInterval: 1000 * 60 * 2, // 2 minutes
-        refetchIntervalInBackground: true,
-        refetchOnWindowFocus: true,
-        retry: 3,
-      }
-    : {
-        // Completed tournaments: cache longer
-        staleTime: 1000 * 60 * 30, // 30 minutes
-        gcTime: 1000 * 60 * 60, // 1 hour
-        retry: 2,
-      };
-}
-
 // ============================================================================
 // HOOK FUNCTIONS
 // ============================================================================
@@ -274,7 +276,10 @@ export function useLatestChampions(): ChampionsResult {
   }
 
   // Validate seasonal data
-  const seasonalError = validateSeasonalData(tours || [], tourCards || []);
+  const seasonalError = validateSeasonalData([
+    { name: "tours", data: tours || [] },
+    { name: "tour cards", data: tourCards || [] },
+  ]);
   if (seasonalError) {
     return {
       tournament: lastTournament,
@@ -346,7 +351,10 @@ export function useCurrentLeaderboard(): LeaderboardResult {
   }
 
   // Validate required data
-  const seasonalError = validateSeasonalData(tours || [], tourCards || []);
+  const seasonalError = validateSeasonalData([
+    { name: "tours", data: tours || [] },
+    { name: "tour cards", data: tourCards || [] },
+  ]);
   if (seasonalError) {
     return {
       tournament: currentTournament,
@@ -481,7 +489,10 @@ export function useTournamentLeaderboard(
   );
 
   // Validate required data
-  const seasonalError = validateSeasonalData(tours || [], tourCards || []);
+  const seasonalError = validateSeasonalData([
+    { name: "tours", data: tours || [] },
+    { name: "tour cards", data: tourCards || [] },
+  ]);
   if (seasonalError) {
     return {
       tournament,

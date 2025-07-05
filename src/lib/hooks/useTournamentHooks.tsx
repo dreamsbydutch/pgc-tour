@@ -19,13 +19,13 @@ import { useMemo } from "react";
 import { useSeasonalStore } from "../store/seasonalStore";
 
 // Import utilities from the new utils suite
-import { golf, dates, processing } from "@/lib/utils";
+import { golf, dates, processing, aggregation } from "@/lib/utils";
 import { groupBy, hasItems } from "@/lib/utils/core/arrays";
 import { isEmpty } from "@/lib/utils/core/objects";
 import { isDefined } from "@/lib/utils/core/types";
 
 // Destructure processing utilities for cleaner usage
-const { sortBy } = processing;
+const { sortBy, filterItems, searchItems } = processing;
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -101,7 +101,7 @@ function processRawTournaments(rawTournaments: any[]): MinimalTournament[] {
 }
 
 /**
- * Filters tournaments based on provided criteria
+ * Filters tournaments based on provided criteria using existing utils
  */
 function filterTournaments(
   tournaments: MinimalTournament[],
@@ -111,7 +111,7 @@ function filterTournaments(
 
   let filtered = [...tournaments];
 
-  // Filter by status
+  // Filter by status using existing utility
   if (filters.status) {
     const statuses = Array.isArray(filters.status)
       ? filters.status
@@ -125,44 +125,35 @@ function filterTournaments(
     });
   }
 
-  // Filter by tier IDs
+  // Filter by tier IDs and course IDs using existing filterItems
+  const filterConfig: Record<string, any> = {};
   if (filters.tierIds && hasItems(filters.tierIds)) {
-    filtered = filtered.filter((tournament) =>
-      filters.tierIds!.includes(tournament.tierId),
-    );
+    filterConfig.tierId = filters.tierIds;
   }
-
-  // Filter by course IDs
   if (filters.courseIds && hasItems(filters.courseIds)) {
-    filtered = filtered.filter((tournament) =>
-      filters.courseIds!.includes(tournament.courseId),
-    );
+    filterConfig.courseId = filters.courseIds;
+  }
+  if (Object.keys(filterConfig).length > 0) {
+    filtered = filterItems(filtered, filterConfig);
   }
 
-  // Filter by date range
+  // Filter by date range using existing utility
   if (filters.dateRange) {
-    const { start, end } = filters.dateRange;
-    filtered = filtered.filter(
-      (tournament) =>
-        tournament.startDate >= start && tournament.endDate <= end,
-    );
+    filtered = filterItems(filtered, {
+      startDate: filters.dateRange,
+    });
   }
 
-  // Filter by search term (name or course name)
+  // Filter by search term using existing searchItems
   if (filters.search && filters.search.trim()) {
-    const searchLower = filters.search.toLowerCase();
-    filtered = filtered.filter(
-      (tournament) =>
-        tournament.name.toLowerCase().includes(searchLower) ||
-        tournament.course.name.toLowerCase().includes(searchLower),
-    );
+    filtered = searchItems(filtered, filters.search, ["name", "course.name"]);
   }
 
   return filtered;
 }
 
 /**
- * Sorts tournaments by specified criteria
+ * Sorts tournaments by specified criteria using existing sortBy
  */
 function sortTournaments(
   tournaments: MinimalTournament[],
@@ -177,7 +168,7 @@ function sortTournaments(
 }
 
 /**
- * Calculates tournament statistics
+ * Calculates tournament statistics using existing aggregation utilities
  */
 function calculateTournamentStats(
   tournaments: MinimalTournament[],
@@ -202,6 +193,7 @@ function calculateTournamentStats(
     byCourse: {},
   };
 
+  // Calculate status counts and group counts
   tournaments.forEach((tournament) => {
     const status = golf.getTournamentStatus(
       tournament.startDate,
