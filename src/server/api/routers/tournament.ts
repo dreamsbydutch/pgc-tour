@@ -36,6 +36,17 @@ export const tournamentRouter = createTRPCRouter({
         include: { course: true },
       });
     }),
+  getByIdWithGolfers: publicProcedure
+    .input(z.object({ tournamentId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.tournament.findUnique({
+        where: { id: input.tournamentId },
+        include: {
+          course: true,
+          golfers: true,
+        },
+      });
+    }),
   getInfo: publicProcedure.query(async ({ ctx }) => {
     const today = new Date();
     return {
@@ -135,5 +146,60 @@ export const tournamentRouter = createTRPCRouter({
     .input(z.object({ tournamentId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.tournament.delete({ where: { id: input.tournamentId } });
+    }),
+  getByIdWithLeaderboard: publicProcedure
+    .input(z.object({ tournamentId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Get tournament with all related data
+      const tournament = await ctx.db.tournament.findUnique({
+        where: { id: input.tournamentId },
+        include: {
+          course: true,
+          tier: true,
+          tours: true,
+          season: true,
+        },
+      });
+
+      if (!tournament) {
+        return null;
+      }
+
+      // Get teams for this tournament with tour card details
+      const teams = await ctx.db.team.findMany({
+        where: { tournamentId: input.tournamentId },
+        include: {
+          tourCard: {
+            include: {
+              tour: true,
+              member: true,
+            },
+          },
+        },
+        orderBy: [{ position: "asc" }, { score: "asc" }],
+      });
+
+      // Get golfers for this tournament
+      const golfers = await ctx.db.golfer.findMany({
+        where: { tournamentId: input.tournamentId },
+        orderBy: { position: "asc" },
+      });
+
+      // Get tour cards for this tournament's season
+      const tourCards = await ctx.db.tourCard.findMany({
+        where: { seasonId: tournament.seasonId },
+        include: {
+          tour: true,
+          member: true,
+        },
+      });
+
+      return {
+        tournament,
+        teams,
+        golfers,
+        tourCards,
+        tours: tournament.tours,
+      };
     }),
 });
