@@ -14,19 +14,65 @@ import type { Tournament, Team, Tour, TourCard, Golfer } from "@prisma/client";
 // TYPES & INTERFACES
 // ============================================================================
 
+// Proper types from the database and store
+type MinimalTour = {
+  id: string;
+  name: string;
+  logoUrl: string;
+  buyIn: number;
+  shortForm: string;
+  seasonId: string;
+};
+
+type MinimalTourCard = {
+  id: string;
+  memberId: string;
+  tourId: string;
+  seasonId: string;
+  displayName: string;
+  earnings: number;
+  points: number;
+  position: string | null;
+};
+
+type MinimalTournament = {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+  startDate: Date;
+  endDate: Date;
+  livePlay: boolean | null;
+  currentRound: number | null;
+  seasonId: string;
+  courseId: string;
+  tierId: string;
+  course: {
+    id: string;
+    name: string;
+    location: string;
+    par: number;
+    apiId: string;
+  };
+  tier: {
+    id: string;
+    name: string;
+    seasonId: string;
+  };
+};
+
 interface BaseHookResult {
   error: string | null;
   isLoading: boolean;
 }
 
 interface ChampionsResult extends BaseHookResult {
-  tournament?: any; // Using any for compatibility with hook return types
+  tournament?: MinimalTournament;
   champs: EnrichedTeam[];
   daysRemaining?: number;
 }
 
 interface LeaderboardResult extends BaseHookResult {
-  tournament?: any; // Using any for compatibility with hook return types
+  tournament?: MinimalTournament;
   teamsByTour: TourGroup[];
   totalTeams: number;
   lastUpdated?: Date;
@@ -43,13 +89,13 @@ interface TournamentLeaderboardResult extends BaseHookResult {
 }
 
 interface EnrichedTeam extends Team {
-  tour: Tour;
-  tourCard: TourCard;
+  tour: MinimalTour;
+  tourCard: MinimalTourCard;
   golfers?: Golfer[];
 }
 
 interface TourGroup {
-  tour: Tour;
+  tour: MinimalTour;
   teams: EnrichedTeam[];
   teamCount: number;
 }
@@ -61,7 +107,10 @@ interface TourGroup {
 /**
  * Validates if required seasonal data is available
  */
-function validateSeasonalData(tours: any[], tourCards: any[]): string | null {
+function validateSeasonalData(
+  tours: MinimalTour[],
+  tourCards: MinimalTourCard[],
+): string | null {
   if (isEmpty(tours)) return "No tours data available";
   if (isEmpty(tourCards)) return "No tour cards data available";
   return null;
@@ -70,7 +119,7 @@ function validateSeasonalData(tours: any[], tourCards: any[]): string | null {
 /**
  * Validates tournament timing for champions display
  */
-function validateChampionWindow(tournament: any): {
+function validateChampionWindow(tournament: MinimalTournament): {
   isValid: boolean;
   error?: string;
   daysSinceEnd?: number;
@@ -114,8 +163,8 @@ function validateChampionWindow(tournament: any): {
  */
 function enrichTeamsWithTourData(
   teams: Team[],
-  tours: any[],
-  tourCards: any[],
+  tours: MinimalTour[],
+  tourCards: MinimalTourCard[],
   golfers?: Golfer[],
 ): EnrichedTeam[] {
   if (!hasItems(teams)) return [];
