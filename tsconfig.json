@@ -28,8 +28,8 @@
     "paths": {
       "@/*": ["./*"],
       "@/app/*": ["./src/app/*"],
-      "@/components/*": ["./src/app/_components/*"],
-      "@/ui/*": ["./src/app/_components/ui/*"],
+      "@/components/*": ["src/lib/components/*"],
+      "@/ui/*": ["src/lib/components/ui/*"],
       "@/lib/*": ["./src/lib/*"],
       "@/public/*": ["./public/*"],
       "@/server/*": ["./src/server/*"],

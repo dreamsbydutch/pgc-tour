@@ -8,7 +8,9 @@ import Script from "next/script";
 import { AuthProvider } from "../lib/providers/AuthProvider";
 import { TRPCReactProvider } from "../trpc/react";
 import { LoadSeasonalData } from "../lib/store/loadSeasonalData";
-import MenuBar from "./_components/nav/MenuBar";
+import ServiceWorkerRegistration from "../lib/components/smartComponents/pwa/ServiceWorkerRegistration";
+import { getAuthFromHeaders } from "../lib/supabase/auth-helpers";
+import { NavigationProvider } from "../lib/providers/NavProvider";
 
 const varela = Varela({
   weight: ["400"],
@@ -32,22 +34,27 @@ export const metadata: Metadata = {
     default: "PGC Tour",
   },
   description: "Pure Golf Collective Fantasy Golf Tour",
+  manifest: "/manifest.json",
   icons: [
     { rel: "icon", url: "/favicon.ico" },
-    { rel: "apple-touch-icon", url: "/favicon.ico" },
-    { rel: "apple-touch-startup-image", url: "/favicon.ico" },
+    { rel: "apple-touch-icon", url: "/logo192.png" },
+    { rel: "apple-touch-startup-image", url: "/logo512.png" },
   ],
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
     "mobile-web-app-title": "PGC Clubhouse",
     "apple-mobile-web-app-title": "PGC Clubhouse",
+    "theme-color": "#059669",
     "google-site-verification": "k_L19BEXJjcWOM7cHFMPMpK9MBdcv2uQ6qFt3HGPEbc",
   },
 };
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const { user, member } = await getAuthFromHeaders();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -59,14 +66,17 @@ export default async function RootLayout({
         )}
       >
         <TRPCReactProvider>
-          <AuthProvider>
+          <AuthProvider initialUser={user} member={member}>
+            <ServiceWorkerRegistration />
             <LoadSeasonalData />
-            <main className="mb-24 mt-4 lg:mb-8 lg:mt-20">{children}</main>
-            <MenuBar />
+            <NavigationProvider>
+              <main className="mx-auto mb-24 mt-4 max-w-4xl lg:mb-8 lg:mt-20">
+                <div className="5 mx-0">{children}</div>
+              </main>
+            </NavigationProvider>
           </AuthProvider>
         </TRPCReactProvider>
 
-        {/* ✅ Google Analytics Scripts */}
         <Script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-E7NY2W59JZ"

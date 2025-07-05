@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Icons } from "../../_components/Icons";
+import { Button } from "@/src/lib/components/ui/button";
+import { Icons } from "../../../lib/components/functionalComponents/Icons";
 import { signInWithGoogle } from "./actions";
 import Link from "next/link";
 import { useUser } from "@/src/lib/hooks/useUser";

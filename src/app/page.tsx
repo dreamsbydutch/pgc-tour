@@ -1,28 +1,13 @@
-"use client";
-
 import Link from "next/link";
-import ChampionsPopup from "@/src/app/(main)/tournament/_components/ChampionsPopup";
-import TournamentCountdown from "@/src/app/(main)/tournament/_components/TournamentCountdown";
-import { TourCardForm } from "./_components/TourCardForm";
-import HomePageLeaderboard from "./(main)/tournament/_views/HomePageLeaderboard";
-import SignInPage from "./(auth)/signin/page";
-import HomePageStandings from "./(main)/standings/_views/HomePageStandings";
-import { cn } from "@/lib/utils";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "./_components/ui/table";
-import { useEffect } from "react";
+import { LeagueSchedule } from "@/src/lib/components/functionalComponents/LeagueSchedule";
+import ChampionsPopup from "../lib/components/smartComponents/ChampionsPopup";
+import HomePageStandings from "../lib/components/smartComponents/HomePageStandings";
+import TournamentCountdown from "../lib/components/smartComponents/TournamentCountdown";
+import { getCurrentSchedule } from "../lib/actions/tournamentActions";
+import HomePageLeaderboard from "../lib/components/smartComponents/HomePageLeaderboard";
 
-// Force dynamic rendering to prevent static generation issues
-export const dynamic = "force-dynamic";
-
-export default function Home() {
-  if (true) return <></>;
+export default async function Home() {
+  const tournaments = await getCurrentSchedule();
 
   // For authenticated users, show the main content
   return (
@@ -30,26 +15,12 @@ export default function Home() {
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      {/* <ChampionsPopup /> */}
-      {/* <HomePageLeaderboard /> */}
-      {/* <TournamentCountdown /> */}
-      {/* <HomePageStandings /> */}
+      <ChampionsPopup />
+      <HomePageLeaderboard />
+      <TournamentCountdown />
+      <HomePageStandings />
       {/* <TourCardForm /> */}
-      <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
-        <div className="my-3 flex items-center justify-center gap-3">
-          <Image
-            src={"/logo512.png"}
-            alt="PGC Logo"
-            width={512}
-            height={512}
-            className="h-14 w-14"
-          />
-          <h2 className="pb-1 font-yellowtail text-5xl sm:text-6xl md:text-7xl">
-            Schedule
-          </h2>
-        </div>
-        {/* <CurrentSchedule /> */}
-      </div>
+      {<LeagueSchedule {...{ tournaments }} />}
       <div id="footer" className="mt-12 flex flex-col justify-start">
         <Link href={"/privacy"} className="text-xs text-slate-400">
           Privacy Policy
@@ -118,100 +89,3 @@ export default function Home() {
 //     Join the Group Chat
 //   </Link>
 // );
-
-function CurrentSchedule() {
-  // Store is now guaranteed to be initialized thanks to StoreLoadingProvider
-  const { tournaments, tiers, courses } = usePGCTourStore((state) => ({
-    tournaments: state.tournaments,
-    tiers: state.tiers,
-    courses: state.courses,
-  }));
-  if (!tournaments || tournaments.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-gray-500">No tournaments scheduled.</div>
-      </div>
-    );
-  }
-  // Sort tournaments by start date
-  tournaments.sort(
-    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
-  );
-  const course = courses.find((c) => c.id === tournaments[0]?.courseId);
-
-  return (
-    <Table className="mx-auto w-3/4 text-center font-varela">
-      <TableHeader>
-        <TableRow>
-          <TableHead className="span text-center text-xs font-bold">
-            Tournament
-          </TableHead>
-          <TableHead className="border-l text-center text-xs font-bold">
-            Dates
-          </TableHead>
-          <TableHead className="border-l text-center text-xs font-bold">
-            Tier
-          </TableHead>
-          <TableHead className="border-l text-center text-xs font-bold">
-            Course
-          </TableHead>
-          <TableHead className="border-l text-center text-xs font-bold">
-            Location
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {tournaments?.map((tourney, i) => {
-          const tier = tiers.find((t) => t.id === tourney.tierId);
-          const start = new Date(tourney.startDate);
-          const end = new Date(tourney.endDate);
-          return (
-            <TableRow
-              key={tourney.id}
-              className={cn(
-                i === 16 ? "border-t-2 border-t-slate-500" : "",
-                i >= 16 ? "bg-yellow-50" : "",
-                tier?.name === "Major" ? "bg-blue-50" : "",
-              )}
-            >
-              <TableCell className="flex items-center justify-center whitespace-nowrap text-center text-xs">
-                <Image
-                  src={tourney.logoUrl ?? ""}
-                  className="pr-1"
-                  alt={tourney.name}
-                  width={25}
-                  height={25}
-                />
-                {tourney.name}
-              </TableCell>
-              <TableCell className="whitespace-nowrap border-l text-center text-xs">
-                {`${start.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })} - ${
-                  start.getMonth() === end.getMonth()
-                    ? end.toLocaleDateString("en-US", {
-                        day: "numeric",
-                      })
-                    : end.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })
-                }`}
-              </TableCell>
-              <TableCell className="whitespace-nowrap border-l text-center text-xs">
-                {tier?.name}
-              </TableCell>
-              <TableCell className="whitespace-nowrap border-l text-center text-xs">
-                {course?.name}
-              </TableCell>
-              <TableCell className="whitespace-nowrap border-l text-center text-xs">
-                {course?.location}
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
-  );
-}

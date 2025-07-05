@@ -4,10 +4,10 @@ import { cn, formatMoney, formatRank } from "@/src/lib/utils";
 // Remove server action imports
 import { Star } from "lucide-react";
 import { useState, type Dispatch, type SetStateAction } from "react";
-import LoadingSpinner from "../../../_components/LoadingSpinner";
+import LoadingSpinner from "../../../../lib/components/functionalComponents/loading/LoadingSpinner";
 import type { TourCard, Tour, Tier } from "@prisma/client";
 import { StandingsTourCardInfo } from "./StandingsDropdown";
-import LittleFucker from "../../../_components/LittleFucker";
+import LittleFucker from "../../../../lib/components/smartComponents/LittleFucker";
 import { useMainStore } from "@/src/lib/store/store";
 import { api } from "@/src/trpc/react";
 import Image from "next/image";
@@ -15,7 +15,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/src/app/_components/ui/popover";
+} from "@/src/lib/components/ui/popover";
 
 /**
  * tourToggleButton Component
@@ -101,7 +101,7 @@ export function StandingsHeader() {
 export function GoldPlayoffHeader({ tier }: { tier: Tier }) {
   return (
     <Popover>
-      <PopoverTrigger className="col-span-7 w-full row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
+      <PopoverTrigger className="col-span-7 row-span-1 w-full text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
         <div className="grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-champ-400 text-center">
           <div className="col-span-17 my-2 font-varela text-2xl font-extrabold text-champ-900">
             PGC GOLD PLAYOFF
@@ -131,7 +131,7 @@ export function GoldPlayoffHeader({ tier }: { tier: Tier }) {
 export function SilverPlayoffHeader({ tier }: { tier: Tier }) {
   return (
     <Popover>
-      <PopoverTrigger className="col-span-7 w-full row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
+      <PopoverTrigger className="col-span-7 row-span-1 w-full text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
         <div className="mt-12 grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-zinc-300 text-center">
           <div className="col-span-17 my-2 font-varela text-2xl font-extrabold text-zinc-600">
             PGC SILVER PLAYOFF

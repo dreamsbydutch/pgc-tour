@@ -8,8 +8,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/src/app/_components/ui/table";
-import { Button } from "@/src/app/_components/ui/button";
+} from "@/src/lib/components/ui/table";
+import { Button } from "@/src/lib/components/ui/button";
 
 interface GolferStats {
   id: string;

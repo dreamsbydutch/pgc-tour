@@ -1,22 +1,11 @@
 "use client";
 
-import TournamentCountdown from "../_components/TournamentCountdown";
-import { cn, formatMoney, formatRank } from "@/src/lib/utils";
-import { Button } from "../../../_components/ui/button";
+import TournamentCountdown from "../../../../lib/components/smartComponents/TournamentCountdown";
+import { cn, formatMoney, formatRank } from "@/lib/utils";
+import { Button } from "../../../../lib/components/ui/button";
 import { useState } from "react";
-<<<<<<< Updated upstream:src/app/(main)/tournament/_views/PreTournament.tsx
-import LoadingSpinner from "../../../_components/LoadingSpinner";
-import { useMainStore } from "@/src/lib/store/store";
-=======
-import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
-import {
-  useTeamByUserTournament,
-  useGolfersByTournament,
-  useTourCards,
-  useMembers,
-  useUser,
-} from "@/src/lib/store";
->>>>>>> Stashed changes:src/app/(main)/tournament/views/upcoming/PreTournament.tsx
+import LoadingSpinner from "@/app/_components/LoadingSpinner";
+import { api } from "@/trpc/react";
 import type {
   Golfer,
   Member,

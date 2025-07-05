@@ -7,8 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
 import type { Course, TourCard, Tournament } from "@prisma/client";
-import { Button } from "@/src/app/_components/ui/button";
-import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
+import { Button } from "@/src/lib/components/ui/button";
+import LoadingSpinner from "@/src/lib/components/functionalComponents/loading/LoadingSpinner";
 import { api } from "@/src/trpc/react";
 import { teamCreateOnFormSubmit } from "@/src/server/api/actions/team";
 <<<<<<< Updated upstream:src/app/(main)/tournament/_views/CreateTeamPage.tsx

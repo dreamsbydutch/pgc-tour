@@ -1,7 +1,7 @@
 "use client";
 
-import { Table, TableRow } from "@/src/app/_components/ui/table";
-import { cn, formatScore, getGolferTeeTime } from "@/src/lib/utils";
+import { Table, TableRow } from "@/src/lib/components/ui/table";
+import { cn, formatScore, getGolferTeeTime } from "@/lib/utils";
 import type { Course, Golfer, Team } from "@prisma/client";
 
 /**

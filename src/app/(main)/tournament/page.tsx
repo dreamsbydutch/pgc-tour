@@ -2,13 +2,12 @@
 
 import { useMainStore } from "@/src/lib/store/store";
 import { useSearchParams } from "next/navigation";
-<<<<<<< Updated upstream
 import { LeaderboardHeaderSkeleton } from "@/src/app/(main)/tournament/_components/skeletons/LeaderboardHeaderSkeleton";
 import PreTournamentPage, {
   TeamPickFormSkeleton,
 } from "@/src/app/(main)/tournament/_views/PreTournament";
 import LeaderboardHeader from "@/src/app/(main)/tournament/_components/header/LeaderboardHeader";
-import { TournamentCountdownSkeleton } from "@/src/app/(main)/tournament/_components/TournamentCountdown";
+import { TournamentCountdownSkeleton } from "@/src/lib/components/smartComponents/TournamentCountdown";
 import ActiveTournamentView from "./_views/ActiveTournamentView";
 import PastTournamentView from "./_views/PastTournamentView";
 import HistoricalTournamentView from "./_views/HistoricalTournamentView";
@@ -66,31 +65,6 @@ export default function TournamentPage() {
   }
 
   // Determine tournament state
-=======
-import { useTournaments, useActiveTournament } from "../../../lib/store";
-import {
-  LeaderboardHeaderSkeleton,
-  TournamentCountdownSkeleton,
-  LeaderboardHeader,
-} from "./components";
-import {
-  PreTournamentPage,
-  TeamPickFormSkeleton,
-  ActiveTournamentView,
-  PastTournamentView,
-  HistoricalTournamentView,
-} from "./views";
-import { Suspense } from "react";
-import type { Tournament } from "@prisma/client";
-
-// Force dynamic rendering to prevent static generation issues
-export const dynamic = "force-dynamic";
-
-/**
- * Determine the tournament state based on dates
- */
-function getTournamentState(tournament: Tournament) {
->>>>>>> Stashed changes
   const now = new Date();
   const tournamentStartDate = new Date(tournament.startDate);
   const tournamentEndDate = new Date(tournament.endDate);

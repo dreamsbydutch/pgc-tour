@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import LoadingSpinner from "../../_components/LoadingSpinner";
+import LoadingSpinner from "../../../lib/components/functionalComponents/loading/LoadingSpinner";
 
 export const metadata = {
   title: "Sign In",

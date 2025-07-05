@@ -1,4 +1,4 @@
-import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
+import LoadingSpinner from "@/src/lib/components/functionalComponents/loading/LoadingSpinner";
 // import { SVGSkeleton } from "@/ui/skeleton";
 
 export function LeaderboardListSkeleton() {

@@ -1,7 +1,7 @@
 "use client";
 
-import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
-import { cn, formatScore } from "@/src/lib/utils";
+import LoadingSpinner from "@/src/lib/components/functionalComponents/loading/LoadingSpinner";
+import { cn, formatScore } from "@/lib/utils";
 import { api } from "@/src/trpc/react";
 import { ArrowLeftIcon, Table } from "lucide-react";
 import Link from "next/link";
@@ -15,7 +15,7 @@ import {
   TableCell,
   TableHeader,
   TableRow,
-} from "@/src/app/_components/ui/table";
+} from "@/src/lib/components/ui/table";
 
 export default function Page({ params }: { params: { tournamentId: string } }) {
   const tournaments = useMainStore((state) => state.seasonTournaments);

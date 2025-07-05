@@ -9,9 +9,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/src/app/_components/ui/table";
-import { Button } from "@/src/app/_components/ui/button";
-import { formatMoney } from "@/src/lib/utils";
+} from "@/src/lib/components/ui/table";
+import { Button } from "@/src/lib/components/ui/button";
+import { formatMoney } from "@/lib/utils";
 
 // Add type definitions
 type SortColumn = "earnings" | "wins" | "apps";
@@ -143,7 +143,7 @@ export function HistoryTable() {
 
         return {
           id: member.id,
-          name: member.fullname,
+          name: member.firstname + " " + member.lastname,
           totalEarnings,
           adjustedEarnings,
           totalWins,

@@ -4,7 +4,7 @@ import { api } from "@/src/trpc/server";
 import { updateTourCardNames } from "./tour_card";
 import type { Member } from "@prisma/client";
 import type { User } from "@supabase/supabase-js";
-import { formatName } from "@/src/lib/utils";
+import { formatName } from "@/lib/utils";
 import { createClient } from "@/src/lib/supabase/server";
 
 export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {
@@ -18,19 +18,19 @@ export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {
     : null;
   const displayName =
     (value.firstname && value.firstname[0]) + ". " + value.lastname;
-  value.fullname = value.firstname + " " + value.lastname;
-  await api.member.update({
+  const updatedMember = await api.member.update({
     id: value.id,
     email: value.email,
-    fullname: value.fullname,
     firstname: value.firstname,
     lastname: value.lastname,
   });
   const newTourCard =
-    tourCard && (await api.tourCard.update({ id: tourCard.id, displayName }));
+    tourCard &&
+    tourCard.displayName !== displayName &&
+    (await api.tourCard.update({ id: tourCard.id, displayName }));
   if (tour && newTourCard)
     await updateTourCardNames({ tour: tour, tourCard: newTourCard });
-  return;
+  return updatedMember;
 }
 
 export async function addFriendsToMember({

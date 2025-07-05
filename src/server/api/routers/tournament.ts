@@ -12,6 +12,7 @@ export const tournamentRouter = createTRPCRouter({
       orderBy: { startDate: "asc" },
       include: {
         course: true,
+        tier: true,
       },
     });
   }),
@@ -22,6 +23,7 @@ export const tournamentRouter = createTRPCRouter({
         where: { seasonId: input.seasonId },
         include: {
           course: true,
+          tier: true,
         },
         orderBy: { startDate: "asc" },
       });
@@ -63,6 +65,29 @@ export const tournamentRouter = createTRPCRouter({
       },
     });
   }),
+  getCurrentSchedule: publicProcedure.query(async ({ ctx }) => {
+    const today = new Date();
+    return ctx.db.tournament.findMany({
+      where: { season: { year: today.getFullYear() } },
+      include: {
+        course: true,
+        tier: true,
+      },
+      orderBy: { startDate: "asc" },
+    });
+  }),
+  getSeasonSchedule: publicProcedure
+    .input(z.object({ seasonId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.tournament.findMany({
+        where: { seasonId: input.seasonId },
+        include: {
+          course: true,
+          tier: true,
+        },
+        orderBy: { startDate: "asc" },
+      });
+    }),
 
   update: adminProcedure
     .input(

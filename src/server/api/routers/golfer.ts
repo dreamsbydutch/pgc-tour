@@ -36,15 +36,6 @@ export const golferRouter = createTRPCRouter({
             seasonId: input.seasonId,
           },
         },
-        include: {
-          tournament: {
-            select: {
-              id: true,
-              name: true,
-              logoUrl: true,
-            },
-          },
-        },
       });
     }),
   update: adminProcedure

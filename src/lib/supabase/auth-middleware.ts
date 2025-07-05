@@ -1,51 +1,67 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { jwtVerify } from "jose";
+import { createServerClient } from "@supabase/ssr";
 
 export async function authGuard(request: NextRequest) {
-  const token = request.cookies.get("sb-access-token")?.value;
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
 
-  // If there's no token, redirect from admin
-  if (!token && request.nextUrl.pathname.startsWith("/admin")) {
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value);
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    },
+  );
+
+  // Get the current user session
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // If no user and trying to access admin, redirect home
+  if (!user && request.nextUrl.pathname.startsWith("/admin")) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
   }
 
-  // If there's a token, verify the JWT and check email or role
-  if (token) {
-    try {
-      const { payload } = await jwtVerify(
-        token,
-        new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET!)
-      );
+  // If user exists, set basic user data in headers
+  if (user) {
+    // Set basic user data in headers for downstream server components
+    response.headers.set("x-user-id", user.id);
+    response.headers.set("x-user-email", user.email!);
+    response.headers.set("x-user-avatar", user.user_metadata?.avatar_url ?? "");
 
-      const email = payload.email;
-
-      // Email check
-      if (
-        request.nextUrl.pathname.startsWith("/admin") &&
-        email !== "chough14@gmail.com"
-      ) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/";
-        return NextResponse.redirect(url);
-      }
-
-      // If already signed in and trying to access /signin, redirect home
-      if (request.nextUrl.pathname === "/signin") {
-        const url = request.nextUrl.clone();
-        url.pathname = "/";
-        return NextResponse.redirect(url);
-      }
-
-    } catch (err) {
-      console.error("JWT verification failed", err);
+    // Admin access check (using email directly from Supabase)
+    if (
+      request.nextUrl.pathname.startsWith("/admin") &&
+      user.email !== "chough14@gmail.com"
+    ) {
       const url = request.nextUrl.clone();
-      url.pathname = "/login";
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+
+    // If already signed in and trying to access /signin, redirect home
+    if (request.nextUrl.pathname === "/signin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
       return NextResponse.redirect(url);
     }
   }
 
-  // Everything OK, let it through
-  return NextResponse.next();
+  return response;
 }

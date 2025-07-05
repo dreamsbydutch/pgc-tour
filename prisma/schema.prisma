@@ -9,23 +9,16 @@ datasource db {
 }
 
 model Member {
-  id          String  @id @unique
-  fullname    String
-  firstname   String?
-  lastname    String?
-  email       String  @unique
-  role        String  @default("regular")
-  account     Float   @default(0)
-  earnings    Float   @default(0)
-  points      Float   @default(0)
-  win         Float   @default(0)
-  topTen      Float   @default(0)
-  madeCut     Float   @default(0)
-  appearances Int     @default(0)
+  id        String  @id @unique
+  firstname String?
+  lastname  String?
+  email     String  @unique
+  role      String  @default("regular")
+  account   Float   @default(0)
 
   friends String[]
 
-  tourCards     TourCard[]
+  tourCards TourCard[]
 
   @@map("members")
 }
@@ -234,6 +227,17 @@ model Transactions {
   @@map("transactions")
 }
 
+model PushSubscription {
+  id        String   @id @default(cuid())
+  memberId  String // Links to your user system
+  endpoint  String // Browser's push endpoint
+  p256dh    String // Encryption key
+  auth      String // Authentication key
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([memberId, endpoint])
+}
 
 enum TransactionType {
   TourCardFee

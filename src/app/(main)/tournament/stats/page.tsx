@@ -1,8 +1,7 @@
 "use client";
 
-import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
-import { cn, formatScore } from "@/src/lib/utils";
-<<<<<<< Updated upstream:src/app/(main)/tournament/stats/page.tsx
+import LoadingSpinner from "@/src/lib/components/functionalComponents/loading/LoadingSpinner";
+import { cn, formatScore } from "@/lib/utils";
 import { api } from "@/src/trpc/react";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
@@ -11,20 +10,13 @@ import { Suspense, useState, type Dispatch, type SetStateAction } from "react";
 import { useMainStore } from "@/src/lib/store/store";
 import { LeaderboardHeaderSkeleton } from "../_components/skeletons/LeaderboardHeaderSkeleton";
 import LeaderboardHeader from "../_components/header/LeaderboardHeader";
-=======
-import { useState, type Dispatch, type SetStateAction } from "react";
-import {
-  useTeamsByTournament,
-  useTourCards,
-} from "@/src/lib/store";
->>>>>>> Stashed changes:src/app/(main)/tournament/components/stats/StatsComponent.tsx
 import type { Team, Tour, TourCard, Tournament } from "@prisma/client";
 import {
   Table,
   TableCell,
   TableHeader,
   TableRow,
-} from "@/src/app/_components/ui/table";
+} from "@/src/lib/components/ui/table";
 import { useSearchParams } from "next/navigation";
 
 export default function Page() {
@@ -61,7 +53,6 @@ function StatsPage({
   tourCard?: TourCard;
 }) {
   const [activeTour, setActiveTour] = useState<string>(tourCard?.tourId ?? "");
-<<<<<<< Updated upstream:src/app/(main)/tournament/stats/page.tsx
   const { data: teams, isLoading } = api.team.getByTournament.useQuery(
     {
       tournamentId: tournament?.id ?? "",
@@ -72,39 +63,6 @@ function StatsPage({
   // Get the currently active teams for the selected tour
   const tourTeams =
     teams?.filter((team) => team.tourCard.tourId === activeTour) ?? [];
-=======
-
-  // Use store hooks instead of direct tRPC calls
-  const {
-    teams,
-    loading: teamsLoading,
-    error: teamsError,
-  } = useTeamsByTournament(tournament?.id ?? "");
-
-  // Loading state
-  if (teamsLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8">
-        <LoadingSpinner />
-        <p className="mt-4 text-gray-600">Loading tournament statistics...</p>
-      </div>
-    );
-  }
-
-  // Error state
-  if (teamsError) {
-    return (
-      <div className="flex h-64 w-full items-center justify-center text-red-500">
-        Error loading tournament stats: {teamsError}
-      </div>
-    );
-  } // Get the currently active teams for the selected tour
-  const tourTeams =
-    teams?.filter(
-      (team: Team & { tourCard?: TourCard | null }) =>
-        team.tourCard?.tourId === activeTour,
-    ) ?? [];
->>>>>>> Stashed changes:src/app/(main)/tournament/components/stats/StatsComponent.tsx
 
   // Helper function to get sorted teams based on tour type
   const getSortedTeams = () => {
@@ -116,7 +74,6 @@ function StatsPage({
     return sortTeamsForSpecialPostions(filteredTeams);
   };
 
-<<<<<<< Updated upstream:src/app/(main)/tournament/stats/page.tsx
   if (isLoading) return <LoadingSpinner />;
 
   return (
@@ -128,11 +85,6 @@ function StatsPage({
         <ArrowLeftIcon size={15} /> Back To Tournament
       </Link>
 
-=======
-  return (
-    <div className="mt-2 px-2">
-      {/* Tour selection buttons */}
->>>>>>> Stashed changes:src/app/(main)/tournament/components/stats/StatsComponent.tsx
       <div className="mx-auto my-4 flex w-11/12 max-w-xl justify-around text-center">
         {tours.map((tour) => (
           <ToggleButton
@@ -244,18 +196,8 @@ function StatsListing({
   teams: Team[];
   tourTeams: Team[];
 }) {
-<<<<<<< Updated upstream:src/app/(main)/tournament/stats/page.tsx
   const tourCards = useMainStore((state) => state.tourCards);
   const tourCard = tourCards?.find((card) => card.id === team.tourCardId);
-=======
-  // Use store hooks instead of direct tRPC calls
-  const { tourCards } = useTourCards();
-
-  // First try to use the already joined tourCard, fallback to finding it in tourCards
-  const tourCard =
-    team.tourCard ?? tourCards?.find((card) => card.id === team.tourCardId);
-
->>>>>>> Stashed changes:src/app/(main)/tournament/components/stats/StatsComponent.tsx
   return (
     <TableRow className="border-slate-900 text-center">
       <TableCell className="border-l border-slate-900 text-sm">

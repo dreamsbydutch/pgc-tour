@@ -26,10 +26,10 @@ export const tourRouter = createTRPCRouter({
     });
   }),
   getBySeason: publicProcedure
-    .input(z.object({ seasonID: z.string().optional() }))
+    .input(z.object({ seasonId: z.string() }))
     .query(async ({ ctx, input }) => {
       return await ctx.db.tour.findMany({
-        where: { seasonId: input.seasonID },
+        where: { seasonId: input.seasonId },
       });
     }),
 

@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "@/server/api/trpc";
 
 export const tourCardRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -41,7 +45,7 @@ export const tourCardRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return await ctx.db.tourCard.findMany({
         where: { seasonId: input.seasonId },
-        include: { member: true },
+        include: { member: true, teams: true, tour: true },
       });
     }),
 

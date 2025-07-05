@@ -1,6 +1,11 @@
 import { z } from "zod";
 
-import { adminProcedure, createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "@/server/api/trpc";
 
 export const memberRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -33,7 +38,7 @@ export const memberRouter = createTRPCRouter({
         where: { id: input.memberId },
       });
     }),
-  create: adminProcedure
+  create: protectedProcedure
     .input(
       z.object({
         id: z.string(),
@@ -55,12 +60,11 @@ export const memberRouter = createTRPCRouter({
       });
       return updatedUser;
     }),
-  update: adminProcedure
+  update: protectedProcedure
     .input(
       z.object({
         id: z.string(),
         email: z.string().optional(),
-        fullname: z.string().optional(),
         firstname: z.string().nullable().optional(),
         lastname: z.string().nullable().optional(),
         account: z.number().optional(),
@@ -72,7 +76,6 @@ export const memberRouter = createTRPCRouter({
         where: { id: input.id },
         data: {
           account: input.account,
-          fullname: input.fullname,
           email: input.email,
           firstname: input.firstname,
           lastname: input.lastname,
@@ -109,7 +112,7 @@ export const memberRouter = createTRPCRouter({
         where: { id: ctx.user.id },
         data: {
           friends: {
-            set: input.friendsList
+            set: input.friendsList,
           },
         },
       });

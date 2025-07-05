@@ -1,11 +1,10 @@
 "use client";
 
-import { cn, formatRank } from "@/src/lib/utils";
+import { cn, formatRank } from "@/lib/utils";
 import type { Member, Team, TourCard, Tournament } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
-import LoadingSpinner from "../../../_components/LoadingSpinner";
-import { useMainStore } from "@/src/lib/store/store";
+import LoadingSpinner from "../../../../lib/components/functionalComponents/loading/LoadingSpinner";
 
 export function StandingsTourCardInfo({
   tourCard,

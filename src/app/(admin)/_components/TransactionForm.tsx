@@ -6,7 +6,7 @@ import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import type { FormEvent } from "react";
 import { z } from "zod";
-import { FieldInfo } from "../../_components/FieldInfo";
+import { FieldInfo } from "../../../lib/components/ui/FieldInfo";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -15,11 +15,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../_components/ui/table";
+} from "../../../lib/components/ui/table";
 import { formatMoney } from "@/src/lib/utils";
 import { processPayment } from "@/src/server/api/actions/transaction";
 import type { TransactionType } from "@prisma/client";
-import { Button } from "../../_components/ui/button";
+import { Button } from "../../../lib/components/ui/button";
 
 const emptyTransaction = {
   id: 0,
@@ -85,7 +85,7 @@ export default function PaymentForm() {
                       .filter((obj) => obj.account > 0)
                       .map((member) => (
                         <option key={member.id} value={member.id}>
-                          {member.fullname}
+                          {member.firstname} {member.lastname}
                         </option>
                       ))}
                   </select>
@@ -161,7 +161,9 @@ export default function PaymentForm() {
             .map((member) => (
               <TableRow key={member.id}>
                 <TableCell className="text-sm">{member.email}</TableCell>
-                <TableCell className="text-sm">{member.fullname}</TableCell>
+                <TableCell className="text-sm">
+                  {member.firstname + " " + member.lastname}
+                </TableCell>
                 <TableCell className="text-sm">
                   {formatMoney(member.account)}
                 </TableCell>

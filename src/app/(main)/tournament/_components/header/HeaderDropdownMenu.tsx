@@ -10,11 +10,11 @@ import {
   DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/src/app/_components/ui/dropdown-menu";
+} from "@/src/lib/components/ui/dropdown-menu";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import LoadingSpinner from "@/src/app/_components/LoadingSpinner";
+import LoadingSpinner from "@/src/lib/components/functionalComponents/loading/LoadingSpinner";
 <<<<<<< Updated upstream:src/app/(main)/tournament/_components/header/HeaderDropdownMenu.tsx
 import { useMainStore } from "@/src/lib/store/store";
 =======
