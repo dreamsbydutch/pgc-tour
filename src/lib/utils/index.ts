@@ -58,6 +58,9 @@ export * from "./caching";
 // Re-export all test utilities
 export * from "./test";
 
+// Re-export all storage utilities
+export * from "./storage";
+
 // Named module exports for organized imports
 export * as formatting from "./formatting";
 export * as validation from "./validation";
@@ -69,6 +72,7 @@ export * as arrays from "./arrays";
 export * as api from "./api";
 export * as caching from "./caching";
 export * as test from "./test";
+export * as storage from "./storage";
 
 // Keep the original utils that are commonly used throughout the app
 export const groupChatLink = "https://chat.whatsapp.com/EDhyiqWF10jImlvgbLQcVD";
