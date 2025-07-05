@@ -17,8 +17,7 @@ import type {
   Season,
 } from "@prisma/client";
 import { getTournamentStatus } from "@/lib/utils";
-
-export type TournamentStatus = "upcoming" | "current" | "recent" | "historical";
+import type { TournamentStatus } from "./caching";
 
 // ============= MOCK DATA GENERATORS =============
 

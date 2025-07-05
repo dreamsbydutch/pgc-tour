@@ -360,9 +360,9 @@ export function useTournamentLeaderboard(tournamentId: string | undefined) {
   // Handle case where no teams exist (common for future tournaments)
   if (!teams || isEmpty(teams)) {
     const noTeamsMessage =
-      tournamentStatus === "future"
+      tournamentStatus === "upcoming"
         ? "No teams registered yet (tournament hasn't started)"
-        : tournamentStatus === "past"
+        : tournamentStatus === "completed"
           ? "No teams found for this tournament"
           : "No teams found for current tournament";
 
@@ -394,16 +394,14 @@ export function useTournamentLeaderboard(tournamentId: string | undefined) {
           }
 
           // Get and sort team golfers
-          const teamGolfers =
-            tournament.golfers?.filter((golfer) =>
-              team.golferIds.includes(golfer.apiId),
-            ) ?? [];
+          // Note: Golfer details would need to be fetched separately if needed
+          // const teamGolfers = await fetchGolfersByIds(team.golferIds);
 
           return {
             ...team,
             tour, // Include tour object
             tourCard, // Include tourCard object
-            golfers: sortGolfers(teamGolfers),
+            // golfers: sortGolfers(teamGolfers), // Commented out until golfer data is available
           };
         })
         .filter(isDefined); // Remove null entries

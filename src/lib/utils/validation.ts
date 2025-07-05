@@ -3,6 +3,7 @@
  * Provides robust validation functions for common data types and business logic
  */
 
+import { z } from "zod";
 import { safeNumber } from "./formatting";
 
 /**
@@ -214,3 +215,31 @@ export function isDefined<T>(value: T | null | undefined): value is T {
 export function isNullish(value: unknown): value is null | undefined {
   return value == null;
 }
+
+// ============= ZOD SCHEMAS =============
+
+/**
+ * Schema for validating member data
+ */
+export const memberSchema = z.object({
+  firstname: z.string().min(3, "First name must be at least 3 characters"),
+  lastname: z.string().min(3, "Last name must be at least 3 characters"),
+  email: z.string().email("Please enter a valid email address"),
+});
+
+/**
+ * Schema for validating payment/transaction data
+ */
+export const paymentSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  seasonId: z.string().min(1, "Season ID is required"),
+  description: z.string().min(1, "Description is required"),
+  amount: z.number().min(0.01, "Amount must be greater than 0"),
+  transactionType: z.string().min(1, "Transaction type is required"),
+});
+
+/**
+ * Type exports for the schemas
+ */
+export type MemberFormData = z.infer<typeof memberSchema>;
+export type PaymentFormData = z.infer<typeof paymentSchema>;

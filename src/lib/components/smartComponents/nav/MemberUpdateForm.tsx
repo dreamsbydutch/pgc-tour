@@ -1,6 +1,6 @@
 "use client";
 
-import { memberSchema } from "@/src/lib/validators";
+import { memberSchema } from "@/lib/utils";
 import { api } from "@/src/trpc/react";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
