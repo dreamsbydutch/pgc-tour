@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/src/lib/components/ui/table";
 import { Button } from "@/src/lib/components/ui/button";
-import { formatMoney } from "@/lib/utils";
+import { formatMoney } from "@/old-utils";
 
 // Add type definitions
 type SortColumn = "earnings" | "wins" | "apps";

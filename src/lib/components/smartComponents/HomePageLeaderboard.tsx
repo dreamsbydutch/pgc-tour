@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/src/lib/utils";
+import { cn } from "@/old-utils";
 import Link from "next/link";
 import LeaderboardHeader from "../../../app/(main)/tournament/_components/header/LeaderboardHeader";
 import {
@@ -10,7 +10,8 @@ import {
 import { useCurrentTournamentLeaderboard } from "../../hooks/useTeamsHooks";
 
 export default function HomePageLeaderboard() {
-  const {tournament,teamsByTour,dataSource,isLoading,error} = useCurrentTournamentLeaderboard()
+  const { tournament, teamsByTour, dataSource, isLoading, error } =
+    useCurrentTournamentLeaderboard();
   if (!tournament) return null;
   return (
     <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
@@ -19,7 +20,7 @@ export default function HomePageLeaderboard() {
         {teamsByTour?.map((tour, i) => {
           return (
             <Link
-              key={tour?.tour?.id ?? "tour-"+i}
+              key={tour?.tour?.id ?? "tour-" + i}
               className={cn(
                 "flex flex-col",
                 i === 0 && "border-r border-slate-800",
@@ -29,12 +30,10 @@ export default function HomePageLeaderboard() {
             >
               {!tour ? (
                 <HomePageListSkeleton />
+              ) : tour?.tour ? (
+                <HomePageList tour={tour.tour} teams={tour.teams} />
               ) : (
-                tour?.tour ? (
-                  <HomePageList tour={tour.tour} teams={tour.teams} />
-                ) : (
-                  <HomePageListSkeleton />
-                )
+                <HomePageListSkeleton />
               )}
             </Link>
           );

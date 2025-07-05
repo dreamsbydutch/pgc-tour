@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, formatMoney, formatRank } from "@/src/lib/utils";
+import { cn, formatMoney, formatRank } from "@/old-utils";
 // Remove server action imports
 import { Star } from "lucide-react";
 import { useState, type Dispatch, type SetStateAction } from "react";

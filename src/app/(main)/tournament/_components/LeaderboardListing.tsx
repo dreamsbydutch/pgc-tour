@@ -6,7 +6,7 @@ import {
   formatScore,
   getGolferTeeTime,
   getTeamTeeTime,
-} from "@/lib/utils";
+} from "@/old-utils";
 import type {
   Course,
   Golfer,

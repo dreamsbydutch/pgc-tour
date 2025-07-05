@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { api } from "@/src/trpc/server";
-import { formatName } from "@/src/lib/utils";
+import { formatName } from "@/old-utils";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL
@@ -28,7 +28,10 @@ export async function GET(request: Request) {
           memberId: supabaseUser.data.user.id,
         });
         if (!prismaUser) {
-          const fullName = formatName(supabaseUser.data.user.user_metadata.name as string, "full");
+          const fullName = formatName(
+            supabaseUser.data.user.user_metadata.name as string,
+            "full",
+          );
           const splitName = fullName.split(" ");
           await api.member.create({
             id: supabaseUser.data.user.id,

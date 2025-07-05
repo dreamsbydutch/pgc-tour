@@ -1,6 +1,6 @@
 "use client";
 
-import { paymentSchema } from "@/lib/utils";
+import { paymentSchema } from "@/old-utils";
 import { api } from "@/src/trpc/react";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../../lib/components/ui/table";
-import { formatMoney } from "@/src/lib/utils";
+import { formatMoney } from "@/old-utils";
 import { processPayment } from "@/src/server/api/actions/transaction";
 import type { TransactionType } from "@prisma/client";
 import { Button } from "../../../lib/components/ui/button";

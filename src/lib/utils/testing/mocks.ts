@@ -1,10 +1,10 @@
 /**
- * @fileoverview Comprehensive test utilities for golf tournament application
- *
- * Provides mock data, test helpers, and utility functions for testing
- * tournament leaderboards, team formations, and golf scoring logic.
+ * @fileoverview Mock data generators for testing golf tournament applications
+ * Provides realistic mock data for all major entities in the golf tournament system
  */
 
+// Import types - these would typically come from your types folder
+// For now, using Prisma client types as reference
 import type {
   Tournament,
   Tour,
@@ -16,13 +16,14 @@ import type {
   Course,
   Season,
 } from "@prisma/client";
-import { getTournamentStatus } from "@/lib/utils";
-import type { TournamentStatus } from "./caching";
 
-// ============= MOCK DATA GENERATORS =============
+// ============================================================================
+// INDIVIDUAL MOCK GENERATORS
+// ============================================================================
 
 /**
  * Generates a mock course with realistic golf course data
+ * Extracted from old-utils/test.ts
  */
 export function createMockCourse(overrides?: Partial<Course>): Course {
   return {
@@ -42,6 +43,7 @@ export function createMockCourse(overrides?: Partial<Course>): Course {
 
 /**
  * Generates a mock season with proper date ranges
+ * Extracted from old-utils/test.ts
  */
 export function createMockSeason(overrides?: Partial<Season>): Season {
   return {
@@ -56,6 +58,7 @@ export function createMockSeason(overrides?: Partial<Season>): Season {
 
 /**
  * Generates a mock tier with realistic tournament structure
+ * Extracted from old-utils/test.ts
  */
 export function createMockTier(overrides?: Partial<Tier>): Tier {
   return {
@@ -72,6 +75,7 @@ export function createMockTier(overrides?: Partial<Tier>): Tier {
 
 /**
  * Generates a mock tour with realistic tour structure
+ * Extracted from old-utils/test.ts
  */
 export function createMockTour(overrides?: Partial<Tour>): Tour {
   return {
@@ -90,6 +94,7 @@ export function createMockTour(overrides?: Partial<Tour>): Tour {
 
 /**
  * Generates a mock member with realistic player data
+ * Extracted from old-utils/test.ts
  */
 export function createMockMember(overrides?: Partial<Member>): Member {
   return {
@@ -106,6 +111,7 @@ export function createMockMember(overrides?: Partial<Member>): Member {
 
 /**
  * Generates a mock tour card linking member to tour
+ * Extracted from old-utils/test.ts
  */
 export function createMockTourCard(overrides?: Partial<TourCard>): TourCard {
   return {
@@ -130,6 +136,7 @@ export function createMockTourCard(overrides?: Partial<TourCard>): TourCard {
 
 /**
  * Generates a mock tournament with realistic scheduling
+ * Extracted from old-utils/test.ts
  */
 export function createMockTournament(
   overrides?: Partial<Tournament>,
@@ -157,6 +164,7 @@ export function createMockTournament(
 
 /**
  * Generates a mock golfer with realistic scoring data
+ * Extracted from old-utils/test.ts
  */
 export function createMockGolfer(overrides?: Partial<Golfer>): Golfer {
   return {
@@ -196,6 +204,7 @@ export function createMockGolfer(overrides?: Partial<Golfer>): Golfer {
 
 /**
  * Generates a mock team with realistic tournament performance
+ * Extracted from old-utils/test.ts
  */
 export function createMockTeam(overrides?: Partial<Team>): Team {
   return {
@@ -230,10 +239,13 @@ export function createMockTeam(overrides?: Partial<Team>): Team {
   };
 }
 
-// ============= MOCK DATA COLLECTIONS =============
+// ============================================================================
+// COMPLEX MOCK SCENARIOS
+// ============================================================================
 
 /**
  * Creates a complete tournament leaderboard scenario
+ * Extracted from old-utils/test.ts
  */
 export function createMockLeaderboard(teamCount: number = 5): {
   tournament: Tournament;
@@ -316,6 +328,7 @@ export function createMockLeaderboard(teamCount: number = 5): {
 
 /**
  * Creates mock seasonal data for testing year-long scenarios
+ * Extracted from old-utils/test.ts
  */
 export function createMockSeasonData(tournamentCount: number = 10): {
   season: Season;
@@ -413,59 +426,9 @@ export function createMockSeasonData(tournamentCount: number = 10): {
   };
 }
 
-// ============= TEST HELPERS =============
-
-/**
- * Asserts that a tournament status is correctly calculated
- */
-export function assertTournamentStatus(
-  tournament: Tournament,
-  expectedStatus: TournamentStatus,
-  referenceDate: Date = new Date(),
-): boolean {
-  const actualStatus = getTournamentStatus(
-    new Date(tournament.startDate),
-    new Date(tournament.endDate),
-    referenceDate,
-  );
-  return actualStatus === expectedStatus;
-}
-
-/**
- * Validates team scoring logic
- */
-export function validateTeamScore(team: Team, golfers: Golfer[]): boolean {
-  const teamGolfers = golfers.filter((g) => team.golferIds.includes(g.apiId));
-  const calculatedScore = teamGolfers.reduce(
-    (sum, golfer) => sum + (golfer.score || 0),
-    0,
-  );
-  return Math.abs(calculatedScore - (team.score || 0)) < 0.01; // Allow for floating point precision
-}
-
-/**
- * Validates leaderboard position ordering
- */
-export function validateLeaderboardOrder(teams: Team[]): boolean {
-  for (let i = 1; i < teams.length; i++) {
-    const prevTeam = teams[i - 1];
-    const currentTeam = teams[i];
-
-    if (!prevTeam || !currentTeam) continue;
-
-    const prevScore = prevTeam.score || 0;
-    const currentScore = currentTeam.score || 0;
-
-    // Lower scores should come first (better in golf)
-    if (prevScore > currentScore) {
-      return false;
-    }
-  }
-  return true;
-}
-
 /**
  * Creates a test environment with minimal setup
+ * Extracted from old-utils/test.ts
  */
 export function createTestEnvironment() {
   const mockData = createMockLeaderboard(3);
@@ -491,36 +454,8 @@ export function createTestEnvironment() {
 }
 
 /**
- * Performance testing helper - measures function execution time
- */
-export function measurePerformance<T>(
-  name: string,
-  fn: () => T,
-  iterations: number = 1,
-): { result: T; averageTime: number; totalTime: number } {
-  const times: number[] = [];
-  let result: T;
-
-  for (let i = 0; i < iterations; i++) {
-    const start = performance.now();
-    result = fn();
-    const end = performance.now();
-    times.push(end - start);
-  }
-
-  const totalTime = times.reduce((sum, time) => sum + time, 0);
-  const averageTime = totalTime / iterations;
-
-  console.log(`Performance Test: ${name}`);
-  console.log(`Iterations: ${iterations}`);
-  console.log(`Total Time: ${totalTime.toFixed(2)}ms`);
-  console.log(`Average Time: ${averageTime.toFixed(2)}ms`);
-
-  return { result: result!, averageTime, totalTime };
-}
-
-/**
  * Mock API response builder for testing hooks
+ * Extracted from old-utils/test.ts
  */
 export function createMockApiResponse<T>(
   data: T,
@@ -538,51 +473,150 @@ export function createMockApiResponse<T>(
   });
 }
 
-/**
- * Date manipulation helpers for testing time-based logic
- */
-export const testDateHelpers = {
-  addDays: (date: Date, days: number): Date =>
-    new Date(date.getTime() + days * 24 * 60 * 60 * 1000),
-
-  subtractDays: (date: Date, days: number): Date =>
-    new Date(date.getTime() - days * 24 * 60 * 60 * 1000),
-
-  setTimeOfDay: (date: Date, hours: number, minutes: number = 0): Date => {
-    const newDate = new Date(date);
-    newDate.setHours(hours, minutes, 0, 0);
-    return newDate;
-  },
-
-  isSameDay: (date1: Date, date2: Date): boolean =>
-    date1.toDateString() === date2.toDateString(),
-};
+// ============================================================================
+// RANDOMIZED MOCK GENERATORS
+// ============================================================================
 
 /**
- * Assertion helpers for common test scenarios
+ * Generate random golfer names for more realistic testing
  */
-export const testAssertions = {
-  isValidScore: (score: number | null): boolean =>
-    score === null ||
-    (typeof score === "number" && !isNaN(score) && score >= -50 && score <= 50),
+export function generateRandomGolferName(): string {
+  const firstNames = [
+    "Tiger",
+    "Jordan",
+    "Rory",
+    "Justin",
+    "Brooks",
+    "Dustin",
+    "Phil",
+    "Adam",
+    "Jason",
+    "Tony",
+    "Rickie",
+    "Bubba",
+    "Matt",
+    "Sergio",
+    "Ian",
+    "Patrick",
+  ];
+  const lastNames = [
+    "Woods",
+    "Spieth",
+    "McIlroy",
+    "Thomas",
+    "Koepka",
+    "Johnson",
+    "Mickelson",
+    "Scott",
+    "Day",
+    "Finau",
+    "Fowler",
+    "Watson",
+    "Kuchar",
+    "Garcia",
+    "Poulter",
+    "Reed",
+  ];
 
-  isValidPosition: (position: string | null): boolean =>
-    position === null || /^(T?\d+|CUT|WD|DQ)$/.test(position),
+  const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+  const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
 
-  isValidGolferId: (apiId: number): boolean =>
-    typeof apiId === "number" && apiId > 0,
+  return `${firstName} ${lastName}`;
+}
 
-  hasRequiredTeamGolfers: (team: Team): boolean =>
-    Array.isArray(team.golferIds) &&
-    team.golferIds.length >= 4 &&
-    team.golferIds.length <= 6,
+/**
+ * Generate random golf course names
+ */
+export function generateRandomCourseName(): string {
+  const prefixes = [
+    "Augusta",
+    "Pebble",
+    "St. Andrews",
+    "Torrey",
+    "TPC",
+    "Congressional",
+    "Bethpage",
+    "Riviera",
+    "Whistling",
+    "Oak",
+    "Pine",
+    "Magnolia",
+    "Royal",
+    "Cherry",
+    "Oakmont",
+  ];
+  const suffixes = [
+    "National",
+    "Beach",
+    "Links",
+    "Country Club",
+    "Golf Club",
+    "Resort",
+    "Hills",
+    "Valley",
+    "Ridge",
+    "Course",
+    "Green",
+    "Pines",
+    "Oaks",
+    "Fields",
+    "Meadows",
+  ];
 
-  isValidMemberName: (member: Member): boolean =>
-    (member.firstname !== null && member.firstname.length > 0) ||
-    (member.lastname !== null && member.lastname.length > 0),
+  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
 
-  isValidTourCard: (tourCard: TourCard): boolean =>
-    tourCard.displayName.length > 0 &&
-    tourCard.memberId.length > 0 &&
-    tourCard.tourId.length > 0,
-};
+  return `${prefix} ${suffix}`;
+}
+
+/**
+ * Generate random realistic golf scores
+ */
+export function generateRandomGolfScore(par: number = 72): number {
+  // Most scores range from -15 to +10 relative to par
+  const minScore = par - 15;
+  const maxScore = par + 10;
+
+  // Weight towards more realistic scores (closer to par)
+  const randomFactor = Math.random() + Math.random() + Math.random(); // Sum of 3 random numbers for bell curve
+  const normalizedFactor = (randomFactor - 1.5) / 1.5; // Normalize to -1 to 1 range
+
+  const score = Math.round(par + normalizedFactor * 8); // +/- 8 strokes from par typically
+
+  return Math.max(minScore, Math.min(maxScore, score));
+}
+
+/**
+ * Create a randomized mock tournament with realistic data
+ */
+export function createRandomMockTournament(
+  overrides?: Partial<Tournament>,
+): Tournament {
+  const courseName = generateRandomCourseName();
+  const locations = [
+    "Augusta, GA",
+    "Pebble Beach, CA",
+    "St. Andrews, Scotland",
+    "Torrey Pines, CA",
+    "Bethpage, NY",
+    "Riviera, CA",
+    "Whistling Straits, WI",
+    "Congressional, MD",
+  ];
+
+  const startDate = new Date(
+    2024,
+    Math.floor(Math.random() * 12),
+    Math.floor(Math.random() * 28) + 1,
+  );
+  const endDate = new Date(startDate.getTime() + 4 * 24 * 60 * 60 * 1000); // 4 days
+
+  return createMockTournament({
+    name: `${courseName} Championship`,
+    startDate,
+    endDate,
+    currentRound: Math.floor(Math.random() * 4) + 1,
+    livePlay: Math.random() > 0.5,
+    ...overrides,
+  });
+}

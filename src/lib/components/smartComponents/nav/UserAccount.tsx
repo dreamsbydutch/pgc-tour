@@ -22,7 +22,7 @@ import {
 import type { AuthUser } from "../../../supabase/auth-helpers";
 import { LogInIcon } from "lucide-react";
 import { Skeleton } from "../../ui/skeleton";
-import { formatMoney, formatNumber } from "@/lib/utils";
+import { formatMoney, formatNumber } from "@/old-utils";
 import LittleFucker from "../LittleFucker";
 
 // Move handleSignIn outside component to prevent recreation

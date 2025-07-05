@@ -7,7 +7,7 @@ import {
   isDefined,
   getDaysBetween,
   getTournamentStatus,
-} from "@/lib/utils";
+} from "@/old-utils";
 
 /**
  * Returns the champions of the most recent c  // Handle case where no teams exist (common for upcoming tournaments)

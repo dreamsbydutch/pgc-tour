@@ -7,7 +7,12 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { cn, formatMoney, formatNumber, formatRank } from "../../utils";
+import {
+  cn,
+  formatMoney,
+  formatNumber,
+  formatRank,
+} from "../../../../old-utils";
 
 /**
  * PayoutsTable Component

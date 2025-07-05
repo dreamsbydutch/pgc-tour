@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, formatMoney, formatScore } from "@/lib/utils";
+import { cn, formatMoney, formatScore } from "@/old-utils";
 import type { Team, Tour, TourCard } from "@prisma/client";
 import Image from "next/image";
 import LittleFucker from "./smartComponents/LittleFucker";

@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, formatRank } from "@/lib/utils";
+import { cn, formatRank } from "@/old-utils";
 import type { Member, Team, TourCard, Tournament } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";

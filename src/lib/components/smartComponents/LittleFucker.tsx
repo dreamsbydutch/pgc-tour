@@ -2,7 +2,7 @@
 
 import { api } from "@/src/trpc/react";
 import Image from "next/image";
-import { cn } from "../../utils";
+import { cn } from "../../../../old-utils";
 import { useMemo } from "react";
 
 interface LittleFuckerProps {

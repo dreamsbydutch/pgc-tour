@@ -3,7 +3,7 @@ import "@/styles/globals.css";
 import { type Metadata } from "next";
 import { Barlow_Condensed, Varela, Yellowtail } from "next/font/google";
 
-import { cn } from "../lib/utils";
+import { cn } from "../../old-utils";
 import Script from "next/script";
 import { AuthProvider } from "../lib/providers/AuthProvider";
 import { TRPCReactProvider } from "../trpc/react";

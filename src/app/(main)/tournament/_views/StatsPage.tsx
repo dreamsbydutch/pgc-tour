@@ -1,7 +1,7 @@
 "use client";
 
 import LoadingSpinner from "@/src/lib/components/functionalComponents/loading/LoadingSpinner";
-import { cn, formatScore } from "@/lib/utils";
+import { cn, formatScore } from "@/old-utils";
 import { api } from "@/src/trpc/react";
 import { ArrowLeftIcon, Table } from "lucide-react";
 import Link from "next/link";

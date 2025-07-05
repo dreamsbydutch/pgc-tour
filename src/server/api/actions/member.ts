@@ -4,7 +4,7 @@ import { api } from "@/src/trpc/server";
 import { updateTourCardNames } from "./tour_card";
 import type { Member } from "@prisma/client";
 import type { User } from "@supabase/supabase-js";
-import { formatName } from "@/lib/utils";
+import { formatName } from "@/old-utils";
 import { createClient } from "@/src/lib/supabase/server";
 
 export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {

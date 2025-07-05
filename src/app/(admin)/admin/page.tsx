@@ -3,7 +3,7 @@ import type {
   DatagolfFieldInput,
   DataGolfLiveTournament,
 } from "@/src/lib/types/datagolf_types";
-import { fetchDataGolf } from "@/src/lib/utils";
+import { fetchDataGolf } from "@/old-utils";
 import {
   CreateGroupsButton,
   EmailListLinkButton,

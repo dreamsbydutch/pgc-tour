@@ -1,4 +1,4 @@
-import { formatScore } from "@/lib/utils";
+import { formatScore } from "@/old-utils";
 import type { Golfer, Team, Tour, TourCard, Tournament } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";

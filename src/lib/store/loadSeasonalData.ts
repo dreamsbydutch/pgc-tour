@@ -20,6 +20,8 @@ export function LoadSeasonalData() {
       enabled: !!seasonQuery.data?.id,
       retry: 3,
       retryDelay: 1000,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 30 * 60 * 1000, // 30 minutes (formerly cacheTime)
     },
   );
 

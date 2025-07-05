@@ -1,4 +1,4 @@
-import { cn } from "@/src/lib/utils";
+import { cn } from "@/old-utils";
 import Image from "next/image";
 import Link from "next/link";
 import { HomePageList } from "@/src/lib/components/HomePageList";

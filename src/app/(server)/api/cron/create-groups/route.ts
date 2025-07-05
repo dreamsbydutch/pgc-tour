@@ -1,6 +1,6 @@
 "use server";
 
-import { fetchDataGolf } from "@/src/lib/utils";
+import { fetchDataGolf } from "@/old-utils";
 import { api } from "@/src/trpc/server";
 import type {
   DatagolfFieldGolfer,

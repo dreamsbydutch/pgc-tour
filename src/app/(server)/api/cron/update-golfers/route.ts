@@ -1,6 +1,6 @@
 "use server";
 
-import { fetchDataGolf } from "@/src/lib/utils";
+import { fetchDataGolf } from "@/old-utils";
 import { api } from "@/src/trpc/server";
 import type {
   DataGolfLiveTournament,
@@ -287,8 +287,7 @@ function setRoundTeeTimesAndScores(
   if (
     !liveGolfer?.R1 &&
     fieldGolfer?.r1_teetime &&
-    (liveGolfer?.current_pos == "WD" ||
-      liveGolfer?.current_pos === "DQ")
+    (liveGolfer?.current_pos == "WD" || liveGolfer?.current_pos === "DQ")
   ) {
     updateData.roundOne = tournament.course.par + 8;
   }
@@ -312,8 +311,7 @@ function setRoundTeeTimesAndScores(
   if (
     !liveGolfer?.R2 &&
     fieldGolfer?.r2_teetime &&
-    (liveGolfer?.current_pos == "WD" ||
-      liveGolfer?.current_pos === "DQ")
+    (liveGolfer?.current_pos == "WD" || liveGolfer?.current_pos === "DQ")
   ) {
     updateData.roundTwo = tournament.course.par + 8;
   }
@@ -329,8 +327,7 @@ function setRoundTeeTimesAndScores(
   if (
     !liveGolfer?.R3 &&
     fieldGolfer?.r3_teetime &&
-    (liveGolfer?.current_pos == "WD" ||
-      liveGolfer?.current_pos === "DQ")
+    (liveGolfer?.current_pos == "WD" || liveGolfer?.current_pos === "DQ")
   ) {
     updateData.roundThree = tournament.course.par + 8;
   }
@@ -346,8 +343,7 @@ function setRoundTeeTimesAndScores(
   if (
     !liveGolfer?.R4 &&
     fieldGolfer?.r4_teetime &&
-    (liveGolfer?.current_pos == "WD" ||
-      liveGolfer?.current_pos === "DQ")
+    (liveGolfer?.current_pos == "WD" || liveGolfer?.current_pos === "DQ")
   ) {
     updateData.roundFour = tournament.course.par + 8;
   }

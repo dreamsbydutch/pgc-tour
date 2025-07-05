@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ArchiveIcon, BookText, Home, List, Trophy } from "lucide-react";
-import { cn } from "@/src/lib/utils";
+import { cn } from "@/old-utils";
 import { UserAccountNav } from "./UserAccount";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
