@@ -1,25 +1,27 @@
 /**
  * Leaderboard Header Hook
  *
- * Custom hook that encapsulates all data fetching, state management, and logic
- * needed for the LeaderboardHeader component. This removes all logic from the
- * container component, making it purely a data-passing component.
+ * Single hook that handles all leaderboard header logic.
+ * Takes server data to avoid refetching, only fetches live course data.
  */
 
-import { useState } from "react";
-import { api } from "@/trpc/react";
-import { useTournamentDropdown } from "@/lib/hooks";
+import { useState, useMemo } from "react";
 import { useCourseData } from "@/lib/hooks/useCourseData";
 import type { Tournament, Course, Tier } from "@prisma/client";
 import type { TournamentGroup } from "@/app/(main)/tournament/_components/header/LeaderboardHeader";
 import type { DatagolfCourseInputData } from "@/lib/types";
 
+export type TournamentWithIncludes = Tournament & {
+  course: Course;
+  tier: Tier;
+};
+
 export interface LeaderboardHeaderData {
-  // Leaderboard data
+  // Basic data
   course: Course | undefined;
   tier: Tier | undefined;
 
-  // Course data from DataGolf
+  // Course data (live from API)
   courseData: DatagolfCourseInputData | undefined;
   courseDataLoading: boolean;
 
@@ -27,7 +29,6 @@ export interface LeaderboardHeaderData {
   groupedTournaments: TournamentGroup;
   dropdownTiers: Tier[];
   dropdownCourses: Course[];
-  dropdownLoading: boolean;
   leaderboardToggle: "Tier" | "Date";
   onToggleChange: (toggle: "Tier" | "Date") => void;
 
@@ -43,78 +44,81 @@ export interface LeaderboardHeaderData {
     groupIndex: number,
     hasLiveTournament: boolean,
   ) => string;
-
-  // Loading states
-  isLoading: boolean;
 }
 
 export function useLeaderboardHeader(
   focusTourney: Tournament,
+  course: Course | undefined,
+  tier: Tier | undefined,
+  tournaments: TournamentWithIncludes[],
+  tiers: Tier[],
 ): LeaderboardHeaderData {
-  // Dropdown state management
+  // UI state
   const [leaderboardToggle, setLeaderboardToggle] = useState<"Tier" | "Date">(
     "Date",
   );
 
-  // Fetch tournaments to get course information
-  const { data: tournaments = [], isLoading: tournamentsLoading } =
-    api.tournament.getBySeason.useQuery(
-      { seasonId: focusTourney.seasonId },
-      { enabled: !!focusTourney.seasonId },
-    );
-
-  // Fetch tiers to get tier information
-  const { data: tiers = [], isLoading: tiersLoading } =
-    api.tier.getBySeason.useQuery(
-      { seasonId: focusTourney.seasonId },
-      { enabled: !!focusTourney.seasonId },
-    );
-
-  // Fetch course data from DataGolf
+  // Live course data (only thing we fetch on client)
   const { data: courseData, isLoading: courseDataLoading } = useCourseData();
 
-  // Dropdown data fetching using existing hook
-  const {
-    groupedTournaments,
-    tiers: dropdownTiers,
-    courses: dropdownCourses,
-    isLoading: dropdownLoading,
-    getTierName,
-    getTournamentHref,
-  } = useTournamentDropdown(leaderboardToggle);
+  // Extract courses from tournaments
+  const courses = useMemo(() => {
+    const courseMap = new Map();
+    tournaments.forEach((t) => {
+      if (t.course && !courseMap.has(t.course.id)) {
+        courseMap.set(t.course.id, t.course);
+      }
+    });
+    return Array.from(courseMap.values());
+  }, [tournaments]);
 
-  // Data transformation logic
-  const tournamentWithCourse = tournaments.find(
-    (t) => t.id === focusTourney.id,
-  );
-  const course = tournamentWithCourse?.course;
-  const tier = tiers.find((t) => t.id === focusTourney.tierId);
+  // Group tournaments by tier or date
+  const groupedTournaments = useMemo(() => {
+    if (leaderboardToggle === "Tier") {
+      const tierGroups = new Map<string, TournamentWithIncludes[]>();
+      tournaments.forEach((tournament) => {
+        const tierId = tournament.tierId;
+        if (!tierGroups.has(tierId)) {
+          tierGroups.set(tierId, []);
+        }
+        tierGroups.get(tierId)!.push(tournament);
+      });
+      return Array.from(tierGroups.values());
+    } else {
+      // Group by date - simplified for now
+      return [tournaments];
+    }
+  }, [tournaments, leaderboardToggle]);
 
-  // Combined loading state
-  const isLoading = tournamentsLoading || tiersLoading || dropdownLoading;
+  // Utility functions
+  const getTierName = (
+    tierName: string | undefined,
+    groupIndex: number,
+    isLive: boolean,
+  ) => {
+    return tierName || `Group ${groupIndex + 1}`;
+  };
+
+  const getTournamentHref = (
+    tournamentId: string,
+    viewMode: string,
+    groupIndex: number,
+    hasLiveTournament: boolean,
+  ) => {
+    return `/tournament/${tournamentId}`;
+  };
 
   return {
-    // Leaderboard data
     course,
     tier,
-
-    // Course data from DataGolf
     courseData,
     courseDataLoading,
-
-    // Dropdown data and state
     groupedTournaments,
-    dropdownTiers,
-    dropdownCourses,
-    dropdownLoading,
+    dropdownTiers: tiers,
+    dropdownCourses: courses,
     leaderboardToggle,
     onToggleChange: setLeaderboardToggle,
-
-    // Utility functions
     getTierName,
     getTournamentHref,
-
-    // Loading states
-    isLoading,
   };
 }

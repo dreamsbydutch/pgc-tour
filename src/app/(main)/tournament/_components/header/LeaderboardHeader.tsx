@@ -1,17 +1,30 @@
-"use client";
-
 /**
- * LeaderboardHeader Component
+ * LeaderboardHeader Server Component
  *
- * Simple, functional header component. Uses one hook call at the top for all data,
- * then renders pure UI. Clean, simple data flow.
+ * Server component that handles all static tournament data.
+ * Uses server actions for data fetching and utility functions for processing.
+ * Only the CoursePopover is a client component for live data.
  */
 
-"use client";
-
 import Image from "next/image";
-import { ChevronDown } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/lib/components/ui/popover";
+import type { Tier, Tournament } from "@prisma/client";
+import { getLeaderboardHeaderData } from "@/server/actions/leaderboard-header";
+import { formatTournamentDateRange } from "@/lib/utils/domain/dates";
+import {
+  formatMoney,
+  formatRank,
+  formatNumber,
+} from "@/lib/utils/domain/formatting";
+import { MAX_PAYOUTS_DISPLAY, YARDAGE_PRECISION } from "@/lib/utils/constants";
+import { CoursePopover } from "./CoursePopover";
 import { useState, type Dispatch, type SetStateAction } from "react";
+import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,58 +34,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/lib/components/ui/dropdown-menu";
-import Link from "next/link";
-import { PopoverTrigger } from "@radix-ui/react-popover";
-import { Popover, PopoverContent } from "@/lib/components/ui/popover";
-import type { DatagolfCourseInputData } from "@/lib/types";
-import type { Tier, Tournament, Course } from "@prisma/client";
-import { formatMoney, formatRank } from "@/lib/utils/domain/formatting";
-import { cn } from "@/lib/utils/core";
 import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
-import type { LeaderboardHeaderData } from "@/server/actions";
-import { useOptimizedLeaderboardHeader } from "@/lib/hooks/useOptimizedLeaderboardHeader";
-
-export type TournamentWithIncludes = Tournament & {
-  course: Course;
-  tier: Tier;
-};
-
-export type TournamentGroup = TournamentWithIncludes[][];
+import { cn } from "@/lib/utils/core";
+import type { Course } from "@prisma/client";
 
 interface LeaderboardHeaderProps {
   focusTourney: Tournament;
-  serverData: LeaderboardHeaderData;
 }
 
-/**
- * Main LeaderboardHeader Component
- *
- * Simple functional component with one hook call for all data/logic.
- */
-export default function LeaderboardHeader({
+export default async function LeaderboardHeader({
   focusTourney,
-  serverData,
 }: LeaderboardHeaderProps) {
-  // Single hook call for all data and logic
-  const {
-    course,
-    tier,
-    courseData,
-    courseDataLoading,
-    groupedTournaments,
-    dropdownTiers,
-    dropdownCourses,
-    leaderboardToggle,
-    onToggleChange,
-    getTierName,
-    getTournamentHref,
-  } = useOptimizedLeaderboardHeader(
-    focusTourney,
-    serverData.course,
-    serverData.tier,
-    serverData.tournaments,
-    serverData.tiers,
-  );
+  // Fetch all static data using server action with utility functions
+  const { course, tier, groupedTournaments, tiers, courses } =
+    await getLeaderboardHeaderData(focusTourney);
+
   return (
     <div
       id={`leaderboard-header-${focusTourney.id}`}
@@ -101,33 +77,18 @@ export default function LeaderboardHeader({
         <div className="col-span-2 row-span-1 place-self-center text-center font-varela text-xs xs:text-sm sm:text-base md:text-lg">
           <HeaderDropdown
             activeTourney={focusTourney}
-            groupedTournaments={groupedTournaments}
-            tiers={dropdownTiers}
-            courses={dropdownCourses}
-            isLoading={false} // No loading since we use server data
-            leaderboardToggle={leaderboardToggle}
-            onToggleChange={onToggleChange}
-            getTierName={getTierName}
-            getTournamentHref={getTournamentHref}
+            groupedTournaments={groupedTournaments.byTier}
+            tiers={tiers}
+            courses={courses}
           />
         </div>
 
         {/* Tournament Date Range */}
         <div className="col-span-2 row-span-1 place-self-center text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
-          {`${new Date(focusTourney.startDate).toLocaleDateString("en-us", {
-            month: "short",
-            day: "numeric",
-          })} - ${
-            new Date(focusTourney.startDate).getMonth() ===
-            new Date(focusTourney.endDate).getMonth()
-              ? new Date(focusTourney.endDate).toLocaleDateString("en-us", {
-                  day: "numeric",
-                })
-              : new Date(focusTourney.endDate).toLocaleDateString("en-us", {
-                  month: "short",
-                  day: "numeric",
-                })
-          }`}
+          {formatTournamentDateRange(
+            focusTourney.startDate,
+            focusTourney.endDate,
+          )}
         </div>
 
         {/* Course Name Popover */}
@@ -136,11 +97,7 @@ export default function LeaderboardHeader({
             {course?.name}
           </PopoverTrigger>
           <PopoverContent>
-            <CoursePopover
-              focusTourney={focusTourney}
-              courseData={courseData}
-              isLoading={courseDataLoading}
-            />
+            <CoursePopover tournament={focusTourney} />
           </PopoverContent>
         </Popover>
 
@@ -151,23 +108,19 @@ export default function LeaderboardHeader({
 
         {/* Course Details */}
         <div className="col-span-2 row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
-          {`${course?.front} - ${course?.back} - ${course?.par}`}
+          {course?.front && course?.back && course?.par
+            ? `${formatNumber(course.front, YARDAGE_PRECISION)} - ${formatNumber(course.back, YARDAGE_PRECISION)} - ${formatNumber(course.par, YARDAGE_PRECISION)}`
+            : "-"}
         </div>
 
         {/* Tier Information Popover */}
         <Popover>
           <PopoverTrigger className="col-span-7 row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
             {tier?.name} Tournament -{" "}
-            {`1st Place: ${tier?.points[0] ?? 0} pts, ${Intl.NumberFormat(
-              "en-US",
-              {
-                style: "currency",
-                currency: "USD",
-              },
-            ).format(tier?.payouts[0] ?? 0)}`}
+            {`1st Place: ${tier?.points[0] ?? 0} pts, ${formatMoney(tier?.payouts[0] ?? 0)}`}
           </PopoverTrigger>
           <PopoverContent>
-            <PointsAndPayoutsPopover {...{ tier }} />
+            <PointsAndPayoutsPopover tier={tier} />
           </PopoverContent>
         </Popover>
       </div>
@@ -175,138 +128,37 @@ export default function LeaderboardHeader({
   );
 }
 
-/**
- * PointsAndPayoutsPopover Component
- *
- * Displays a popover with the points and payouts for the tournament.
- *
- * Props:
- * - focusTourney: The tournament data containing tier information.
- */
-function PointsAndPayoutsPopover({ tier }: { tier: Tier | null | undefined }) {
+function PointsAndPayoutsPopover({ tier }: { tier: Tier | undefined }) {
   return (
     <div className="grid grid-cols-3 text-center">
       {/* Rank Column */}
       <div className="mx-auto flex w-fit flex-col">
         <div className="text-base font-semibold text-white">Rank</div>
-        {tier?.payouts.slice(0, 35).map((_, i) => (
+        {tier?.payouts.slice(0, MAX_PAYOUTS_DISPLAY).map((_, i) => (
           <div key={i} className="text-xs">
             {formatRank(i + 1)}
           </div>
         ))}
       </div>
-
       {/* Payouts Column */}
       <div className="mx-auto flex w-fit flex-col">
         <div className="text-base font-semibold">Payouts</div>
-        {tier?.payouts.slice(0, 35).map((payout) => (
+        {tier?.payouts.slice(0, MAX_PAYOUTS_DISPLAY).map((payout) => (
           <div key={"payout-" + payout} className="text-xs">
             {formatMoney(payout)}
           </div>
         ))}
       </div>
-
       {/* Points Column */}
       <div className="mx-auto flex w-fit flex-col">
         <div className="text-base font-semibold">Points</div>
-        {tier?.points.slice(0, 35).map((points) => (
+        {tier?.points.slice(0, MAX_PAYOUTS_DISPLAY).map((points) => (
           <div key={"points-" + points} className="text-xs">
-            {points.toString()}
+            {formatNumber(points, YARDAGE_PRECISION)}
           </div>
         ))}
       </div>
     </div>
-  );
-}
-
-/**
- * CoursePopover Component
- *
- * Displays a popover with course details, including hole-by-hole information.
- * - Shows yardage, par, and average score for each hole.
- * - Receives course data as props to maintain component purity.
- *
- * Props:
- * - focusTourney: The tournament data containing course information.
- * - courseData: The course data from DataGolf API.
- * - isLoading: Whether the course data is currently loading.
- */
-function CoursePopover({
-  focusTourney,
-  courseData,
-  isLoading,
-}: {
-  focusTourney: Tournament;
-  courseData: DatagolfCourseInputData | undefined;
-  isLoading: boolean;
-}) {
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-4">
-        <LoadingSpinner className="h-6 w-6" />
-      </div>
-    );
-  }
-
-  if (!courseData) {
-    return (
-      <div className="p-4 text-center text-gray-500">
-        Course data not available
-      </div>
-    );
-  }
-
-  return (
-    <>
-      {courseData.courses[0]?.rounds
-        ?.find((round) => round.round_num === focusTourney.currentRound)
-        ?.holes?.map((hole, i) => {
-          const holes = courseData.courses[0]?.rounds
-            .map(
-              (round) =>
-                round.holes.find((h) => h.hole === hole.hole)?.total.avg_score,
-            )
-            .flat();
-
-          const averageScore =
-            (holes?.reduce((sum, score) => (sum ?? 0) + (score ?? 0), 0) ?? 0) /
-            (holes?.length ?? 1);
-
-          return (
-            <div
-              key={i}
-              className="grid grid-cols-4 border-slate-800 py-0.5 text-center [&:nth-child(9)]:border-b"
-            >
-              <div className="mx-auto flex w-fit flex-col">
-                <div className="text-xs">{formatRank(hole.hole)} Hole</div>
-              </div>
-              <div className="mx-auto flex w-fit flex-col">
-                <div className="text-xs">{hole.yardage} yards</div>
-              </div>
-              <div className="mx-auto flex w-fit flex-col">
-                <div className="text-xs">Par {hole.par}</div>
-              </div>
-              <div className="mx-auto flex w-fit flex-col">
-                <div
-                  className={cn(
-                    "text-xs",
-                    averageScore - hole.par > 0
-                      ? "text-red-900"
-                      : averageScore - hole.par < 0
-                        ? "text-green-900"
-                        : "",
-                  )}
-                >
-                  {averageScore - hole.par === 0
-                    ? "E"
-                    : (averageScore - hole.par > 0 ? "+" : "") +
-                      Math.round((averageScore - hole.par) * 1000) / 1000}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-    </>
   );
 }
 
@@ -322,32 +174,18 @@ function HeaderDropdown({
   tiers,
   courses,
   isLoading = false,
-  leaderboardToggle,
-  onToggleChange,
-  getTierName,
-  getTournamentHref,
 }: {
   activeTourney?: { id: string };
-  groupedTournaments: TournamentGroup;
+  groupedTournaments: any[];
   tiers: Tier[];
   courses: Course[];
   isLoading?: boolean;
-  leaderboardToggle: "Tier" | "Date";
-  onToggleChange: (toggle: "Tier" | "Date") => void;
-  getTierName: (
-    tierName: string | undefined,
-    groupIndex: number,
-    isLive: boolean,
-  ) => string;
-  getTournamentHref: (
-    tournamentId: string,
-    viewMode: string,
-    groupIndex: number,
-    hasLiveTournament: boolean,
-  ) => string;
 }) {
   const [tierEffect, setTierEffect] = useState(false);
   const [dateEffect, setDateEffect] = useState(false);
+  const [leaderboardToggle, setLeaderboardToggle] = useState<"Tier" | "Date">(
+    "Tier",
+  );
 
   if (isLoading) {
     return (
@@ -382,7 +220,7 @@ function HeaderDropdown({
             dateEffect={dateEffect}
             setDateEffect={setDateEffect}
             leaderboardToggle={leaderboardToggle}
-            onToggleChange={onToggleChange}
+            onToggleChange={setLeaderboardToggle}
           />
           {groupedTournaments.map((group, i) => (
             <div className="px-1" key={`group-${i}`}>
@@ -394,23 +232,15 @@ function HeaderDropdown({
               )}
               {leaderboardToggle === "Tier" && (
                 <DropdownMenuLabel className="text-center font-bold xs:text-lg lg:text-xl">
-                  {getTierName(
-                    tiers.find((tier) => tier.id === group[0]?.tierId)?.name,
-                    i,
-                    groupedTournaments.length === 5,
-                  )}
+                  {tiers.find((tier) => tier.id === group[0]?.tierId)?.name ||
+                    `Group ${i + 1}`}
                 </DropdownMenuLabel>
               )}
-              {group.map((tourney) => (
+              {group.map((tourney: any) => (
                 <DropdownMenuItem key={tourney.id} asChild className="py-0.5">
                   <Link
                     className="outline-none"
-                    href={getTournamentHref(
-                      tourney.id,
-                      leaderboardToggle,
-                      i,
-                      groupedTournaments.length === 5,
-                    )}
+                    href={`/tournament/${tourney.id}`}
                   >
                     <TournamentItem
                       tourney={tourney}
@@ -496,7 +326,7 @@ function TournamentItem({
   course,
   isActive,
 }: {
-  tourney: TournamentWithIncludes;
+  tourney: any;
   tier: Tier | undefined;
   course: Course | undefined;
   isActive: boolean;
@@ -522,22 +352,13 @@ function TournamentItem({
         )}
         {tourney.name}
       </div>
-      <div
-        className={cn("pl-3 text-2xs text-slate-600 xs:text-xs")}
-      >{`${new Date(tourney.startDate).toLocaleDateString("en-us", {
-        month: "short",
-        day: "numeric",
-      })}-${
-        new Date(tourney.startDate).getMonth() ===
-        new Date(tourney.endDate).getMonth()
-          ? new Date(tourney.endDate).toLocaleDateString("en-us", {
-              day: "numeric",
-            })
-          : new Date(tourney.endDate).toLocaleDateString("en-us", {
-              month: "short",
-              day: "numeric",
-            })
-      } - ${course?.location}`}</div>
+      <div className={cn("pl-3 text-2xs text-slate-600 xs:text-xs")}>
+        {formatTournamentDateRange(
+          tourney.startDate,
+          tourney.endDate,
+          course?.location,
+        )}
+      </div>
     </div>
   );
 }

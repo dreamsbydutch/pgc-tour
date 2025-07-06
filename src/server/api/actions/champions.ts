@@ -18,7 +18,7 @@ export async function getRecentChampions(daysLimit: number = 7) {
     const tournaments = await api.tournament.getAll();
     const now = new Date();
     const completedTournaments = tournaments.filter(
-      (t: any) => t.endDate < now,
+      (tournament) => tournament.endDate < now,
     );
 
     if (completedTournaments.length === 0) {
@@ -32,7 +32,7 @@ export async function getRecentChampions(daysLimit: number = 7) {
 
     // Get most recent tournament
     const recentTournament = completedTournaments.sort(
-      (a: any, b: any) => b.endDate.getTime() - a.endDate.getTime(),
+      (a, b) => b.endDate.getTime() - a.endDate.getTime(),
     )[0];
 
     if (!recentTournament) {
@@ -64,7 +64,9 @@ export async function getRecentChampions(daysLimit: number = 7) {
       tournamentId: recentTournament.id,
     });
 
-    const championTeams = allTeams.filter((team: any) => team.position === "1");
+    const championTeams = allTeams.filter(
+      (team) => team.position === "1" || team.position === "T1",
+    );
 
     // Get additional data for enrichment
     const [allTours, allTourCards] = await Promise.all([
@@ -73,17 +75,26 @@ export async function getRecentChampions(daysLimit: number = 7) {
     ]);
 
     // Enrich champions with tour information
-    const enrichedChampions = championTeams.map((team: any) => {
-      const tourCard = allTourCards.find(
-        (tc: any) => tc.id === team.tourCardId,
-      );
+    const enrichedChampions = championTeams.map((team) => {
+      const tourCard = allTourCards.find((tc) => tc.id === team.tourCardId);
       const tour = tourCard
-        ? allTours.find((t: any) => t.id === tourCard.tourId)
+        ? allTours.find((t) => t.id === tourCard.tourId)
         : null;
 
       return {
-        ...team,
-        tour: tour || { id: "unknown", name: "Unknown" },
+        id: team.id,
+        name: team.tourCard?.displayName || "Unknown Team",
+        position: team.position,
+        totalScore: team.score || 0,
+        tour: tour
+          ? {
+              id: tour.id,
+              name: tour.name,
+            }
+          : {
+              id: "unknown",
+              name: "Unknown",
+            },
         tourCard: tourCard || null,
       };
     });
@@ -113,7 +124,7 @@ export async function getChampionsByTournament(tournamentId: string) {
   try {
     // Get specific tournament
     const tournaments = await api.tournament.getAll();
-    const tournament = tournaments.find((t: any) => t.id === tournamentId);
+    const tournament = tournaments.find((t) => t.id === tournamentId);
 
     if (!tournament) {
       return {
@@ -126,7 +137,9 @@ export async function getChampionsByTournament(tournamentId: string) {
 
     // Get champion teams
     const allTeams = await api.team.getByTournament({ tournamentId });
-    const championTeams = allTeams.filter((team: any) => team.position === "1");
+    const championTeams = allTeams.filter(
+      (team) => team.position === "1" || team.position === "T1",
+    );
 
     // Get additional data for enrichment
     const [allTours, allTourCards] = await Promise.all([
@@ -135,17 +148,26 @@ export async function getChampionsByTournament(tournamentId: string) {
     ]);
 
     // Enrich champions
-    const enrichedChampions = championTeams.map((team: any) => {
-      const tourCard = allTourCards.find(
-        (tc: any) => tc.id === team.tourCardId,
-      );
+    const enrichedChampions = championTeams.map((team) => {
+      const tourCard = allTourCards.find((tc) => tc.id === team.tourCardId);
       const tour = tourCard
-        ? allTours.find((t: any) => t.id === tourCard.tourId)
+        ? allTours.find((t) => t.id === tourCard.tourId)
         : null;
 
       return {
-        ...team,
-        tour: tour || { id: "unknown", name: "Unknown" },
+        id: team.id,
+        name: team.tourCard?.displayName || "Unknown Team",
+        position: team.position,
+        totalScore: team.score || 0,
+        tour: tour
+          ? {
+              id: tour.id,
+              name: tour.name,
+            }
+          : {
+              id: "unknown",
+              name: "Unknown",
+            },
         tourCard: tourCard || null,
       };
     });
@@ -177,7 +199,7 @@ export async function getLatestChampions() {
     const tournaments = await api.tournament.getAll();
     const now = new Date();
     const completedTournaments = tournaments.filter(
-      (t: any) => t.endDate < now,
+      (tournament) => tournament.endDate < now,
     );
 
     if (completedTournaments.length === 0) {
@@ -189,7 +211,7 @@ export async function getLatestChampions() {
 
     // Sort by end date to get the most recent
     const recentTournament = completedTournaments.sort(
-      (a: any, b: any) => b.endDate.getTime() - a.endDate.getTime(),
+      (a, b) => b.endDate.getTime() - a.endDate.getTime(),
     )[0];
 
     if (!recentTournament) {
@@ -204,8 +226,10 @@ export async function getLatestChampions() {
       tournamentId: recentTournament.id,
     });
 
-    // Filter to only champions (position 1)
-    const championTeams = allTeams.filter((team: any) => team.position === "1");
+    // Filter to only champions (position "1" or "T1")
+    const championTeams = allTeams.filter(
+      (team) => team.position === "1" || team.position === "T1",
+    );
 
     // Get all golfers for this tournament
     const allGolfers = await api.golfer.getByTournament({
@@ -218,32 +242,62 @@ export async function getLatestChampions() {
 
     // Enrich champion teams with tour and golfer data
     const enrichedChamps = await Promise.all(
-      championTeams.map(async (team: any) => {
+      championTeams.map(async (team) => {
         // Find the tour card and tour
-        const tourCard = allTourCards.find(
-          (tc: any) => tc.id === team.tourCardId,
-        );
-        const tour = allTours.find((t: any) => t.id === tourCard?.tourId);
+        const tourCard = allTourCards.find((tc) => tc.id === team.tourCardId);
+        const tour = allTours.find((t) => t.id === tourCard?.tourId);
 
         // Get golfers for this team using the golferIds array
-        let teamGolfers: any[] = [];
-        if (team.golferIds && team.golferIds.length > 0) {
-          teamGolfers = allGolfers.filter((golfer: any) =>
-            team.golferIds.includes(golfer.id),
-          );
-        }
+        const teamGolfers =
+          team.golferIds && team.golferIds.length > 0
+            ? allGolfers
+                .filter((golfer) => team.golferIds.includes(golfer.apiId))
+                .map((golfer) => ({
+                  id: golfer.id,
+                  name: golfer.playerName || "Unknown",
+                  score: golfer.score || 0,
+                  position: golfer.position || "N/A",
+                }))
+            : [];
 
         return {
-          ...team,
-          tour: tour || { id: "", name: "Unknown", logoUrl: "" },
-          tourCard: tourCard || { displayName: "Unknown" },
+          id: team.id,
+          name: team.tourCard?.displayName || "Unknown Team",
+          position: team.position,
+          totalScore: team.score || 0,
+          tour: tour
+            ? {
+                id: tour.id,
+                name: tour.name,
+                logoUrl: tour.logoUrl || "",
+              }
+            : {
+                id: "",
+                name: "Unknown",
+                logoUrl: "",
+              },
+          tourCard: tourCard
+            ? {
+                id: tourCard.id,
+                displayName: tourCard.displayName,
+              }
+            : {
+                id: "",
+                displayName: "Unknown",
+              },
           golfers: teamGolfers,
         };
       }),
     );
 
     return {
-      tournament: recentTournament,
+      tournament: {
+        id: recentTournament.id,
+        name: recentTournament.name,
+        startDate: recentTournament.startDate,
+        endDate: recentTournament.endDate,
+        logoUrl: recentTournament.logoUrl,
+      },
       champs: enrichedChamps,
     };
   } catch (error) {

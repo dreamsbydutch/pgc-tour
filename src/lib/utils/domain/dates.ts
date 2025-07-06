@@ -253,3 +253,33 @@ export function getTournamentsInDateRange<
       tournament.startDate.getTime() <= endDate.getTime(),
   );
 }
+
+/**
+ * Formats a date range for tournament display
+ * Shows dates in "MMM d-d" format, or "MMM d-MMM d" if crossing months
+ * Optionally includes location at the end
+ */
+export function formatTournamentDateRange(
+  startDate: Date,
+  endDate: Date,
+  location?: string,
+): string {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  const startMonth = start.getMonth();
+  const endMonth = end.getMonth();
+
+  const startFormatted = start.toLocaleDateString("en-us", {
+    month: "short",
+    day: "numeric",
+  });
+
+  const endFormatted =
+    startMonth === endMonth
+      ? end.toLocaleDateString("en-us", { day: "numeric" })
+      : end.toLocaleDateString("en-us", { month: "short", day: "numeric" });
+
+  const dateRange = `${startFormatted}-${endFormatted}`;
+  return location ? `${dateRange} - ${location}` : dateRange;
+}

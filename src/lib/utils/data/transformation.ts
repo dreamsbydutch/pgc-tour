@@ -284,32 +284,3 @@ export function treeToArray<T extends { children?: T[] }>(
 
   return result;
 }
-
-/**
- * Create factory for CRUD operations on typed collections
- * Provides consistent interface for data manipulation
- */
-export function createCrudOps<T extends { id: string }>() {
-  return {
-    getById: (items: T[], id: string) => items.find((item) => item.id === id),
-
-    getByIds: (items: T[], ids: string[]) =>
-      items.filter((item) => ids.includes(item.id)),
-
-    add: (items: T[], newItem: T) => [...items, newItem],
-
-    update: (items: T[], id: string, updates: Partial<T>) =>
-      items.map((item) => (item.id === id ? { ...item, ...updates } : item)),
-
-    remove: (items: T[], id: string) => items.filter((item) => item.id !== id),
-
-    batchUpdate: (
-      items: T[],
-      updates: Array<{ id: string; updates: Partial<T> }>,
-    ) => batchUpdateItems(items, updates),
-
-    replace: (items: T[], newItems: T[]) => newItems,
-
-    clear: () => [] as T[],
-  };
-}

@@ -26,18 +26,6 @@ export { useTournament, useTournamentHistory } from "./useTournament";
 export { useCurrentSchedule } from "./useCurrentSchedule";
 
 /**
- * Tournament dropdown data and logic
- * Provides all data and utility functions needed for tournament dropdown components
- */
-export { useTournamentDropdown } from "./useTournamentDropdown";
-
-/**
- * Leaderboard header client-side logic
- * Consolidates all client-side logic for the leaderboard header
- */
-export { useLeaderboardHeaderClient } from "./useLeaderboardHeaderClient";
-
-/**
  * Leaderboard header data and logic
  * Provides all data and utility functions needed for leaderboard header components
  */

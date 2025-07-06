@@ -9,15 +9,23 @@ import {
 } from "../ui/table";
 import Image from "next/image";
 import { cn } from "@/lib/utils/core";
+import { getTournamentTimeline } from "@/lib/utils/domain/dates";
 
 export function LeagueSchedule({
   tournaments,
 }: {
   tournaments: (Tournament & { tier: Tier; course: Course })[];
 }) {
-  // Get tournament status using the extracted function
-  const { currentTournamentIndex, betweenTournamentsIndex } =
-    getTournamentStatus(tournaments);
+  // Use getTournamentTimeline utility for current/previous/upcoming logic
+  const timeline = getTournamentTimeline(tournaments);
+
+  // Find the index of the current tournament in the sorted array
+  const currentTournamentIndex = timeline.current
+    ? tournaments.findIndex((t) => t.id === timeline.current?.id)
+    : -1;
+  const previousTournamentIndex = timeline.previous
+    ? tournaments.findIndex((t) => t.id === timeline.current?.id)
+    : -1;
 
   return (
     <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
@@ -54,12 +62,9 @@ export function LeagueSchedule({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tournaments.map((tourney, i) => {
-            // Determine if this tournament is current (within the specified range)
+          {timeline.allSorted.map((tourney, i) => {
             const isCurrent = i === currentTournamentIndex;
-
-            // Determine if we should show a border after this tournament
-            const showBorderAfter = betweenTournamentsIndex === i;
+            const showBorderAfter = i === previousTournamentIndex && !isCurrent;
 
             return (
               <TableRow
@@ -145,42 +150,4 @@ export function LeagueSchedule({
       </Table>
     </div>
   );
-}
-function getTournamentStatus(
-  tournaments: (Tournament & { tier: Tier; course: Course })[],
-) {
-  const today = new Date();
-
-  // Find current tournament within the specified range (3 days before to 1 day after)
-  const currentTournamentIndex = tournaments.findIndex((tourney) => {
-    const threeDaysPrior = new Date(tourney.startDate);
-    threeDaysPrior.setDate(threeDaysPrior.getDate() - 3);
-
-    const oneDayAfter = new Date(tourney.endDate);
-    oneDayAfter.setDate(oneDayAfter.getDate() + 1);
-
-    return today >= threeDaysPrior && today <= oneDayAfter;
-  });
-
-  // If no current tournament, find where we are between tournaments
-  let betweenTournamentsIndex = -1;
-  if (currentTournamentIndex === -1) {
-    betweenTournamentsIndex = tournaments.findIndex((tourney, i) => {
-      const nextTourney = tournaments[i + 1];
-      if (!nextTourney) return false;
-
-      const currentEndDate = new Date(tourney.endDate);
-      currentEndDate.setDate(currentEndDate.getDate() + 1); // 1 day after end
-
-      const nextStartDate = new Date(nextTourney.startDate);
-      nextStartDate.setDate(nextStartDate.getDate() - 3); // 3 days before start
-
-      return today > currentEndDate && today < nextStartDate;
-    });
-  }
-
-  return {
-    currentTournamentIndex,
-    betweenTournamentsIndex,
-  };
 }

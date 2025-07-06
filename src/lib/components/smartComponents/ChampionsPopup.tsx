@@ -1,10 +1,44 @@
-import type { Golfer, Team, Tour, TourCard, Tournament } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ChampionSectionSkeleton } from "../functionalComponents/loading/ChampionsPopupSkelton";
 import LittleFucker from "./LittleFucker";
 import { formatScore } from "@/lib/utils/domain/golf";
 import { getLatestChampions } from "@/server/api/actions/champions";
+import { hasItems } from "@/lib/utils/core/arrays";
+import { capitalize } from "@/lib/utils/core/primitives";
+import { isNonEmptyString } from "@/lib/utils/core/types";
+import { getPath } from "@/lib/utils/core/objects";
+
+// Type for the champion data returned by getLatestChampions
+type ChampionData = {
+  id: number;
+  name: string;
+  position: string | null;
+  totalScore: number;
+  tour: {
+    id: string;
+    name: string;
+    logoUrl: string;
+  };
+  tourCard: {
+    id: string;
+    displayName: string;
+  } | null;
+  golfers: {
+    id: number;
+    name: string;
+    score: number;
+    position: string;
+  }[];
+};
+
+type TournamentData = {
+  id: string;
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  logoUrl: string | null;
+};
 
 /**
  * ChampionsPopup Component
@@ -19,12 +53,16 @@ import { getLatestChampions } from "@/server/api/actions/champions";
 export default async function ChampionsPopup() {
   const { tournament, champs } = await getLatestChampions();
   if (!tournament) return null;
-  if (!champs || champs?.length === 0) return <ChampionSectionSkeleton />;
+  if (!hasItems(champs)) return <ChampionSectionSkeleton />;
+
+  // Example: group champions by tour name (if needed for future UI)
+  // const champsByTour = groupBy(champs, champ => champ.tour.name);
+
   return (
     <div className="m-3 rounded-2xl bg-amber-100 bg-opacity-70 shadow-lg md:w-10/12 lg:w-7/12">
       <div className="mx-auto max-w-3xl p-2 text-center">
         <h1 className="flex items-center justify-center px-3 py-2 font-varela text-2xl font-bold sm:text-3xl md:text-4xl">
-          {tournament.logoUrl && (
+          {isNonEmptyString(tournament.logoUrl) && (
             <Image
               alt={`${tournament.name} Logo`}
               src={tournament.logoUrl}
@@ -35,46 +73,36 @@ export default async function ChampionsPopup() {
           )}
           {tournament.name} Champions
         </h1>
-
         {/* Render each champion's info */}
-        {champs.map(
-          (
-            champ: Team & { tour: Tour; tourCard: TourCard; golfers: Golfer[] },
-          ) => {
-            return (
-              <ChampionSection
-                key={champ.id}
-                champion={champ}
-                tournament={tournament}
-              />
-            );
-          },
-        )}
+        {champs.map((champ) => (
+          <ChampionSection
+            key={champ.id}
+            champion={champ}
+            tournament={tournament}
+          />
+        ))}
       </div>
     </div>
   );
 }
 
-/**
- * ChampionSection Component
- *
- * Displays information about a single champion:
- * - Tour logo and name
- * - Champion's name and score
- * - List of golfers on their team with scores
- *
- * @param props.champion - The champion team data
- * @param props.tournament - Tournament data
- * @param props.tourCards - List of tour cards
- * @param props.golfers - List of golfers in the tournament
- */
 function ChampionSection({
   champion,
   tournament,
 }: {
-  champion: Team & { tour: Tour; tourCard: TourCard; golfers: Golfer[] };
-  tournament: Tournament;
+  champion: ChampionData;
+  tournament: TournamentData;
 }) {
+  // Use getPath for robust nested property access (future-proofing)
+  const tourLogoUrl = getPath(champion, "tour.logoUrl") as
+    | string
+    | null
+    | undefined;
+  const tourName = getPath(champion, "tour.name") as string | undefined;
+  const displayName =
+    (getPath(champion, "tourCard.displayName") as string | undefined) ||
+    champion.name;
+
   return (
     <Link
       href={`/tournament?id=${tournament.id}&tour=${champion.tour.id}`}
@@ -83,40 +111,43 @@ function ChampionSection({
       <div className="mx-auto w-11/12 border-b border-slate-800" />
       <div className="py-2">
         <div className="mb-2 flex items-center justify-center gap-4">
-          <Image
-            alt={`${champion.tour.name || "Tour"} Logo`}
-            src={champion.tour.logoUrl || ""}
-            className="h-12 w-12 object-contain"
-            width={128}
-            height={128}
-          />
+          {isNonEmptyString(tourLogoUrl) && (
+            <Image
+              alt={`${tourName || "Tour"} Logo`}
+              src={tourLogoUrl}
+              className="h-12 w-12 object-contain"
+              width={128}
+              height={128}
+            />
+          )}
           <div className="text-xl font-semibold">
-            {champion.tourCard.displayName}
+            {capitalize(displayName)}
             <LittleFucker
-              memberId={champion.tourCard.memberId}
-              seasonId={tournament.seasonId}
+              memberId={champion.tourCard?.id || ""}
+              seasonId={tournament.id}
             />
           </div>
           <div className="text-lg font-semibold">
-            {formatScore(champion.score)}
+            {formatScore(champion.totalScore)}
           </div>
         </div>
-
         {/* Team golfers grid */}
         <div className="mx-4 my-1 grid grid-cols-2 items-center justify-center gap-x-4 gap-y-1">
-          {champion.golfers.map((golfer) => (
-            <div
-              key={golfer.id}
-              className="grid grid-cols-7 items-center justify-center"
-            >
-              <div className="col-span-6 text-xs">{golfer.playerName}</div>
-              <div className="text-xs">
-                {["CUT", "WD", "DQ"].includes(golfer.position ?? "")
-                  ? golfer.position
-                  : formatScore(golfer.score)}
+          {hasItems(champion.golfers) &&
+            champion.golfers.map((golfer) => (
+              <div
+                key={golfer.id}
+                className="grid grid-cols-8 items-center justify-center"
+              >
+                <div className="col-span-1 text-xs">{golfer.position}</div>
+                <div className="col-span-6 text-xs">{golfer.name}</div>
+                <div className="text-xs">
+                  {["CUT", "WD", "DQ"].includes(golfer.position ?? "")
+                    ? golfer.position
+                    : formatScore(golfer.score)}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     </Link>

@@ -9,6 +9,16 @@ import {
 } from "@prisma/client";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import {
+  createCrudOps,
+  filterItems,
+  sortItems,
+  searchItems,
+} from "../utils/data/processing";
+import { groupBy } from "../utils/core/arrays";
+import { calculateStats, countByField } from "../utils/data/aggregation";
+import { getTournamentStatus } from "../utils/domain/golf";
+import { isApproachingQuota } from "../utils/system/storage";
 
 // Minimal types for store - only essential data without heavy includes
 type MinimalCourse = Pick<Course, "id" | "name" | "location" | "par" | "apiId">;
@@ -218,7 +228,6 @@ export const useSeasonalStore = create<SeasonalData>()(
             try {
               if (process.env.NODE_ENV === "development") {
                 console.log("📊 Before clearing seasonal data:");
-                logLocalStorageUsage();
               }
               localStorage.removeItem("seasonal-data-storage");
             } catch (e) {
@@ -247,7 +256,6 @@ export const useSeasonalStore = create<SeasonalData>()(
           ) {
             setTimeout(() => {
               console.log("📊 After setting seasonal data:");
-              logLocalStorageUsage();
               if (isApproachingQuota()) {
                 console.warn(
                   "⚠️ Seasonal data is approaching localStorage quota!",

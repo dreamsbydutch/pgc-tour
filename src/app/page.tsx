@@ -16,7 +16,7 @@ export default async function Home() {
         PGC Tour Clubhouse
       </h1>
       <ChampionsPopup />
-      <HomePageLeaderboard />
+      {/* <HomePageLeaderboard /> */}
       <TournamentCountdown />
       <HomePageStandings />
       {/* <TourCardForm /> */}
