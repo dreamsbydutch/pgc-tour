@@ -7,6 +7,23 @@
  * Optimized for efficiency and minimal redundancy
  */
 
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+/**
+ * Combines class names using clsx and tailwind-merge
+ * Merges Tailwind CSS classes intelligently, handling conflicts
+ * @param inputs - Class values to combine
+ * @returns Merged class string
+ * @example
+ * cn("px-2 py-1", "px-4") // "py-1 px-4" (px-4 overrides px-2)
+ * cn("text-red-500", isError && "text-red-700") // "text-red-700" if isError is true
+ * cn(["bg-blue-500", "hover:bg-blue-600"], "rounded-lg") // "bg-blue-500 hover:bg-blue-600 rounded-lg"
+ */
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
+}
+
 /**
  * Type guard for checking if a value is defined (not null or undefined)
  * @param value - Value to check

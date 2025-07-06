@@ -2,13 +2,13 @@
 
 import React from "react";
 import { ArchiveIcon, BookText, Home, List, Trophy } from "lucide-react";
-import { cn } from "@/old-utils";
 import { UserAccountNav } from "./UserAccount";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useHeaderUser } from "@/src/lib/providers/AuthProvider";
-import { api } from "@/src/trpc/react";
 import { Skeleton } from "../../ui/skeleton";
+import { useHeaderUser } from "@/lib/providers/AuthProvider";
+import { api } from "@/trpc/react";
+import { cn } from "@/lib/utils/core";
 
 // Move navItems outside component to prevent recreation on every render
 const navItems = [

@@ -19,6 +19,18 @@
  */
 export { useTournament, useTournamentHistory } from "./useTournament";
 
+/**
+ * Current season tournament schedule
+ * Provides current season's tournaments with tier and course information
+ */
+export { useCurrentSchedule } from "./useCurrentSchedule";
+
+/**
+ * Current season tour standings
+ * Provides current season's standings for all tours with tour cards sorted by points
+ */
+export { useCurrentStandings } from "./useCurrentStandings";
+
 // ============================================================================
 // LEADERBOARD DATA HOOKS
 // ============================================================================
@@ -38,6 +50,12 @@ export { useLeaderboard } from "./useLeaderboard";
  * Provides recent winners with configurable time limits
  */
 export { useRecentChampions } from "./useChampions";
+
+/**
+ * Latest champions with full team details
+ * Provides most recent tournament champions with golfer information
+ */
+export { useLatestChampions } from "./useLatestChampions";
 
 // ============================================================================
 // TOUR CARD DATA HOOKS

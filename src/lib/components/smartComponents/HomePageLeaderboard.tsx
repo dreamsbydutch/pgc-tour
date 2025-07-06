@@ -1,13 +1,10 @@
 "use client";
 
-import { cn } from "@/old-utils";
 import Link from "next/link";
 import LeaderboardHeader from "../../../app/(main)/tournament/_components/header/LeaderboardHeader";
-import {
-  HomePageList,
-  HomePageListSkeleton,
-} from "@/src/lib/components/HomePageList";
-import { useLeaderboard } from "@/src/lib/hooks";
+import { cn } from "@/lib/utils/core";
+import { HomePageList, HomePageListSkeleton } from "../HomePageList";
+import { useLeaderboard } from "@/lib/hooks";
 
 export default function HomePageLeaderboard() {
   // Updated to use new consolidated hook instead of useCurrentTournamentLeaderboard

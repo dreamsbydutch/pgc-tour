@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/src/lib/components/ui/dropdown-menu";
+} from "@components/ui/dropdown-menu";
 import Image from "next/image";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,6 @@ import { Member, TourCard } from "@prisma/client";
 import MemberUpdateForm from "./MemberUpdateForm";
 import { Button } from "../../ui/button";
 import { usePWAInstall } from "../../../hooks/usePWAInstall";
-import { usePushNotifications } from "@/src/lib/push";
 import {
   handleLogout,
   signInWithGoogle,
@@ -22,8 +21,9 @@ import {
 import type { AuthUser } from "../../../supabase/auth-helpers";
 import { LogInIcon } from "lucide-react";
 import { Skeleton } from "../../ui/skeleton";
-import { formatMoney, formatNumber } from "@/old-utils";
 import LittleFucker from "../LittleFucker";
+import { formatMoney, formatNumber } from "@/lib/utils/domain/formatting";
+import { usePushNotifications } from "@/lib/push";
 
 // Move handleSignIn outside component to prevent recreation
 const handleSignInAction = (

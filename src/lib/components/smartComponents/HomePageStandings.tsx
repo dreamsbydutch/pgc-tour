@@ -1,8 +1,8 @@
-import { cn } from "@/old-utils";
 import Image from "next/image";
 import Link from "next/link";
-import { HomePageList } from "@/src/lib/components/HomePageList";
-import { getCurrentStandings } from "@/src/lib/actions/tourCardActions";
+import { HomePageList } from "@components/HomePageList";
+import { cn } from "@/lib/utils/core";
+import { getCurrentStandings } from "@/server/api/actions/standings";
 
 /**
  * Displays the standings for the homepage, showing the top players for each tour.

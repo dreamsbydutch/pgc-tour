@@ -46,6 +46,7 @@ export {
 
 // ============= TYPE GUARDS =============
 export {
+  cn,
   isDefined,
   isNullish,
   isString,

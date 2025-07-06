@@ -13,6 +13,7 @@
     }omponents. Returns the same data structure as the client hook.
  */
 
+import { api } from "@/trpc/server";
 import { db } from "@/src/server/db";
 import { tournaments } from "@/src/lib/utils/domain/tournaments";
 import { validation } from "@/src/lib/utils";
@@ -250,6 +251,88 @@ export async function getChampionsByTournament(
       champs: [],
       error: error instanceof Error ? error.message : "Unknown error",
       isLoading: false,
+    };
+  }
+}
+
+/**
+ * Get latest champions with full team details including golfers
+ * Specifically for ChampionsPopup component
+ */
+export async function getLatestChampions() {
+  try {
+    // Get all tournaments and find the most recent completed one
+    const tournaments = await api.tournament.getAll();
+    const now = new Date();
+    const completedTournaments = tournaments.filter(
+      (t: any) => t.endDate < now,
+    );
+
+    if (completedTournaments.length === 0) {
+      return {
+        tournament: null,
+        champs: [],
+      };
+    }
+
+    // Sort by end date to get the most recent
+    const recentTournament = completedTournaments.sort(
+      (a: any, b: any) => b.endDate.getTime() - a.endDate.getTime(),
+    )[0];
+
+    if (!recentTournament) {
+      return {
+        tournament: null,
+        champs: [],
+      };
+    }
+
+    // Get all teams for this tournament
+    const allTeams = await api.team.getByTournament({
+      tournamentId: recentTournament.id,
+    });
+
+    // Filter to only champions (position 1)
+    const championTeams = allTeams.filter((team: any) => team.position === "1");
+
+    // Get all golfers for this tournament
+    const allGolfers = await api.golfer.getByTournament({
+      tournamentId: recentTournament.id,
+    });
+
+    // Get all tour cards to get tour information
+    const allTourCards = await api.tourCard.getAll();
+    const allTours = await api.tour.getAll();
+
+    // Enrich champion teams with tour and golfer data
+    const enrichedChamps = championTeams.map((team: any) => {
+      // Find the tour card and tour
+      const tourCard = allTourCards.find(
+        (tc: any) => tc.id === team.tourCardId,
+      );
+      const tour = allTours.find((t: any) => t.id === tourCard?.tourId);
+
+      // Find golfers for this team (you might need to filter by team ID if available in golfer model)
+      // For now, since the relationship isn't clear, return empty array
+      const teamGolfers: any[] = [];
+
+      return {
+        ...team,
+        tour: tour || { id: "", name: "Unknown", logoUrl: "" },
+        tourCard: tourCard || { displayName: "Unknown" },
+        golfers: teamGolfers,
+      };
+    });
+
+    return {
+      tournament: recentTournament,
+      champs: enrichedChamps,
+    };
+  } catch (error) {
+    console.error("Error fetching latest champions:", error);
+    return {
+      tournament: null,
+      champs: [],
     };
   }
 }

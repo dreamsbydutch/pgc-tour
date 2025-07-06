@@ -1,7 +1,5 @@
 "use client";
 
-import { memberSchema } from "@/old-utils";
-import { api } from "@/src/trpc/react";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import type { Dispatch, FormEvent, SetStateAction } from "react";
@@ -9,9 +7,10 @@ import { z } from "zod";
 import { FieldInfo } from "../../ui/FieldInfo";
 import { Button } from "../../ui/button";
 import { useRouter } from "next/navigation";
-import { memberUpdateFormOnSubmit } from "@/src/server/api/actions/member";
 import { Member } from "@prisma/client";
-import { useSeasonalStore } from "@/lib/store/seasonalStore";
+import { useSeasonalStore } from "@store/seasonalStore";
+import { memberSchema } from "@/lib/utils/domain/validation";
+import { api } from "@/trpc/react";
 
 const emptyMember = {
   id: "",

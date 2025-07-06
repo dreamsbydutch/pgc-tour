@@ -3,14 +3,14 @@ import "@/styles/globals.css";
 import { type Metadata } from "next";
 import { Barlow_Condensed, Varela, Yellowtail } from "next/font/google";
 
-import { cn } from "../../old-utils";
 import Script from "next/script";
-import { AuthProvider } from "../lib/providers/AuthProvider";
-import { TRPCReactProvider } from "../trpc/react";
-import { LoadSeasonalData } from "../lib/store/loadSeasonalData";
-import ServiceWorkerRegistration from "../lib/components/smartComponents/pwa/ServiceWorkerRegistration";
-import { getAuthFromHeaders } from "../lib/supabase/auth-helpers";
-import { NavigationProvider } from "../lib/providers/NavProvider";
+import { AuthProvider } from "@providers/AuthProvider";
+import { TRPCReactProvider } from "@trpcLocal/react";
+import { LoadSeasonalData } from "@store/loadSeasonalData";
+import ServiceWorkerRegistration from "@components/smartComponents/pwa/ServiceWorkerRegistration";
+import { getAuthFromHeaders } from "@supabase/auth-helpers";
+import { NavigationProvider } from "@providers/NavProvider";
+import { cn } from "@lib/utils/core";
 
 const varela = Varela({
   weight: ["400"],

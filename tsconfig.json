@@ -35,6 +35,7 @@
       "@supabase/*": ["src/lib/supabase/*"],
       "@utils/*": ["src/lib/utils/*"],
       "@types/*": ["src/lib/types/*"],
+      "@providers/*": ["src/lib/providers/*"],
       "@ui/*": ["src/lib/components/ui/*"],
       "@public/*": ["./public/*"],
       "@server/*": ["./src/server/*"],

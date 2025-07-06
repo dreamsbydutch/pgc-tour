@@ -1,10 +1,10 @@
-import { formatScore } from "@/old-utils";
 import type { Golfer, Team, Tour, TourCard, Tournament } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
-import LittleFucker from "@/src/lib/components/smartComponents/LittleFucker";
 import { ChampionSectionSkeleton } from "../functionalComponents/loading/ChampionsPopupSkelton";
-import { getLatestChampions } from "../../actions/teamActions";
+import LittleFucker from "./LittleFucker";
+import { formatScore } from "@/lib/utils/domain/golf";
+import { getLatestChampions } from "@/server/api/actions/champions";
 
 /**
  * ChampionsPopup Component
@@ -37,15 +37,19 @@ export default async function ChampionsPopup() {
         </h1>
 
         {/* Render each champion's info */}
-        {champs.map((champ) => {
-          return (
-            <ChampionSection
-              key={champ.id}
-              champion={champ}
-              tournament={tournament}
-            />
-          );
-        })}
+        {champs.map(
+          (
+            champ: Team & { tour: Tour; tourCard: TourCard; golfers: Golfer[] },
+          ) => {
+            return (
+              <ChampionSection
+                key={champ.id}
+                champion={champ}
+                tournament={tournament}
+              />
+            );
+          },
+        )}
       </div>
     </div>
   );

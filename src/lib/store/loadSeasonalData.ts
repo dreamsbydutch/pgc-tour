@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useSeasonalStore } from "@/lib/store/seasonalStore";
-import { api } from "@/src/trpc/react";
+import { api } from "@/trpc/react";
 
 export function LoadSeasonalData() {
   const clearAndSet = useSeasonalStore((s) => s.clearAndSet);

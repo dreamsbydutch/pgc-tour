@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { LeagueSchedule } from "@/src/lib/components/functionalComponents/LeagueSchedule";
-import ChampionsPopup from "../lib/components/smartComponents/ChampionsPopup";
-import HomePageStandings from "../lib/components/smartComponents/HomePageStandings";
-import TournamentCountdown from "../lib/components/smartComponents/TournamentCountdown";
-import { getCurrentSchedule } from "../lib/actions/tournamentActions";
-import HomePageLeaderboard from "../lib/components/smartComponents/HomePageLeaderboard";
+import ChampionsPopup from "@components/smartComponents/ChampionsPopup";
+import HomePageStandings from "@components/smartComponents/HomePageStandings";
+import TournamentCountdown from "@components/smartComponents/TournamentCountdown";
+import HomePageLeaderboard from "@components/smartComponents/HomePageLeaderboard";
+import { LeagueSchedule } from "@components/functionalComponents/LeagueSchedule";
+import { getCurrentSchedule } from "@server/api/actions/schedule";
 
 export default async function Home() {
   const tournaments = await getCurrentSchedule();

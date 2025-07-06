@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { type Tournament } from "@prisma/client";
-import { type MinimalTournament } from "@/src/lib/types";
 import Image from "next/image";
-import { useTournament } from "@/src/lib/hooks";
+import { MinimalTournament } from "@lib/types";
+import { useTournament } from "@lib/hooks";
 
 /**
  * TournamentCountdown Component
