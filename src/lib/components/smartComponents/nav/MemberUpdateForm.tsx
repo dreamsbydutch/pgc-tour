@@ -11,6 +11,7 @@ import { Member } from "@prisma/client";
 import { useSeasonalStore } from "@store/seasonalStore";
 import { memberSchema } from "@/lib/utils/domain/validation";
 import { api } from "@/trpc/react";
+import { updateMemberAction } from "@/server/api/actions/member";
 
 const emptyMember = {
   id: "",
@@ -37,13 +38,21 @@ export default function MemberUpdateForm({
   const form = useForm({
     defaultValues: member ?? emptyMember,
     onSubmit: async ({ value }) => {
-      const updatedMember = await memberUpdateFormOnSubmit({ value });
-      if (updatedMember) {
-        updateMember(updatedMember);
+      try {
+        const result = await updateMemberAction(value);
+
+        if (result.success && result.data) {
+          updateMember(result.data);
+          await utils.member.invalidate();
+          router.refresh();
+        } else {
+          console.error("Failed to update member:", result.error);
+          // You could add error handling/toast notification here
+        }
+      } catch (error) {
+        console.error("Failed to update member:", error);
+        // You could add error handling/toast notification here
       }
-      await utils.member.invalidate();
-      router.refresh();
-      return;
     },
     validatorAdapter: zodValidator(),
     validators: { onChange: memberSchema },

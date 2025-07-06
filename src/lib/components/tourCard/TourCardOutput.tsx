@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "../ui/button";
+import { Button } from "@ui/button";
 import Image from "next/image";
 import type { Tour, TourCard } from "@prisma/client";
-import { deleteTourCard } from "@/src/server/api/actions/tour_card";
+import { deleteTourCard } from "@server/api/actions/tour_card";
 import { useState } from "react";
 import {
   Dialog,
@@ -13,9 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
-import { api } from "@/src/trpc/react";
-import LoadingSpinner from "../functionalComponents/loading/LoadingSpinner";
+} from "@ui/dialog";
+import { api } from "@trpcLocal/react";
+import LoadingSpinner from "@components/functionalComponents/loading/LoadingSpinner";
 
 export function TourCardOutput({
   name,

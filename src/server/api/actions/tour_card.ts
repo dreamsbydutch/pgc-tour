@@ -22,7 +22,7 @@ export async function createTourCard({
   tour,
   seasonId,
 }: {
-  tour: Tour;
+  tour: { id: string; buyIn: number };
   seasonId: string;
 }) {
   try {
@@ -44,7 +44,7 @@ export async function createTourCard({
     // Create transaction for tour card fee
     await db.transactions.create({
       data: {
-        amount: tour.buyIn ?? 0,
+        amount: tour.buyIn,
         description: `Tour Card fee for ${user.firstname || ""} ${user.lastname || ""}`,
         seasonId: seasonId,
         transactionType: "TourCardFee",
@@ -56,7 +56,7 @@ export async function createTourCard({
     await db.member.update({
       where: { id: user.id },
       data: {
-        account: user.account + (tour.buyIn ?? 0),
+        account: user.account + tour.buyIn,
       },
     });
 
@@ -121,7 +121,7 @@ export async function deleteTourCard({ tourCard }: { tourCard: TourCard }) {
       await db.transactions.delete({ where: { id: transaction.id } });
       await db.member.update({
         where: { id: user.id },
-        data: { account: user.account - (tour.buyIn ?? 0) },
+        data: { account: user.account - (tour.buyIn || 0) },
       });
     }
 
@@ -148,7 +148,7 @@ export async function updateTourCardNames({
   tour,
   tourCard,
 }: {
-  tour: Tour;
+  tour: { id: string };
   tourCard: TourCard;
 }) {
   const tourCards = await api.tourCard.getByTourId({ tourId: tour.id });

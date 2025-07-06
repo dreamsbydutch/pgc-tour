@@ -2,13 +2,13 @@
 
 import { Button } from "../ui/button";
 import Image from "next/image";
-import { createTourCard } from "@/src/server/api/actions/tour_card";
+import { createTourCard } from "@/server/api/actions/tour_card";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import LoadingSpinner from "../functionalComponents/loading/LoadingSpinner";
 import Link from "next/link";
-import type { Tour } from "@prisma/client";
-import { api } from "@/src/trpc/react";
-import { useSeasonalStore } from "@/src/lib/store/seasonalStore";
+import { api } from "@/trpc/react";
+import { useSeasonalStore } from "@/lib/store/seasonalStore";
+import { MinimalTour } from "@/lib/types";
 
 export function TourCardForm() {
   const [isCreatingTourCard, setIsCreatingTourCard] = useState(false);
@@ -46,7 +46,7 @@ function TourCardFormButton({
   isCreatingTourCard,
   setIsCreatingTourCard,
 }: {
-  tour: Tour;
+  tour: MinimalTour;
   isCreatingTourCard: boolean;
   setIsCreatingTourCard: Dispatch<SetStateAction<boolean>>;
 }) {
@@ -57,7 +57,8 @@ function TourCardFormButton({
     setIsCreatingTourCard(true);
     setIsLoading(true);
     setEffect(true);
-    await createTourCard({ tour: tour, seasonId: tour.seasonId });
+    // Call createTourCard with the tour object (now properly typed)
+    await createTourCard({ tour, seasonId: tour.seasonId });
     await utils.tour.invalidate();
     return;
   };

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "../../../lib/components/ui/button";
-import { cn } from "@/old-utils";
+import { cn } from "@/lib/utils/core";
 
 export default function HistoryButton({ className }: { className?: string }) {
   const router = useRouter();

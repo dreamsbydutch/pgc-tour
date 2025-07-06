@@ -1,10 +1,12 @@
 "use client";
 
-import { cn, formatMoney, formatScore } from "@/old-utils";
 import type { Team, Tour, TourCard } from "@prisma/client";
 import Image from "next/image";
 import LittleFucker from "./smartComponents/LittleFucker";
-import { useSeasonalStore } from "../store/seasonalStore";
+import { useSeasonalStore } from "@store/seasonalStore";
+import { formatScore } from "@utils/domain/golf";
+import { formatMoney } from "@utils/domain/formatting";
+import { cn } from "@utils/core";
 
 export function HomePageList({
   tour,

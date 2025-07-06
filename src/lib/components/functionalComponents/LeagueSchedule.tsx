@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "../ui/table";
 import Image from "next/image";
-import { cn } from "@/old-utils";
+import { cn } from "@/lib/utils/core";
 
 export function LeagueSchedule({
   tournaments,

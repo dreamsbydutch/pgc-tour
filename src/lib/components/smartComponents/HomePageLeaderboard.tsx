@@ -5,6 +5,7 @@ import LeaderboardHeader from "../../../app/(main)/tournament/_components/header
 import { cn } from "@/lib/utils/core";
 import { HomePageList, HomePageListSkeleton } from "../HomePageList";
 import { useLeaderboard } from "@/lib/hooks";
+import type { TourGroup } from "@/lib/types";
 
 export default function HomePageLeaderboard() {
   // Updated to use new consolidated hook instead of useCurrentTournamentLeaderboard
@@ -14,21 +15,24 @@ export default function HomePageLeaderboard() {
     <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
       <LeaderboardHeader focusTourney={tournament} />
       <div className="grid grid-cols-2 font-varela">
-        {teamsByTour?.map((tour, i) => {
+        {teamsByTour?.map((tourGroup: TourGroup, i: number) => {
           return (
             <Link
-              key={tour?.tour?.id ?? "tour-" + i}
+              key={tourGroup?.tour?.id ?? "tour-" + i}
               className={cn(
                 "flex flex-col",
                 i === 0 && "border-r border-slate-800",
               )}
-              href={`/tournament?id=${tournament.id}&tour=${tour?.tour?.id}`}
-              aria-label={`View leaderboard for ${tour?.tour?.shortForm} Tour`}
+              href={`/tournament?id=${tournament.id}&tour=${tourGroup?.tour?.id}`}
+              aria-label={`View leaderboard for ${tourGroup?.tour?.shortForm} Tour`}
             >
-              {!tour ? (
+              {!tourGroup ? (
                 <HomePageListSkeleton />
-              ) : tour?.tour ? (
-                <HomePageList tour={tour.tour} teams={tour.teams} />
+              ) : tourGroup?.tour ? (
+                <HomePageList
+                  tour={tourGroup.tour as any}
+                  teams={tourGroup.teams as any}
+                />
               ) : (
                 <HomePageListSkeleton />
               )}

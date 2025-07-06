@@ -72,6 +72,16 @@ export {
 } from "./useTourCard";
 
 // ============================================================================
+// CHAMPION TROPHIES HOOK
+// ============================================================================
+
+/**
+ * Champion trophies display for major wins
+ * Handles filtering and display of championship victories
+ */
+export { useChampionTrophies } from "./useChampionTrophies";
+
+// ============================================================================
 // UTILITY HOOKS (PRESERVED)
 // ============================================================================
 

@@ -1,6 +1,6 @@
 // filepath: c:\Users\choug\OneDrive\Documents\GitHub\pgc-tour\src\app\(main)\history\components\golfer-row.tsx
 import { TableCell, TableRow } from "@/src/lib/components/ui/table";
-import { cn } from "@/old-utils";
+import { cn } from "@/lib/utils/core";
 import { Tournament } from "@prisma/client";
 
 interface GolferRowProps {
