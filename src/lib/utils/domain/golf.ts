@@ -10,7 +10,16 @@ import type { Golfer, Team } from "@prisma/client";
 /**
  * Gets the tee time for a golfer based on their current round
  */
-export function getGolferTeeTime(golfer: Golfer): string {
+export function getGolferTeeTime(
+  golfer: Pick<
+    Golfer,
+    | "round"
+    | "roundOneTeeTime"
+    | "roundTwoTeeTime"
+    | "roundThreeTeeTime"
+    | "roundFourTeeTime"
+  >,
+): string {
   const roundNames = ["One", "Two", "Three", "Four", "Four"] as const;
 
   if (golfer.round === null) {
@@ -22,8 +31,12 @@ export function getGolferTeeTime(golfer: Golfer): string {
   }
 
   const teeTimeKey =
-    `round${roundNames[golfer.round - 1]}TeeTime` as keyof Golfer;
-  const teeTime = golfer[teeTimeKey];
+    `round${roundNames[golfer.round - 1]}TeeTime` as
+      | "roundOneTeeTime"
+      | "roundTwoTeeTime"
+      | "roundThreeTeeTime"
+      | "roundFourTeeTime";
+  const teeTime = golfer[teeTimeKey] as string | null | undefined;
 
   if (!teeTime) {
     return "N/A";

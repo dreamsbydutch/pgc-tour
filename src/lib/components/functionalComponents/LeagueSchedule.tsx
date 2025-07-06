@@ -13,15 +13,14 @@ import {
   TableRow,
 } from "./ui/table";
 
-type MinimalTournament = {
-  id: string;
-  name: string;
-  logoUrl?: string | null;
-  startDate: Date;
-  endDate: Date;
-  seasonId?: string;
-  tier: { name: string };
-  course: { name: string; location: string };
+// Use Pick/Omit on Prisma types for strict minimal types
+
+type MinimalTournament = Pick<
+  Tournament,
+  "id" | "name" | "logoUrl" | "startDate" | "endDate" | "seasonId"
+> & {
+  tier: Pick<Tier, "name">;
+  course: Pick<Course, "name" | "location">;
 };
 
 export function LeagueSchedule({

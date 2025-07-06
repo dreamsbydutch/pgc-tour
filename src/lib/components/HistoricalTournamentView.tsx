@@ -1,10 +1,9 @@
 "use client";
 
-import LeaderboardHeader from "../../../../lib/components/functionalComponents/loading/LeaderboardHeader";
 import {
   HistoricalLeaderboardPage,
   PlayoffLeaderboardPage,
-} from "./LeaderboardPage";
+} from "./functionalComponents/LeaderboardView";
 import { api } from "@/trpc/react";
 
 interface PastTournamentViewProps {

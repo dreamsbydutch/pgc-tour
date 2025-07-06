@@ -2,7 +2,7 @@
 
 <<<<<<< Updated upstream:src/app/(main)/tournament/_views/PastTournamentView.tsx
 import type { Course, Tournament } from "@prisma/client";
-import LeaderboardPage from "./LeaderboardPage";
+import LeaderboardPage from "./functionalComponents/LeaderboardView";
 =======
 import type { Tournament } from "@prisma/client";
 import LeaderboardPage from "../shared/LeaderboardPage";

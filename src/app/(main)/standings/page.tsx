@@ -21,12 +21,10 @@ import {
 } from "@/lib/utils/standings/helpers";
 import type { TourCard } from "@prisma/client";
 import { ToursToggleButton } from "@/lib/components/ToursToggle";
+import { useSearchParams } from "next/navigation";
 
-export default function Page({
-  searchParams,
-}: {
-  searchParams: Record<string, string>;
-}) {
+export default function Page() {
+  const searchParams = useSearchParams();
   const {
     tours,
     isLoading,
@@ -37,9 +35,9 @@ export default function Page({
     member,
   }: UseCurrentStandingsResult = useCurrentStandings();
 
-  const [standingsToggle, setStandingsToggle] = useState<string>(
-    activeTour?.id ?? "",
-  );
+  // Get default tour from search params if present
+  const defaultTourId = searchParams.get("tour") || activeTour?.id || "";
+  const [standingsToggle, setStandingsToggle] = useState<string>(defaultTourId);
 
   // Update activeTour when toggle changes
   const displayedTour: StandingsTour | undefined =

@@ -305,35 +305,39 @@ export const useSeasonalStore = create<SeasonalData>()(
           if (filters) {
             const filterObj: any = { ...filters };
 
-            // Handle earnings range
-            if (filters.earnings) {
-              if (filters.earnings.min !== undefined) {
-                tourCards = tourCards.filter(
-                  (tc) => tc.earnings >= filters.earnings!.min!,
-                );
+            // Helper for range filtering
+            const applyRange = (
+              arr: typeof tourCards,
+              key: keyof typeof filters,
+              field: keyof MinimalTourCard,
+            ) => {
+              const range = filters[key] as
+                | { min?: number; max?: number }
+                | undefined;
+              if (!range) return arr;
+              let result = arr;
+              if (range.min !== undefined) {
+                result = result.filter((tc) => {
+                  const val = tc[field];
+                  return (
+                    typeof val === "number" && val !== null && val >= range.min!
+                  );
+                });
               }
-              if (filters.earnings.max !== undefined) {
-                tourCards = tourCards.filter(
-                  (tc) => tc.earnings <= filters.earnings!.max!,
-                );
+              if (range.max !== undefined) {
+                result = result.filter((tc) => {
+                  const val = tc[field];
+                  return (
+                    typeof val === "number" && val !== null && val <= range.max!
+                  );
+                });
               }
-              delete filterObj.earnings;
-            }
+              delete filterObj[key];
+              return result;
+            };
 
-            // Handle points range
-            if (filters.points) {
-              if (filters.points.min !== undefined) {
-                tourCards = tourCards.filter(
-                  (tc) => tc.points >= filters.points!.min!,
-                );
-              }
-              if (filters.points.max !== undefined) {
-                tourCards = tourCards.filter(
-                  (tc) => tc.points <= filters.points!.max!,
-                );
-              }
-              delete filterObj.points;
-            }
+            tourCards = applyRange(tourCards, "earnings", "earnings");
+            tourCards = applyRange(tourCards, "points", "points");
 
             // Handle hasEarnings
             if (filters.hasEarnings) {

@@ -14,7 +14,11 @@ import {
   formatRank,
 } from "@/lib/utils/domain/formatting";
 
-export function PayoutsTable({ tiers }: { tiers: Tier[] }) {
+// Use Pick/Omit for minimal Tier type
+
+type MinimalTier = Pick<Tier, "id" | "name" | "payouts" | "points">;
+
+export function PayoutsTable({ tiers }: { tiers: MinimalTier[] }) {
   const tierOrder = ["Standard", "Elevated", "Major", "Playoff"];
   const sortedTiers = [...tiers].sort(
     (a, b) => tierOrder.indexOf(a.name) - tierOrder.indexOf(b.name),
@@ -87,7 +91,7 @@ export function PayoutsTable({ tiers }: { tiers: Tier[] }) {
   );
 }
 
-export function PointsTable({ tiers }: { tiers: Tier[] }) {
+export function PointsTable({ tiers }: { tiers: MinimalTier[] }) {
   const tierOrder = ["Standard", "Elevated", "Major", "Playoff"];
   const sortedTiers = [...tiers].sort(
     (a, b) => tierOrder.indexOf(a.name) - tierOrder.indexOf(b.name),

@@ -11,6 +11,13 @@ import { capitalize } from "@/lib/utils/core/primitives";
  */
 
 // Types
+// If you have a Prisma Rule or RuleCategory type, use Pick/Omit for minimal types
+// Otherwise, keep the explicit types as is (since these are not from Prisma)
+
+// export type RuleItemType = Pick<Rule, "ruleText" | "details">;
+// export type RuleCategoryType = Pick<RuleCategory, "category"> & { rules: RuleItemType[]; picture?: { url: string; altText: string } };
+
+// If no Prisma types exist, keep the explicit types
 export interface RuleItemType {
   ruleText: string;
   details?: string[];

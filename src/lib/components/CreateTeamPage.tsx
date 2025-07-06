@@ -12,7 +12,7 @@ import LoadingSpinner from "@/lib/components/functionalComponents/loading/Loadin
 import { api } from "@/trpc/react";
 import { teamCreateOnFormSubmit } from "@/server/api/actions/team";
 import { useTourCards, useUser } from "@/lib/hooks";
-import { GolferGroup } from "../_components/GolferGroup";
+import { GolferGroup } from "./GolferGroup";
 
 // Define Zod schema for form validation
 const golferSchema = z.object({

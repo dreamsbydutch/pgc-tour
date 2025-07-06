@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import type { Tournament } from "@prisma/client";
 
 /**
  * TournamentCountdown Component
@@ -15,12 +16,10 @@ import Image from "next/image";
  * - startDateTime: The start date and time of the tournament.
  */
 export function TournamentCountdown({
-  tourneyName,
-  logoUrl,
+  tourney,
   startDateTime,
 }: {
-  tourneyName: string;
-  logoUrl: string;
+  tourney: Pick<Tournament, "name" | "logoUrl">;
   startDateTime: Date;
 }) {
   // State to store the time left until the tournament starts
@@ -40,14 +39,14 @@ export function TournamentCountdown({
     <div className="mx-auto my-4 w-11/12 max-w-3xl rounded-2xl bg-gray-100 p-2 shadow-md md:w-10/12 lg:w-7/12">
       <div className="text-center">
         <h1 className="px-3 font-varela text-2xl font-bold sm:text-3xl md:text-4xl">
-          Countdown until {tourneyName}
+          Countdown until {tourney.name}
         </h1>
         <div className="flex w-full items-center justify-center pb-3">
           <div>
             <Image
               className="max-h-32 w-full md:max-h-40"
               alt="Tourney Logo"
-              src={logoUrl ?? ""}
+              src={tourney.logoUrl ?? ""}
               width={80}
               height={80}
             />

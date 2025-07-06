@@ -10,7 +10,7 @@ export function ToursToggleButton({
   tourToggle,
   setTourToggle,
 }: {
-  tour: Tour;
+  tour: Pick<Tour, "id" | "logoUrl" | "shortForm">;
   tourToggle: string;
   setTourToggle: Dispatch<SetStateAction<string>>;
 }) {

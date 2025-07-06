@@ -3,23 +3,20 @@
 import Image from "next/image";
 import LittleFucker from "../smartComponents/LittleFucker";
 import { cn } from "@utils/core";
+import type { Tour, TourCard, Member } from "@prisma/client";
 
 // Only include the minimal required fields for each type
-type MinimalTour = {
-  logoUrl?: string | null;
-  shortForm: string;
-};
+type MinimalTour = Pick<Tour, "logoUrl" | "shortForm">;
 
-type MinimalTeam = {
-  id: string | number;
-  memberId: string;
-  position: string | null;
-  displayName: string;
+type MinimalTeam = Pick<
+  TourCard,
+  "id" | "memberId" | "position" | "displayName"
+> & {
   mainStat: number | string | null;
   secondaryStat: number | string | null;
 };
 
-type MinimalSelf = { id: string; friends: string[] } | null | undefined;
+type MinimalSelf = Pick<Member, "id" | "friends"> | null | undefined;
 
 export function HomePageList({
   tour,

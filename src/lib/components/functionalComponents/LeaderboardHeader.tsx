@@ -36,41 +36,31 @@ import {
 import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
 import { cn } from "@/lib/utils/core";
 import { CoursePopover } from "../smartComponents/CoursePopover";
+import type { Tournament, Tier, Course } from "@prisma/client";
 
-// Define a type for the grouped tournament dropdown items
+// Define a type for the grouped tournament dropdown items using Pick
+// Only the fields required for rendering are included
+
 type GroupedTournamentDropdownItem = {
-  tournament: {
-    id: string;
-    logoUrl: string | null;
-    name: string;
-    startDate: Date;
-    endDate: Date;
-  };
-  tier: { name: string };
-  course: { location: string };
+  tournament: Pick<
+    Tournament,
+    "id" | "logoUrl" | "name" | "startDate" | "endDate"
+  >;
+  tier: Pick<Tier, "name">;
+  course: Pick<Course, "location">;
 };
 type GroupedTournaments = GroupedTournamentDropdownItem[][];
 
 // Pure presentational component
 interface LeaderboardHeaderProps {
-  focusTourney: {
-    id: string;
-    logoUrl: string | null;
-    name: string;
-    startDate: Date;
-    endDate: Date;
-    currentRound: number | null;
-  };
+  focusTourney: Pick<
+    Tournament,
+    "id" | "logoUrl" | "name" | "startDate" | "endDate" | "currentRound"
+  >;
   course:
-    | {
-        name: string;
-        location: string;
-        par: number;
-        front: number;
-        back: number;
-      }
+    | Pick<Course, "name" | "location" | "par" | "front" | "back">
     | undefined;
-  tier: { name: string; points: number[]; payouts: number[] } | undefined;
+  tier: Pick<Tier, "name" | "points" | "payouts"> | undefined;
   groupedTournaments: GroupedTournaments;
   isLoading?: boolean;
 }
@@ -207,7 +197,7 @@ function HeaderDropdown({
   groupedTournaments,
   isLoading = false,
 }: {
-  activeTourney?: { id: string };
+  activeTourney?: Pick<Tournament, "id">;
   groupedTournaments: GroupedTournaments;
   isLoading?: boolean;
 }) {
@@ -389,14 +379,9 @@ function TournamentItem({
   course,
   isActive,
 }: {
-  tourney: {
-    logoUrl: string | null;
-    name: string;
-    startDate: Date;
-    endDate: Date;
-  };
-  tier: { name: string };
-  course: { location: string };
+  tourney: Pick<Tournament, "logoUrl" | "name" | "startDate" | "endDate">;
+  tier: Pick<Tier, "name">;
+  course: Pick<Course, "location">;
   isActive: boolean;
 }) {
   return (

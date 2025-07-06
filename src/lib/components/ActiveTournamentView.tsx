@@ -6,7 +6,7 @@ import {
   updateLeaderboardNow,
   useLeaderboardPolling,
 } from "@/lib/store/leaderboardInit";
-import LeaderboardPage from "./LeaderboardPage";
+import LeaderboardPage from "./functionalComponents/LeaderboardView";
 import type { Course, Tournament } from "@prisma/client";
 
 interface ActiveTournamentViewProps {

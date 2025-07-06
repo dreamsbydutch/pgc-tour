@@ -9,7 +9,7 @@
  */
 
 import { api } from "@/trpc/react";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import type { Tour, TourCard, Tier, Member } from "@prisma/client";
 
 // Types for the data structures used in the standings page
@@ -106,9 +106,25 @@ export function useCurrentStandings(): UseCurrentStandingsResult {
     return allTourCards.find((tc) => tc.memberId === member.id);
   }, [member, allTourCards]);
 
-  // Determine the active tour (default to first tour)
+  // Get activeTourId from localStorage (client only)
+  const [localActiveTourId, setLocalActiveTourId] = useState<string | null>(
+    null,
+  );
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setLocalActiveTourId(localStorage.getItem("activeTour"));
+    }
+  }, [toursWithStandings.length]);
+
+  // Determine the active tour (prefer localStorage, then user, then first)
   const activeTour = useMemo(() => {
     if (!toursWithStandings.length) return undefined;
+    if (localActiveTourId) {
+      const found = toursWithStandings.find(
+        (tour) => tour.id === localActiveTourId,
+      );
+      if (found) return found;
+    }
     if (userTourCard) {
       return (
         toursWithStandings.find((tour) =>
@@ -117,7 +133,7 @@ export function useCurrentStandings(): UseCurrentStandingsResult {
       );
     }
     return toursWithStandings[0];
-  }, [toursWithStandings, userTourCard]);
+  }, [toursWithStandings, userTourCard, localActiveTourId]);
 
   const isLoading =
     seasonLoading ||

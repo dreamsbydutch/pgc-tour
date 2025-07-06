@@ -4,14 +4,10 @@ import Image from "next/image";
 import { cn, isDate } from "@/lib/utils/core/types";
 import { Tournament } from "@prisma/client";
 
+// Use Pick for minimal Tournament type in ChampionTrophyTeam
 export interface ChampionTrophyTeam {
   id: string;
-  tournament?:
-    | (Tournament & {
-        logoUrl?: string;
-        startDate: string | Date;
-      })
-    | null;
+  tournament?: Pick<Tournament, "name" | "logoUrl" | "startDate"> | null;
 }
 
 interface TrophyIconProps {

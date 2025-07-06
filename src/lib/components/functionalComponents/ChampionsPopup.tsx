@@ -6,36 +6,34 @@ import { hasItems } from "@/lib/utils/core/arrays";
 import { capitalize } from "@/lib/utils/core/primitives";
 import { isNonEmptyString } from "@/lib/utils/core/types";
 import { getPath } from "@/lib/utils/core/objects";
+import type { Tournament, TourCard, Tour, Golfer } from "@prisma/client";
 
-type ChampionData = {
+type ChampionData = Omit<
+  TourCard,
+  | "createdAt"
+  | "updatedAt"
+  | "earnings"
+  | "points"
+  | "win"
+  | "topTen"
+  | "madeCut"
+  | "appearances"
+  | "seasonId"
+  | "tourId"
+  | "memberId"
+> & {
   id: number;
   name: string;
-  position: string | null;
   totalScore: number;
-  tour: {
-    id: string;
-    name: string;
-    logoUrl: string;
-  };
-  tourCard: {
-    id: string;
-    displayName: string;
-  } | null;
-  golfers: {
-    id: number;
-    name: string;
-    score: number;
-    position: string;
-  }[];
+  tour: Pick<Tour, "id" | "name" | "logoUrl">;
+  tourCard: Pick<TourCard, "id" | "displayName"> | null;
+  golfers: Array<Pick<Golfer, "id" | "playerName" | "score" | "position">>;
 };
 
-type TournamentData = {
-  id: string;
-  name: string;
-  startDate: Date;
-  endDate: Date;
-  logoUrl: string | null;
-};
+type TournamentData = Pick<
+  Tournament,
+  "id" | "name" | "startDate" | "endDate" | "logoUrl"
+>;
 
 interface ChampionsPopupProps {
   tournament: TournamentData;
@@ -136,7 +134,7 @@ function ChampionSection({
                 className="grid grid-cols-8 items-center justify-center"
               >
                 <div className="col-span-1 text-xs">{golfer.position}</div>
-                <div className="col-span-6 text-xs">{golfer.name}</div>
+                <div className="col-span-6 text-xs">{golfer.playerName}</div>
                 <div className="text-xs">
                   {["CUT", "WD", "DQ"].includes(golfer.position ?? "")
                     ? golfer.position
