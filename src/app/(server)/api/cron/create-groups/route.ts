@@ -1,6 +1,5 @@
 "use server";
 
-import { fetchDataGolf } from "@/old-utils";
 import { api } from "@/trpc/server";
 import type {
   DatagolfFieldGolfer,
@@ -8,6 +7,7 @@ import type {
   DatagolfRankingInput,
 } from "@/lib/types/datagolf_types";
 import { NextResponse } from "next/server";
+import { fetchDataGolf } from "@/lib/utils/system/api";
 // import fs from "fs";
 
 export async function GET(request: Request) {
@@ -17,16 +17,14 @@ export async function GET(request: Request) {
   // Get the authorization code and the 'next' redirect path
   // const next = searchParams.get("next") ?? "/";
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const rankingsData: DatagolfRankingInput = await fetchDataGolf(
+  const rankingsData = (await fetchDataGolf(
     "preds/get-dg-rankings",
     null,
-  );
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const fieldData: DatagolfFieldInput = await fetchDataGolf(
+  )) as DatagolfRankingInput;
+  const fieldData = (await fetchDataGolf(
     "field-updates",
     null,
-  );
+  )) as DatagolfFieldInput;
 
   const currentTourney = (await api.tournament.getInfo()).next;
   const golfers = await api.golfer.getByTournament({

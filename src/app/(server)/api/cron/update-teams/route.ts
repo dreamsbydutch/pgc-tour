@@ -390,7 +390,7 @@ async function updateTeamPositions(
   golfers: Golfer[],
 ): Promise<Team[]> {
   const tier = await api.tier.getById({
-    tierID: tournament.tierId,
+    id: tournament.tierId,
   });
   const tourCards = await api.tourCard.getBySeason({
     seasonId: tournament.seasonId,
@@ -413,7 +413,35 @@ async function updateTeamPositions(
         team.thru = null;
         team.points = 0;
         team.earnings = 0;
-        await api.team.update(team);
+        await api.team.update({
+          id: team.id,
+          ...(team.position !== undefined && {
+            position: team.position || undefined,
+          }),
+          ...(team.score !== undefined && { score: team.score ?? undefined }),
+          ...(team.today !== undefined && { today: team.today ?? undefined }),
+          ...(team.thru !== undefined && { thru: team.thru ?? undefined }),
+          ...(team.points !== undefined && {
+            points: team.points ?? undefined,
+          }),
+          ...(team.earnings !== undefined && {
+            earnings: team.earnings ?? undefined,
+          }),
+          ...(team.round !== undefined && { round: team.round ?? undefined }),
+          ...(team.makeCut !== undefined && {
+            makeCut: team.makeCut ?? undefined,
+          }),
+          ...(team.topTen !== undefined && {
+            topTen: team.topTen ?? undefined,
+          }),
+          ...(team.topFive !== undefined && {
+            topFive: team.topFive ?? undefined,
+          }),
+          ...(team.topThree !== undefined && {
+            topThree: team.topThree ?? undefined,
+          }),
+          ...(team.win !== undefined && { win: team.win ?? undefined }),
+        });
         return team;
       }
       const sameTourTeams = updatedTeams.filter(
@@ -473,7 +501,31 @@ async function updateTeamPositions(
         team.earnings = Math.round((team.earnings ?? 0) * 100) / 100;
       }
 
-      await api.team.update(team);
+      await api.team.update({
+        id: team.id,
+        ...(team.position !== undefined && {
+          position: team.position || undefined,
+        }),
+        ...(team.score !== undefined && { score: team.score ?? undefined }),
+        ...(team.today !== undefined && { today: team.today ?? undefined }),
+        ...(team.thru !== undefined && { thru: team.thru ?? undefined }),
+        ...(team.points !== undefined && { points: team.points ?? undefined }),
+        ...(team.earnings !== undefined && {
+          earnings: team.earnings ?? undefined,
+        }),
+        ...(team.round !== undefined && { round: team.round ?? undefined }),
+        ...(team.makeCut !== undefined && {
+          makeCut: team.makeCut ?? undefined,
+        }),
+        ...(team.topTen !== undefined && { topTen: team.topTen ?? undefined }),
+        ...(team.topFive !== undefined && {
+          topFive: team.topFive ?? undefined,
+        }),
+        ...(team.topThree !== undefined && {
+          topThree: team.topThree ?? undefined,
+        }),
+        ...(team.win !== undefined && { win: team.win ?? undefined }),
+      });
       return team;
     }),
   );

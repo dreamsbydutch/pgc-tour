@@ -1,6 +1,5 @@
 "use server";
 
-import { fetchDataGolf } from "@/old-utils";
 import { api } from "@/trpc/server";
 import type {
   DataGolfLiveTournament,
@@ -11,6 +10,7 @@ import type {
 } from "@/lib/types/datagolf_types";
 import type { Course, Golfer, Team, Tournament } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { fetchDataGolf } from "@/lib/utils/system/api";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL.
@@ -190,7 +190,7 @@ async function updateExistingGolfers(
         updateData.win = liveGolfer.win;
       }
       if (liveGolfer?.current_pos !== undefined) {
-        updateData.position = liveGolfer.current_pos;
+        updateData.position = liveGolfer.current_pos || undefined; // Convert null to undefined
         const posCurrent = Number(liveGolfer.current_pos.replace("T", ""));
         const posOld = Number(golfer.position?.replace("T", "") ?? 0);
         const posChange = posCurrent - posOld;
@@ -259,7 +259,39 @@ async function updateExistingGolfers(
               : undefined;
       }
 
-      await api.golfer.update(updateData);
+      await api.golfer.update({
+        id: golfer.id,
+        ...(updateData.position !== undefined && {
+          position: updateData.position || undefined,
+        }),
+        ...(updateData.score !== undefined && {
+          score: updateData.score ?? undefined,
+        }),
+        ...(updateData.makeCut !== undefined && {
+          makeCut: updateData.makeCut ?? undefined,
+        }),
+        ...(updateData.topTen !== undefined && {
+          topTen: updateData.topTen ?? undefined,
+        }),
+        ...(updateData.win !== undefined && {
+          win: updateData.win ?? undefined,
+        }),
+        ...(updateData.today !== undefined && {
+          today: updateData.today ?? undefined,
+        }),
+        ...(updateData.thru !== undefined && {
+          thru: updateData.thru ?? undefined,
+        }),
+        ...(updateData.round !== undefined && {
+          round: updateData.round ?? undefined,
+        }),
+        ...(updateData.earnings !== undefined && {
+          earnings: updateData.earnings ?? undefined,
+        }),
+        ...(updateData.usage !== undefined && {
+          usage: updateData.usage ?? undefined,
+        }),
+      });
       return updateData;
     }),
   );

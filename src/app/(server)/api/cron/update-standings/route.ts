@@ -1,6 +1,7 @@
 "use server";
 
 import { api } from "@/trpc/server";
+import { Team, TourCard } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 /**
@@ -171,7 +172,7 @@ async function updateTourCardsInDatabase<T extends TourCard>(
     tourCards.map(async (tourCard) => {
       await api.tourCard.update({
         id: tourCard.id,
-        position: tourCard.position,
+        position: tourCard.position ?? undefined,
         points: tourCard.points ?? undefined,
         earnings: tourCard.earnings,
         win: tourCard.win,

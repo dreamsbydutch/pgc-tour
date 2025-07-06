@@ -1,6 +1,5 @@
 "use client";
 
-import { paymentSchema } from "@/old-utils";
 import { api } from "@/trpc/react";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
@@ -16,10 +15,10 @@ import {
   TableHeader,
   TableRow,
 } from "../../../lib/components/ui/table";
-import { formatMoney } from "@/old-utils";
 import { processPayment } from "@/server/api/actions/transaction";
 import type { TransactionType } from "@prisma/client";
 import { Button } from "../../../lib/components/ui/button";
+import { formatMoney } from "@/lib/utils/domain/formatting";
 
 const emptyTransaction = {
   id: 0,
@@ -29,6 +28,15 @@ const emptyTransaction = {
   amount: 0,
   transactionType: "Payment" as TransactionType,
 };
+
+const paymentSchema = z.object({
+  id: z.number(),
+  userId: z.string().min(1, "Please select a member"),
+  seasonId: z.string(),
+  description: z.string(),
+  amount: z.number().min(1, "Every transaction must have an amount"),
+  transactionType: z.enum(["Payment", "Other"]), // Replace "Other" with other valid TransactionType values if needed
+});
 
 export default function PaymentForm() {
   const router = useRouter();
@@ -40,7 +48,7 @@ export default function PaymentForm() {
     onSubmit: async ({ value }) => {
       const member = allMembers?.find((obj) => obj.id === value.userId);
       value.description =
-        formatMoney(value.amount) + " payment made by " + member?.fullname;
+        formatMoney(value.amount) + " payment made by " + (member?.firstname ?? "") + " " + (member?.lastname ?? "");
       await processPayment(value);
       await utils.member.invalidate();
       router.refresh();
