@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 
-import { Button } from "@/src/lib/components/ui/button";
+import { Button } from "@/lib/components/ui/button";
 import { Icons } from "../../../lib/components/functionalComponents/Icons";
 import { signInWithGoogle } from "./actions";
 import Link from "next/link";
-import { useUser } from "@/src/lib/hooks/useUser";
+import { useUser } from "@/lib/hooks/useUser";
 
 export default function SignInPage() {
   const { user, isLoading } = useUser();

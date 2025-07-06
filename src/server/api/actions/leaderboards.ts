@@ -6,12 +6,12 @@
  * and server components. Returns the same data structure as the client hook.
  */
 
-import { db } from "@/src/server/db";
+import { db } from "@/server/db";
 import type {
   LeaderboardResult,
   MinimalTournament,
   TourGroup,
-} from "@/src/lib/types";
+} from "@/lib/types";
 import { getCurrentTournament } from "./tournaments";
 
 /**

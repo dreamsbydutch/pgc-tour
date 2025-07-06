@@ -10,11 +10,11 @@
 
 import { useSeasonalStore } from "../store/seasonalStore";
 import { useMemo } from "react";
-import type { MinimalTournament } from "@/src/lib/types";
+import type { MinimalTournament } from "@/lib/types";
 import type {
   TournamentHookResult,
   EnhancedTournamentHookResult,
-} from "@/src/lib/types";
+} from "@/lib/types";
 import { tournaments } from "../utils/domain/tournaments";
 import { getTournamentStatus } from "../utils/domain/golf";
 

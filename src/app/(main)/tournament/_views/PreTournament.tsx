@@ -14,7 +14,7 @@ import type {
   Tournament,
 } from "@prisma/client";
 import CreateTeamPage from "./CreateTeamPage";
-import { useTourCards, useUser } from "@/src/lib/hooks";
+import { useTourCards, useUser } from "@/lib/hooks";
 
 /**
  * PreTournamentPage Component

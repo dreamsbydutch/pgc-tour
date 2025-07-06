@@ -8,7 +8,7 @@
  * @module useLeaderboard
  */
 
-import { api } from "@/src/trpc/react";
+import { api } from "@/trpc/react";
 import { useSeasonalStore } from "../store/seasonalStore";
 import { teams } from "@/lib/utils";
 import { useMemo } from "react";
@@ -17,14 +17,14 @@ import type {
   LeaderboardResult,
   EnhancedLeaderboardResult,
   MinimalTournament,
-} from "@/src/lib/types";
+} from "@/lib/types";
 import type {
   MinimalTour,
   MinimalTourCard,
   EnrichedTeam,
   TourGroup,
   TournamentStatus,
-} from "@/src/lib/types";
+} from "@/lib/types";
 import { getTournamentStatus } from "../utils/domain/golf";
 
 /**

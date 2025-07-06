@@ -9,7 +9,7 @@ This folder contains server actions that provide server-side equivalents to clie
 ```
 src/server/api/actions/
 ├── 🏆 tournaments.ts      # Tournament navigation & data
-├── 📊 leaderboards.ts     # Leaderboard data fetching  
+├── 📊 leaderboards.ts     # Leaderboard data fetching
 ├── 🏅 champions.ts        # Recent champions data
 ├── ⛳ golfer.ts           # Golfer statistics & usage
 ├── 👥 member.ts           # Member management & tiers
@@ -22,11 +22,12 @@ src/server/api/actions/
 ## 🎯 Core Actions
 
 ### 🏆 Tournament Navigation
+
 ```typescript
 // Get current tournament with enhanced data
 const tournament = await getTournamentData(tournamentId);
 
-// Navigate tournament history  
+// Navigate tournament history
 const history = await getTournamentHistory();
 
 // Get current/next tournament info
@@ -34,7 +35,8 @@ const current = await getCurrentTournament();
 const next = await getNextTournament();
 ```
 
-### 📊 Leaderboard Data  
+### 📊 Leaderboard Data
+
 ```typescript
 // Get current leaderboard with real-time data
 const leaderboard = await getCurrentLeaderboard();
@@ -47,6 +49,7 @@ const historical = await getHistoricalLeaderboard(tournamentId);
 ```
 
 ### 🏅 Champions Data
+
 ```typescript
 // Get recent champions across tournaments
 const champions = await getRecentChampions(limit);
@@ -58,6 +61,7 @@ const tournamentChamps = await getChampionsByTournament(tournamentId);
 ## 🚀 Business Logic Actions
 
 ### ⛳ Golfer Management
+
 ```typescript
 // Update golfer usage statistics for tournament
 await updateUsageForTournament({ tournamentId });
@@ -66,10 +70,11 @@ await updateUsageForTournament({ tournamentId });
 const golfers = await getGolfersWithUsage(tournamentId);
 
 // Get top performing golfers
-const topGolfers = await getTopGolfers(10, 'earnings');
+const topGolfers = await getTopGolfers(10, "earnings");
 ```
 
 ### 👥 Member Operations
+
 ```typescript
 // Update member tiers based on performance
 await updateMemberTiers(seasonId);
@@ -78,19 +83,20 @@ await updateMemberTiers(seasonId);
 const memberData = await getMemberWithTourCards(memberId);
 
 // Get members by tier/role
-const tierMembers = await getMembersByTier('Gold');
+const tierMembers = await getMembersByTier("Gold");
 
 // Get comprehensive member statistics
 const stats = await getMemberStats(memberId);
 ```
 
 ### 🏟️ Team Management
+
 ```typescript
 // Create team from form submission
 const result = await teamCreateOnFormSubmit({
   value: { groups: [{ golfers: [1, 2, 3, 4] }] },
   tournamentId,
-  tourCardId
+  tourCardId,
 });
 
 // Update team golfer composition
@@ -107,16 +113,17 @@ await deleteTeam(teamId);
 ```
 
 ### 💰 Financial Operations
+
 ```typescript
 // Process payment transaction
 const paymentResult = await processPayment(transaction);
 
 // Add funds to member account
-await addFunds({ 
-  memberId, 
-  amount, 
-  description, 
-  seasonId 
+await addFunds({
+  memberId,
+  amount,
+  description,
+  seasonId,
 });
 
 // Get transaction history with pagination
@@ -124,7 +131,7 @@ const history = await getTransactionHistory({
   memberId,
   seasonId,
   limit: 50,
-  offset: 0
+  offset: 0,
 });
 
 // Get current account balance with context
@@ -132,11 +139,12 @@ const balance = await getAccountBalance(memberId);
 ```
 
 ### 🎫 Tour Card Lifecycle
+
 ```typescript
 // Create new tour card with payment processing
 await createTourCard({ tour, seasonId });
 
-// Delete tour card with refund processing  
+// Delete tour card with refund processing
 await deleteTourCard({ tourCard });
 
 // Update display names with collision resolution
@@ -158,9 +166,10 @@ const memberCards = await getMemberCardsSimple(memberId);
 ## ⚡ Usage Patterns
 
 ### Server Components
+
 ```typescript
 // app/tournament/[id]/page.tsx
-import { getTournamentData } from '@/src/server/api/actions';
+import { getTournamentData } from '@/server/api/actions';
 
 export default async function TournamentPage({ params }) {
   const tournament = await getTournamentData(params.id);
@@ -169,31 +178,33 @@ export default async function TournamentPage({ params }) {
 ```
 
 ### API Routes
+
 ```typescript
-// app/api/teams/route.ts  
-import { getTeamsForTournament } from '@/src/server/api/actions';
+// app/api/teams/route.ts
+import { getTeamsForTournament } from "@/server/api/actions";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const tournamentId = searchParams.get('tournamentId');
-  
+  const tournamentId = searchParams.get("tournamentId");
+
   const result = await getTeamsForTournament(tournamentId);
   return Response.json(result);
 }
 ```
 
 ### Form Actions
+
 ```typescript
 // app/teams/create/actions.ts
-import { teamCreateOnFormSubmit } from '@/src/server/api/actions';
+import { teamCreateOnFormSubmit } from "@/server/api/actions";
 
 export async function createTeam(formData: FormData) {
   const result = await teamCreateOnFormSubmit({
-    value: JSON.parse(formData.get('teams')),
-    tournamentId: formData.get('tournamentId'),
-    tourCardId: formData.get('tourCardId')
+    value: JSON.parse(formData.get("teams")),
+    tournamentId: formData.get("tournamentId"),
+    tourCardId: formData.get("tourCardId"),
   });
-  
+
   if (!result.success) {
     throw new Error(result.error);
   }
@@ -212,7 +223,7 @@ All actions follow a consistent error handling pattern:
   // ... additional context
 }
 
-// Error Response  
+// Error Response
 {
   success: false,
   error: string,
@@ -231,7 +242,7 @@ All actions follow a consistent error handling pattern:
 ## 📈 Best Practices
 
 1. **Use server actions for SSR/server components**
-2. **Use client hooks for interactive components**  
+2. **Use client hooks for interactive components**
 3. **Batch related data fetches in single actions**
 4. **Handle errors gracefully with fallback data**
 5. **Leverage TypeScript for compile-time safety**
@@ -239,4 +250,4 @@ All actions follow a consistent error handling pattern:
 
 ---
 
-*This API provides comprehensive server-side data access while maintaining consistency with client-side patterns and ensuring type safety throughout the application.*
+_This API provides comprehensive server-side data access while maintaining consistency with client-side patterns and ensuring type safety throughout the application._

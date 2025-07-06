@@ -1,6 +1,6 @@
 // API route for unsubscribing from push notifications
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/src/server/db";
+import { db } from "@/server/db";
 
 export async function POST(request: NextRequest) {
   try {

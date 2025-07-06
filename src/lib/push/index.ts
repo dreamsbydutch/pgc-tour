@@ -6,7 +6,7 @@
  *
  * @example Client-side usage:
  * ```typescript
- * import { usePushNotifications } from "@/src/lib/push";
+ * import { usePushNotifications } from "@/lib/push";
  *
  * function MyComponent({ memberId }) {
  *   const { isPushSubscribed, handleToggle } = usePushNotifications(memberId);
@@ -16,7 +16,7 @@
  *
  * @example Direct function usage:
  * ```typescript
- * import { subscribeToPushNotifications } from "@/src/lib/push";
+ * import { subscribeToPushNotifications } from "@/lib/push";
  *
  * const subscription = await subscribeToPushNotifications(memberId);
  * ```

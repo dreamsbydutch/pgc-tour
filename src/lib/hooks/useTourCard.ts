@@ -14,7 +14,7 @@ import type {
   MinimalTourCard,
   TourCardFilters,
   EnhancedTourCardsResult,
-} from "@/src/lib/types";
+} from "@/lib/types";
 
 /**
  * Returns filtered tour cards with configurable sorting

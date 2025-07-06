@@ -1,5 +1,5 @@
-import { toast } from "@/src/lib/hooks/useToast";
-import { createClient } from "@/src/lib/supabase/client";
+import { toast } from "@/lib/hooks/useToast";
+import { createClient } from "@/lib/supabase/client";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import type { Dispatch, SetStateAction } from "react";
 

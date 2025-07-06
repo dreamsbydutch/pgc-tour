@@ -1,14 +1,14 @@
 "use server";
 
 import { fetchDataGolf } from "@/old-utils";
-import { api } from "@/src/trpc/server";
+import { api } from "@/trpc/server";
 import type {
   DataGolfLiveTournament,
   DatagolfFieldGolfer,
   DatagolfFieldInput,
   DatagolfLiveGolfer,
   DatagolfRankingInput,
-} from "@/src/lib/types/datagolf_types";
+} from "@/lib/types/datagolf_types";
 import type { Course, Golfer, Team, Tournament } from "@prisma/client";
 import { NextResponse } from "next/server";
 

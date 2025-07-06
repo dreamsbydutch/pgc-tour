@@ -1,11 +1,11 @@
 import Image from "next/image";
 import HeaderDropdown from "./HeaderDropdownMenu";
 import { PopoverTrigger } from "@radix-ui/react-popover";
-import { Popover, PopoverContent } from "@/src/lib/components/ui/popover";
+import { Popover, PopoverContent } from "@/lib/components/ui/popover";
 import { cn, fetchDataGolf, formatMoney, formatRank } from "@/old-utils";
-import type { DatagolfCourseInputData } from "@/src/lib/types/datagolf_types";
+import type { DatagolfCourseInputData } from "@/lib/types/datagolf_types";
 import type { Tier, Tournament } from "@prisma/client";
-import { useMainStore } from "@/src/lib/store/store";
+import { useMainStore } from "@/lib/store/store";
 
 /**
  * LeaderboardHeader Component

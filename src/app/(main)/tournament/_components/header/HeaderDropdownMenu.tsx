@@ -10,12 +10,12 @@ import {
   DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/src/lib/components/ui/dropdown-menu";
+} from "@/lib/components/ui/dropdown-menu";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils/core";
-import LoadingSpinner from "@/src/lib/components/functionalComponents/loading/LoadingSpinner";
-import { useMainStore } from "@/src/lib/store/store";
+import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
+import { useMainStore } from "@/lib/store/store";
 import type { Course, Tier, Tournament } from "@prisma/client";
 
 /**

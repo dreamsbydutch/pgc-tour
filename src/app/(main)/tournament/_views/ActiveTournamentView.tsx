@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useLeaderboardStore } from "@/src/lib/store/store";
+import { useLeaderboardStore } from "@/lib/store/store";
 import {
   updateLeaderboardNow,
   useLeaderboardPolling,
-} from "@/src/lib/store/leaderboardInit";
+} from "@/lib/store/leaderboardInit";
 import LeaderboardPage from "./LeaderboardPage";
 import type { Course, Tournament } from "@prisma/client";
 
@@ -50,7 +50,7 @@ export default function ActiveTournamentView({
     };
 
     initialLoad().catch((err) =>
-      console.error("Error during initial leaderboard load:", err)
+      console.error("Error during initial leaderboard load:", err),
     );
   }, []); // Empty dependency array - only run once on mount
 
@@ -93,7 +93,7 @@ export default function ActiveTournamentView({
   return (
     <>
       {/* Status bar for live tournaments */}
-      <div className="my-0.5 mx-auto flex w-full max-w-4xl md:w-11/12 lg:w-8/12 items-center justify-between gap-4">
+      <div className="mx-auto my-0.5 flex w-full max-w-4xl items-center justify-between gap-4 md:w-11/12 lg:w-8/12">
         <span className="text-2xs text-slate-500">
           {lastUpdated
             ? `Last updated: ${formatLastUpdated(lastUpdated)}`

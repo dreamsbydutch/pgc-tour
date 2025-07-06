@@ -1,13 +1,13 @@
 "use client";
 
-import { useMainStore } from "@/src/lib/store/store";
+import { useMainStore } from "@/lib/store/store";
 import { useSearchParams } from "next/navigation";
-import { LeaderboardHeaderSkeleton } from "@/src/app/(main)/tournament/_components/skeletons/LeaderboardHeaderSkeleton";
+import { LeaderboardHeaderSkeleton } from "@/app/(main)/tournament/_components/skeletons/LeaderboardHeaderSkeleton";
 import PreTournamentPage, {
   TeamPickFormSkeleton,
-} from "@/src/app/(main)/tournament/_views/PreTournament";
-import LeaderboardHeader from "@/src/app/(main)/tournament/_components/header/LeaderboardHeader";
-import { TournamentCountdownSkeleton } from "@/src/lib/components/smartComponents/TournamentCountdown";
+} from "@/app/(main)/tournament/_views/PreTournament";
+import LeaderboardHeader from "@/app/(main)/tournament/_components/header/LeaderboardHeader";
+import { TournamentCountdownSkeleton } from "@/lib/components/smartComponents/TournamentCountdown";
 import ActiveTournamentView from "./_views/ActiveTournamentView";
 import PastTournamentView from "./_views/PastTournamentView";
 import HistoricalTournamentView from "./_views/HistoricalTournamentView";
@@ -54,9 +54,8 @@ export default function TournamentPage() {
 
   const focusTourney = getDisplayTournament();
 
-  
   if (!focusTourney && tournamentIdParam) {
-    return <HistoricalTournamentView tournamentId={tournamentIdParam} />
+    return <HistoricalTournamentView tournamentId={tournamentIdParam} />;
   }
 
   // While loading tournament data, show loading view

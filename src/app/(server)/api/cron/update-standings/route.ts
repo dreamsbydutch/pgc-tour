@@ -1,6 +1,6 @@
 "use server";
 
-import { api } from "@/src/trpc/server";
+import { api } from "@/trpc/server";
 import { NextResponse } from "next/server";
 
 /**
@@ -218,7 +218,9 @@ export async function GET(request: Request) {
   const { origin } = new URL(request.url);
 
   const season = await api.season.getCurrent();
-  let tourCards = await api.tourCard.getBySeason({ seasonId: season?.id??"" });
+  let tourCards = await api.tourCard.getBySeason({
+    seasonId: season?.id ?? "",
+  });
 
   if (tourCards) {
     tourCards = await Promise.all(
@@ -275,6 +277,5 @@ export async function GET(request: Request) {
   }
   return NextResponse.redirect(`${origin}/`);
 }
-
 
 // localhost:3000/cron/update-standings

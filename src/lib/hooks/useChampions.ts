@@ -8,16 +8,12 @@
  * @module useChampions
  */
 
-import { api } from "@/src/trpc/react";
+import { api } from "@/trpc/react";
 import { useSeasonalStore } from "../store/seasonalStore";
 import { validation } from "@/lib/utils";
 import { useMemo } from "react";
-import type { ChampionsResult, EnhancedChampionsResult } from "@/src/lib/types";
-import type {
-  MinimalTour,
-  MinimalTourCard,
-  EnrichedTeam,
-} from "@/src/lib/types";
+import type { ChampionsResult, EnhancedChampionsResult } from "@/lib/types";
+import type { MinimalTour, MinimalTourCard, EnrichedTeam } from "@/lib/types";
 
 /**
  * Returns recent tournament champions with configurable day limit

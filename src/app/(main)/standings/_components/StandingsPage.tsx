@@ -8,14 +8,14 @@ import LoadingSpinner from "../../../../lib/components/functionalComponents/load
 import type { TourCard, Tour, Tier } from "@prisma/client";
 import { StandingsTourCardInfo } from "./StandingsDropdown";
 import LittleFucker from "../../../../lib/components/smartComponents/LittleFucker";
-import { useMainStore } from "@/src/lib/store/store";
-import { api } from "@/src/trpc/react";
+import { useMainStore } from "@/lib/store/store";
+import { api } from "@/trpc/react";
 import Image from "next/image";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/src/lib/components/ui/popover";
+} from "@/lib/components/ui/popover";
 
 /**
  * tourToggleButton Component

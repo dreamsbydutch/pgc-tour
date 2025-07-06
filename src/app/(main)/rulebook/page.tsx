@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ruleList } from "./rules";
-import { RuleCategoryType } from "@/src/lib/components/functionalComponents/rulebookComponents";
+import { RuleCategoryType } from "@/lib/components/functionalComponents/rulebookComponents";
 import { Tier } from "@prisma/client";
 
 /**

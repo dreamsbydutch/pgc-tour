@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { api } from "@/src/trpc/react";
+import { api } from "@/trpc/react";
 import {
   Table,
   TableBody,
@@ -9,8 +9,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/src/lib/components/ui/table";
-import { Button } from "@/src/lib/components/ui/button";
+} from "@/lib/components/ui/table";
+import { Button } from "@/lib/components/ui/button";
 import { formatMoney } from "@/old-utils";
 
 // Add type definitions

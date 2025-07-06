@@ -7,8 +7,8 @@
 
 "use server";
 
-import { api } from "@/src/trpc/server";
-import { db } from "@/src/server/db";
+import { api } from "@/trpc/server";
+import { db } from "@/server/db";
 
 /**
  * Process team creation form submission

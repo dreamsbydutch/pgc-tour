@@ -10,9 +10,9 @@ import type {
 import { useState } from "react";
 import Link from "next/link";
 import { LeaderboardListing } from "../_components/LeaderboardListing";
-import { useLeaderboardStore, useMainStore } from "@/src/lib/store/store";
+import { useLeaderboardStore, useMainStore } from "@/lib/store/store";
 import { ToursToggleButton } from "../../standings/_components/StandingsPage";
-import { api } from "@/src/trpc/react";
+import { api } from "@/trpc/react";
 
 /**
  * LeaderboardPage Component
@@ -65,7 +65,7 @@ export default function LeaderboardPage({
   ];
 
   return (
-    <div className=" w-full max-w-4xl md:w-11/12 lg:w-8/12 mx-auto mt-2">
+    <div className="mx-auto mt-2 w-full max-w-4xl md:w-11/12 lg:w-8/12">
       {/* Admin-only link to tournament stats */}
       {member?.role === "admin" && (
         <Link

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMainStore } from "@/src/lib/store/store";
+import { useMainStore } from "@/lib/store/store";
 import { useState } from "react";
 import {
   GoldPlayoffHeader,

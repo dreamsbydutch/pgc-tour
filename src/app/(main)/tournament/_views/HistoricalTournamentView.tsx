@@ -5,7 +5,7 @@ import {
   HistoricalLeaderboardPage,
   PlayoffLeaderboardPage,
 } from "./LeaderboardPage";
-import { api } from "@/src/trpc/react";
+import { api } from "@/trpc/react";
 
 interface PastTournamentViewProps {
   tournamentId: string;

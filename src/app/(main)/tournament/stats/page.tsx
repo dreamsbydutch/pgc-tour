@@ -1,13 +1,13 @@
 "use client";
 
-import LoadingSpinner from "@/src/lib/components/functionalComponents/loading/LoadingSpinner";
+import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
 import { cn, formatScore } from "@/old-utils";
-import { api } from "@/src/trpc/react";
+import { api } from "@/trpc/react";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { Suspense, useState, type Dispatch, type SetStateAction } from "react";
 
-import { useMainStore } from "@/src/lib/store/store";
+import { useMainStore } from "@/lib/store/store";
 import { LeaderboardHeaderSkeleton } from "../_components/skeletons/LeaderboardHeaderSkeleton";
 import LeaderboardHeader from "../_components/header/LeaderboardHeader";
 import type { Team, Tour, TourCard, Tournament } from "@prisma/client";
@@ -16,7 +16,7 @@ import {
   TableCell,
   TableHeader,
   TableRow,
-} from "@/src/lib/components/ui/table";
+} from "@/lib/components/ui/table";
 import { useSearchParams } from "next/navigation";
 
 export default function Page() {

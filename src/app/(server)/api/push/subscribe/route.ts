@@ -3,8 +3,7 @@
  * Saves push subscription data to the database linked to a member ID
  */
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/src/server/db";
-import type { PushNotificationResponse } from "@/src/lib/push";
+import { db } from "@/server/db";
 
 export async function POST(request: NextRequest) {
   try {

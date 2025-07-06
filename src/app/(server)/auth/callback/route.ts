@@ -3,8 +3,8 @@
 import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
-import { api } from "@/src/trpc/server";
-import { formatName } from "@/old-utils";
+import { formatName } from "@/lib/utils/domain/formatting";
+import { api } from "@/trpc/server";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL
@@ -35,17 +35,18 @@ export async function GET(request: Request) {
           const splitName = fullName.split(" ");
           await api.member.create({
             id: supabaseUser.data.user.id,
-            fullname: fullName,
             firstname: splitName[0] ?? "N/A",
             lastname: splitName.slice(1).toString(),
             email: supabaseUser.data.user.email ?? "N/A",
           });
         } else if (!prismaUser?.firstname || !prismaUser?.lastname) {
-          const fullName = formatName(prismaUser.fullname, "full");
+          const fullName = formatName(
+            `${prismaUser.firstname ?? ""} ${prismaUser.lastname ?? ""}`,
+            "full"
+          );
           const splitName = fullName.split(" ");
           await api.member.update({
             id: prismaUser.id,
-            fullname: fullName,
             firstname: splitName[0],
             lastname: splitName.slice(1).toString(),
           });

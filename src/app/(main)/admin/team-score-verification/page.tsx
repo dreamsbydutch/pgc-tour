@@ -1,6 +1,6 @@
 "use client";
 
-import { api } from "@/src/trpc/react";
+import { api } from "@/trpc/react";
 
 export default function TeamScoreVerificationPage() {
   const season = api.season.getByYear.useQuery({ year: 2024 }).data;

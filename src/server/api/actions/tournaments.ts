@@ -6,14 +6,14 @@
  * and server components. Returns the same data structure as the client hook.
  */
 
-import { db } from "@/src/server/db";
-import { tournaments } from "@/src/lib/utils/domain/tournaments";
-import { getTournamentStatus } from "@/src/lib/utils/domain/golf";
+import { db } from "@/server/db";
+import { tournaments } from "@/lib/utils/domain/tournaments";
+import { getTournamentStatus } from "@/lib/utils/domain/golf";
 import type {
   TournamentHookResult,
   EnhancedTournamentHookResult,
   MinimalTournament,
-} from "@/src/lib/types";
+} from "@/lib/types";
 import type { Tournament } from "@prisma/client";
 
 /**

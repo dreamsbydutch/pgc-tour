@@ -1,6 +1,6 @@
 "use server";
 
-import { api } from "@/src/trpc/server";
+import { api } from "@/trpc/server";
 import type { Course, Golfer, Team, Tournament } from "@prisma/client";
 import { NextResponse } from "next/server";
 

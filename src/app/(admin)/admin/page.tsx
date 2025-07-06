@@ -2,7 +2,7 @@ import PaymentForm from "../_components/TransactionForm";
 import type {
   DatagolfFieldInput,
   DataGolfLiveTournament,
-} from "@/src/lib/types/datagolf_types";
+} from "@/lib/types/datagolf_types";
 import { fetchDataGolf } from "@/old-utils";
 import {
   CreateGroupsButton,
@@ -12,7 +12,7 @@ import {
 } from "../_components/CreateGroupsButton";
 import HistoryButton from "../_components/HistoryButton";
 import Link from "next/link";
-import { api } from "@/src/trpc/server";
+import { api } from "@/trpc/server";
 
 export default async function AdminDashboard() {
   const currentTourney = await api.tournament.getActive();
