@@ -37,6 +37,21 @@ export const tierRouter = createTRPCRouter({
       });
     }),
 
+  getCurrent: publicProcedure.query(async ({ ctx }) => {
+    const currentYear = new Date().getFullYear();
+    const currentSeason = await ctx.db.season.findUnique({
+      where: { year: currentYear },
+    });
+
+    if (!currentSeason) return [];
+
+    return ctx.db.tier.findMany({
+      where: { seasonId: currentSeason.id },
+      include: { season: true, tours: true },
+      orderBy: { name: "asc" },
+    });
+  }),
+
   create: adminProcedure
     .input(
       z.object({

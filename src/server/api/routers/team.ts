@@ -58,6 +58,65 @@ export const teamRouter = createTRPCRouter({
       });
     }),
 
+  getByUserTournament: protectedProcedure
+    .input(
+      z.object({
+        tourCardId: z.string(),
+        tournamentId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.db.team.findFirst({
+        where: {
+          tourCardId: input.tourCardId,
+          tournamentId: input.tournamentId,
+        },
+        include: {
+          tournament: true,
+          tourCard: {
+            include: { member: true },
+          },
+        },
+      });
+    }),
+
+  getByMember: protectedProcedure
+    .input(z.object({ memberId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.team.findMany({
+        where: {
+          tourCard: {
+            memberId: input.memberId,
+          },
+        },
+        include: {
+          tournament: true,
+          tourCard: {
+            include: { member: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }),
+
+  getChampionsByTournament: publicProcedure
+    .input(z.object({ tournamentId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.team.findMany({
+        where: {
+          tournamentId: input.tournamentId,
+          position: "1",
+        },
+        include: {
+          tournament: true,
+          tourCard: {
+            include: { member: true },
+          },
+        },
+        orderBy: { score: "asc" },
+      });
+    }),
+
   create: adminProcedure
     .input(
       z.object({

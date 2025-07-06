@@ -38,6 +38,14 @@ export const seasonRouter = createTRPCRouter({
     });
   }),
 
+  getByYear: publicProcedure
+    .input(z.object({ year: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.season.findUnique({
+        where: { year: input.year },
+      });
+    }),
+
   create: adminProcedure
     .input(
       z.object({

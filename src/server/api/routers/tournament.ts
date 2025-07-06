@@ -20,10 +20,10 @@ export const tournamentRouter = createTRPCRouter({
   }),
 
   getById: publicProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ tournamentId: z.string() }))
     .query(async ({ ctx, input }) => {
       return ctx.db.tournament.findUnique({
-        where: { id: input.id },
+        where: { id: input.tournamentId },
         include: {
           course: true,
           season: true,
@@ -70,6 +70,63 @@ export const tournamentRouter = createTRPCRouter({
           orderBy: { score: "asc" },
         },
       },
+    });
+  }),
+
+  getInfo: publicProcedure.query(async ({ ctx }) => {
+    const now = new Date();
+
+    const [current, next] = await Promise.all([
+      ctx.db.tournament.findFirst({
+        where: {
+          startDate: { lte: now },
+          endDate: { gte: now },
+        },
+        include: {
+          course: true,
+          season: true,
+          tier: true,
+          tours: true,
+        },
+      }),
+      ctx.db.tournament.findFirst({
+        where: {
+          startDate: { gt: now },
+        },
+        include: {
+          course: true,
+          season: true,
+          tier: true,
+          tours: true,
+        },
+        orderBy: { startDate: "asc" },
+      }),
+    ]);
+
+    return { current, next };
+  }),
+
+  getActive: publicProcedure.query(async ({ ctx }) => {
+    const now = new Date();
+    return ctx.db.tournament.findFirst({
+      where: {
+        OR: [
+          {
+            startDate: { lte: now },
+            endDate: { gte: now },
+          },
+          {
+            startDate: { gt: now },
+          },
+        ],
+      },
+      include: {
+        course: true,
+        season: true,
+        tier: true,
+        tours: true,
+      },
+      orderBy: { startDate: "asc" },
     });
   }),
 

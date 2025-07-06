@@ -15,10 +15,10 @@ export const tourRouter = createTRPCRouter({
   }),
 
   getById: publicProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ tourID: z.string() }))
     .query(async ({ ctx, input }) => {
       return ctx.db.tour.findUnique({
-        where: { id: input.id },
+        where: { id: input.tourID },
         include: {
           season: true,
           tournaments: true,
@@ -37,6 +37,21 @@ export const tourRouter = createTRPCRouter({
         orderBy: { name: "asc" },
       });
     }),
+
+  getActive: publicProcedure.query(async ({ ctx }) => {
+    const currentYear = new Date().getFullYear();
+    const currentSeason = await ctx.db.season.findUnique({
+      where: { year: currentYear },
+    });
+
+    if (!currentSeason) return [];
+
+    return ctx.db.tour.findMany({
+      where: { seasonId: currentSeason.id },
+      include: { season: true, tiers: true },
+      orderBy: { name: "asc" },
+    });
+  }),
 
   create: adminProcedure
     .input(
