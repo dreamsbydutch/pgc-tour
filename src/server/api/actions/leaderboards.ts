@@ -13,6 +13,7 @@ import type {
   TourGroup,
 } from "@/lib/types";
 import { getCurrentTournament } from "./tournaments";
+import { sortTeamsByProperties } from "@/lib/utils/domain/teams";
 
 /**
  * Get leaderboard data for a tournament
@@ -107,16 +108,26 @@ export async function getLeaderboardData(
       }),
     ]);
 
-    // Group teams by tour manually to match TourGroup interface
-    const tourGroupsMap = new Map<string, TourGroup>();
+    // Define the enriched team type
+    type EnrichedTeam = (typeof rawTeams)[number] & {
+      tourCard: (typeof tourCards)[number] | null;
+      tour:
+        | (typeof tours)[number]
+        | { id: string; name: string; seasonId: string };
+    };
 
-    rawTeams.forEach((team) => {
-      // Find the tour for this team using tourCardId
-      const tourCard = tourCards.find((tc) => tc.id === team.tourCardId);
+    // Group teams by tour and enrich with tourCard and tour info
+    const tourGroupsMap = new Map<
+      string,
+      Omit<TourGroup, "teams"> & { teams: EnrichedTeam[] }
+    >();
+
+    for (const team of rawTeams) {
+      const tourCard =
+        tourCards.find((tc) => tc.id === team.tourCardId) ?? null;
       const tour = tourCard
         ? tours.find((t) => t.id === tourCard.tourId)
         : null;
-
       const tourId = tour?.id || "unknown";
       const tourInfo = tour || {
         id: "unknown",
@@ -124,21 +135,35 @@ export async function getLeaderboardData(
         seasonId: tournament!.seasonId,
       };
 
-      const existingGroup = tourGroupsMap.get(tourId);
+      const teamWithTourCard: EnrichedTeam = {
+        ...team,
+        tourCard,
+        tour: tourInfo,
+      };
 
-      if (existingGroup) {
-        existingGroup.teams.push(team as any);
-        existingGroup.teamCount++;
-      } else {
+      if (!tourGroupsMap.has(tourId)) {
         tourGroupsMap.set(tourId, {
           tour: tourInfo as any,
-          teams: [team as any],
-          teamCount: 1,
+          teams: [],
+          teamCount: 0,
         });
       }
-    });
+      const group = tourGroupsMap.get(tourId)!;
+      group.teams.push(teamWithTourCard);
+      group.teamCount++;
+    }
 
-    const teamsByTour = Array.from(tourGroupsMap.values());
+    // Sort teams in each tour group before output
+    const teamsByTour: any[] = Array.from(tourGroupsMap.values())
+      .map((group) => ({
+        ...group,
+        teams: sortTeamsByProperties(group.teams, [
+          { property: "position", direction: "asc" },
+          { property: "score", direction: "asc" },
+          { property: "name", direction: "asc" },
+        ]),
+      }))
+      .sort((a, b) => a.tour.id.localeCompare(b.tour.id)); // Sort by tour id
 
     return {
       tournament,

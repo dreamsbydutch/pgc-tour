@@ -5,239 +5,151 @@ import { formatMoney, formatRank } from "@/lib/utils/domain/formatting";
 import { Star } from "lucide-react";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
-import type { TourCard, Tour, Tier } from "@prisma/client";
+import type { TourCard, Tour, Tier, Member } from "@prisma/client";
 import { StandingsTourCardInfo } from "./StandingsDropdown";
 import LittleFucker from "@/lib/components/smartComponents/LittleFucker";
-import { api } from "@/trpc/react";
 import Image from "next/image";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/lib/components/functionalComponents/ui/popover";
-import { useUser } from "@/lib/hooks";
 
-/**
- * tourToggleButton Component
- *
- * Renders a button to toggle between tours in the standings view.
- *
- * Props:
- * - tour: The tour data.
- * - tourToggle: The currently active tour ID.
- * - setTourToggle: Function to set the active tour.
- */
-export function ToursToggleButton({
-  tour,
-  tourToggle,
-  setTourToggle,
+// --- Utility Components ---
+const TableHeaderCell = ({
+  children,
+  className = "",
 }: {
-  tour: Tour;
-  tourToggle: string;
-  setTourToggle: Dispatch<SetStateAction<string>>;
-}) {
-  const [effect, setEffect] = useState(false);
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div className={cn("place-self-center font-varela", className)}>
+    {children}
+  </div>
+);
 
-  return (
-    <button
-      onClick={() => {
-        setTourToggle(tour.id);
-        setEffect(true);
-      }}
-      className={`${effect && "animate-toggleClick"} flex flex-row items-center justify-center gap-1 rounded-lg px-2 py-1 text-lg font-bold sm:px-8 md:px-10 md:text-xl ${
-        tourToggle === tour.id
-          ? "shadow-btn bg-gray-600 text-gray-300"
-          : "shadow-btn bg-gray-300 text-gray-800"
-      }`}
-      onAnimationEnd={() => setEffect(false)}
-    >
-      <Image
-        key={tour.id}
-        src={tour.logoUrl}
-        alt="Tour Logo"
-        width={512}
-        height={512}
-        className={cn(
-          "mx-1 inline-block h-6 w-auto",
-          tourToggle === tour.id &&
-            tour.id !== "pga" &&
-            tour.id !== "playoffs" &&
-            tour.id !== "gold" &&
-            tour.id !== "silver"
-            ? "invert"
-            : "",
-        )}
-      />
-      {tour.shortForm}
-    </button>
-  );
-}
 
-/**
- * StandingsHeader Component
- *
- * Renders the header row for the standings table.
- */
-export function StandingsHeader() {
+// --- Table Headers ---
+function RegularStandingsHeader() {
   return (
     <div className="grid grid-flow-row grid-cols-17 text-center">
       <div className="col-span-16 grid grid-flow-row grid-cols-10 text-center">
-        <div className="place-self-center font-varela text-xs font-bold sm:text-sm">
+        <TableHeaderCell className="text-xs font-bold sm:text-sm">
           Rank
-        </div>
-        <div className="col-span-5 place-self-center font-varela text-base font-bold sm:text-lg">
+        </TableHeaderCell>
+        <TableHeaderCell className="col-span-5 text-base font-bold sm:text-lg">
           Name
-        </div>
-        <div className="col-span-2 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
+        </TableHeaderCell>
+        <TableHeaderCell className="col-span-2 text-xs font-bold xs:text-sm sm:text-base">
           Cup Points
-        </div>
-        <div className="col-span-2 place-self-center font-varela text-2xs xs:text-xs sm:text-sm">
+        </TableHeaderCell>
+        <TableHeaderCell className="col-span-2 text-2xs xs:text-xs sm:text-sm">
           Earnings
-        </div>
+        </TableHeaderCell>
       </div>
     </div>
   );
 }
-export function GoldPlayoffHeader({ tier }: { tier: Tier }) {
-  return (
-    <Popover>
-      <PopoverTrigger className="col-span-7 row-span-1 w-full text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
-        <div className="grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-champ-400 text-center">
-          <div className="col-span-17 my-2 font-varela text-2xl font-extrabold text-champ-900">
-            PGC GOLD PLAYOFF
-          </div>
-          <div className="col-span-16 grid grid-flow-row grid-cols-10 text-center">
-            <div className="place-self-center font-varela text-xs font-bold sm:text-sm">
-              Rank
-            </div>
-            <div className="col-span-5 place-self-center font-varela text-base font-bold sm:text-lg">
-              Name
-            </div>
-            <div className="col-span-2 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
-              Cup Points
-            </div>
-            <div className="col-span-2 place-self-center font-varela text-2xs xs:text-xs sm:text-sm">
-              Starting Strokes
-            </div>
-          </div>
-        </div>
-      </PopoverTrigger>
-      <PopoverContent className="w-fit">
-        <PointsAndPayoutsPopover {...{ tier }} />
-      </PopoverContent>
-    </Popover>
-  );
-}
-export function SilverPlayoffHeader({ tier }: { tier: Tier }) {
-  return (
-    <Popover>
-      <PopoverTrigger className="col-span-7 row-span-1 w-full text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
-        <div className="mt-12 grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-zinc-300 text-center">
-          <div className="col-span-17 my-2 font-varela text-2xl font-extrabold text-zinc-600">
-            PGC SILVER PLAYOFF
-          </div>
-          <div className="col-span-16 grid grid-flow-row grid-cols-10 text-center">
-            <div className="place-self-center font-varela text-xs font-bold sm:text-sm">
-              Rank
-            </div>
-            <div className="col-span-5 place-self-center font-varela text-base font-bold sm:text-lg">
-              Name
-            </div>
-            <div className="col-span-2 place-self-center font-varela text-xs font-bold xs:text-sm sm:text-base">
-              Cup Points
-            </div>
-            <div className="col-span-2 place-self-center font-varela text-2xs xs:text-xs sm:text-sm">
-              Starting Strokes
-            </div>
-          </div>
-        </div>
-      </PopoverTrigger>
-      <PopoverContent className="w-fit">
-        <PointsAndPayoutsPopover {...{ tier }} />
-      </PopoverContent>
-    </Popover>
-  );
-}
 
-/**
- * StandingsListing Component
- *
- * Displays a single player's standings in the leaderboard.
- * - Highlights the user's standings and their friends' standings.
- * - Allows adding or removing friends from the standings view.
- *
- * Props:
- * - tourCard: The tour card data to display.
- * - member: The current user's member data.
- * - user: The authenticated user object.
- * - addingToFriends: Boolean indicating if a friend is being added.
- * - setAddingToFriends: Function to set the adding-to-friends state.
- */
-export function StandingsListing({
-  tourCard,
-  className,
+const PlayoffHeader = ({
+  title,
+  tier,
+  className = "",
 }: {
+  title: string;
+  tier: Tier;
+  className?: string;
+}) => (
+  <Popover>
+    <PopoverTrigger
+      className={cn(
+        "col-span-7 row-span-1 w-full text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg",
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          "grid grid-flow-row grid-cols-17 rounded-xl text-center",
+          title.includes("GOLD")
+            ? "bg-gradient-to-b from-champ-400"
+            : "mt-12 bg-gradient-to-b from-zinc-300",
+        )}
+      >
+        <div
+          className={cn(
+            "col-span-17 my-2 font-varela text-2xl font-extrabold",
+            title.includes("GOLD") ? "text-champ-900" : "text-zinc-600",
+          )}
+        >
+          {title}
+        </div>
+        <div className="col-span-16 grid grid-flow-row grid-cols-10 text-center">
+          <TableHeaderCell className="text-xs font-bold sm:text-sm">
+            Rank
+          </TableHeaderCell>
+          <TableHeaderCell className="col-span-5 text-base font-bold sm:text-lg">
+            Name
+          </TableHeaderCell>
+          <TableHeaderCell className="col-span-2 text-xs font-bold xs:text-sm sm:text-base">
+            Cup Points
+          </TableHeaderCell>
+          <TableHeaderCell className="col-span-2 text-2xs xs:text-xs sm:text-sm">
+            Starting Strokes
+          </TableHeaderCell>
+        </div>
+      </div>
+    </PopoverTrigger>
+    <PopoverContent className="w-fit">
+      <PointsAndPayoutsPopover tier={tier} />
+    </PopoverContent>
+  </Popover>
+);
+
+const GoldPlayoffHeader = ({ tier }: { tier: Tier }) => (
+  <PlayoffHeader title="PGC GOLD PLAYOFF" tier={tier} />
+);
+const SilverPlayoffHeader = ({ tier }: { tier: Tier }) => (
+  <PlayoffHeader title="PGC SILVER PLAYOFF" tier={tier} />
+);
+
+// --- Standings Listing ---
+interface RegularStandingsListingProps {
   tourCard: TourCard;
   className?: string;
-}) {
-  const [isFriendChanging, setIsFriendChanging] = useState(false);
+  currentMember?: Member | null;
+  isFriendChanging?: boolean;
+  onAddFriend?: (memberId: string) => void;
+  onRemoveFriend?: (memberId: string) => void;
+}
+
+function RegularStandingsListing({
+  tourCard,
+  className,
+  currentMember,
+  isFriendChanging = false,
+  onAddFriend,
+  onRemoveFriend,
+}: RegularStandingsListingProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { user } = useUser();
-
-  // Get current member data
-  const { data: currentMember } = api.member.getSelf.useQuery(undefined, {
-    enabled: !!user,
-  });
-
-  // Handle friend operations using member update
-  const updateMember = api.member.update.useMutation();
-
-  const handleAddFriend = () => {
-    if (!currentMember) return;
-    setIsFriendChanging(true);
-    updateMember.mutate({
-      id: currentMember.id,
-      friends: [...currentMember.friends, tourCard.memberId],
-    });
-    setIsFriendChanging(false);
-  };
-
-  const handleRemoveFriend = () => {
-    if (!currentMember) return;
-    setIsFriendChanging(true);
-    updateMember.mutate({
-      id: currentMember.id,
-      friends: currentMember.friends.filter(
-        (friendId) => friendId !== tourCard.memberId,
-      ),
-    });
-    setIsFriendChanging(false);
-  };
-
+  const isCurrent = currentMember?.id === tourCard.memberId;
+  const isFriend = currentMember?.friends?.includes(tourCard.memberId);
   return (
     <div
       key={tourCard.id}
       className={cn(
         className,
         "grid grid-flow-row grid-cols-17 rounded-lg py-[1px] text-center",
-        currentMember?.id === tourCard.memberId
-          ? "bg-slate-200 font-semibold"
-          : "",
-        currentMember?.friends.includes(tourCard.memberId)
-          ? "bg-slate-100"
-          : "",
+        isCurrent ? "bg-slate-200 font-semibold" : "",
+        isFriend ? "bg-slate-100" : "",
       )}
     >
       <div
         className="col-span-16 grid grid-flow-row grid-cols-10 rounded-lg text-center"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {/* Player Rank */}
         <div className="place-self-center font-varela text-sm sm:text-base">
           {tourCard.position}
         </div>
-
-        {/* Player Name */}
         <div className="col-span-5 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
           {tourCard.displayName}
           {tourCard.win > 0 && (
@@ -247,66 +159,57 @@ export function StandingsListing({
             />
           )}
         </div>
-
-        {/* Player Points */}
         <div className="col-span-2 place-self-center font-varela text-sm xs:text-base sm:text-lg">
           {tourCard.points}
         </div>
-
-        {/* Player Earnings */}
         <div className="col-span-2 place-self-center font-varela text-xs xs:text-sm sm:text-base">
           {formatMoney(tourCard.earnings)}
         </div>
       </div>
-
-      {/* Friend Actions */}
       {currentMember &&
         (isFriendChanging ? (
           <LoadingSpinner className="h-3 w-3" />
-        ) : currentMember.friends.includes(tourCard.memberId) ? (
+        ) : isFriend ? (
           <Star
             aria-disabled={isFriendChanging}
             fill="#111"
             size={12}
             className="m-auto cursor-pointer"
-            onClick={handleRemoveFriend}
+            onClick={() => onRemoveFriend && onRemoveFriend(tourCard.memberId)}
           />
-        ) : currentMember.id === tourCard.memberId ? null : (
+        ) : isCurrent ? null : (
           <Star
             size={12}
             className="m-auto cursor-pointer"
-            onClick={handleAddFriend}
+            onClick={() => onAddFriend && onAddFriend(tourCard.memberId)}
           />
         ))}
-      {isOpen ? (
+      {isOpen && (
         <StandingsTourCardInfo {...{ tourCard, member: currentMember }} />
-      ) : (
-        <></>
       )}
     </div>
   );
 }
-export function PlayoffStandingsListing({
-  tourCard,
-  teams,
-  strokes,
-  className,
-  tour,
-}: {
+
+// --- Playoff Standings Listing ---
+interface PlayoffStandingsListingProps {
   tourCard: TourCard;
   teams: TourCard[];
   strokes: number[];
   className?: string;
   tour?: Tour;
-}) {
+  currentMember?: Member | null;
+}
+
+function PlayoffStandingsListing({
+  tourCard,
+  teams,
+  strokes,
+  className,
+  tour,
+  currentMember,
+}: PlayoffStandingsListingProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { user } = useUser();
-
-  // Get current member data
-  const { data: currentMember } = api.member.getSelf.useQuery(undefined, {
-    enabled: !!user,
-  });
-
   const teamsBetterCount = teams?.filter(
     (obj) => (obj.points ?? 0) > (tourCard.points ?? 0),
   ).length;
@@ -324,32 +227,26 @@ export function PlayoffStandingsListing({
             teamsTiedCount,
         ) / 10
       : strokes[+position - 1];
-
+  const isCurrent = currentMember?.id === tourCard.memberId;
+  const isFriend = currentMember?.friends?.includes(tourCard.memberId);
   return (
     <div
       key={tourCard.id}
       className={cn(
         className,
         "grid grid-flow-row grid-cols-17 rounded-lg py-[1px] text-center",
-        currentMember?.id === tourCard.memberId
-          ? "bg-slate-200 font-semibold"
-          : "",
-        currentMember?.friends.includes(tourCard.memberId)
-          ? "bg-slate-100"
-          : "",
+        isCurrent ? "bg-slate-200 font-semibold" : "",
+        isFriend ? "bg-slate-100" : "",
       )}
     >
       <div
         className="col-span-16 grid grid-flow-row grid-cols-10 rounded-lg text-center"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {/* Player Rank */}
         <div className="place-self-center font-varela text-sm sm:text-base">
           {position}
         </div>
-
-        {/* Player Name */}
-        <div className="col-span-5 place-self-center font-varela text-lg sm:text-xl">
+        <div className="col-span-5 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
           {tourCard.displayName}
           {tourCard.win > 0 && (
             <LittleFucker
@@ -358,18 +255,13 @@ export function PlayoffStandingsListing({
             />
           )}
         </div>
-
-        {/* Player Points */}
         <div className="col-span-2 place-self-center font-varela text-sm xs:text-base sm:text-lg">
           {tourCard.points}
         </div>
-
-        {/* Player Earnings */}
         <div className="col-span-2 place-self-center font-varela text-xs xs:text-sm sm:text-base">
           {startingStrokes ?? "-"}
         </div>
       </div>
-      {/* Player Rank */}
       <div className="max-h-8 min-h-6 min-w-6 max-w-8 place-self-center p-1 font-varela text-sm sm:text-base">
         <Image
           src={tour?.logoUrl ?? ""}
@@ -378,19 +270,21 @@ export function PlayoffStandingsListing({
           height={128}
         />
       </div>
-      {isOpen ? (
+      {isOpen && (
         <StandingsTourCardInfo {...{ tourCard, member: currentMember }} />
-      ) : (
-        <></>
       )}
     </div>
   );
 }
 
-function PointsAndPayoutsPopover({ tier }: { tier: Tier | null | undefined }) {
+// --- Points and Payouts Popover ---
+export function PointsAndPayoutsPopover({
+  tier,
+}: {
+  tier: Tier | null | undefined;
+}) {
   return (
     <div className="grid w-full grid-cols-3 text-center">
-      {/* Rank Column */}
       <div className="mx-auto flex flex-col">
         <div className="text-base font-semibold text-white">Rank</div>
         {tier?.payouts.slice(0, 35).map((_, i) => (
@@ -399,8 +293,6 @@ function PointsAndPayoutsPopover({ tier }: { tier: Tier | null | undefined }) {
           </div>
         ))}
       </div>
-
-      {/* Payouts Column */}
       <div className="col-span-2 mx-auto flex flex-col">
         <div className="text-base font-semibold">Payouts</div>
         {tier?.payouts.slice(0, 35).map((payout) => (
@@ -411,4 +303,53 @@ function PointsAndPayoutsPopover({ tier }: { tier: Tier | null | undefined }) {
       </div>
     </div>
   );
+}
+
+// --- Unified Header Component ---
+export type StandingsHeaderVariant = "regular" | "gold" | "silver";
+
+export interface StandingsHeaderProps {
+  variant: StandingsHeaderVariant;
+  tier?: Tier;
+}
+
+export function StandingsHeader({ variant, tier }: StandingsHeaderProps) {
+  if (variant === "gold" && tier) {
+    return <GoldPlayoffHeader tier={tier} />;
+  }
+  if (variant === "silver" && tier) {
+    return <SilverPlayoffHeader tier={tier} />;
+  }
+  // default to regular
+  return <RegularStandingsHeader />;
+}
+
+// --- Unified Listing Component ---
+export type StandingsListingVariant = "regular" | "playoff";
+
+export interface StandingsListingProps {
+  variant: StandingsListingVariant;
+  tourCard: TourCard;
+  teams?: TourCard[];
+  strokes?: number[];
+  className?: string;
+  tour?: Tour;
+  currentMember?: Member | null;
+  isFriendChanging?: boolean;
+  onAddFriend?: (memberId: string) => void;
+  onRemoveFriend?: (memberId: string) => void;
+}
+
+export function StandingsListing(props: StandingsListingProps) {
+  if (props.variant === "playoff" && props.teams && props.strokes) {
+    return (
+      <PlayoffStandingsListing
+        {...props}
+        teams={props.teams}
+        strokes={props.strokes}
+      />
+    );
+  }
+  // default to regular
+  return <RegularStandingsListing {...props} />;
 }

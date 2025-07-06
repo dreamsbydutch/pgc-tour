@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 /**
  * Leaderboard Header Hook
@@ -10,7 +10,7 @@
 import { useState, useMemo } from "react";
 import { useCourseData } from "@/lib/hooks/useCourseData";
 import type { Tournament, Course, Tier } from "@prisma/client";
-import type { TournamentGroup } from "@/app/(main)/tournament/_components/header/LeaderboardHeader";
+import type { TournamentGroup } from "@/lib/components/functionalComponents/loading/LeaderboardHeader";
 import type { DatagolfCourseInputData } from "@/lib/types";
 
 export type TournamentWithIncludes = Tournament & {

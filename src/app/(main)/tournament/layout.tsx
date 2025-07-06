@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { LeaderboardHeaderSkeleton } from "./_components/skeletons/LeaderboardHeaderSkeleton";
+import { LeaderboardHeaderSkeleton } from "../../../lib/components/functionalComponents/loading/LeaderboardHeaderSkeleton";
 import { TournamentCountdownSkeleton } from "../../../lib/components/functionalComponents/TournamentCountdown";
 import { TeamPickFormSkeleton } from "./_views/PreTournament";
 

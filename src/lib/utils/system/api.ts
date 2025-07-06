@@ -3,6 +3,8 @@
  * HTTP request wrappers, error handling, and external API integration
  */
 
+import { env } from "@/env";
+
 /**
  * Data Golf API endpoints type definition
  */
@@ -37,26 +39,35 @@ export async function fetchDataGolf(
   queryParameters: Record<string, string> | null = null,
 ): Promise<unknown> {
   try {
+    // Use env.js for environment variables
+    const baseUrl = env.EXTERNAL_DATA_API_URL;
+    const apiKey = env.EXTERNAL_DATA_API_KEY;
+
+    if (!baseUrl || !apiKey) {
+      throw new Error(
+        "Missing EXTERNAL_DATA_API_URL or EXTERNAL_DATA_API_KEY environment variable",
+      );
+    }
+
+    // Ensure baseUrl ends with a slash
+    const normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+
     let fetchUrl = "";
 
     if (!queryParameters) {
-      fetchUrl =
-        process.env.EXTERNAL_DATA_API_URL +
-        queryType +
-        "?key=" +
-        process.env.EXTERNAL_DATA_API_KEY;
+      fetchUrl = normalizedBaseUrl + queryType + "?key=" + apiKey;
     } else {
       const queryParametersString = Object.keys(queryParameters)
         .map((key) => `${key}=${queryParameters[key]}`)
         .join("&");
 
       fetchUrl =
-        process.env.EXTERNAL_DATA_API_URL +
+        normalizedBaseUrl +
         queryType +
         "?" +
         queryParametersString +
         "&key=" +
-        process.env.EXTERNAL_DATA_API_KEY;
+        apiKey;
     }
 
     const request = await fetch(fetchUrl);

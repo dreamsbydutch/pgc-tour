@@ -15,6 +15,25 @@ import {
 } from "@/lib/utils/domain/formatting";
 
 export function PayoutsTable({ tiers }: { tiers: Tier[] }) {
+  const tierOrder = ["Standard", "Elevated", "Major", "Playoff"];
+  const sortedTiers = [...tiers].sort(
+    (a, b) => tierOrder.indexOf(a.name) - tierOrder.indexOf(b.name),
+  );
+  // Add Silver tier using Playoff payouts sliced at 75
+  const playoffTier = sortedTiers.find((tier) => tier.name === "Playoff");
+  let tiersWithSilver = [...sortedTiers];
+  if (playoffTier) {
+    const silverTier = {
+      ...playoffTier,
+      id: "silver-tier", // unique id for React keys
+      name: "Silver",
+      payouts: playoffTier.payouts.slice(75),
+    };
+    // Insert Silver after Playoff
+    const playoffIndex = tiersWithSilver.findIndex((t) => t.name === "Playoff");
+    tiersWithSilver.splice(playoffIndex + 1, 0, silverTier);
+  }
+  tiers = tiersWithSilver;
   return (
     <>
       <div className="mt-4 text-center font-varela font-bold">
@@ -69,6 +88,11 @@ export function PayoutsTable({ tiers }: { tiers: Tier[] }) {
 }
 
 export function PointsTable({ tiers }: { tiers: Tier[] }) {
+  const tierOrder = ["Standard", "Elevated", "Major", "Playoff"];
+  const sortedTiers = [...tiers].sort(
+    (a, b) => tierOrder.indexOf(a.name) - tierOrder.indexOf(b.name),
+  );
+  tiers = sortedTiers;
   return (
     <>
       <div className="mt-4 text-center font-varela font-bold">
@@ -101,7 +125,7 @@ export function PointsTable({ tiers }: { tiers: Tier[] }) {
                   className="border-l text-center text-xs"
                   key={`points-${tier.id}`}
                 >
-                  {i >= 30 && tier.name === "Playoff"
+                  {i >= 35 && tier.name === "Playoff"
                     ? "-"
                     : formatNumber(tier.points[i] ?? 0)}
                 </TableCell>

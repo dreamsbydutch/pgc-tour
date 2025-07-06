@@ -9,10 +9,8 @@ import type {
 } from "@prisma/client";
 import { useState } from "react";
 import Link from "next/link";
-import { LeaderboardListing } from "../_components/LeaderboardListing";
-import { useLeaderboardStore, useMainStore } from "@/lib/store/store";
-import { ToursToggleButton } from "../../standings/_components/StandingsPage";
 import { api } from "@/trpc/react";
+import { ToursToggleButton } from "@/lib/components/ToursToggle";
 
 /**
  * LeaderboardPage Component

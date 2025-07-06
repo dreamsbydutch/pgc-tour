@@ -172,7 +172,8 @@ export function filterTeamsByCriteria<T extends Record<string, any>>(
 }
 
 /**
- * Sorts teams by multiple properties with configurable direction
+ * Sorts teams by multiple properties with configurable direction and type handling.
+ * Special handling for "position" property: removes "T" prefix and sorts numerically.
  * @param teams - Teams to sort
  * @param sortConfig - Array of sort configurations
  * @returns Sorted teams (new array)
@@ -182,23 +183,51 @@ export function sortTeamsByProperties<T extends Record<string, any>>(
   sortConfig: Array<{
     property: string;
     direction: "asc" | "desc";
+    type?: "number" | "string";
     nullsLast?: boolean;
   }>,
 ): T[] {
+  function getComparableValue(val: any, property: string, type?: "number" | "string") {
+    if (property === "position") {
+      if (typeof val === "string") {
+        const num = Number(val.replace(/^T/i, ""));
+        return isNaN(num) ? Infinity : num;
+      }
+      return typeof val === "number" ? val : Infinity;
+    }
+    if (type === "number") {
+      const num = Number(val);
+      return isNaN(num) ? Infinity : num;
+    }
+    if (type === "string") {
+      return val == null ? "" : String(val);
+    }
+    return val;
+  }
+
   return [...teams].sort((a, b) => {
-    for (const { property, direction, nullsLast = true } of sortConfig) {
-      const aValue = property.split(".").reduce((obj, key) => obj?.[key], a);
-      const bValue = property.split(".").reduce((obj, key) => obj?.[key], b);
+    for (const { property, direction, type, nullsLast = true } of sortConfig) {
+      const aRaw = property.split(".").reduce((obj, key) => obj?.[key], a);
+      const bRaw = property.split(".").reduce((obj, key) => obj?.[key], b);
+
+      const aValue = getComparableValue(aRaw, property, type);
+      const bValue = getComparableValue(bRaw, property, type);
 
       // Handle null/undefined values
       if (aValue == null && bValue == null) continue;
       if (aValue == null) return nullsLast ? 1 : -1;
       if (bValue == null) return nullsLast ? -1 : 1;
 
-      // Compare values
       let comparison = 0;
-      if (aValue < bValue) comparison = -1;
-      else if (aValue > bValue) comparison = 1;
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        comparison = aValue - bValue;
+      } else if (typeof aValue === "string" && typeof bValue === "string") {
+        comparison = aValue.localeCompare(bValue);
+      } else {
+        // fallback to default comparison
+        if (aValue < bValue) comparison = -1;
+        else if (aValue > bValue) comparison = 1;
+      }
 
       if (comparison !== 0) {
         return direction === "asc" ? comparison : -comparison;

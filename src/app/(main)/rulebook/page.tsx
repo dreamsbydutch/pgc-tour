@@ -5,8 +5,8 @@ import { useState } from "react";
 import { ruleList } from "./rules";
 import { RuleCategoryType } from "@/lib/components/functionalComponents/RulebookComponents";
 import { cn } from "@/lib/utils/core";
-import CurrentSchedule from "@/lib/components/smartComponents/CurrentSchedule";
-import { TierTableContainer } from "@/lib/components/smartComponents/TierTableContainer";
+import CurrentSchedule from "@/lib/components/smartComponents/CurrentScheduleClient";
+import { TierTableContainer } from "@/lib/components/smartComponents/TierTableContainerClient";
 
 /**
  * RulebookPage Component

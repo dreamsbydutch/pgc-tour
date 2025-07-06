@@ -36,16 +36,19 @@ export async function getCurrentStandings() {
     });
 
     // Group tour cards by tour and sort by points (descending)
-    const toursWithStandings = tours.map((tour) => {
-      const tourCards = allTourCards
-        .filter((tourCard) => tourCard.tourId === tour.id)
-        .sort((a, b) => (b.points || 0) - (a.points || 0)); // Sort by points descending
+    const toursWithStandings = tours
+      .slice()
+      .sort((a, b) => a.id.localeCompare(b.id)) // Sort tours by tour id
+      .map((tour) => {
+        const tourCards = allTourCards
+          .filter((tourCard) => tourCard.tourId === tour.id)
+          .sort((a, b) => (b.points || 0) - (a.points || 0)); // Sort by points descending
 
-      return {
-        ...tour,
-        tourCards,
-      };
-    });
+        return {
+          ...tour,
+          tourCards,
+        };
+      });
 
     return toursWithStandings;
   } catch (error) {

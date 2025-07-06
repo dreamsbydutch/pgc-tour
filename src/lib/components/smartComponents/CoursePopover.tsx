@@ -3,16 +3,15 @@
 import { useCoursePopover } from "@/lib/hooks/useCoursePopover";
 import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
 import { formatScore } from "@/lib/utils/domain/golf";
-import { formatRank, formatNumber } from "@/lib/utils/domain/formatting";
+import { formatRank } from "@/lib/utils/domain/formatting";
 import { cn } from "@/lib/utils/core";
-import type { Tournament } from "@prisma/client";
 
-interface CoursePopoverProps {
-  tournament: Tournament;
-}
-
-export function CoursePopover({ tournament }: CoursePopoverProps) {
-  const { courseData, isLoading } = useCoursePopover(tournament);
+export function CoursePopover({
+  currentRound,
+}: {
+  currentRound: number | null;
+}) {
+  const { courseData, isLoading } = useCoursePopover(currentRound);
 
   if (isLoading) {
     return (
@@ -33,7 +32,7 @@ export function CoursePopover({ tournament }: CoursePopoverProps) {
   return (
     <>
       {courseData.courses[0]?.rounds
-        ?.find((round) => round.round_num === tournament.currentRound)
+        ?.find((round) => round.round_num === currentRound)
         ?.holes?.map((hole, i) => {
           const holes = courseData.courses[0]?.rounds
             ?.map(

@@ -1,24 +1,36 @@
-"use client";
-
 import Link from "next/link";
-import LeaderboardHeader from "../../../app/(main)/tournament/_components/header/LeaderboardHeader";
 import { cn } from "@/lib/utils/core";
-import {
-  HomePageList,
-  HomePageListSkeleton,
-} from "../functionalComponents/HomePageList";
-import { useLeaderboard } from "@/lib/hooks";
 import type { TourGroup } from "@/lib/types";
+import { HomePageList } from "../functionalComponents/HomePageList";
+import { HomePageListSkeleton } from "../functionalComponents/loading/HomePageListSkeleton";
+import { getLeaderboardData } from "@/server/api/actions";
+import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
+import { Tour } from "@prisma/client";
+import LeaderboardHeaderContainer from "./LeaderboardHeaderContainer";
 
-export default function HomePageLeaderboard() {
-  // Updated to use new consolidated hook instead of useCurrentTournamentLeaderboard
-  const { tournament, teamsByTour, isLoading, error } = useLeaderboard();
-  if (!tournament) return null;
+export default async function HomePageLeaderboard() {
+  const { tournament, teamsByTour } = await getLeaderboardData();
+  const self = await getMemberFromHeaders();
+
+  if (!tournament || !teamsByTour?.length) return null;
+
   return (
-    <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
-      {/* <LeaderboardHeader focusTourney={tournament} /> */}
+    <div className="rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
+      <div className="my-3 flex items-center justify-center gap-3">
+        <LeaderboardHeaderContainer focusTourney={tournament} />
+      </div>
+
       <div className="grid grid-cols-2 font-varela">
-        {teamsByTour?.map((tourGroup: TourGroup, i: number) => {
+        {teamsByTour.map((tourGroup: TourGroup, i: number) => {
+          const tourTeams = tourGroup.teams.slice(0, 15).map((team) => ({
+            ...team,
+            id: team.id,
+            displayName: team.tourCard.displayName,
+            memberId: team.tourCard.memberId,
+            mainStat: team.score,
+            secondaryStat: team.thru,
+          }));
+
           return (
             <Link
               key={tourGroup?.tour?.id ?? "tour-" + i}
@@ -29,12 +41,12 @@ export default function HomePageLeaderboard() {
               href={`/tournament?id=${tournament.id}&tour=${tourGroup?.tour?.id}`}
               aria-label={`View leaderboard for ${tourGroup?.tour?.shortForm} Tour`}
             >
-              {!tourGroup ? (
-                <HomePageListSkeleton />
-              ) : tourGroup?.tour ? (
+              {tourGroup?.tour ? (
                 <HomePageList
-                  tour={tourGroup.tour as any}
-                  teams={tourGroup.teams as any}
+                  tour={tourGroup.tour as Tour}
+                  teams={tourTeams}
+                  seasonId={tournament.seasonId}
+                  self={self}
                 />
               ) : (
                 <HomePageListSkeleton />

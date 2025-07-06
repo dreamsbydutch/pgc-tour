@@ -9,7 +9,6 @@ import { useCourseData } from "@/lib/hooks/useCourseData";
 import { formatScore } from "@/lib/utils/domain/golf";
 import { formatRank } from "@/lib/utils/domain/formatting";
 import type { DatagolfCourseInputData } from "@/lib/types";
-import type { Tournament } from "@prisma/client";
 
 export interface CoursePopoverData {
   courseData: DatagolfCourseInputData | undefined;
@@ -32,14 +31,16 @@ export interface CoursePopoverData {
  * @param tournament - Current tournament for round filtering
  * @returns Processed course data with formatted hole information
  */
-export function useCoursePopover(tournament: Tournament): CoursePopoverData {
+export function useCoursePopover(
+  currentRound: number | null,
+): CoursePopoverData {
   // Fetch live course data from DataGolf API
   const { data: courseData, isLoading, error } = useCourseData();
 
   // Process hole data using utility functions
   const holes =
     courseData?.courses[0]?.rounds
-      ?.find((round) => round.round_num === tournament.currentRound)
+      ?.find((round) => round.round_num === currentRound)
       ?.holes?.map((hole) => {
         // Calculate average score using inline logic (specific to DataGolf structure)
         const holeScores = courseData.courses[0]?.rounds

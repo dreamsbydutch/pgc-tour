@@ -1,6 +1,6 @@
 "use client";
 
-import LeaderboardHeader from "../_components/header/LeaderboardHeader";
+import LeaderboardHeader from "../../../../lib/components/functionalComponents/loading/LeaderboardHeader";
 import {
   HistoricalLeaderboardPage,
   PlayoffLeaderboardPage,

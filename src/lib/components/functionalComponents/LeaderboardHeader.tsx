@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * LeaderboardHeader Server Component
  *
@@ -12,8 +14,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/lib/components/functionalComponents/ui/popover";
-import type { Tier, Tournament } from "@prisma/client";
-import { getLeaderboardHeaderData } from "@/server/actions/leaderboard-header";
 import { formatTournamentDateRange } from "@/lib/utils/domain/dates";
 import {
   formatMoney,
@@ -21,7 +21,6 @@ import {
   formatNumber,
 } from "@/lib/utils/domain/formatting";
 import { MAX_PAYOUTS_DISPLAY, YARDAGE_PRECISION } from "@/lib/utils/constants";
-import { CoursePopover } from "./CoursePopover";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
@@ -36,19 +35,52 @@ import {
 } from "@/lib/components/functionalComponents/ui/dropdown-menu";
 import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
 import { cn } from "@/lib/utils/core";
-import type { Course } from "@prisma/client";
+import { CoursePopover } from "../smartComponents/CoursePopover";
 
+// Define a type for the grouped tournament dropdown items
+type GroupedTournamentDropdownItem = {
+  tournament: {
+    id: string;
+    logoUrl: string | null;
+    name: string;
+    startDate: Date;
+    endDate: Date;
+  };
+  tier: { name: string };
+  course: { location: string };
+};
+type GroupedTournaments = GroupedTournamentDropdownItem[][];
+
+// Pure presentational component
 interface LeaderboardHeaderProps {
-  focusTourney: Tournament;
+  focusTourney: {
+    id: string;
+    logoUrl: string | null;
+    name: string;
+    startDate: Date;
+    endDate: Date;
+    currentRound: number | null;
+  };
+  course:
+    | {
+        name: string;
+        location: string;
+        par: number;
+        front: number;
+        back: number;
+      }
+    | undefined;
+  tier: { name: string; points: number[]; payouts: number[] } | undefined;
+  groupedTournaments: GroupedTournaments;
+  isLoading?: boolean;
 }
 
-export default async function LeaderboardHeader({
+export function LeaderboardHeader({
   focusTourney,
+  course,
+  tier,
+  groupedTournaments,
 }: LeaderboardHeaderProps) {
-  // Fetch all static data using server action with utility functions
-  const { course, tier, groupedTournaments, tiers, courses } =
-    await getLeaderboardHeaderData(focusTourney);
-
   return (
     <div
       id={`leaderboard-header-${focusTourney.id}`}
@@ -77,9 +109,7 @@ export default async function LeaderboardHeader({
         <div className="col-span-2 row-span-1 place-self-center text-center font-varela text-xs xs:text-sm sm:text-base md:text-lg">
           <HeaderDropdown
             activeTourney={focusTourney}
-            groupedTournaments={groupedTournaments.byTier}
-            tiers={tiers}
-            courses={courses}
+            groupedTournaments={groupedTournaments}
           />
         </div>
 
@@ -97,7 +127,7 @@ export default async function LeaderboardHeader({
             {course?.name}
           </PopoverTrigger>
           <PopoverContent>
-            <CoursePopover tournament={focusTourney} />
+            <CoursePopover currentRound={focusTourney.currentRound} />
           </PopoverContent>
         </Popover>
 
@@ -120,7 +150,7 @@ export default async function LeaderboardHeader({
             {`1st Place: ${tier?.points[0] ?? 0} pts, ${formatMoney(tier?.payouts[0] ?? 0)}`}
           </PopoverTrigger>
           <PopoverContent>
-            <PointsAndPayoutsPopover tier={tier} />
+            {tier && <PointsAndPayoutsPopover tier={tier} />}
           </PopoverContent>
         </Popover>
       </div>
@@ -128,13 +158,17 @@ export default async function LeaderboardHeader({
   );
 }
 
-function PointsAndPayoutsPopover({ tier }: { tier: Tier | undefined }) {
+function PointsAndPayoutsPopover({
+  tier,
+}: {
+  tier: { points: number[]; payouts: number[] };
+}) {
   return (
     <div className="grid grid-cols-3 text-center">
       {/* Rank Column */}
       <div className="mx-auto flex w-fit flex-col">
         <div className="text-base font-semibold text-white">Rank</div>
-        {tier?.payouts.slice(0, MAX_PAYOUTS_DISPLAY).map((_, i) => (
+        {tier.payouts.slice(0, MAX_PAYOUTS_DISPLAY).map((_, i) => (
           <div key={i} className="text-xs">
             {formatRank(i + 1)}
           </div>
@@ -143,7 +177,7 @@ function PointsAndPayoutsPopover({ tier }: { tier: Tier | undefined }) {
       {/* Payouts Column */}
       <div className="mx-auto flex w-fit flex-col">
         <div className="text-base font-semibold">Payouts</div>
-        {tier?.payouts.slice(0, MAX_PAYOUTS_DISPLAY).map((payout) => (
+        {tier.payouts.slice(0, MAX_PAYOUTS_DISPLAY).map((payout) => (
           <div key={"payout-" + payout} className="text-xs">
             {formatMoney(payout)}
           </div>
@@ -152,7 +186,7 @@ function PointsAndPayoutsPopover({ tier }: { tier: Tier | undefined }) {
       {/* Points Column */}
       <div className="mx-auto flex w-fit flex-col">
         <div className="text-base font-semibold">Points</div>
-        {tier?.points.slice(0, MAX_PAYOUTS_DISPLAY).map((points) => (
+        {tier.points.slice(0, MAX_PAYOUTS_DISPLAY).map((points) => (
           <div key={"points-" + points} className="text-xs">
             {formatNumber(points, YARDAGE_PRECISION)}
           </div>
@@ -171,14 +205,10 @@ function PointsAndPayoutsPopover({ tier }: { tier: Tier | undefined }) {
 function HeaderDropdown({
   activeTourney,
   groupedTournaments,
-  tiers,
-  courses,
   isLoading = false,
 }: {
   activeTourney?: { id: string };
-  groupedTournaments: any[];
-  tiers: Tier[];
-  courses: Course[];
+  groupedTournaments: GroupedTournaments;
   isLoading?: boolean;
 }) {
   const [tierEffect, setTierEffect] = useState(false);
@@ -186,6 +216,38 @@ function HeaderDropdown({
   const [leaderboardToggle, setLeaderboardToggle] = useState<"Tier" | "Date">(
     "Tier",
   );
+
+  // Sorting logic for dropdown
+  let sortedGroupedTournaments: GroupedTournaments;
+  if (leaderboardToggle === "Date") {
+    // Flatten all tournaments and sort by descending startDate
+    sortedGroupedTournaments = [
+      [...groupedTournaments.flat()].sort(
+        (a, b) =>
+          new Date(a.tournament.startDate).getTime() -
+          new Date(b.tournament.startDate).getTime(),
+      ),
+    ];
+  } else {
+    // Sort tiers by name: "Standard", "Elevated", "Major", "Playoff"
+    const tierOrder = ["Standard", "Elevated", "Major", "Playoff"];
+    sortedGroupedTournaments = [...groupedTournaments]
+      .map((group) =>
+        [...group].sort(
+          (a, b) =>
+            new Date(a.tournament.startDate).getTime() -
+            new Date(b.tournament.startDate).getTime(),
+        ),
+      )
+      .sort((a, b) => {
+        const aName = a[0]?.tier?.name ?? "";
+        const bName = b[0]?.tier?.name ?? "";
+        const aIdx = tierOrder.indexOf(aName);
+        const bIdx = tierOrder.indexOf(bName);
+        // If not found, put at the end
+        return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
+      });
+  }
 
   if (isLoading) {
     return (
@@ -222,7 +284,7 @@ function HeaderDropdown({
             leaderboardToggle={leaderboardToggle}
             onToggleChange={setLeaderboardToggle}
           />
-          {groupedTournaments.map((group, i) => (
+          {sortedGroupedTournaments.map((group, i) => (
             <div className="px-1" key={`group-${i}`}>
               {i !== 0 && (
                 <DropdownMenuSeparator
@@ -232,23 +294,24 @@ function HeaderDropdown({
               )}
               {leaderboardToggle === "Tier" && (
                 <DropdownMenuLabel className="text-center font-bold xs:text-lg lg:text-xl">
-                  {tiers.find((tier) => tier.id === group[0]?.tierId)?.name ||
-                    `Group ${i + 1}`}
+                  {group[0]?.tier?.name || `Group ${i + 1}`}
                 </DropdownMenuLabel>
               )}
-              {group.map((tourney: any) => (
-                <DropdownMenuItem key={tourney.id} asChild className="py-0.5">
+              {group.map(({ tournament, tier, course }) => (
+                <DropdownMenuItem
+                  key={tournament.id}
+                  asChild
+                  className="py-0.5"
+                >
                   <Link
                     className="outline-none"
-                    href={`/tournament/${tourney.id}`}
+                    href={`/tournament/${tournament.id}`}
                   >
                     <TournamentItem
-                      tourney={tourney}
-                      tier={tiers.find((tier) => tier.id === tourney.tierId)}
-                      course={courses.find(
-                        (course) => course.id === tourney.courseId,
-                      )}
-                      isActive={activeTourney?.id === tourney.id}
+                      tourney={tournament}
+                      tier={tier}
+                      course={course}
+                      isActive={activeTourney?.id === tournament.id}
                     />
                   </Link>
                 </DropdownMenuItem>
@@ -326,9 +389,14 @@ function TournamentItem({
   course,
   isActive,
 }: {
-  tourney: any;
-  tier: Tier | undefined;
-  course: Course | undefined;
+  tourney: {
+    logoUrl: string | null;
+    name: string;
+    startDate: Date;
+    endDate: Date;
+  };
+  tier: { name: string };
+  course: { location: string };
   isActive: boolean;
 }) {
   return (
@@ -356,7 +424,7 @@ function TournamentItem({
         {formatTournamentDateRange(
           tourney.startDate,
           tourney.endDate,
-          course?.location,
+          course.location,
         )}
       </div>
     </div>

@@ -20,17 +20,15 @@ export function StandingsTourCardInfo({
   const { data: allTiers } = api.tier.getAll.useQuery();
   const { data: allTeams } = api.team.getAll.useQuery();
 
-  // Get all tournaments in the season except playoffs
-  const playoffTier = allTiers?.find((t) => t.name === "Playoff");
-  const tourneys = allTournaments?.filter(
-    (t) => t.seasonId === tourCard.seasonId,
-  );
-  const filteredTourneys = tourneys?.filter(
-    (t) => t.tierId !== playoffTier?.id,
+  // Get all tournaments in the season except playoffs (robust)
+  const filteredTourneys = getNonPlayoffTournaments(
+    allTournaments,
+    tourCard.seasonId,
+    allTiers,
   );
 
   // Get all teams associated with this player's tour card
-  const teams = allTeams?.filter((team) => team.tourCardId === tourCard.id);
+  const teams = getTeamsForTourCard(allTeams, tourCard.id);
 
   return (
     <div
@@ -72,7 +70,6 @@ export function StandingsTourCardInfo({
         <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
           {tourCard.madeCut} / {tourCard.appearances}
         </div>
-
         {/* Weekday Average Score */}
         <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
           {!teams ? (
@@ -81,7 +78,6 @@ export function StandingsTourCardInfo({
             calculateAverageScore(teams, "weekday")
           )}
         </div>
-
         {/* Weekend Average Score */}
         <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
           {!teams ? (
@@ -116,6 +112,34 @@ export function StandingsTourCardInfo({
       )}
     </div>
   );
+}
+
+// --- Helper functions for robust/efficient filtering ---
+function getNonPlayoffTournaments(
+  allTournaments: Tournament[] | undefined,
+  seasonId: string,
+  allTiers: { id: string; name: string }[] | undefined,
+): Tournament[] | undefined {
+  if (!allTournaments || !allTiers) return undefined;
+  // Exclude tournaments whose tier name includes 'Playoff'
+  const playoffTierIds = allTiers
+    .filter((t) => t.name.toLowerCase().includes("playoff"))
+    .map((t) => t.id);
+  return allTournaments
+    .filter((t) => t.seasonId === seasonId)
+    .filter((t) => !playoffTierIds.includes(t.tierId))
+    .sort(
+      (a, b) =>
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+    );
+}
+
+function getTeamsForTourCard(
+  allTeams: Team[] | undefined,
+  tourCardId: string,
+): Team[] | undefined {
+  if (!allTeams) return undefined;
+  return allTeams.filter((team) => team.tourCardId === tourCardId);
 }
 
 function calculateAverageScore(

@@ -16,7 +16,7 @@ const navItems = [
   { href: "/tournament", icon: List, label: "LEADERBOARD" },
   { href: "/standings", icon: Trophy, label: "STANDINGS" },
   { href: "/rulebook", icon: BookText, label: "RULEBOOK" },
-  { href: "/history", icon: ArchiveIcon, label: "RECORDS" },
+  // { href: "/history", icon: ArchiveIcon, label: "RECORDS" },
 ];
 
 /**

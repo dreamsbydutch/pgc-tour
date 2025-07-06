@@ -1,78 +1,67 @@
 "use client";
 
-import { useMainStore } from "@/lib/store/store";
-import { useSearchParams } from "next/navigation";
-import { LeaderboardHeaderSkeleton } from "@/app/(main)/tournament/_components/skeletons/LeaderboardHeaderSkeleton";
-import PreTournamentPage, {
-  TeamPickFormSkeleton,
-} from "@/app/(main)/tournament/_views/PreTournament";
-import LeaderboardHeader from "@/app/(main)/tournament/_components/header/LeaderboardHeader";
-import { TournamentCountdownSkeleton } from "@/lib/components/functionalComponents/TournamentCountdown";
-import ActiveTournamentView from "./_views/ActiveTournamentView";
-import PastTournamentView from "./_views/PastTournamentView";
-import HistoricalTournamentView from "./_views/HistoricalTournamentView";
-
 /**
  * Unified tournament page that handles displaying any tournament
  * Uses query parameter ?id=tournamentId instead of path parameter
  */
 export default function TournamentPage() {
-  const searchParams = useSearchParams();
+  return <>TEST</>;
+  // const searchParams = useSearchParams();
 
-  const currentTournament = useMainStore((state) => state.currentTournament);
-  const nextTournament = useMainStore((state) => state.nextTournament);
-  const pastTournaments = useMainStore((state) => state.pastTournaments);
-  const seasonTournaments = useMainStore((state) => state.seasonTournaments);
+  // const currentTournament = useMainStore((state) => state.currentTournament);
+  // const nextTournament = useMainStore((state) => state.nextTournament);
+  // const pastTournaments = useMainStore((state) => state.pastTournaments);
+  // const seasonTournaments = useMainStore((state) => state.seasonTournaments);
 
-  const tournamentIdParam = searchParams.get("id");
+  // const tournamentIdParam = searchParams.get("id");
 
-  // Determine which tournament to show
-  const getDisplayTournament = () => {
-    // If there's an ID in search params, try to find that tournament
-    if (tournamentIdParam) {
-      return seasonTournaments?.find((t) => t.id === tournamentIdParam) ?? null;
-    }
+  // // Determine which tournament to show
+  // const getDisplayTournament = () => {
+  //   // If there's an ID in search params, try to find that tournament
+  //   if (tournamentIdParam) {
+  //     return seasonTournaments?.find((t) => t.id === tournamentIdParam) ?? null;
+  //   }
 
-    // No ID provided - determine best tournament to show
-    if (currentTournament) {
-      return currentTournament;
-    } else if (nextTournament) {
-      return nextTournament;
-    } else if ((pastTournaments ?? []).length > 0) {
-      // Get most recent past tournament
-      const mostRecentPastTournament = pastTournaments?.sort(
-        (a, b) =>
-          new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
-      )[0];
-      return mostRecentPastTournament ?? null;
-    } else if ((seasonTournaments?.length ?? 0) > 0) {
-      return seasonTournaments?.[0] ?? null;
-    }
+  //   // No ID provided - determine best tournament to show
+  //   if (currentTournament) {
+  //     return currentTournament;
+  //   } else if (nextTournament) {
+  //     return nextTournament;
+  //   } else if ((pastTournaments ?? []).length > 0) {
+  //     // Get most recent past tournament
+  //     const mostRecentPastTournament = pastTournaments?.sort(
+  //       (a, b) =>
+  //         new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+  //     )[0];
+  //     return mostRecentPastTournament ?? null;
+  //   } else if ((seasonTournaments?.length ?? 0) > 0) {
+  //     return seasonTournaments?.[0] ?? null;
+  //   }
 
-    return null;
-  };
+  //   return null;
+  // };
 
-  const focusTourney = getDisplayTournament();
+  // const focusTourney = getDisplayTournament();
 
-  if (!focusTourney && tournamentIdParam) {
-    return <HistoricalTournamentView tournamentId={tournamentIdParam} />;
-  }
+  // if (!focusTourney && tournamentIdParam) {
+  //   return <HistoricalTournamentView tournamentId={tournamentIdParam} />;
+  // }
 
-  // While loading tournament data, show loading view
-  if (!focusTourney) {
-    return <TournamentPageLoadingView />;
-  }
+  // // While loading tournament data, show loading view
+  // if (!focusTourney) {
+  //   return <TournamentPageLoadingView />;
+  // }
 
-  // Determine tournament state
-  const now = new Date();
-  const tournamentStartDate = new Date(tournament.startDate);
-  const tournamentEndDate = new Date(tournament.endDate);
+  // // Determine tournament state
+  // const now = new Date();
+  // const tournamentStartDate = new Date(tournament.startDate);
+  // const tournamentEndDate = new Date(tournament.endDate);
 
-  return {
-    isUpcoming: tournamentStartDate > now,
-    isActive: tournamentStartDate <= now && tournamentEndDate >= now,
-    isPast: tournamentEndDate < now,
-  };
+  // return {
+  //   isUpcoming: tournamentStartDate > now,
+  //   isActive: tournamentStartDate <= now && tournamentEndDate >= now,
+  //   isPast: tournamentEndDate < now,
+  // }
 }
 
 /**

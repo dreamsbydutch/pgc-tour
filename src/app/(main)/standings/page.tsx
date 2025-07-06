@@ -2,46 +2,52 @@
 
 import { useState } from "react";
 import {
-  GoldPlayoffHeader,
-  PlayoffStandingsListing,
-  SilverPlayoffHeader,
   StandingsHeader,
   StandingsListing,
-  ToursToggleButton,
 } from "@/lib/components/StandingsPage";
-import { useCurrentStandings, useUser } from "@/lib/hooks";
-import { api } from "@/trpc/react";
+import {
+  useCurrentStandings,
+  StandingsTour,
+  StandingsTier,
+  UseCurrentStandingsResult,
+} from "@/lib/hooks/useCurrentStandings";
+import {
+  getGoldCutCards,
+  getSilverCutCards,
+  getRemainingCards,
+  getGoldTeams,
+  getSilverTeams,
+  getPlayoffTier,
+} from "@/lib/utils/standings/helpers";
+import type { TourCard } from "@prisma/client";
+import { ToursToggleButton } from "@/lib/components/ToursToggle";
 
 export default function Page({
   searchParams,
 }: {
   searchParams: Record<string, string>;
 }) {
-  // Use the new hooks instead of store
-  const { tours, isLoading, error } = useCurrentStandings();
-  const { user } = useUser();
-
-  // Get current user's member data for their tour card
-  const { data: currentMember } = api.member.getSelf.useQuery(undefined, {
-    enabled: !!user,
-  });
-
-  // Get current user's tour card from the tours data
-  const userTourCard = tours
-    ?.flatMap((tour) => tour.tourCards)
-    .find((card) => card.memberId === currentMember?.id);
-
-  const inputTourId = searchParams.tour ?? userTourCard?.tourId ?? "";
+  const {
+    tours,
+    isLoading,
+    error,
+    userTourCard,
+    activeTour,
+    tiers,
+    member,
+  }: UseCurrentStandingsResult = useCurrentStandings();
 
   const [standingsToggle, setStandingsToggle] = useState<string>(
-    inputTourId && inputTourId !== ""
-      ? inputTourId
-      : (userTourCard?.tourId ?? tours?.[0]?.id ?? ""),
+    activeTour?.id ?? "",
   );
 
-  const activeTour =
+  // Update activeTour when toggle changes
+  const displayedTour: StandingsTour | undefined =
     tours?.find((tour) => tour.id === standingsToggle) ?? tours?.[0];
 
+  // TODO: Create a much better loading skeleton and error page for this standings page
+  // TODO: Make this a server component to avoid loading state
+  // TODO: Fix the fact that on initial load, the default tour is CCG and the toggle isnt activated
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
@@ -61,7 +67,7 @@ export default function Page({
   return (
     <>
       <div className="my-2 pb-2 text-center font-yellowtail text-5xl sm:text-6xl md:text-7xl">
-        {standingsToggle === "playoffs" ? "PGC Playoff" : activeTour?.name}{" "}
+        {standingsToggle === "playoffs" ? "PGC Playoff" : displayedTour?.name}{" "}
         Standings
       </div>
       <div className="font-italic text-center font-varela text-xs sm:text-sm md:text-base">
@@ -92,6 +98,7 @@ export default function Page({
                 "https://jn9n1jxo7g.ufs.sh/f/94GU8p0EVxqPNsO8w6FZhY1BamONzvl3bLgdn0IXVM8fEoTC",
               updatedAt: new Date(),
               createdAt: new Date(),
+              // tourCards: [], // Removed property not in type
             }}
             tourToggle={standingsToggle}
             setTourToggle={setStandingsToggle}
@@ -99,50 +106,37 @@ export default function Page({
         </div>
       )}
       {standingsToggle === "playoffs" ? (
-        <PlayoffStandings tours={tours} />
+        <PlayoffStandings tours={tours} tiers={tiers} />
       ) : (
-        <TourStandings activeTour={activeTour} />
+        <TourStandings activeTour={displayedTour} />
       )}
     </>
   );
 }
 
+// Abstracted TourStandings logic
 function TourStandings({
   activeTour,
 }: {
-  activeTour: ReturnType<typeof useCurrentStandings>["tours"][0] | undefined;
+  activeTour: StandingsTour | undefined;
 }) {
   if (!activeTour) return null;
 
-  const tourCards = activeTour.tourCards;
-
-  // Filter tour cards for gold playoff spots (top N)
-  const goldCutCards = tourCards.filter(
-    (_card, index) => index < (activeTour.playoffSpots[0] ?? 15),
-  );
-
-  // Filter tour cards for silver playoff spots (next N)
-  const silverCutCards = tourCards.filter(
-    (_card, index) =>
-      index >= (activeTour.playoffSpots[0] ?? 15) &&
-      index <
-        (activeTour.playoffSpots[0] ?? 15) + (activeTour.playoffSpots[1] ?? 15),
-  );
-
-  // Filter remaining cards
-  const remainingCards = tourCards.filter(
-    (_card, index) =>
-      index >=
-      (activeTour.playoffSpots[0] ?? 15) + (activeTour.playoffSpots[1] ?? 15),
-  );
+  const goldCutCards = getGoldCutCards(activeTour);
+  const silverCutCards = getSilverCutCards(activeTour);
+  const remainingCards = getRemainingCards(activeTour);
 
   return (
     <div className="mx-auto px-1">
-      <StandingsHeader />
+      <StandingsHeader variant="regular" />
 
       {/* Gold Playoff Qualifiers */}
-      {goldCutCards.map((tourCard) => (
-        <StandingsListing key={tourCard.id} tourCard={tourCard} />
+      {goldCutCards.map((tourCard: TourCard & { points?: number }) => (
+        <StandingsListing
+          key={tourCard.id}
+          variant="regular"
+          tourCard={tourCard}
+        />
       ))}
 
       <div className="h-3 rounded-lg bg-champ-900 text-center text-2xs font-bold text-white">
@@ -150,8 +144,12 @@ function TourStandings({
       </div>
 
       {/* Silver Playoff Qualifiers */}
-      {silverCutCards.map((tourCard) => (
-        <StandingsListing key={tourCard.id} tourCard={tourCard} />
+      {silverCutCards.map((tourCard: TourCard & { points?: number }) => (
+        <StandingsListing
+          key={tourCard.id}
+          variant="regular"
+          tourCard={tourCard}
+        />
       ))}
 
       <div className="h-3 rounded-lg bg-gray-400 text-center text-2xs font-bold text-white">
@@ -159,49 +157,33 @@ function TourStandings({
       </div>
 
       {/* Remaining Players */}
-      {remainingCards.map((tourCard) => (
-        <StandingsListing key={tourCard.id} tourCard={tourCard} />
+      {remainingCards.map((tourCard: TourCard & { points?: number }) => (
+        <StandingsListing
+          key={tourCard.id}
+          variant="regular"
+          tourCard={tourCard}
+        />
       ))}
     </div>
   );
 }
 
+// Abstracted PlayoffStandings logic
 function PlayoffStandings({
   tours,
+  tiers,
 }: {
-  tours: NonNullable<ReturnType<typeof useCurrentStandings>["tours"]>;
+  tours: StandingsTour[];
+  tiers: StandingsTier[];
 }) {
-  // Get current tiers for playoff data
-  const { data: tiers } = api.tier.getCurrent.useQuery();
-
-  // Get all tour cards and separate into gold and silver teams
-  const allTourCards = tours.flatMap((tour) => tour.tourCards);
-
-  const goldTeams = tours
-    .map((tour) =>
-      tour.tourCards.filter(
-        (card, index) => index < (tour.playoffSpots[0] ?? 15),
-      ),
-    )
-    .flat()
-    .sort((a, b) => (b.points || 0) - (a.points || 0));
-
-  const silverTeams = tours
-    .map((tour) =>
-      tour.tourCards.filter(
-        (card, index) =>
-          index >= (tour.playoffSpots[0] ?? 15) &&
-          index < (tour.playoffSpots[0] ?? 15) + (tour.playoffSpots[1] ?? 15),
-      ),
-    )
-    .flat()
-    .sort((a, b) => (b.points || 0) - (a.points || 0));
-
-  const playoffTier = tiers?.find((t) => t.name === "Playoff");
+  const goldTeams = getGoldTeams(tours);
+  const silverTeams = getSilverTeams(tours);
+  const playoffTier = getPlayoffTier(tiers);
 
   return (
     <div className="mx-auto px-1">
-      <GoldPlayoffHeader
+      <StandingsHeader
+        variant="gold"
         tier={{
           id: "gold",
           name: "Gold",
@@ -214,7 +196,8 @@ function PlayoffStandings({
       />
 
       {goldTeams.map((tourCard) => (
-        <PlayoffStandingsListing
+        <StandingsListing
+          variant="playoff"
           key={tourCard.id}
           tourCard={tourCard}
           teams={goldTeams}
@@ -223,7 +206,8 @@ function PlayoffStandings({
         />
       ))}
 
-      <SilverPlayoffHeader
+      <StandingsHeader
+        variant="silver"
         tier={{
           id: "silver",
           name: "Silver",
@@ -236,7 +220,8 @@ function PlayoffStandings({
       />
 
       {silverTeams.map((tourCard) => (
-        <PlayoffStandingsListing
+        <StandingsListing
+          variant="playoff"
           key={tourCard.id}
           tourCard={tourCard}
           teams={silverTeams}

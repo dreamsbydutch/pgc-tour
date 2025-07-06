@@ -5,21 +5,46 @@
  * Uses tournament utilities for proper data processing and business logic.
  */
 
+import { MinimalTournament } from "@/lib/types";
 import { api } from "@/trpc/server";
-import type { Tournament, Course, Tier } from "@prisma/client";
-import { getByStatus } from "@/lib/utils/domain/tournaments";
-import type { TournamentWithIncludes } from "@/app/(main)/tournament/_components/header/LeaderboardHeader";
+import type { Tournament } from "@prisma/client";
 
-export interface LeaderboardHeaderData {
-  course: Course | undefined;
-  tier: Tier | undefined;
-  tournaments: TournamentWithIncludes[];
-  tiers: Tier[];
-  groupedTournaments: {
-    byTier: TournamentWithIncludes[][];
-    byDate: TournamentWithIncludes[][];
+// Define a type for the grouped tournament dropdown items
+type GroupedTournamentDropdownItem = {
+  tournament: {
+    id: string;
+    logoUrl: string | null;
+    name: string;
+    startDate: Date;
+    endDate: Date;
   };
-  courses: Course[];
+  tier: { name: string };
+  course: { location: string };
+};
+type GroupedTournaments = GroupedTournamentDropdownItem[][];
+
+// Pure presentational component
+interface LeaderboardHeaderProps {
+  focusTourney: {
+    id: string;
+    logoUrl: string | null;
+    name: string;
+    startDate: Date;
+    endDate: Date;
+    currentRound: number | null;
+  };
+  course:
+    | {
+        name: string;
+        location: string;
+        par: number;
+        front: number;
+        back: number;
+      }
+    | undefined;
+  tier: { name: string; points: number[]; payouts: number[] } | undefined;
+  groupedTournaments: GroupedTournaments;
+  isLoading?: boolean;
 }
 
 /**
@@ -29,90 +54,88 @@ export interface LeaderboardHeaderData {
  * @param focusTourney - The tournament to fetch data for
  * @returns Promise containing processed course, tier, tournaments, and grouped data
  */
-export async function getLeaderboardHeaderData(
-  focusTourney: Tournament,
-): Promise<LeaderboardHeaderData> {
-  // Fetch static database data in parallel for better performance
-  const [tournaments, tiers] = await Promise.all([
+export async function getLeaderboardHeaderData(focusTourney: {
+  id: string;
+  logoUrl: string | null;
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  currentRound: number | null;
+  seasonId: string;
+  tierId: string;
+}): Promise<LeaderboardHeaderProps> {
+  // Fetch tournaments, tiers, and courses in parallel
+  const [tournaments, tiers, courses] = await Promise.all([
     api.tournament.getBySeason({ seasonId: focusTourney.seasonId }),
     api.tier.getBySeason({ seasonId: focusTourney.seasonId }),
+    api.course.getAll(),
   ]);
 
   // Find the specific tournament and tier data
   const tournamentWithCourse = tournaments.find(
     (t) => t.id === focusTourney.id,
   );
-  const course = tournamentWithCourse?.course;
-  const tier = tiers.find((t) => t.id === focusTourney.tierId);
-
-  // Extract unique courses from tournaments using utility functions
-  const courses = tournaments
-    .map((t) => t.course)
-    .filter((course): course is Course => course !== undefined)
-    .reduce((unique, course) => {
-      if (!unique.find((c) => c.id === course.id)) {
-        unique.push(course);
+  const course = tournamentWithCourse?.course
+    ? {
+        name: tournamentWithCourse.course.name,
+        location: tournamentWithCourse.course.location,
+        par: tournamentWithCourse.course.par,
+        front: tournamentWithCourse.course.front,
+        back: tournamentWithCourse.course.back,
       }
-      return unique;
-    }, [] as Course[]);
+    : undefined;
 
-  // Group tournaments using utility functions and proper typing
-  const groupedTournaments = {
-    // Group by tier
-    byTier: Object.values(
-      tournaments.reduce(
-        (groups, tournament) => {
-          const tierId = tournament.tierId;
-          if (!groups[tierId]) groups[tierId] = [];
-          groups[tierId].push(tournament);
-          return groups;
-        },
-        {} as Record<string, TournamentWithIncludes[]>,
-      ),
+  const tier = tiers.find((t) => t.id === focusTourney.tierId)
+    ? {
+        name: tiers.find((t) => t.id === focusTourney.tierId)!.name,
+        points: tiers.find((t) => t.id === focusTourney.tierId)!.points,
+        payouts: tiers.find((t) => t.id === focusTourney.tierId)!.payouts,
+      }
+    : undefined;
+
+  // Group tournaments by tier for dropdown
+  const groupedTournaments: GroupedTournaments = Object.values(
+    tournaments.reduce(
+      (groups, tournament) => {
+        const tierId = tournament.tierId;
+        if (!groups[tierId]) groups[tierId] = [];
+        groups[tierId].push(tournament);
+        return groups;
+      },
+      {} as Record<string, Tournament[]>,
     ),
-
-    // Group by date/status - convert to base Tournament for utility functions
-    byDate: [
-      getByStatus(
-        tournaments.map((t) => ({
-          ...t,
-          startDate: t.startDate,
-          endDate: t.endDate,
-        })),
-        "current",
-      ),
-      getByStatus(
-        tournaments.map((t) => ({
-          ...t,
-          startDate: t.startDate,
-          endDate: t.endDate,
-        })),
-        "upcoming",
-      ),
-      getByStatus(
-        tournaments.map((t) => ({
-          ...t,
-          startDate: t.startDate,
-          endDate: t.endDate,
-        })),
-        "completed",
-      ),
-    ]
-      .filter((group) => group.length > 0)
-      .map((group) =>
-        group.map(
-          (baseTournament) =>
-            tournaments.find((t) => t.id === baseTournament.id)!,
-        ),
-      ),
-  };
+  ).map((group) =>
+    group.map((tournament) => {
+      const tierObj = tiers.find((tier) => tier.id === tournament.tierId);
+      const courseObj = courses.find(
+        (course) => course.id === tournament.courseId,
+      );
+      return {
+        tournament: {
+          id: tournament.id,
+          logoUrl: tournament.logoUrl,
+          name: tournament.name,
+          startDate: tournament.startDate,
+          endDate: tournament.endDate,
+        },
+        tier: { name: tierObj?.name ?? "" },
+        course: { location: courseObj?.location ?? "" },
+      };
+    }),
+  );
 
   return {
+    focusTourney: {
+      id: focusTourney.id,
+      logoUrl: focusTourney.logoUrl,
+      name: focusTourney.name,
+      startDate: focusTourney.startDate,
+      endDate: focusTourney.endDate,
+      currentRound: focusTourney.currentRound,
+    },
     course,
     tier,
-    tournaments,
-    tiers,
     groupedTournaments,
-    courses,
+    isLoading: false,
   };
 }

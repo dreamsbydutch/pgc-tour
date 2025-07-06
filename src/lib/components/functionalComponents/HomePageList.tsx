@@ -11,7 +11,7 @@ type MinimalTour = {
 };
 
 type MinimalTeam = {
-  id: string;
+  id: string | number;
   memberId: string;
   position: string | null;
   displayName: string;
