@@ -4,9 +4,9 @@
  * Provides business logic for tournament filtering, status checking, and navigation
  */
 
-import type { Tournament } from "@prisma/client";
 import { getTournamentStatus } from "./golf";
 import { filterByPredicate, sortBy } from "../data/processing";
+import { MinimalTournament } from "@/lib/types";
 
 /**
  * Tournament status type for business operations
@@ -27,9 +27,9 @@ export const tournaments = {
    * tournaments.getByStatus(allTournaments, "current")
    */
   getByStatus(
-    tournaments: Tournament[],
+    tournaments: MinimalTournament[],
     status: TournamentStatus,
-  ): Tournament[] {
+  ): MinimalTournament[] {
     return filterByPredicate(
       tournaments,
       (tournament) =>
@@ -47,7 +47,9 @@ export const tournaments = {
    * @example
    * const current = tournaments.getCurrentTournament(allTournaments);
    */
-  getCurrentTournament(tournaments: Tournament[]): Tournament | null {
+  getCurrentTournament(
+    tournaments: MinimalTournament[],
+  ): MinimalTournament | null {
     return this.getByStatus(tournaments, "current")[0] || null;
   },
 
@@ -58,7 +60,9 @@ export const tournaments = {
    * @example
    * const next = tournaments.getNextTournament(allTournaments);
    */
-  getNextTournament(tournaments: Tournament[]): Tournament | null {
+  getNextTournament(
+    tournaments: MinimalTournament[],
+  ): MinimalTournament | null {
     const upcoming = this.getByStatus(tournaments, "upcoming");
     return (
       sortBy(upcoming, [{ key: "startDate", direction: "asc" }])[0] || null
@@ -72,7 +76,9 @@ export const tournaments = {
    * @example
    * const previous = tournaments.getPreviousTournament(allTournaments);
    */
-  getPreviousTournament(tournaments: Tournament[]): Tournament | null {
+  getPreviousTournament(
+    tournaments: MinimalTournament[],
+  ): MinimalTournament | null {
     const completed = this.getByStatus(tournaments, "completed");
     return (
       sortBy(completed, [{ key: "endDate", direction: "desc" }])[0] || null
@@ -86,7 +92,7 @@ export const tournaments = {
    * @example
    * const upcoming = tournaments.getUpcoming(allTournaments);
    */
-  getUpcoming(tournaments: Tournament[]): Tournament[] {
+  getUpcoming(tournaments: MinimalTournament[]): MinimalTournament[] {
     const upcoming = this.getByStatus(tournaments, "upcoming");
     return sortBy(upcoming, [{ key: "startDate", direction: "asc" }]);
   },
@@ -98,7 +104,7 @@ export const tournaments = {
    * @example
    * const completed = tournaments.getCompleted(allTournaments);
    */
-  getCompleted(tournaments: Tournament[]): Tournament[] {
+  getCompleted(tournaments: MinimalTournament[]): MinimalTournament[] {
     const completed = this.getByStatus(tournaments, "completed");
     return sortBy(completed, [{ key: "endDate", direction: "desc" }]);
   },
@@ -111,7 +117,10 @@ export const tournaments = {
    * @example
    * const seasonTournaments = tournaments.getBySeason(allTournaments, "season-2024");
    */
-  getBySeason(tournaments: Tournament[], seasonId: string): Tournament[] {
+  getBySeason(
+    tournaments: MinimalTournament[],
+    seasonId: string,
+  ): MinimalTournament[] {
     return filterByPredicate(
       tournaments,
       (tournament) => tournament.seasonId === seasonId,
@@ -128,10 +137,10 @@ export const tournaments = {
    * const recent = tournaments.getByDateRange(allTournaments, lastWeek, today);
    */
   getByDateRange(
-    tournaments: Tournament[],
+    tournaments: MinimalTournament[],
     startDate: Date,
     endDate: Date,
-  ): Tournament[] {
+  ): MinimalTournament[] {
     return filterByPredicate(tournaments, (tournament) => {
       const tournamentStart = new Date(tournament.startDate);
       return tournamentStart >= startDate && tournamentStart <= endDate;
@@ -145,7 +154,7 @@ export const tournaments = {
    * @example
    * if (tournaments.isLive(tournament)) { ... }
    */
-  isLive(tournament: Tournament): boolean {
+  isLive(tournament: MinimalTournament): boolean {
     return (
       getTournamentStatus(
         new Date(tournament.startDate),
@@ -163,9 +172,9 @@ export const tournaments = {
    * const activeOrUpcoming = tournaments.getByStatuses(allTournaments, ["current", "upcoming"]);
    */
   getByStatuses(
-    tournaments: Tournament[],
+    tournaments: MinimalTournament[],
     statuses: TournamentStatus[],
-  ): Tournament[] {
+  ): MinimalTournament[] {
     return filterByPredicate(tournaments, (tournament) => {
       const status = getTournamentStatus(
         new Date(tournament.startDate),
@@ -184,11 +193,11 @@ export const tournaments = {
    * @example
    * const sorted = tournaments.sortTournaments(allTournaments, "startDate", "desc");
    */
-  sortTournaments<K extends keyof Tournament>(
-    tournaments: Tournament[],
+  sortTournaments<K extends keyof MinimalTournament>(
+    tournaments: MinimalTournament[],
     field: K,
     direction: "asc" | "desc" = "asc",
-  ): Tournament[] {
+  ): MinimalTournament[] {
     return sortBy(tournaments, [{ key: field, direction }]);
   },
 };

@@ -1,6 +1,4 @@
-"use client";
-
-import { Tier } from "@prisma/client";
+import type { Tier } from "@prisma/client";
 import {
   Table,
   TableBody,
@@ -15,71 +13,8 @@ import {
   formatNumber,
   formatRank,
 } from "@/lib/utils/domain/formatting";
-import { api } from "@/trpc/react";
 
-/**
- * Smart PayoutsTable Component
- *
- * Fetches current tiers and displays the payouts distribution table.
- */
-export function PayoutsTable() {
-  const { data: tiers = [], isLoading, error } = api.tier.getCurrent.useQuery();
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-4">
-        <div className="text-sm">Loading payouts...</div>
-      </div>
-    );
-  }
-
-  if (error || !tiers.length) {
-    return (
-      <div className="flex justify-center py-4">
-        <div className="text-sm text-red-600">Unable to load payouts</div>
-      </div>
-    );
-  }
-
-  return <PayoutsTableComponent tiers={tiers} />;
-}
-
-/**
- * Smart PointsTable Component
- *
- * Fetches current tiers and displays the points distribution table.
- */
-export function PointsTable() {
-  const { data: tiers = [], isLoading, error } = api.tier.getCurrent.useQuery();
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-4">
-        <div className="text-sm">Loading points...</div>
-      </div>
-    );
-  }
-
-  if (error || !tiers.length) {
-    return (
-      <div className="flex justify-center py-4">
-        <div className="text-sm text-red-600">Unable to load points</div>
-      </div>
-    );
-  }
-
-  return <PointsTableComponent tiers={tiers} />;
-}
-
-/**
- * PayoutsTableComponent - Pure component
- *
- * Displays the payouts distribution table for each tier.
- *
- * Props:
- * - tiers: The list of tiers for the season.
- */
-function PayoutsTableComponent({ tiers }: { tiers: Tier[] }) {
+export function PayoutsTable({ tiers }: { tiers: Tier[] }) {
   return (
     <>
       <div className="mt-4 text-center font-varela font-bold">
@@ -133,15 +68,7 @@ function PayoutsTableComponent({ tiers }: { tiers: Tier[] }) {
   );
 }
 
-/**
- * PointsTableComponent - Pure component
- *
- * Displays the points distribution table for each tier.
- *
- * Props:
- * - tiers: The list of tiers for the season.
- */
-function PointsTableComponent({ tiers }: { tiers: Tier[] }) {
+export function PointsTable({ tiers }: { tiers: Tier[] }) {
   return (
     <>
       <div className="mt-4 text-center font-varela font-bold">
@@ -153,7 +80,7 @@ function PointsTableComponent({ tiers }: { tiers: Tier[] }) {
             <TableHead className="text-center text-xs font-bold">
               Finish
             </TableHead>
-            {tiers?.map((tier) => (
+            {tiers.map((tier) => (
               <TableHead
                 className="text-center text-xs font-bold"
                 key={`points-${tier.id}`}
@@ -164,7 +91,7 @@ function PointsTableComponent({ tiers }: { tiers: Tier[] }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tiers?.[0]?.points.slice(0, 35).map((_obj, i) => (
+          {tiers[0]?.points.slice(0, 35).map((_obj, i) => (
             <TableRow key={i}>
               <TableCell className="text-sm font-bold">
                 {formatRank(i + 1)}

@@ -3,13 +3,10 @@
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
 import { ruleList } from "./rules";
-import { RuleCategoryType } from "@/lib/components/functionalComponents/rulebookComponents";
+import { RuleCategoryType } from "@/lib/components/functionalComponents/RulebookComponents";
 import { cn } from "@/lib/utils/core";
-import {
-  PayoutsTable,
-  PointsTable,
-} from "@/lib/components/smartComponents/tierDataTables";
-import { CurrentSchedule } from "@/lib/components/smartComponents/CurrentSchedule";
+import CurrentSchedule from "@/lib/components/smartComponents/CurrentSchedule";
+import { TierTableContainer } from "@/lib/components/smartComponents/TierTableContainer";
 
 /**
  * RulebookPage Component
@@ -95,8 +92,12 @@ function RuleCategory({
           </div>
         ))}
         {ruleData.category === "Schedule" && <CurrentSchedule />}
-        {ruleData.category === "Payouts" && <PayoutsTable />}
-        {ruleData.category === "Scoring" && <PointsTable />}
+        {ruleData.category === "Payouts" && (
+          <TierTableContainer type="payouts" />
+        )}
+        {ruleData.category === "Scoring" && (
+          <TierTableContainer type="points" />
+        )}
       </div>
     </div>
   );

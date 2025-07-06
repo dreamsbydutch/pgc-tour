@@ -1,8 +1,8 @@
-import { useTournament } from "@/lib/hooks";
+import { getTournamentData } from "@/server/api/actions";
 import { TournamentCountdownSkeleton } from "../functionalComponents/loading/TournamentCountdownSkeleton";
 import { TournamentCountdown } from "../functionalComponents/TournamentCountdown";
 
-export default function TournamentCountdownContainer({
+export default async function TournamentCountdownContainer({
   inputTourney,
 }: {
   inputTourney?: {
@@ -11,7 +11,7 @@ export default function TournamentCountdownContainer({
     startDate?: Date;
   } | null;
 }) {
-  const { next: nextTourney } = useTournament();
+  const { next: nextTourney } = await getTournamentData();
   const tourney = inputTourney ?? nextTourney ?? null;
 
   if (!tourney) return <TournamentCountdownSkeleton />;

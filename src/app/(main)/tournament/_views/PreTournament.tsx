@@ -1,311 +1,308 @@
-"use client";
+// "use client";
 
-import TournamentCountdown from "../../../../lib/components/functionalComponents/TournamentCountdown";
-import { cn, formatMoney, formatRank } from "@/old-utils";
-import { Button } from "../../../../lib/components/functionalComponents/ui/button";
-import { useState } from "react";
-import LoadingSpinner from "@/app/_components/LoadingSpinner";
-import { api } from "@/trpc/react";
-import type {
-  Golfer,
-  Member,
-  Team,
-  TourCard,
-  Tournament,
-} from "@prisma/client";
-import CreateTeamPage from "./CreateTeamPage";
-import { useTourCards, useUser } from "@/lib/hooks";
+// import { Button } from "../../../../lib/components/functionalComponents/ui/button";
+// import { useState } from "react";
+// import { api } from "@/trpc/react";
+// import type {
+//   Golfer,
+//   Member,
+//   Team,
+//   TourCard,
+//   Tournament,
+// } from "@prisma/client";
+// import CreateTeamPage from "./CreateTeamPage";
+// import { useTourCards, useUser } from "@/lib/hooks";
 
-/**
- * PreTournamentPage Component
- *
- * Displays the pre-tournament page, including:
- * - A countdown timer until the tournament starts.
- * - A form to create or update the user's team.
- * - Tee times for the user's team.
- *
- * Props:
- * - tournament: The tournament data.
- * - tourCard: The user's tour card data (optional).
- */
-export default function PreTournamentPage({
-  tournament,
-}: {
-  tournament: Tournament;
-}) {
-  const [pickingTeam, setPickingTeam] = useState(false);
-
-  // Use the new hooks for user and tour card data
-  const { user } = useUser();
-  const tourCards = useTourCards({ memberIds: user?.id ? [user.id] : [] });
-  const tourCard = tourCards?.find(
-    (card) => card.seasonId === tournament.seasonId,
-  );
-
-  // Use direct API calls for team and golfer data
-  const { data: existingTeam, isLoading: isTeamLoading } =
-    api.team.getByUserTournament.useQuery({
-      tourCardId: tourCard?.id ?? "",
-      tournamentId: tournament.id,
-    });
-  const { data: allGolfers, isLoading: isGolfersLoading } =
-    api.golfer.getByTournament.useQuery({
-      tournamentId: tournament.id,
-    });
-
-  const teamGolfers = allGolfers?.filter((a) =>
-    existingTeam?.golferIds.includes(a.apiId),
-  );
-
-  if (pickingTeam)
-    return (
-      <CreateTeamPage {...{ tournamentId: tournament.id, setPickingTeam }} />
-    );
-
-  // Show loading state while fetching data
-  if (isTeamLoading || isGolfersLoading) {
-    return (
-      <>
-        <TournamentCountdown inputTourney={tournament} />
-        <TeamPickFormSkeleton existingTeam={existingTeam} />{" "}
-      </>
-    );
-  }
-
-  // Show error state if there are any errors
-  if (teamError || golfersError) {
-    return (
-      <>
-        <TournamentCountdown inputTourney={tournament} />
-        <div className="flex h-32 w-full items-center justify-center text-red-500">
-          Error loading tournament data: {teamError ?? golfersError}
-        </div>
-      </>
-    );
-  }
-
-  if (!tourCard || !member || !allGolfers || (allGolfers?.length ?? 0) === 0)
-    return (
-      <TournamentCountdown inputTourney={tournament} key={tournament.id} />
-    );
-  return (
-    <div>
-      <TournamentCountdown inputTourney={tournament} key={tournament.id} />
-      {!tourCard ||
-      new Date(tournament.startDate).getTime() - new Date().getTime() >
-        4 * 24 * 60 * 60 * 1000 ? (
-        <></>
-      ) : (
-        <>
-          <TeamPickForm
-            {...{
-              tourCard,
-              tournament,
-              member,
-              existingTeam,
-              teamGolfers,
-              setPickingTeam,
-            }}
-          />
-          {/* <TeamTeeTimes {...{ tournament }} /> */}
-        </>
-      )}
-    </div>
-  );
-}
-
-export function TeamPickFormSkeleton({
-  existingTeam,
-}: {
-  existingTeam?: Team | null;
-}) {
-  return (
-    <div>
-      <div className="mx-auto my-4 w-fit max-w-4xl rounded-lg border border-slate-400 bg-slate-100 px-6 py-2 text-center shadow-xl">
-        <div className="mx-auto mb-3 h-8 w-48 animate-pulse rounded bg-slate-200"></div>
-        <div className="mx-auto mb-4 h-6 w-64 animate-pulse rounded bg-slate-200"></div>
-        {existingTeam &&
-          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((_, i) => (
-            <div
-              key={i}
-              className={`py-0.5 ${i % 2 !== 0 && i < 9 ? "border-b border-slate-500" : ""}`}
-            >
-              <div className="mx-auto h-6 w-3/4 animate-pulse rounded bg-slate-200"></div>
-            </div>
-          ))}
-        <div className="mx-auto mb-4 mt-8 h-10 w-40 animate-pulse rounded bg-slate-300"></div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * TeamPickForm Component
- *
- * Displays a form for the user to create or update their team.
- * - Shows the user's current team golfers.
- * - Allows navigation to the team creation page.
- *
- * Props:
- * - tourCard: The user's tour card data.
- * - tournament: The tournament data.
- * - teamGolfers: The list of golfers in the user's team (optional).
- */
-function TeamPickForm({
-  tourCard,
-  member,
-  existingTeam,
-  teamGolfers,
-  setPickingTeam,
-}: {
-  tourCard: TourCard;
-  member: Member;
-  existingTeam: Team | null | undefined;
-  teamGolfers: Golfer[] | undefined;
-  setPickingTeam: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
-  const [isOpeningForm, setIsOpeningForm] = useState(false);
-
-  return (
-    <div className="mx-auto mb-4 w-fit max-w-4xl rounded-lg border border-slate-400 bg-slate-100 px-6 py-2 text-center shadow-xl">
-      <div className="text-2xl font-bold">{member?.fullname}</div>
-      {(member?.account ?? 0) > 0 && (
-        <div className="mx-auto mb-8 w-5/6 text-center text-lg italic text-red-600">{`Please send ${formatMoney(member?.account ?? 0)} to puregolfcollectivetour@gmail.com to unlock your picks.`}</div>
-      )}
-      <div className="text-lg font-bold">{`${formatRank(+(tourCard?.position ?? 0))} - ${tourCard?.points.toLocaleString()} pts${tourCard?.earnings ? " - " + formatMoney(tourCard?.earnings ?? 0) : ""}`}</div>
-      {teamGolfers
-        ?.sort((a, b) => (a.worldRank ?? Infinity) - (b.worldRank ?? Infinity))
-        .sort((a, b) => (a.group ?? Infinity) - (b.group ?? Infinity))
-        .map((golfer, i) => (
-          <div
-            key={golfer?.id}
-            className={cn(
-              i % 2 !== 0 && i < 9 && "border-b border-slate-500",
-              i === 0 && "mt-2",
-              "py-0.5",
-            )}
-          >
-            <div className="text-lg">
-              {`#${golfer?.worldRank} ${golfer?.playerName} (${golfer?.rating})`}
-            </div>
-          </div>
-        ))}
-      <Button
-        key={existingTeam?.id}
-        onClick={() => {
-          setIsOpeningForm(true);
-          setPickingTeam(true);
-        }}
-        disabled={(member?.account ?? 0) > 0}
-        variant={"action"}
-        className="mb-4 mt-8 text-xl"
-        size="lg"
-      >
-        {isOpeningForm ? (
-          <LoadingSpinner />
-        ) : existingTeam ? (
-          "Change Your Team"
-        ) : (
-          "Create Your Team"
-        )}
-      </Button>
-    </div>
-  );
-}
-
-/**
- * TeamTeeTimes Component
- *
- * Displays the tee times for the user's team.
- * - Groups golfers by their tee times and starting holes.
- * - Highlights golfers in the user's team.
- *
- * Props:
- * - golfers: The list of all golfers in the tournament (optional).
- * - teamGolfers: The list of golfers in the user's team (optional).
- * - course: The course data (optional).
- */
-// function TeamTeeTimes({
+// /**
+//  * PreTournamentPage Component
+//  *
+//  * Displays the pre-tournament page, including:
+//  * - A countdown timer until the tournament starts.
+//  * - A form to create or update the user's team.
+//  * - Tee times for the user's team.
+//  *
+//  * Props:
+//  * - tournament: The tournament data.
+//  * - tourCard: The user's tour card data (optional).
+//  */
+// export default function PreTournamentPage({
 //   tournament,
-//   allGolfers,
-//   teamGolfers,
 // }: {
-//   tournament: Tournament & { course: Course | null };
-//   allGolfers: Golfer[];
-//   teamGolfers: Golfer[];
+//   tournament: Tournament;
 // }) {
-//   if (
-//     !teamGolfers ||
-//     teamGolfers.length === 0 ||
-//     teamGolfers.filter((obj) => obj.roundOneTeeTime).length === 0 ||
-//     !tournament.course
-//   )
-//     return null;
+//   const [pickingTeam, setPickingTeam] = useState(false);
 
-//   const teeTimes = [
-//     ...new Set(
-//       teamGolfers
-//         ?.sort((a, b) => (b.endHole ?? 0) - (a.endHole ?? 0))
-//         ?.sort((a, b) => {
-//           if (!a.roundOneTeeTime && !b.roundOneTeeTime) return 0;
-//           if (!a.roundOneTeeTime) return 1;
-//           if (!b.roundOneTeeTime) return -1;
-//           return (
-//             new Date(a.roundOneTeeTime).getTime() -
-//             new Date(b.roundOneTeeTime).getTime()
-//           );
-//         })
-//         .map(
-//           (obj) => obj.roundOneTeeTime + " - " + (obj.endHole === 18 ? 1 : 10),
-//         ),
-//     ),
-//   ];
+//   // Use the new hooks for user and tour card data
+//   const { user } = useUser();
+//   const tourCards = useTourCards({ memberIds: user?.id ? [user.id] : [] });
+//   const tourCard = tourCards?.find(
+//     (card) => card.seasonId === tournament.seasonId,
+//   );
 
-//   const teamIds = teamGolfers?.map((a) => a.apiId);
+//   // Use direct API calls for team and golfer data
+//   const { data: existingTeam, isLoading: isTeamLoading } =
+//     api.team.getByUserTournament.useQuery({
+//       tourCardId: tourCard?.id ?? "",
+//       tournamentId: tournament.id,
+//     });
+//   const { data: allGolfers, isLoading: isGolfersLoading } =
+//     api.golfer.getByTournament.useQuery({
+//       tournamentId: tournament.id,
+//     });
 
+//   const teamGolfers = allGolfers?.filter((a) =>
+//     existingTeam?.golferIds.includes(a.apiId),
+//   );
+
+//   if (pickingTeam)
+//     return (
+//       <CreateTeamPage {...{ tournamentId: tournament.id, setPickingTeam }} />
+//     );
+
+//   // Show loading state while fetching data
+//   if (isTeamLoading || isGolfersLoading) {
+//     return (
+//       <>
+//         <TournamentCountdown inputTourney={tournament} />
+//         <TeamPickFormSkeleton existingTeam={existingTeam} />{" "}
+//       </>
+//     );
+//   }
+
+//   // Show error state if there are any errors
+//   if (teamError || golfersError) {
+//     return (
+//       <>
+//         <TournamentCountdown inputTourney={tournament} />
+//         <div className="flex h-32 w-full items-center justify-center text-red-500">
+//           Error loading tournament data: {teamError ?? golfersError}
+//         </div>
+//       </>
+//     );
+//   }
+
+//   if (!tourCard || !member || !allGolfers || (allGolfers?.length ?? 0) === 0)
+//     return (
+//       <TournamentCountdown inputTourney={tournament} key={tournament.id} />
+//     );
 //   return (
-//     <>
-//       <div className="pt-4 text-center text-2xl font-bold">
-//         Thursday Tee Times
-//       </div>
-//       <div className="mx-auto flex max-w-[720px] flex-wrap justify-around">
-//         {teeTimes.map((golfer, i) => {
-//           const time = new Date(golfer?.split(" - ")[0] ?? "");
-//           const wave = +(golfer?.split(" - ")[1] ?? "1");
-//           const group = allGolfers?.filter(
-//             (obj) =>
-//               obj.endHole === (wave === 1 ? 18 : 9) &&
-//               obj.roundOneTeeTime === golfer?.split(" - ")[0],
-//           );
-//           return (
-//             <div
-//               key={i}
-//               className="w-[180px] p-2 text-center text-lg font-bold"
-//             >
-//               {`${formatTime(time)} - Hole ${wave}`}
-//               <div className="text-sm font-normal">
-//                 {group
-//                   ?.sort(
-//                     (a, b) =>
-//                       (a.worldRank ?? Infinity) - (b.worldRank ?? Infinity),
-//                   )
-//                   .map((obj) => (
-//                     <div
-//                       key={obj.id}
-//                       className={cn(
-//                         teamIds?.includes(obj.apiId)
-//                           ? "font-semibold"
-//                           : "text-muted-foreground",
-//                       )}
-//                     >
-//                       {`#${obj.worldRank ?? "N/A"} ${obj.playerName}`}
-//                     </div>
-//                   ))}
-//               </div>
-//             </div>
-//           );
-//         })}
-//       </div>
-//     </>
+//     <div>
+//       <TournamentCountdown inputTourney={tournament} key={tournament.id} />
+//       {!tourCard ||
+//       new Date(tournament.startDate).getTime() - new Date().getTime() >
+//         4 * 24 * 60 * 60 * 1000 ? (
+//         <></>
+//       ) : (
+//         <>
+//           <TeamPickForm
+//             {...{
+//               tourCard,
+//               tournament,
+//               member,
+//               existingTeam,
+//               teamGolfers,
+//               setPickingTeam,
+//             }}
+//           />
+//           {/* <TeamTeeTimes {...{ tournament }} /> */}
+//         </>
+//       )}
+//     </div>
 //   );
 // }
+
+// export function TeamPickFormSkeleton({
+//   existingTeam,
+// }: {
+//   existingTeam?: Team | null;
+// }) {
+//   return (
+//     <div>
+//       <div className="mx-auto my-4 w-fit max-w-4xl rounded-lg border border-slate-400 bg-slate-100 px-6 py-2 text-center shadow-xl">
+//         <div className="mx-auto mb-3 h-8 w-48 animate-pulse rounded bg-slate-200"></div>
+//         <div className="mx-auto mb-4 h-6 w-64 animate-pulse rounded bg-slate-200"></div>
+//         {existingTeam &&
+//           [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((_, i) => (
+//             <div
+//               key={i}
+//               className={`py-0.5 ${i % 2 !== 0 && i < 9 ? "border-b border-slate-500" : ""}`}
+//             >
+//               <div className="mx-auto h-6 w-3/4 animate-pulse rounded bg-slate-200"></div>
+//             </div>
+//           ))}
+//         <div className="mx-auto mb-4 mt-8 h-10 w-40 animate-pulse rounded bg-slate-300"></div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// /**
+//  * TeamPickForm Component
+//  *
+//  * Displays a form for the user to create or update their team.
+//  * - Shows the user's current team golfers.
+//  * - Allows navigation to the team creation page.
+//  *
+//  * Props:
+//  * - tourCard: The user's tour card data.
+//  * - tournament: The tournament data.
+//  * - teamGolfers: The list of golfers in the user's team (optional).
+//  */
+// function TeamPickForm({
+//   tourCard,
+//   member,
+//   existingTeam,
+//   teamGolfers,
+//   setPickingTeam,
+// }: {
+//   tourCard: TourCard;
+//   member: Member;
+//   existingTeam: Team | null | undefined;
+//   teamGolfers: Golfer[] | undefined;
+//   setPickingTeam: React.Dispatch<React.SetStateAction<boolean>>;
+// }) {
+//   const [isOpeningForm, setIsOpeningForm] = useState(false);
+
+//   return (
+//     <div className="mx-auto mb-4 w-fit max-w-4xl rounded-lg border border-slate-400 bg-slate-100 px-6 py-2 text-center shadow-xl">
+//       <div className="text-2xl font-bold">{member?.fullname}</div>
+//       {(member?.account ?? 0) > 0 && (
+//         <div className="mx-auto mb-8 w-5/6 text-center text-lg italic text-red-600">{`Please send ${formatMoney(member?.account ?? 0)} to puregolfcollectivetour@gmail.com to unlock your picks.`}</div>
+//       )}
+//       <div className="text-lg font-bold">{`${formatRank(+(tourCard?.position ?? 0))} - ${tourCard?.points.toLocaleString()} pts${tourCard?.earnings ? " - " + formatMoney(tourCard?.earnings ?? 0) : ""}`}</div>
+//       {teamGolfers
+//         ?.sort((a, b) => (a.worldRank ?? Infinity) - (b.worldRank ?? Infinity))
+//         .sort((a, b) => (a.group ?? Infinity) - (b.group ?? Infinity))
+//         .map((golfer, i) => (
+//           <div
+//             key={golfer?.id}
+//             className={cn(
+//               i % 2 !== 0 && i < 9 && "border-b border-slate-500",
+//               i === 0 && "mt-2",
+//               "py-0.5",
+//             )}
+//           >
+//             <div className="text-lg">
+//               {`#${golfer?.worldRank} ${golfer?.playerName} (${golfer?.rating})`}
+//             </div>
+//           </div>
+//         ))}
+//       <Button
+//         key={existingTeam?.id}
+//         onClick={() => {
+//           setIsOpeningForm(true);
+//           setPickingTeam(true);
+//         }}
+//         disabled={(member?.account ?? 0) > 0}
+//         variant={"action"}
+//         className="mb-4 mt-8 text-xl"
+//         size="lg"
+//       >
+//         {isOpeningForm ? (
+//           <LoadingSpinner />
+//         ) : existingTeam ? (
+//           "Change Your Team"
+//         ) : (
+//           "Create Your Team"
+//         )}
+//       </Button>
+//     </div>
+//   );
+// }
+
+// /**
+//  * TeamTeeTimes Component
+//  *
+//  * Displays the tee times for the user's team.
+//  * - Groups golfers by their tee times and starting holes.
+//  * - Highlights golfers in the user's team.
+//  *
+//  * Props:
+//  * - golfers: The list of all golfers in the tournament (optional).
+//  * - teamGolfers: The list of golfers in the user's team (optional).
+//  * - course: The course data (optional).
+//  */
+// // function TeamTeeTimes({
+// //   tournament,
+// //   allGolfers,
+// //   teamGolfers,
+// // }: {
+// //   tournament: Tournament & { course: Course | null };
+// //   allGolfers: Golfer[];
+// //   teamGolfers: Golfer[];
+// // }) {
+// //   if (
+// //     !teamGolfers ||
+// //     teamGolfers.length === 0 ||
+// //     teamGolfers.filter((obj) => obj.roundOneTeeTime).length === 0 ||
+// //     !tournament.course
+// //   )
+// //     return null;
+
+// //   const teeTimes = [
+// //     ...new Set(
+// //       teamGolfers
+// //         ?.sort((a, b) => (b.endHole ?? 0) - (a.endHole ?? 0))
+// //         ?.sort((a, b) => {
+// //           if (!a.roundOneTeeTime && !b.roundOneTeeTime) return 0;
+// //           if (!a.roundOneTeeTime) return 1;
+// //           if (!b.roundOneTeeTime) return -1;
+// //           return (
+// //             new Date(a.roundOneTeeTime).getTime() -
+// //             new Date(b.roundOneTeeTime).getTime()
+// //           );
+// //         })
+// //         .map(
+// //           (obj) => obj.roundOneTeeTime + " - " + (obj.endHole === 18 ? 1 : 10),
+// //         ),
+// //     ),
+// //   ];
+
+// //   const teamIds = teamGolfers?.map((a) => a.apiId);
+
+// //   return (
+// //     <>
+// //       <div className="pt-4 text-center text-2xl font-bold">
+// //         Thursday Tee Times
+// //       </div>
+// //       <div className="mx-auto flex max-w-[720px] flex-wrap justify-around">
+// //         {teeTimes.map((golfer, i) => {
+// //           const time = new Date(golfer?.split(" - ")[0] ?? "");
+// //           const wave = +(golfer?.split(" - ")[1] ?? "1");
+// //           const group = allGolfers?.filter(
+// //             (obj) =>
+// //               obj.endHole === (wave === 1 ? 18 : 9) &&
+// //               obj.roundOneTeeTime === golfer?.split(" - ")[0],
+// //           );
+// //           return (
+// //             <div
+// //               key={i}
+// //               className="w-[180px] p-2 text-center text-lg font-bold"
+// //             >
+// //               {`${formatTime(time)} - Hole ${wave}`}
+// //               <div className="text-sm font-normal">
+// //                 {group
+// //                   ?.sort(
+// //                     (a, b) =>
+// //                       (a.worldRank ?? Infinity) - (b.worldRank ?? Infinity),
+// //                   )
+// //                   .map((obj) => (
+// //                     <div
+// //                       key={obj.id}
+// //                       className={cn(
+// //                         teamIds?.includes(obj.apiId)
+// //                           ? "font-semibold"
+// //                           : "text-muted-foreground",
+// //                       )}
+// //                     >
+// //                       {`#${obj.worldRank ?? "N/A"} ${obj.playerName}`}
+// //                     </div>
+// //                   ))}
+// //               </div>
+// //             </div>
+// //           );
+// //         })}
+// //       </div>
+// //     </>
+// //   );
+// // }

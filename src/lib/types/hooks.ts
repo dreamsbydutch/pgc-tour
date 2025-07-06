@@ -318,7 +318,7 @@ export interface EnhancedTournamentHookResult extends TournamentHookResult {
   // Performance metadata
   meta: {
     lastUpdated: Date;
-    dataSource: "store" | "api";
+    dataSource: "store" | "api" | "server";
     cacheHit: boolean;
   };
 }
@@ -443,7 +443,7 @@ export interface EnhancedTourCardsResult {
   meta: {
     queryTime: number; // ms
     cacheHit: boolean;
-    dataSource: "store" | "api";
+    dataSource: "store" | "api" | "server";
   };
 }
 
