@@ -46,7 +46,7 @@ import TeamGolfersTable from "./TeamTable";
 <<<<<<< Updated upstream:src/app/(main)/tournament/_components/LeaderboardListing.tsx
 import { useLeaderboardStore, useMainStore } from "@/src/lib/store/store";
 =======
-import { useUser, useMembers, useCourses, useTourCards } from "@/src/lib/store";
+import { useTourCards, useUser } from "@/src/lib/hooks";
 >>>>>>> Stashed changes:src/app/(main)/tournament/components/leaderboard/LeaderboardListing.tsx
 
 /**

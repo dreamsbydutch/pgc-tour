@@ -24,6 +24,7 @@ export * as formatting from "./domain/formatting";
 export * as dates from "./domain/dates";
 export * as validation from "./domain/validation";
 export * as teams from "./domain/teams";
+export * as tournaments from "./domain/tournaments";
 
 // ============= DATA UTILITIES =============
 // Data processing, transformation, and manipulation

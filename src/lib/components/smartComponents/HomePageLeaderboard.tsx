@@ -7,11 +7,11 @@ import {
   HomePageList,
   HomePageListSkeleton,
 } from "@/src/lib/components/HomePageList";
-import { useCurrentTournamentLeaderboard } from "../../hooks/useTeamsHooks";
+import { useLeaderboard } from "@/src/lib/hooks";
 
 export default function HomePageLeaderboard() {
-  const { tournament, teamsByTour, dataSource, isLoading, error } =
-    useCurrentTournamentLeaderboard();
+  // Updated to use new consolidated hook instead of useCurrentTournamentLeaderboard
+  const { tournament, teamsByTour, isLoading, error } = useLeaderboard();
   if (!tournament) return null;
   return (
     <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">

@@ -9,14 +9,9 @@ export const courseRouter = createTRPCRouter({
     });
   }),
   getById: publicProcedure
-    .input(z.object({ courseID: z.string() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.course.findUnique({ where: { id: input.courseID } });
-    }),
-  getByName: publicProcedure
-    .input(z.object({ name: z.string() }))
-    .query(async ({ ctx, input }) => {
-      return ctx.db.course.findUnique({ where: { name: input.name } });
+      return ctx.db.course.findUnique({ where: { id: input.id } });
     }),
 
   create: adminProcedure
@@ -45,27 +40,25 @@ export const courseRouter = createTRPCRouter({
   update: adminProcedure
     .input(
       z.object({
-        name: z.string().min(1),
-        location: z.string().min(1).optional(),
+        id: z.string(),
+        apiId: z.string().optional(),
+        name: z.string().optional(),
+        location: z.string().optional(),
         par: z.number().optional(),
         front: z.number().optional(),
         back: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
       return ctx.db.course.update({
-        where: { name: input.name },
-        data: {
-          location: input.location,
-          par: input.par,
-          front: input.front,
-          back: input.back,
-        },
+        where: { id },
+        data,
       });
     }),
   delete: adminProcedure
-    .input(z.object({ courseID: z.string() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.course.delete({ where: { id: input.courseID } });
+      return ctx.db.course.delete({ where: { id: input.id } });
     }),
 });

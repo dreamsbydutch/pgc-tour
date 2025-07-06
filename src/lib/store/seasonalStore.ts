@@ -9,17 +9,6 @@ import {
 } from "@prisma/client";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { logLocalStorageUsage, isApproachingQuota } from "@/old-utils/storage";
-import {
-  getTournamentStatus,
-  createCrudOps,
-  filterItems,
-  sortItems,
-  searchItems,
-  calculateStats,
-  countByField,
-  groupBy,
-} from "@/old-utils";
 
 // Minimal types for store - only essential data without heavy includes
 type MinimalCourse = Pick<Course, "id" | "name" | "location" | "par" | "apiId">;

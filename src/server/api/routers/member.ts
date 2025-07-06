@@ -9,45 +9,76 @@ import {
 
 export const memberRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.member.findMany({});
+    return ctx.db.member.findMany({
+      orderBy: { lastname: "asc" },
+    });
   }),
+
+  getById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.member.findUnique({
+        where: { id: input.id },
+        include: { tourCards: true },
+      });
+    }),
+
   getByEmail: publicProcedure
     .input(z.object({ email: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.member.findUnique({
+      return ctx.db.member.findUnique({
         where: { email: input.email },
       });
     }),
-  getByLastName: publicProcedure
-    .input(z.object({ lastname: z.string() }))
-    .query(async ({ ctx, input }) => {
-      return await ctx.db.member.findMany({
-        where: { lastname: input.lastname },
-      });
-    }),
-  getSelf: publicProcedure.query(async ({ ctx }) => {
-    if (!ctx.user) return null;
-    return await ctx.db.member.findUnique({
+
+  getSelf: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.member.findUnique({
       where: { id: ctx.user.id },
+      include: { tourCards: true },
     });
   }),
-  getById: publicProcedure
-    .input(z.object({ memberId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      return await ctx.db.member.findUnique({
-        where: { id: input.memberId },
-      });
-    }),
-  create: protectedProcedure
+
+  create: adminProcedure
     .input(
       z.object({
         id: z.string(),
         email: z.string(),
-        fullname: z.string(),
-        firstname: z.string(),
-        lastname: z.string(),
+        firstname: z.string().optional(),
+        lastname: z.string().optional(),
+        role: z.string().optional(),
       }),
     )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.member.create({
+        data: input,
+      });
+    }),
+
+  update: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        firstname: z.string().optional(),
+        lastname: z.string().optional(),
+        email: z.string().optional(),
+        role: z.string().optional(),
+        account: z.number().optional(),
+        friends: z.array(z.string()).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+      return ctx.db.member.update({
+        where: { id },
+        data,
+      });
+    }),
+
+  delete: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.member.delete({ where: { id: input.id } });
+    }),
     .mutation(async ({ ctx, input }) => {
       const updatedUser = await ctx.db.member.create({
         data: {

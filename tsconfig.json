@@ -26,16 +26,20 @@
     /* Path Aliases */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@/app/*": ["./src/app/*"],
-      "@/components/*": ["src/lib/components/*"],
-      "@/ui/*": ["src/lib/components/ui/*"],
-      "@/lib/*": ["./src/lib/*"],
-      "@/public/*": ["./public/*"],
-      "@/server/*": ["./src/server/*"],
-      "@/styles/*": ["./src/styles/*"],
-      "@/types/*": ["src/lib/types/*"],
-      "@/trpcLocal/*": ["./src/trpc/*"]
+      "@/*": ["./src/*"],
+      "@app/*": ["./src/app/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@hooks/*": ["src/lib/hooks/*"],
+      "@components/*": ["src/lib/components/*"],
+      "@store/*": ["src/lib/store/*"],
+      "@supabase/*": ["src/lib/supabase/*"],
+      "@utils/*": ["src/lib/utils/*"],
+      "@types/*": ["src/lib/types/*"],
+      "@ui/*": ["src/lib/components/ui/*"],
+      "@public/*": ["./public/*"],
+      "@server/*": ["./src/server/*"],
+      "@styles/*": ["./src/styles/*"],
+      "@trpcLocal/*": ["./src/trpc/*"]
     }
   },
   "include": [

@@ -1,18 +1,11 @@
 "use client";
 
-<<<<<<< Updated upstream:src/app/(main)/tournament/_views/HistoricalTournamentView.tsx
 import LeaderboardHeader from "../_components/header/LeaderboardHeader";
-import { HistoricalLeaderboardPage, PlayoffLeaderboardPage } from "./LeaderboardPage";
-import { api } from "@/src/trpc/react";
-=======
-import LeaderboardHeader from "../../components/header/LeaderboardHeader";
 import {
   HistoricalLeaderboardPage,
   PlayoffLeaderboardPage,
-} from "../shared/LeaderboardPage";
-import { useTournamentById, useCourses, useTiers } from "@/src/lib/store";
-import type {  Course, Tier } from "@/src/lib/store/types";
->>>>>>> Stashed changes:src/app/(main)/tournament/views/past/HistoricalTournamentView.tsx
+} from "./LeaderboardPage";
+import { api } from "@/src/trpc/react";
 
 interface PastTournamentViewProps {
   tournamentId: string;
@@ -21,22 +14,26 @@ interface PastTournamentViewProps {
 export default function HistoricalTournamentView({
   tournamentId,
 }: PastTournamentViewProps) {
-  // Use store hooks instead of direct tRPC calls
+  // Use direct API calls for historical tournament data
   const {
-    tournament,
-    loading: tournamentLoading,
+    data: tournament,
+    isLoading: tournamentLoading,
     error: tournamentError,
-  } = useTournamentById(tournamentId);
-  const { courses, loading: coursesLoading } = useCourses();
-  const { tiers, loading: tiersLoading } = useTiers();
+  } = api.tournament.getById.useQuery({ tournamentId });
 
-  // Get course and tier from cached data
-  const course =
-    courses?.find((c: Course) => c.id === tournament?.courseId) ?? null;
-  const tier = tiers?.find((t: Tier) => t.id === tournament?.tierId);
+  const { data: course, isLoading: courseLoading } =
+    api.course.getById.useQuery(
+      { courseID: tournament?.courseId! },
+      { enabled: !!tournament?.courseId },
+    );
+
+  const { data: tier, isLoading: tierLoading } = api.tier.getById.useQuery(
+    { id: tournament?.tierId! },
+    { enabled: !!tournament?.tierId },
+  );
 
   // Loading state
-  if (tournamentLoading || coursesLoading || tiersLoading) {
+  if (tournamentLoading || courseLoading || tierLoading) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         Loading...
@@ -48,7 +45,7 @@ export default function HistoricalTournamentView({
   if (tournamentError || !tournament) {
     return (
       <div className="flex h-full w-full items-center justify-center text-red-500">
-        {tournamentError ?? "Tournament not found"}
+        {tournamentError?.message ?? "Tournament not found"}
       </div>
     );
   }

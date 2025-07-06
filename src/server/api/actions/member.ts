@@ -1,85 +1,203 @@
+/**
+ * Member Server Actions
+ * Server-side member management and business logic
+ *
+ * Handles member tier management, tour card relationships, and member analytics.
+ */
+
 "use server";
 
-import { api } from "@/src/trpc/server";
-import { updateTourCardNames } from "./tour_card";
+import { api } from "../../../trpc/server";
+import { db } from "../../db";
 import type { Member } from "@prisma/client";
-import type { User } from "@supabase/supabase-js";
-import { formatName } from "@/old-utils";
-import { createClient } from "@/src/lib/supabase/server";
 
-export async function memberUpdateFormOnSubmit({ value }: { value: Member }) {
-  const season = await api.season.getByYear({ year: 2025 });
-  const tourCard = await api.tourCard.getByUserSeason({
-    userId: value.id,
-    seasonId: season?.id,
-  });
-  const tour = tourCard?.tourId
-    ? await api.tour.getById({ tourID: tourCard.tourId })
-    : null;
-  const displayName =
-    (value.firstname && value.firstname[0]) + ". " + value.lastname;
-  const updatedMember = await api.member.update({
-    id: value.id,
-    email: value.email,
-    firstname: value.firstname,
-    lastname: value.lastname,
-  });
-  const newTourCard =
-    tourCard &&
-    tourCard.displayName !== displayName &&
-    (await api.tourCard.update({ id: tourCard.id, displayName }));
-  if (tour && newTourCard)
-    await updateTourCardNames({ tour: tour, tourCard: newTourCard });
-  return updatedMember;
-}
+/**
+ * Update member tiers based on performance or criteria
+ * Handles tier progression logic for members
+ */
+export async function updateMemberTiers(seasonId: string) {
+  try {
+    const members = await db.member.findMany();
+    const tourCards = await db.tourCard.findMany({
+      where: { seasonId },
+      include: { member: true },
+    });
 
-export async function addFriendsToMember({
-  member,
-  friendId,
-}: {
-  member: Member;
-  friendId: string;
-}) {
-  let friends: string[] = [];
-  if (!member.friends) {
-    friends = [friendId];
-  } else {
-    friends = [...member.friends, friendId];
+    // Calculate tier updates based on earnings or other criteria
+    const updates = members.map(async (member) => {
+      const memberCards = tourCards.filter((tc) => tc.memberId === member.id);
+      const totalEarnings = memberCards.reduce(
+        (sum, tc) => sum + (tc.earnings || 0),
+        0,
+      );
+
+      // Define tier thresholds (example logic)
+      let newRole = "Bronze";
+      if (totalEarnings >= 100000) newRole = "Gold";
+      else if (totalEarnings >= 50000) newRole = "Silver";
+
+      if (member.role !== newRole) {
+        return db.member.update({
+          where: { id: member.id },
+          data: { role: newRole },
+        });
+      }
+      return null;
+    });
+
+    await Promise.all(updates);
+
+    return { success: true, updated: updates.length };
+  } catch (error) {
+    console.error("Error updating member tiers:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
-  await api.member.update({ id: member.id, friends: friends });
-  return;
 }
 
-export async function removeFriendsFromMember({
-  member,
-  friendId,
-}: {
-  member: Member;
-  friendId: string;
-}) {
-  const friends = member.friends.filter((id) => id !== friendId);
-  await api.member.update({ id: member.id, friends: friends });
-  return;
-}
+/**
+ * Get member with their tour cards
+ * Enhanced member data including tour card history
+ */
+export async function getMemberWithTourCards(memberId: string) {
+  try {
+    const member = await db.member.findUnique({
+      where: { id: memberId },
+    });
 
-export async function createNewMember(user: User) {
-  const fullName = formatName(user?.user_metadata.name as string, "full");
-  const splitName = fullName.split(" ");
-  await api.member.create({
-    id: user.id,
-    email: user.email ?? (user.user_metadata.email as string),
-    fullname: fullName,
-    firstname: splitName[0] ?? "",
-    lastname: splitName.slice(1).toString(),
-  });
-}
+    if (!member) {
+      return { success: false, error: "Member not found" };
+    }
 
-export async function checkIfUserExists() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  const member = data.user && (await api.member.getSelf());
-  if (!member && data.user) {
-    await createNewMember(data.user);
+    const tourCards = await db.tourCard.findMany({
+      where: { memberId },
+      include: {
+        tour: true,
+      },
+      orderBy: { earnings: "desc" },
+    });
+
+    return {
+      success: true,
+      member: {
+        ...member,
+        tourCards,
+        totalEarnings: tourCards.reduce(
+          (sum, tc) => sum + (tc.earnings || 0),
+          0,
+        ),
+        totalPoints: tourCards.reduce((sum, tc) => sum + (tc.points || 0), 0),
+        tourCount: tourCards.length,
+      },
+    };
+  } catch (error) {
+    console.error("Error getting member with tour cards:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
-  return member;
+}
+
+/**
+ * Get members filtered by tier
+ * Returns members in a specific tier or role
+ */
+export async function getMembersByTier(tier: string) {
+  try {
+    const members = await db.member.findMany({
+      where: { role: tier },
+      orderBy: { account: "desc" },
+    });
+
+    // Enhance with tour card summary
+    const membersWithStats = await Promise.all(
+      members.map(async (member) => {
+        const tourCards = await db.tourCard.findMany({
+          where: { memberId: member.id },
+        });
+
+        return {
+          ...member,
+          tourCardCount: tourCards.length,
+          totalEarnings: tourCards.reduce(
+            (sum, tc) => sum + (tc.earnings || 0),
+            0,
+          ),
+          totalPoints: tourCards.reduce((sum, tc) => sum + (tc.points || 0), 0),
+        };
+      }),
+    );
+
+    return { success: true, members: membersWithStats };
+  } catch (error) {
+    console.error("Error getting members by tier:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      members: [],
+    };
+  }
+}
+
+/**
+ * Get comprehensive member statistics
+ * Returns detailed analytics for a specific member
+ */
+export async function getMemberStats(memberId: string) {
+  try {
+    const member = await db.member.findUnique({
+      where: { id: memberId },
+    });
+
+    if (!member) {
+      return { success: false, error: "Member not found" };
+    }
+
+    const [tourCards, transactions] = await Promise.all([
+      db.tourCard.findMany({
+        where: { memberId },
+        include: { tour: true },
+      }),
+      db.transactions.findMany({
+        where: { userId: memberId },
+        orderBy: { id: "desc" },
+        take: 10,
+      }),
+    ]);
+
+    const stats = {
+      totalEarnings: tourCards.reduce((sum, tc) => sum + (tc.earnings || 0), 0),
+      totalPoints: tourCards.reduce((sum, tc) => sum + (tc.points || 0), 0),
+      averageEarnings:
+        tourCards.length > 0
+          ? tourCards.reduce((sum, tc) => sum + (tc.earnings || 0), 0) /
+            tourCards.length
+          : 0,
+      bestFinish: tourCards.reduce((best, tc) => {
+        const pos = tc.position ? parseInt(tc.position.replace("T", "")) : 999;
+        return pos < best ? pos : best;
+      }, 999),
+      tournamentsPlayed: tourCards.length,
+      currentBalance: member.account,
+      recentTransactions: transactions,
+    };
+
+    return {
+      success: true,
+      member: {
+        ...member,
+        stats,
+        tourCards,
+      },
+    };
+  } catch (error) {
+    console.error("Error getting member stats:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
 }

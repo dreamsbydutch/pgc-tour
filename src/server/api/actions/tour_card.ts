@@ -1,11 +1,23 @@
+/**
+ * Tour Card Server Actions
+ * Server-side tour card management operations
+ *
+ * Handles tour card creation, deletion, and display name management.
+ * Includes sophisticated name collision resolution for display names.
+ */
+
 "use server";
 
 import { db } from "../../db";
 import { redirect } from "next/navigation";
-import { createClient } from "@/src/lib/supabase/server";
-import { api } from "@/src/trpc/server";
+import { createClient } from "../../../lib/supabase/server";
+import { api } from "../../../trpc/server";
 import type { Member, Tour, TourCard } from "@prisma/client";
 
+/**
+ * Create a new tour card for a user
+ * Handles payment processing and tour card creation
+ */
 export async function createTourCard({
   tour,
   seasonId,
@@ -13,72 +25,125 @@ export async function createTourCard({
   tour: Tour;
   seasonId: string;
 }) {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  const user: Member | null = await api.member.getById({
-    memberId: data.user?.id,
-  });
-  if (!user || !data.user || !data.user.email) return;
-  await db.transactions.create({
-    data: {
-      amount: tour.buyIn ?? 0,
-      description: "Tour Card fee for " + user.fullname,
-      seasonId: seasonId,
-      transactionType: "TourCardFee",
-      userId: user.id,
-    },
-  });
-  await db.member.update({
-    where: { id: user.id },
-    data: {
-      account: user.account + (tour.buyIn ?? 0),
-    },
-  });
-  const tourCard = await db.tourCard.create({
-    data: {
-      displayName: (user.firstname && user.firstname[0]) + ". " + user.lastname,
-      memberId: data.user.id,
-      tourId: tour.id,
-      seasonId: seasonId,
-      earnings: 0,
-      points: 0,
-      position: "T1",
-    },
-  });
-  await updateTourCardNames({ tour, tourCard });
-  redirect("/");
-}
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
 
-export async function deleteTourCard({ tourCard }: { tourCard: TourCard }) {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  const user = await api.member.getById({
-    memberId: data.user?.id,
-  });
-  const tour = await api.tour.getById({ tourID: tourCard.tourId });
-  if (!user || !data.user || !data.user.email || !tour) return;
-  const transaction = await db.transactions.findFirst({
-    where: {
-      seasonId: tourCard.seasonId,
-      transactionType: "TourCardFee",
-      userId: user.id,
-    },
-  });
-  if (transaction) {
-    await db.transactions.delete({ where: { id: transaction?.id } });
+    if (!data.user?.id) {
+      return { success: false, error: "User not authenticated" };
+    }
+
+    const user: Member | null = await api.member.getById({
+      memberId: data.user.id,
+    });
+
+    if (!user || !data.user.email) {
+      return { success: false, error: "User not found" };
+    }
+
+    // Create transaction for tour card fee
+    await db.transactions.create({
+      data: {
+        amount: tour.buyIn ?? 0,
+        description: `Tour Card fee for ${user.firstname || ""} ${user.lastname || ""}`,
+        seasonId: seasonId,
+        transactionType: "TourCardFee",
+        userId: user.id,
+      },
+    });
+
+    // Update member account
     await db.member.update({
       where: { id: user.id },
-      data: { account: user.account - (tour.buyIn ?? 0) },
+      data: {
+        account: user.account + (tour.buyIn ?? 0),
+      },
     });
+
+    // Create tour card
+    const tourCard = await db.tourCard.create({
+      data: {
+        displayName:
+          (user.firstname && user.firstname[0]) + ". " + user.lastname,
+        memberId: data.user.id,
+        tourId: tour.id,
+        seasonId: seasonId,
+        earnings: 0,
+        points: 0,
+        position: "T1",
+      },
+    });
+
+    await updateTourCardNames({ tour, tourCard });
+    redirect("/");
+  } catch (error) {
+    console.error("Error creating tour card:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
-  await db.tourCard.delete({
-    where: {
-      id: tourCard.id,
-    },
-  });
-  redirect("/");
 }
 
+/**
+ * Delete a tour card and process refund
+ * Handles tour card deletion and account refunding
+ */
+export async function deleteTourCard({ tourCard }: { tourCard: TourCard }) {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+
+    if (!data.user?.id) {
+      return { success: false, error: "User not authenticated" };
+    }
+
+    const user = await api.member.getById({
+      memberId: data.user.id,
+    });
+
+    const tour = await api.tour.getById({ tourID: tourCard.tourId });
+
+    if (!user || !data.user.email || !tour) {
+      return { success: false, error: "Required data not found" };
+    }
+
+    // Find and delete the transaction
+    const transaction = await db.transactions.findFirst({
+      where: {
+        seasonId: tourCard.seasonId,
+        transactionType: "TourCardFee",
+        userId: user.id,
+      },
+    });
+
+    if (transaction) {
+      await db.transactions.delete({ where: { id: transaction.id } });
+      await db.member.update({
+        where: { id: user.id },
+        data: { account: user.account - (tour.buyIn ?? 0) },
+      });
+    }
+
+    await db.tourCard.delete({
+      where: { id: tourCard.id },
+    });
+
+    redirect("/");
+  } catch (error) {
+    console.error("Error deleting tour card:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Update tour card display names to resolve conflicts
+ * Implements sophisticated name collision resolution by incrementally
+ * expanding first names until unique display names are achieved
+ */
 export async function updateTourCardNames({
   tour,
   tourCard,

@@ -11,20 +11,8 @@ import { Button } from "@/src/lib/components/ui/button";
 import LoadingSpinner from "@/src/lib/components/functionalComponents/loading/LoadingSpinner";
 import { api } from "@/src/trpc/react";
 import { teamCreateOnFormSubmit } from "@/src/server/api/actions/team";
-<<<<<<< Updated upstream:src/app/(main)/tournament/_views/CreateTeamPage.tsx
-import { useMainStore } from "@/src/lib/store/store";
+import { useTourCards, useUser } from "@/src/lib/hooks";
 import { GolferGroup } from "../_components/GolferGroup";
-=======
-import {
-  useGolfersByTournament,
-  useTeamByUserTournament,
-  useTournamentById,
-  useUser,
-  useTourCards,
-  useCourses,
-} from "@/src/lib/store";
-import { GolferGroup } from "../../components/ui/GolferGroup";
->>>>>>> Stashed changes:src/app/(main)/tournament/views/upcoming/CreateTeamPage.tsx
 
 // Define Zod schema for form validation
 const golferSchema = z.object({
@@ -56,76 +44,47 @@ export default function CreateTeamPage({
   tournamentId: string;
   setPickingTeam: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-<<<<<<< Updated upstream:src/app/(main)/tournament/_views/CreateTeamPage.tsx
-  const tourCard = useMainStore((state) => state.currentTourCard);
-  const tournament = useMainStore((state) =>
-    state.seasonTournaments?.find(
-      (tournament) => tournament.id === tournamentId,
-    ),
-  );
-  const current = useMainStore((state) => state.currentTournament);
-=======
->>>>>>> Stashed changes:src/app/(main)/tournament/views/upcoming/CreateTeamPage.tsx
   const [pageError, setPageError] = useState<string | null>(null);
-  // Use store hooks to get required data
-  const { user, loading: userLoading, error: userError } = useUser();
-  const { tourCards } = useTourCards();
-  const { courses } = useCourses();
+
+  // Use existing hooks and direct API calls for this specific component
+  const { user } = useUser();
   const {
-    tournament,
-    loading: tournamentLoading,
+    data: tournament,
+    isLoading: tournamentLoading,
     error: tournamentError,
-  } = useTournamentById(tournamentId);
+  } = api.tournament.getById.useQuery({ tournamentId });
+  const { data: course, isLoading: courseLoading } =
+    api.course.getById.useQuery(
+      { courseID: tournament?.courseId! },
+      { enabled: !!tournament?.courseId },
+    );
 
-  // Derive member and tourCard from user data
+  // Use new tour card hook for user's tour cards
+  const tourCards = useTourCards({ memberIds: user?.id ? [user.id] : [] });
   const tourCard = tourCards?.find(
-    (card) =>
-      card.memberId === user?.id && card.seasonId === tournament?.seasonId,
+    (card) => card.seasonId === tournament?.seasonId,
   );
-
-  // Get course data for the tournament
-  const course = courses?.find((c) => c.id === tournament?.courseId);
 
   // Construct tournament with course data for CreateTeamForm
-  const tournamentWithCourse = tournament
-    ? {
-        ...tournament,
-        course: course ?? null,
-      }
-    : null;
-
-  // Check if tournament is currently active
-  const current =
-    tournament &&
-    new Date(tournament.startDate) <= new Date() &&
-    new Date(tournament.endDate) >= new Date() &&
-    (tournament.currentRound ?? 0) < 5;
+  const tournamentWithCourse =
+    tournament && course
+      ? {
+          ...tournament,
+          course: course,
+        }
+      : null;
 
   // Handle errors at the page level
   useEffect(() => {
-    if (userError) {
-      setPageError(`User data error: ${userError}`);
-    } else if (tournamentError) {
-      setPageError(`Tournament data error: ${tournamentError}`);
-    } else if (
-      !userLoading &&
-      !tournamentLoading &&
-      !tournament &&
-      !pageError
-    ) {
+    if (tournamentError) {
+      setPageError(`Tournament data error: ${tournamentError.message}`);
+    } else if (!tournamentLoading && !tournament && !pageError) {
       setPageError("Tournament not found");
     }
-  }, [
-    tournament,
-    pageError,
-    userError,
-    tournamentError,
-    userLoading,
-    tournamentLoading,
-  ]);
+  }, [tournament, pageError, tournamentError, tournamentLoading]);
 
   // Show loading state while data is being fetched
-  if (userLoading || tournamentLoading) {
+  if (tournamentLoading || courseLoading) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center">
         <LoadingSpinner />
@@ -134,7 +93,7 @@ export default function CreateTeamPage({
     );
   }
 
-  if (!tournament) {
+  if (!tournament || !tournamentWithCourse) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center">
         <div className="text-red-500">
@@ -235,7 +194,9 @@ function CreateTeamForm({
     }
 
     // For existing teams, organize golfers into 5 groups
-    const result: { golfers: number[] }[] = Array.from({ length: 5 }, () => ({ golfers: [] as number[] }));
+    const result: { golfers: number[] }[] = Array.from({ length: 5 }, () => ({
+      golfers: [] as number[],
+    }));
 
     existingTeam.golferIds.forEach((golferId: number, index: number) => {
       const groupIndex = Math.floor(index / 2);

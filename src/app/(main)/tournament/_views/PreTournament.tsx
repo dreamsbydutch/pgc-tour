@@ -14,6 +14,7 @@ import type {
   Tournament,
 } from "@prisma/client";
 import CreateTeamPage from "./CreateTeamPage";
+import { useTourCards, useUser } from "@/src/lib/hooks";
 
 /**
  * PreTournamentPage Component
@@ -33,9 +34,15 @@ export default function PreTournamentPage({
   tournament: Tournament;
 }) {
   const [pickingTeam, setPickingTeam] = useState(false);
-<<<<<<< Updated upstream:src/app/(main)/tournament/_views/PreTournament.tsx
-  const tourCard = useMainStore((state) => state.currentTourCard);
-  const member = useMainStore((state) => state.currentMember);
+
+  // Use the new hooks for user and tour card data
+  const { user } = useUser();
+  const tourCards = useTourCards({ memberIds: user?.id ? [user.id] : [] });
+  const tourCard = tourCards?.find(
+    (card) => card.seasonId === tournament.seasonId,
+  );
+
+  // Use direct API calls for team and golfer data
   const { data: existingTeam, isLoading: isTeamLoading } =
     api.team.getByUserTournament.useQuery({
       tourCardId: tourCard?.id ?? "",
@@ -45,31 +52,8 @@ export default function PreTournamentPage({
     api.golfer.getByTournament.useQuery({
       tournamentId: tournament.id,
     });
+
   const teamGolfers = allGolfers?.filter((a) =>
-=======
-  const { user } = useUser();
-  const { tourCards } = useTourCards();
-  const { members } = useMembers();
-  const tourCard = tourCards?.find(
-    (card: TourCard) =>
-      card.memberId === user?.id && card.seasonId === tournament.seasonId,
-  );
-  const member = members?.find((m: Member) => m.id === user?.id);
-
-  // Use store hooks instead of direct tRPC calls
-  const {
-    team: existingTeam,
-    loading: isTeamLoading,
-    error: teamError,
-  } = useTeamByUserTournament(tourCard?.id ?? "", tournament.id);
-  const {
-    golfers: allGolfers,
-    loading: isGolfersLoading,
-    error: golfersError,
-  } = useGolfersByTournament(tournament.id);
-
-  const teamGolfers = allGolfers?.filter((a: Golfer) =>
->>>>>>> Stashed changes:src/app/(main)/tournament/views/upcoming/PreTournament.tsx
     existingTeam?.golferIds.includes(a.apiId),
   );
 

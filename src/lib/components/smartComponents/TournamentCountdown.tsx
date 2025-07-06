@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { type Tournament } from "@prisma/client";
+import { type MinimalTournament } from "@/src/lib/types";
 import Image from "next/image";
-import { useNextTournament } from "@/src/lib/hooks/useTournamentHooks";
+import { useTournament } from "@/src/lib/hooks";
 
 /**
  * TournamentCountdown Component
@@ -20,8 +21,9 @@ export default function TournamentCountdown({
 }: {
   inputTourney?: Tournament | undefined;
 }) {
-  const nextTourney = useNextTournament();
-  let tourney: Tournament | null = null;
+  // Updated to use new consolidated hook instead of useNextTournament
+  const { next: nextTourney } = useTournament();
+  let tourney: Tournament | MinimalTournament | null = null;
   if (!inputTourney) {
     tourney = nextTourney ?? null;
   } else {
@@ -70,7 +72,7 @@ const CountdownTimer = ({
   tourney,
   startDateTime,
 }: {
-  tourney: Tournament;
+  tourney: Tournament | MinimalTournament;
   startDateTime: Date;
 }) => {
   const [timeLeft, setTimeLeft] = useState<TimeLeftType>(
