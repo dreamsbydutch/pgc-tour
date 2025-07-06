@@ -10,6 +10,7 @@ import { memberRouter } from "./routers/member";
 import { transactionRouter } from "./routers/transaction";
 import { golferRouter } from "./routers/golfer";
 import { storeRouter } from "./routers/store";
+import { pushSubscriptionRouter } from "./routers/pushSubscription";
 
 /**
  * This is the primary router for your server.
@@ -28,6 +29,7 @@ export const appRouter = createTRPCRouter({
   tournament: tournamentRouter,
   transaction: transactionRouter,
   store: storeRouter,
+  pushSubscription: pushSubscriptionRouter,
 });
 
 // export type definition of API

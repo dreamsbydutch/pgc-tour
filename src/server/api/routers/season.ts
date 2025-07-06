@@ -8,22 +8,33 @@ import {
 
 export const seasonRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.season.findMany({});
+    return ctx.db.season.findMany({
+      orderBy: { year: "desc" },
+    });
   }),
+
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.season.findUnique({ where: { id: input.id } });
+      return ctx.db.season.findUnique({
+        where: { id: input.id },
+        include: {
+          tours: true,
+          tournaments: true,
+          tiers: true,
+        },
+      });
     }),
-  getByYear: publicProcedure
-    .input(z.object({ year: z.number().min(2021) }))
-    .query(async ({ ctx, input }) => {
-      return ctx.db.season.findUnique({ where: { year: input.year } });
-    }),
+
   getCurrent: publicProcedure.query(async ({ ctx }) => {
     const currentYear = new Date().getFullYear();
     return ctx.db.season.findUnique({
       where: { year: currentYear },
+      include: {
+        tours: true,
+        tournaments: true,
+        tiers: true,
+      },
     });
   }),
 
@@ -35,36 +46,30 @@ export const seasonRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.season.create({
-        data: {
-          year: input.year,
-          number: input.number,
-        },
+      return ctx.db.season.create({
+        data: input,
       });
-      return null;
     }),
+
   update: adminProcedure
     .input(
       z.object({
         id: z.string(),
-        year: z.number().min(2021),
-        number: z.number().min(1),
+        year: z.number().optional(),
+        number: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.season.update({
-        where: { id: input.id },
-        data: {
-          year: input.year,
-          number: input.number,
-        },
+      const { id, ...data } = input;
+      return ctx.db.season.update({
+        where: { id },
+        data,
       });
-      return null;
     }),
+
   delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.season.delete({ where: { id: input.id } });
-      return null;
+      return ctx.db.season.delete({ where: { id: input.id } });
     }),
 });

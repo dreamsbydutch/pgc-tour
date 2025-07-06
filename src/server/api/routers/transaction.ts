@@ -1,86 +1,82 @@
 import { z } from "zod";
+import { TransactionType } from "@prisma/client";
 
 import {
   adminProcedure,
   createTRPCRouter,
+  protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
 
 export const transactionRouter = createTRPCRouter({
-  getAll: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.transactions.findMany();
+  getAll: adminProcedure.query(async ({ ctx }) => {
+    return ctx.db.transactions.findMany({
+      orderBy: { id: "desc" },
+    });
   }),
-  getByMember: publicProcedure
-    .input(z.object({ memberId: z.string() }))
+
+  getById: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.transactions.findUnique({
+        where: { id: input.id },
+      });
+    }),
+
+  getByUser: protectedProcedure
+    .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
       return ctx.db.transactions.findMany({
-        where: { userId: input.memberId },
+        where: { userId: input.userId },
+        orderBy: { id: "desc" },
+      });
+    }),
+
+  getBySeason: adminProcedure
+    .input(z.object({ seasonId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.transactions.findMany({
+        where: { seasonId: input.seasonId },
+        orderBy: { id: "desc" },
       });
     }),
 
   create: adminProcedure
     .input(
       z.object({
-        amount: z.number(),
-        description: z.string(),
-        seasonId: z.string(),
-        transactionType: z.enum([
-          "TourCardFee",
-          "TournamentWinnings",
-          "Withdrawal",
-          "LeagueDonation",
-          "CharityDonation",
-          "Payment",
-        ]),
         userId: z.string(),
+        seasonId: z.string(),
+        description: z.string(),
+        amount: z.number(),
+        transactionType: z.nativeEnum(TransactionType),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.transactions.create({
-        data: {
-          amount: input.amount,
-          description: input.description,
-          seasonId: input.seasonId,
-          transactionType: input.transactionType,
-          userId: input.userId,
-        },
+      return ctx.db.transactions.create({
+        data: input,
       });
     }),
+
   update: adminProcedure
     .input(
       z.object({
-        transactionId: z.number(),
-        amount: z.number().optional(),
+        id: z.number(),
         description: z.string().optional(),
-        seasonId: z.string().optional(),
-        transactionType: z
-          .enum([
-            "TourCardFee",
-            "TournamentWinnings",
-            "Withdrawal",
-            "LeagueDonation",
-            "CharityDonation",
-            "Payment",
-          ])
-          .optional(),
+        amount: z.number().optional(),
+        transactionType: z.nativeEnum(TransactionType).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.transactions.update({
-        where: { id: input.transactionId },
-        data: {
-          amount: input.amount,
-          description: input.description,
-          seasonId: input.seasonId,
-          transactionType: input.transactionType,
-        },
+      const { id, ...data } = input;
+      return ctx.db.transactions.update({
+        where: { id },
+        data,
       });
     }),
+
   delete: adminProcedure
-    .input(z.object({ transactionId: z.number() }))
+    .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.transactions.delete({
-        where: { id: input.transactionId },
-      });
+      return ctx.db.transactions.delete({ where: { id: input.id } });
     }),
 });

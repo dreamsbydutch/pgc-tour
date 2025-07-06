@@ -9,13 +9,37 @@ import {
 export const tournamentRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.tournament.findMany({
-      orderBy: { startDate: "asc" },
       include: {
         course: true,
+        season: true,
         tier: true,
+        tours: true,
       },
+      orderBy: { startDate: "desc" },
     });
   }),
+
+  getById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.tournament.findUnique({
+        where: { id: input.id },
+        include: {
+          course: true,
+          season: true,
+          tier: true,
+          tours: true,
+          golfers: {
+            orderBy: { score: "asc" },
+          },
+          teams: {
+            include: { tourCard: true },
+            orderBy: { score: "asc" },
+          },
+        },
+      });
+    }),
+
   getBySeason: publicProcedure
     .input(z.object({ seasonId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -24,120 +48,47 @@ export const tournamentRouter = createTRPCRouter({
         include: {
           course: true,
           tier: true,
+          tours: true,
         },
-        orderBy: { startDate: "asc" },
+        orderBy: { startDate: "desc" },
       });
     }),
-  getById: publicProcedure
-    .input(z.object({ tournamentId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      return ctx.db.tournament.findUnique({
-        where: { id: input.tournamentId },
-        include: { course: true },
-      });
-    }),
-  getInfo: publicProcedure.query(async ({ ctx }) => {
-    const today = new Date();
-    return {
-      current: await ctx.db.tournament.findFirst({
-        where: { startDate: { lte: today }, endDate: { gte: today } },
-        orderBy: { startDate: "desc" },
-        include: { course: true },
-      }),
-      past: await ctx.db.tournament.findFirst({
-        where: { endDate: { lte: today } },
-        orderBy: { startDate: "desc" },
-        include: { course: true },
-      }),
-      next: await ctx.db.tournament.findFirst({
-        where: { startDate: { gte: today } },
-        orderBy: { startDate: "asc" },
-        include: { course: true },
-      }),
-    };
+
+  getCurrent: publicProcedure.query(async ({ ctx }) => {
+    const now = new Date();
+    return ctx.db.tournament.findFirst({
+      where: {
+        startDate: { lte: now },
+        endDate: { gte: now },
+      },
+      include: {
+        course: true,
+        season: true,
+        tier: true,
+        tours: true,
+        golfers: {
+          orderBy: { score: "asc" },
+        },
+      },
+    });
   }),
 
-  /**
-   * Get tournaments by status (current, upcoming, completed)
-   * Optimized for tournament navigation hooks
-   */
-  getByStatus: publicProcedure
+  create: adminProcedure
     .input(
       z.object({
-        status: z.enum(["current", "upcoming", "completed"]),
-        seasonId: z.string().optional(),
-        limit: z.number().optional(),
+        name: z.string().min(1),
+        startDate: z.date(),
+        endDate: z.date(),
+        tierId: z.string(),
+        courseId: z.string(),
+        seasonId: z.string(),
+        logoUrl: z.string().optional(),
+        apiId: z.string().optional(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      const today = new Date();
-
-      let dateFilter = {};
-      switch (input.status) {
-        case "current":
-          dateFilter = {
-            startDate: { lte: today },
-            endDate: { gte: today },
-          };
-          break;
-        case "upcoming":
-          dateFilter = {
-            startDate: { gt: today },
-          };
-          break;
-        case "completed":
-          dateFilter = {
-            endDate: { lt: today },
-          };
-          break;
-      }
-
-      return ctx.db.tournament.findMany({
-        where: {
-          ...dateFilter,
-          ...(input.seasonId && { seasonId: input.seasonId }),
-        },
-        include: {
-          course: true,
-          tier: true,
-        },
-        orderBy:
-          input.status === "upcoming"
-            ? { startDate: "asc" }
-            : { startDate: "desc" },
-        ...(input.limit && { take: input.limit }),
-      });
-    }),
-
-  /**
-   * Get recent completed tournaments for champions display
-   * With timing validation
-   */
-  getRecentCompleted: publicProcedure
-    .input(
-      z.object({
-        daysBack: z.number().optional().default(7),
-        seasonId: z.string().optional(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - input.daysBack);
-
-      return ctx.db.tournament.findMany({
-        where: {
-          endDate: {
-            gte: cutoffDate,
-            lt: new Date(),
-          },
-          ...(input.seasonId && { seasonId: input.seasonId }),
-        },
-        include: {
-          course: true,
-          tier: true,
-        },
-        orderBy: { endDate: "desc" },
-        take: 5,
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.tournament.create({
+        data: input,
       });
     }),
 
@@ -145,47 +96,25 @@ export const tournamentRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        livePlay: z.boolean().optional(),
+        name: z.string().optional(),
+        startDate: z.date().optional(),
+        endDate: z.date().optional(),
+        logoUrl: z.string().optional(),
         currentRound: z.number().optional(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      return ctx.db.tournament.update({ where: { id: input.id }, data: input });
-    }),
-  create: adminProcedure
-    .input(
-      z.object({
-        name: z.string(),
-        logoUrl: z.string(),
-        startDate: z.date(),
-        endDate: z.date(),
-        courseId: z.string(),
-        tierId: z.string(),
-        seasonId: z.string(),
-        tourIds: z.array(z.string()),
+        livePlay: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.tournament.create({
-        data: {
-          name: input.name,
-          logoUrl: input.logoUrl,
-          startDate: input.startDate,
-          endDate: input.endDate,
-          courseId: input.courseId,
-          tierId: input.tierId,
-          seasonId: input.seasonId,
-          tours: {
-            connect: input.tourIds
-              .map((id) => (id ? { id } : undefined))
-              .filter((tour): tour is { id: string } => tour !== undefined),
-          },
-        },
+      const { id, ...data } = input;
+      return ctx.db.tournament.update({
+        where: { id },
+        data,
       });
     }),
+
   delete: adminProcedure
-    .input(z.object({ tournamentId: z.string() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.tournament.delete({ where: { id: input.tournamentId } });
+      return ctx.db.tournament.delete({ where: { id: input.id } });
     }),
 });

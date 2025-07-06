@@ -8,70 +8,70 @@ import {
 
 export const tierRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.tier.findMany({});
+    return ctx.db.tier.findMany({
+      include: { season: true, tours: true },
+      orderBy: { name: "asc" },
+    });
   }),
+
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.tier.findUnique({
+      return ctx.db.tier.findUnique({
         where: { id: input.id },
+        include: {
+          season: true,
+          tours: true,
+          tournaments: true,
+        },
       });
     }),
-  getCurrent: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.tier.findMany({
-      where: { season: { year: new Date().getFullYear() } },
-    });
-  }),
+
   getBySeason: publicProcedure
     .input(z.object({ seasonId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.tier.findMany({
+      return ctx.db.tier.findMany({
         where: { seasonId: input.seasonId },
+        include: { season: true, tours: true },
+        orderBy: { name: "asc" },
       });
     }),
+
   create: adminProcedure
     .input(
       z.object({
-        name: z.string(),
+        name: z.string().min(1),
         seasonId: z.string(),
-        points: z.array(z.number()),
         payouts: z.array(z.number()),
+        points: z.array(z.number()),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.tier.create({
-        data: {
-          name: input.name,
-          seasonId: input.seasonId,
-          points: input.points,
-          payouts: input.payouts,
-        },
+      return ctx.db.tier.create({
+        data: input,
       });
     }),
+
   update: adminProcedure
     .input(
       z.object({
-        tierID: z.string(),
+        id: z.string(),
         name: z.string().optional(),
-        points: z.array(z.number()).optional(),
         payouts: z.array(z.number()).optional(),
+        points: z.array(z.number()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.tier.update({
-        where: { id: input.tierID },
-        data: {
-          name: input.name ?? undefined,
-          points: input.points ?? undefined,
-          payouts: input.payouts ?? undefined,
-        },
+      const { id, ...data } = input;
+      return ctx.db.tier.update({
+        where: { id },
+        data,
       });
     }),
+
   delete: adminProcedure
-    .input(z.object({ tierID: z.string() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.tier.delete({
-        where: { id: input.tierID },
-      });
+      return ctx.db.tier.delete({ where: { id: input.id } });
     }),
 });

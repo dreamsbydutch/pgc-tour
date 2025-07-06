@@ -8,190 +8,76 @@ import {
 
 export const golferRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.golfer.findMany();
+    return ctx.db.golfer.findMany({
+      include: { tournament: true },
+      orderBy: { playerName: "asc" },
+    });
   }),
+
   getById: publicProcedure
-    .input(z.object({ golferID: z.number() }))
+    .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.golfer.findUnique({ where: { id: input.golferID } });
+      return ctx.db.golfer.findUnique({
+        where: { id: input.id },
+        include: { tournament: true },
+      });
     }),
-  getByName: publicProcedure
-    .input(z.object({ name: z.string() }))
-    .query(async ({ ctx, input }) => {
-      return ctx.db.golfer.findMany({ where: { playerName: input.name } });
-    }),
+
   getByTournament: publicProcedure
-    .input(
-      z.object({
-        tournamentId: z.string(),
-        sortBy: z
-          .enum(["score", "name", "position"])
-          .optional()
-          .default("score"),
-      }),
-    )
+    .input(z.object({ tournamentId: z.string() }))
     .query(async ({ ctx, input }) => {
-      let orderBy = {};
-
-      switch (input.sortBy) {
-        case "score":
-          orderBy = { score: "asc" };
-          break;
-        case "name":
-          orderBy = { playerName: "asc" };
-          break;
-        case "position":
-          orderBy = { position: "asc" };
-          break;
-        default:
-          orderBy = { score: "asc" };
-      }
-
       return ctx.db.golfer.findMany({
         where: { tournamentId: input.tournamentId },
-        orderBy,
-        include: {
-          tournament: {
-            select: {
-              id: true,
-              name: true,
-              currentRound: true,
-            },
-          },
-        },
-      });
-    }),
-
-  /**
-   * Get golfers by team for team composition display
-   */
-  getByTeam: publicProcedure
-    .input(
-      z.object({
-        teamId: z.number(),
-        tournamentId: z.string(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      // First get the team to retrieve golfer IDs
-      const team = await ctx.db.team.findUnique({
-        where: { id: input.teamId },
-        select: { golferIds: true },
-      });
-
-      if (!team || !team.golferIds) {
-        return [];
-      }
-
-      return ctx.db.golfer.findMany({
-        where: {
-          tournamentId: input.tournamentId,
-          apiId: { in: team.golferIds },
-        },
+        include: { tournament: true },
         orderBy: { score: "asc" },
-        include: {
-          tournament: {
-            select: {
-              id: true,
-              name: true,
-              currentRound: true,
-            },
-          },
-        },
       });
     }),
-  getBySeason: publicProcedure
-    .input(z.object({ seasonId: z.string().optional() }))
-    .query(async ({ ctx, input }) => {
-      return ctx.db.golfer.findMany({
-        where: {
-          tournament: {
-            seasonId: input.seasonId,
-          },
-        },
-      });
-    }),
-  update: adminProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        country: z.string().nullable().optional(),
-        earnings: z.number().nullable().optional(),
-        makeCut: z.number().nullable().optional(),
-        position: z.string().nullable().optional(),
-        posChange: z.number().nullable().optional(),
-        win: z.number().nullable().optional(),
-        usage: z.number().nullable().optional(),
-        round: z.number().nullable().optional(),
-        score: z.number().nullable().optional(),
-        topTen: z.number().nullable().optional(),
-        today: z.number().nullable().optional(),
-        thru: z.number().nullable().optional(),
-        roundOneTeeTime: z.string().nullable().optional(),
-        roundOne: z.number().nullable().optional(),
-        roundTwoTeeTime: z.string().nullable().optional(),
-        roundTwo: z.number().nullable().optional(),
-        roundThreeTeeTime: z.string().nullable().optional(),
-        roundThree: z.number().nullable().optional(),
-        roundFourTeeTime: z.string().nullable().optional(),
-        roundFour: z.number().nullable().optional(),
-        endHole: z.number().nullable().optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      return ctx.db.golfer.update({
-        where: { id: input.id },
-        data: {
-          country: input.country,
-          earnings: input.earnings,
-          makeCut: input.makeCut,
-          position: input.position,
-          posChange: input.posChange,
-          win: input.win,
-          usage: input.usage,
-          round: input.round,
-          score: input.score,
-          topTen: input.topTen,
-          today: input.today,
-          thru: input.thru,
-          roundOneTeeTime: input.roundOneTeeTime,
-          roundOne: input.roundOne,
-          roundTwoTeeTime: input.roundTwoTeeTime,
-          roundTwo: input.roundTwo,
-          roundThreeTeeTime: input.roundThreeTeeTime,
-          roundThree: input.roundThree,
-          roundFourTeeTime: input.roundFourTeeTime,
-          roundFour: input.roundFour,
-          endHole: input.endHole,
-        },
-      });
-    }),
+
   create: adminProcedure
     .input(
       z.object({
         apiId: z.number(),
-        playerName: z.string().min(1),
-        tournamentId: z.string().min(1),
-        group: z.number(),
+        playerName: z.string(),
+        tournamentId: z.string(),
+        group: z.number().optional(),
         worldRank: z.number().optional(),
         rating: z.number().optional(),
+        country: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.golfer.create({
-        data: {
-          apiId: input.apiId,
-          playerName: input.playerName,
-          tournamentId: input.tournamentId,
-          group: input.group,
-          worldRank: input.worldRank,
-          rating: input.rating,
-        },
+        data: input,
       });
     }),
-  delete: adminProcedure
-    .input(z.object({ golferId: z.number() }))
+
+  update: adminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        position: z.string().optional(),
+        score: z.number().optional(),
+        makeCut: z.number().optional(),
+        topTen: z.number().optional(),
+        win: z.number().optional(),
+        today: z.number().optional(),
+        thru: z.number().optional(),
+        round: z.number().optional(),
+        earnings: z.number().optional(),
+        usage: z.number().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.golfer.delete({ where: { id: input.golferId } });
+      const { id, ...data } = input;
+      return ctx.db.golfer.update({
+        where: { id },
+        data,
+      });
+    }),
+
+  delete: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.golfer.delete({ where: { id: input.id } });
     }),
 });

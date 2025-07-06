@@ -8,77 +8,75 @@ import {
 
 export const tourRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.tour.findMany({});
+    return ctx.db.tour.findMany({
+      include: { season: true, tiers: true },
+      orderBy: { name: "asc" },
+    });
   }),
+
   getById: publicProcedure
-    .input(z.object({ tourID: z.string() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.tour.findUnique({
-        where: { id: input.tourID },
+      return ctx.db.tour.findUnique({
+        where: { id: input.id },
+        include: {
+          season: true,
+          tournaments: true,
+          tourCards: true,
+          tiers: true,
+        },
       });
     }),
-  getActive: publicProcedure.query(async ({ ctx }) => {
-    const activeSeason = await ctx.db.season.findUnique({
-      where: { year: new Date().getFullYear() },
-    });
-    return await ctx.db.tour.findMany({
-      where: { seasonId: activeSeason?.id },
-    });
-  }),
+
   getBySeason: publicProcedure
     .input(z.object({ seasonId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.tour.findMany({
+      return ctx.db.tour.findMany({
         where: { seasonId: input.seasonId },
+        include: { season: true, tiers: true },
+        orderBy: { name: "asc" },
       });
     }),
 
   create: adminProcedure
     .input(
       z.object({
-        name: z.string(),
+        name: z.string().min(1),
         logoUrl: z.string(),
-        seasonYear: z.number(),
+        seasonId: z.string(),
         shortForm: z.string(),
         buyIn: z.number(),
+        playoffSpots: z.array(z.number()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const tourSeason = await ctx.db.season.findUnique({
-        where: { year: input.seasonYear },
-      });
-      if (!tourSeason) return null;
-      return await ctx.db.tour.create({
-        data: {
-          name: input.name,
-          logoUrl: input.logoUrl,
-          seasonId: tourSeason.id,
-          shortForm: input.shortForm,
-          buyIn: input.buyIn,
-        },
+      return ctx.db.tour.create({
+        data: input,
       });
     }),
+
   update: adminProcedure
     .input(
       z.object({
-        id: z.string().min(1),
-        data: z.object({
-          name: z.string().optional(),
-          logoUrl: z.string().optional(),
-          seasonYear: z.number().optional(),
-          shortForm: z.string().optional(),
-        }),
+        id: z.string(),
+        name: z.string().optional(),
+        logoUrl: z.string().optional(),
+        shortForm: z.string().optional(),
+        buyIn: z.number().optional(),
+        playoffSpots: z.array(z.number()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.tour.update({
-        where: { id: input.id },
-        data: input.data,
+      const { id, ...data } = input;
+      return ctx.db.tour.update({
+        where: { id },
+        data,
       });
     }),
+
   delete: adminProcedure
-    .input(z.object({ tourID: z.string() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.tour.delete({ where: { id: input.tourID } });
+      return ctx.db.tour.delete({ where: { id: input.id } });
     }),
 });
