@@ -3,187 +3,40 @@ import { useSeasonalStore } from "../store/seasonalStore";
 import { useCurrentTournament, useLastTournament } from "./useTournamentHooks";
 
 // Import utilities from the new utils suite
-import { golf, dates, processing, aggregation } from "@/lib/utils";
+import {
+  golf,
+  dates,
+  processing,
+  aggregation,
+  validation,
+  teams,
+} from "@/lib/utils";
+import { getOptimizedQueryConfig } from "@/lib/utils/system/queries";
 
 // Direct imports from the core index
 import { groupBy, hasItems, isEmpty, isDefined } from "@/lib/utils/core/index";
 
+// Import centralized types
+import type {
+  ChampionsResult,
+  LeaderboardResult,
+  TournamentLeaderboardResult,
+  MinimalTour,
+  MinimalTourCard,
+  MinimalTournament,
+  EnrichedTeam,
+  TourGroup,
+} from "@/lib/types";
+
 import type { Tournament, Team, Tour, TourCard, Golfer } from "@prisma/client";
 
 // ============================================================================
-// TYPES & INTERFACES
+// TEAM PROCESSING UTILITIES (Temporary - to be refactored in later phases)
 // ============================================================================
-
-// Proper types from the database and store
-type MinimalTour = {
-  id: string;
-  name: string;
-  logoUrl: string;
-  buyIn: number;
-  shortForm: string;
-  seasonId: string;
-};
-
-type MinimalTourCard = {
-  id: string;
-  memberId: string;
-  tourId: string;
-  seasonId: string;
-  displayName: string;
-  earnings: number;
-  points: number;
-  position: string | null;
-};
-
-type MinimalTournament = {
-  id: string;
-  name: string;
-  logoUrl: string | null;
-  startDate: Date;
-  endDate: Date;
-  livePlay: boolean | null;
-  currentRound: number | null;
-  seasonId: string;
-  courseId: string;
-  tierId: string;
-  course: {
-    id: string;
-    name: string;
-    location: string;
-    par: number;
-    apiId: string;
-  };
-  tier: {
-    id: string;
-    name: string;
-    seasonId: string;
-  };
-};
-
-interface BaseHookResult {
-  error: string | null;
-  isLoading: boolean;
-}
-
-interface ChampionsResult extends BaseHookResult {
-  tournament?: MinimalTournament;
-  champs: EnrichedTeam[];
-  daysRemaining?: number;
-}
-
-interface LeaderboardResult extends BaseHookResult {
-  tournament?: MinimalTournament;
-  teamsByTour: TourGroup[];
-  totalTeams: number;
-  lastUpdated?: Date;
-}
-
-interface TournamentLeaderboardResult extends BaseHookResult {
-  tournament?: Tournament;
-  teamsByTour: TourGroup[];
-  totalTeams?: number;
-  lastUpdated?: Date;
-  status: "loading" | "success" | "error" | "empty";
-  tournamentStatus?: string;
-  message?: string;
-}
-
-interface EnrichedTeam extends Team {
-  tour: MinimalTour;
-  tourCard: MinimalTourCard;
-  golfers?: Golfer[];
-}
-
-interface TourGroup {
-  tour: MinimalTour;
-  teams: EnrichedTeam[];
-  teamCount: number;
-}
-
-// ============================================================================
-// VALIDATION & UTILITY HELPERS
-// ============================================================================
-
-/**
- * Validates if required seasonal data is available
- */
-function validateSeasonalData(
-  dataArrays: { name: string; data: any[] }[],
-): string | null {
-  for (const { name, data } of dataArrays) {
-    if (isEmpty(data)) {
-      return `No ${name} data available`;
-    }
-  }
-  return null;
-}
-
-/**
- * Validates tournament timing for champions display
- */
-function validateChampionWindow(tournament: MinimalTournament): {
-  isValid: boolean;
-  error?: string;
-  daysSinceEnd?: number;
-  daysRemaining?: number;
-} {
-  if (!tournament?.endDate) {
-    return { isValid: false, error: "Invalid tournament data" };
-  }
-
-  const now = new Date();
-  const endDate = new Date(tournament.endDate);
-  const daysSinceEnd = dates.getDaysBetween(endDate, now);
-
-  // Tournament not completed yet
-  if (daysSinceEnd < 0) {
-    return {
-      isValid: false,
-      error: "Tournament not yet completed",
-      daysSinceEnd,
-    };
-  }
-
-  // Champion display window expired (3 days)
-  if (daysSinceEnd > 3) {
-    return {
-      isValid: false,
-      error: "Champion display window expired (3 days after tournament)",
-      daysSinceEnd,
-    };
-  }
-
-  return {
-    isValid: true,
-    daysSinceEnd,
-    daysRemaining: 3 - daysSinceEnd,
-  };
-}
-
-/**
- * Query configuration for different tournament states
- */
-function getQueryConfig(isActive: boolean) {
-  return isActive
-    ? {
-        // Active tournaments: frequent updates
-        staleTime: 1000 * 60 * 1, // 1 minute
-        gcTime: 1000 * 60 * 5, // 5 minutes
-        refetchInterval: 1000 * 60 * 2, // 2 minutes
-        refetchIntervalInBackground: true,
-        refetchOnWindowFocus: true,
-        retry: 3,
-      }
-    : {
-        // Completed tournaments: cache longer
-        staleTime: 1000 * 60 * 30, // 30 minutes
-        gcTime: 1000 * 60 * 60, // 1 hour
-        retry: 2,
-      };
-}
 
 /**
  * Enriches teams with tour and tourCard data, filtering out incomplete entries
+ * TODO: Replace with teams.enrichTeamsWithRelations in Phase 4
  */
 function enrichTeamsWithTourData(
   teams: Team[],
@@ -224,6 +77,7 @@ function enrichTeamsWithTourData(
 
 /**
  * Groups enriched teams by tour using manual grouping (type-safe for Team entity)
+ * TODO: Replace with teams.groupTeamsByProperty in Phase 4
  */
 function groupTeamsByTour(enrichedTeams: EnrichedTeam[]): TourGroup[] {
   if (!hasItems(enrichedTeams)) return [];
@@ -276,7 +130,7 @@ export function useLatestChampions(): ChampionsResult {
   }
 
   // Validate seasonal data
-  const seasonalError = validateSeasonalData([
+  const seasonalError = validation.validateRequiredData([
     { name: "tours", data: tours || [] },
     { name: "tour cards", data: tourCards || [] },
   ]);
@@ -290,7 +144,7 @@ export function useLatestChampions(): ChampionsResult {
   }
 
   // Validate tournament timing for champions display
-  const championWindow = validateChampionWindow(lastTournament);
+  const championWindow = validation.validateTournamentWindow(lastTournament, 3);
   if (!championWindow.isValid) {
     return {
       tournament: lastTournament,
@@ -351,7 +205,7 @@ export function useCurrentLeaderboard(): LeaderboardResult {
   }
 
   // Validate required data
-  const seasonalError = validateSeasonalData([
+  const seasonalError = validation.validateRequiredData([
     { name: "tours", data: tours || [] },
     { name: "tour cards", data: tourCards || [] },
   ]);
@@ -366,7 +220,7 @@ export function useCurrentLeaderboard(): LeaderboardResult {
   }
 
   // Fetch teams data with 2-minute refresh interval
-  const queryConfig = getQueryConfig(true);
+  const queryConfig = getOptimizedQueryConfig(true);
   const {
     data: teams,
     isLoading,
@@ -489,7 +343,7 @@ export function useTournamentLeaderboard(
   );
 
   // Validate required data
-  const seasonalError = validateSeasonalData([
+  const seasonalError = validation.validateRequiredData([
     { name: "tours", data: tours || [] },
     { name: "tour cards", data: tourCards || [] },
   ]);
@@ -507,7 +361,7 @@ export function useTournamentLeaderboard(
 
   // Configure query options based on tournament status
   const isCurrentTournament = tournamentStatus === "current";
-  const queryConfig = getQueryConfig(isCurrentTournament);
+  const queryConfig = getOptimizedQueryConfig(isCurrentTournament);
 
   // Fetch teams data
   const {

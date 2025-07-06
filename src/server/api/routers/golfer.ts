@@ -21,10 +21,83 @@ export const golferRouter = createTRPCRouter({
       return ctx.db.golfer.findMany({ where: { playerName: input.name } });
     }),
   getByTournament: publicProcedure
-    .input(z.object({ tournamentId: z.string() }))
+    .input(
+      z.object({
+        tournamentId: z.string(),
+        sortBy: z
+          .enum(["score", "name", "position"])
+          .optional()
+          .default("score"),
+      }),
+    )
     .query(async ({ ctx, input }) => {
+      let orderBy = {};
+
+      switch (input.sortBy) {
+        case "score":
+          orderBy = { score: "asc" };
+          break;
+        case "name":
+          orderBy = { playerName: "asc" };
+          break;
+        case "position":
+          orderBy = { position: "asc" };
+          break;
+        default:
+          orderBy = { score: "asc" };
+      }
+
       return ctx.db.golfer.findMany({
         where: { tournamentId: input.tournamentId },
+        orderBy,
+        include: {
+          tournament: {
+            select: {
+              id: true,
+              name: true,
+              currentRound: true,
+            },
+          },
+        },
+      });
+    }),
+
+  /**
+   * Get golfers by team for team composition display
+   */
+  getByTeam: publicProcedure
+    .input(
+      z.object({
+        teamId: z.number(),
+        tournamentId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // First get the team to retrieve golfer IDs
+      const team = await ctx.db.team.findUnique({
+        where: { id: input.teamId },
+        select: { golferIds: true },
+      });
+
+      if (!team || !team.golferIds) {
+        return [];
+      }
+
+      return ctx.db.golfer.findMany({
+        where: {
+          tournamentId: input.tournamentId,
+          apiId: { in: team.golferIds },
+        },
+        orderBy: { score: "asc" },
+        include: {
+          tournament: {
+            select: {
+              id: true,
+              name: true,
+              currentRound: true,
+            },
+          },
+        },
       });
     }),
   getBySeason: publicProcedure

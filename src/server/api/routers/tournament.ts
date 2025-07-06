@@ -56,36 +56,88 @@ export const tournamentRouter = createTRPCRouter({
       }),
     };
   }),
-  getActive: publicProcedure.query(async ({ ctx }) => {
-    const today = new Date();
-    return ctx.db.tournament.findFirst({
-      where: { startDate: { lte: today }, endDate: { gte: today } },
-      include: {
-        course: true,
-      },
-    });
-  }),
-  getCurrentSchedule: publicProcedure.query(async ({ ctx }) => {
-    const today = new Date();
-    return ctx.db.tournament.findMany({
-      where: { season: { year: today.getFullYear() } },
-      include: {
-        course: true,
-        tier: true,
-      },
-      orderBy: { startDate: "asc" },
-    });
-  }),
-  getSeasonSchedule: publicProcedure
-    .input(z.object({ seasonId: z.string() }))
+
+  /**
+   * Get tournaments by status (current, upcoming, completed)
+   * Optimized for tournament navigation hooks
+   */
+  getByStatus: publicProcedure
+    .input(
+      z.object({
+        status: z.enum(["current", "upcoming", "completed"]),
+        seasonId: z.string().optional(),
+        limit: z.number().optional(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
+      const today = new Date();
+
+      let dateFilter = {};
+      switch (input.status) {
+        case "current":
+          dateFilter = {
+            startDate: { lte: today },
+            endDate: { gte: today },
+          };
+          break;
+        case "upcoming":
+          dateFilter = {
+            startDate: { gt: today },
+          };
+          break;
+        case "completed":
+          dateFilter = {
+            endDate: { lt: today },
+          };
+          break;
+      }
+
       return ctx.db.tournament.findMany({
-        where: { seasonId: input.seasonId },
+        where: {
+          ...dateFilter,
+          ...(input.seasonId && { seasonId: input.seasonId }),
+        },
         include: {
           course: true,
           tier: true,
         },
-        orderBy: { startDate: "asc" },
+        orderBy:
+          input.status === "upcoming"
+            ? { startDate: "asc" }
+            : { startDate: "desc" },
+        ...(input.limit && { take: input.limit }),
+      });
+    }),
+
+  /**
+   * Get recent completed tournaments for champions display
+   * With timing validation
+   */
+  getRecentCompleted: publicProcedure
+    .input(
+      z.object({
+        daysBack: z.number().optional().default(7),
+        seasonId: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - input.daysBack);
+
+      return ctx.db.tournament.findMany({
+        where: {
+          endDate: {
+            gte: cutoffDate,
+            lt: new Date(),
+          },
+          ...(input.seasonId && { seasonId: input.seasonId }),
+        },
+        include: {
+          course: true,
+          tier: true,
+        },
+        orderBy: { endDate: "desc" },
+        take: 5,
       });
     }),
 

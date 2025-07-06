@@ -23,6 +23,7 @@ export * as golf from "./domain/golf";
 export * as formatting from "./domain/formatting";
 export * as dates from "./domain/dates";
 export * as validation from "./domain/validation";
+export * as teams from "./domain/teams";
 
 // ============= DATA UTILITIES =============
 // Data processing, transformation, and manipulation
@@ -31,6 +32,7 @@ export * as processing from "./data/processing";
 export * as sorting from "./data/sorting";
 export * as aggregation from "./data/aggregation";
 export * as transformation from "./data/transformation";
+export * as enhancement from "./data/enhancement";
 
 // ============= SYSTEM UTILITIES =============
 // System-level utilities for API, caching, storage, and performance
@@ -39,6 +41,7 @@ export * as api from "./system/api";
 export * as caching from "./system/caching";
 export * as storage from "./system/storage";
 export * as performance from "./system/performance";
+export * as queries from "./system/queries";
 
 // ============= TESTING UTILITIES =============
 // Testing utilities including mocks, helpers, and fixtures

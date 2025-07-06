@@ -57,6 +57,68 @@ export const tourCardRouter = createTRPCRouter({
         include: { member: true },
       });
     }),
+
+  /**
+   * Get tour cards by multiple filters
+   * Supports the consolidated tourCard hooks
+   */
+  getFiltered: publicProcedure
+    .input(
+      z.object({
+        seasonId: z.string().optional(),
+        tourId: z.string().optional(),
+        memberId: z.string().optional(),
+        hasEarnings: z.boolean().optional(),
+        limit: z.number().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const where: any = {};
+
+      if (input.seasonId) where.seasonId = input.seasonId;
+      if (input.tourId) where.tourId = input.tourId;
+      if (input.memberId) where.memberId = input.memberId;
+      if (input.hasEarnings) where.earnings = { gt: 0 };
+
+      return ctx.db.tourCard.findMany({
+        where,
+        include: {
+          tour: true,
+          member: true,
+          season: true,
+        },
+        orderBy: [{ earnings: "desc" }, { points: "desc" }],
+        ...(input.limit && { take: input.limit }),
+      });
+    }),
+
+  /**
+   * Get historical tour cards across seasons
+   * For member history and cross-season analysis
+   */
+  getHistoricalByMember: publicProcedure
+    .input(
+      z.object({
+        memberId: z.string(),
+        includeSeasons: z.string().array().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.db.tourCard.findMany({
+        where: {
+          memberId: input.memberId,
+          ...(input.includeSeasons && {
+            seasonId: { in: input.includeSeasons },
+          }),
+        },
+        include: {
+          tour: true,
+          season: true,
+        },
+        orderBy: [{ season: { year: "desc" } }, { tour: { name: "asc" } }],
+      });
+    }),
+
   getSelfBySeason: publicProcedure
     .input(
       z.object({

@@ -49,16 +49,80 @@ export function validateMemberName(name: unknown): name is string {
   return typeof name === "string" && name.trim().length >= 3;
 }
 
-export function validateTransactionAmount(amount: unknown): amount is number {
-  return typeof amount === "number" && amount > 0 && Number.isFinite(amount);
+// ============================================================================
+// HOOK-SPECIFIC VALIDATION UTILITIES
+// ============================================================================
+
+/**
+ * Generic data validation for required datasets
+ * Used across hooks to validate that required data arrays are not empty
+ */
+export function validateRequiredData(
+  dataArrays: { name: string; data: any[] }[],
+): string | null {
+  for (const { name, data } of dataArrays) {
+    if (!data || data.length === 0) {
+      return `No ${name} data available`;
+    }
+  }
+  return null;
 }
 
-export function validateUserId(userId: unknown): userId is string {
-  return typeof userId === "string" && userId.trim().length > 0;
+/**
+ * Tournament timing validation with configurable window
+ * Used for validating tournament completion and display windows
+ */
+export function validateTournamentWindow(
+  tournament: { endDate: Date },
+  windowDays: number = 3,
+): {
+  isValid: boolean;
+  error?: string;
+  daysSinceEnd?: number;
+  daysRemaining?: number;
+} {
+  if (!tournament?.endDate) {
+    return { isValid: false, error: "Invalid tournament data" };
+  }
+
+  const now = new Date();
+  const endDate = new Date(tournament.endDate);
+  const daysSinceEnd = Math.floor(
+    (now.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (daysSinceEnd < 0) {
+    return {
+      isValid: false,
+      error: "Tournament not yet completed",
+      daysSinceEnd,
+    };
+  }
+
+  if (daysSinceEnd > windowDays) {
+    return {
+      isValid: false,
+      error: `Display window expired (${windowDays} days after tournament)`,
+      daysSinceEnd,
+    };
+  }
+
+  return {
+    isValid: true,
+    daysSinceEnd,
+    daysRemaining: windowDays - daysSinceEnd,
+  };
 }
 
-export function validateSeasonId(seasonId: unknown): seasonId is string {
-  return typeof seasonId === "string" && seasonId.trim().length > 0;
+/**
+ * Validates tournament timing for champion display
+ * Convenience function for champion-specific validation
+ *
+ * @param tournament Tournament object with endDate
+ * @returns Validation result specifically for champion display
+ */
+export function validateChampionWindow(tournament: { endDate: Date }) {
+  return validateTournamentWindow(tournament, 3);
 }
 
 // ============= ZOD SCHEMAS =============

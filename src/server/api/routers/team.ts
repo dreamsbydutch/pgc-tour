@@ -59,6 +59,79 @@ export const teamRouter = createTRPCRouter({
           orderBy: { score: "asc" },
         }),
     ),
+  /**
+   * Get champion teams for a completed tournament
+   * Returns teams with position = 1 or winning teams
+   */
+  getChampionsByTournament: publicProcedure
+    .input(
+      z.object({
+        tournamentId: z.string(),
+        limit: z.number().optional().default(10),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.db.team.findMany({
+        where: {
+          tournamentId: input.tournamentId,
+          OR: [
+            { position: "1" },
+            { position: "T1" },
+            { position: "1st" },
+            { win: { gt: 0 } }, // Teams with wins
+          ],
+        },
+        include: {
+          tourCard: {
+            include: {
+              tour: true,
+              member: true,
+            },
+          },
+          tournament: {
+            include: {
+              course: true,
+              tier: true,
+            },
+          },
+        },
+        orderBy: [{ score: "asc" }, { position: "asc" }],
+        take: input.limit,
+      });
+    }),
+
+  /**
+   * Get teams with full enrichment data (tour, tourCard, golfers)
+   * Optimized for leaderboard display
+   */
+  getEnrichedByTournament: publicProcedure
+    .input(
+      z.object({
+        tournamentId: z.string(),
+        includeGolfers: z.boolean().optional().default(false),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.db.team.findMany({
+        where: { tournamentId: input.tournamentId },
+        include: {
+          tourCard: {
+            include: {
+              tour: true,
+              member: true,
+            },
+          },
+          tournament: {
+            include: {
+              course: true,
+              tier: true,
+            },
+          },
+        },
+        orderBy: [{ score: "asc" }, { position: "asc" }],
+      });
+    }),
+
   getByTourCardAndTournament: publicProcedure
     .input(z.object({ tourCardId: z.string(), tournamentId: z.string() }))
     .query(
