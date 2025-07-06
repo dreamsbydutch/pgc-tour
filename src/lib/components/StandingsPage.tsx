@@ -14,7 +14,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/lib/components/ui/popover";
+} from "@/lib/components/functionalComponents/ui/popover";
 import { useUser } from "@/lib/hooks";
 
 /**

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { LeaderboardHeaderSkeleton } from "./_components/skeletons/LeaderboardHeaderSkeleton";
-import { TournamentCountdownSkeleton } from "../../../lib/components/smartComponents/TournamentCountdown";
+import { TournamentCountdownSkeleton } from "../../../lib/components/functionalComponents/TournamentCountdown";
 import { TeamPickFormSkeleton } from "./_views/PreTournament";
 
 export const metadata = {

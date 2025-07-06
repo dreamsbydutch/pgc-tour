@@ -6,14 +6,14 @@ function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("animate-pulse rounded-md bg-black", className)}
+      className={cn("animate-pulse rounded-md bg-slate-400", className)}
       {...props}
     />
   );
 }
 
 const SVGSkeleton = ({ className }: React.HTMLAttributes<HTMLDivElement>) => (
-  <svg className={cn("animate-pulse rounded bg-gray-200", className)} />
+  <svg className={cn("animate-pulse rounded-full bg-slate-400", className)} />
 );
 
 export { Skeleton, SVGSkeleton };

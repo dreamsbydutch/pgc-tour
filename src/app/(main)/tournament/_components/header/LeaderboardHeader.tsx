@@ -11,7 +11,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/lib/components/ui/popover";
+} from "@/lib/components/functionalComponents/ui/popover";
 import type { Tier, Tournament } from "@prisma/client";
 import { getLeaderboardHeaderData } from "@/server/actions/leaderboard-header";
 import { formatTournamentDateRange } from "@/lib/utils/domain/dates";
@@ -33,7 +33,7 @@ import {
   DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/lib/components/ui/dropdown-menu";
+} from "@/lib/components/functionalComponents/ui/dropdown-menu";
 import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
 import { cn } from "@/lib/utils/core";
 import type { Course } from "@prisma/client";

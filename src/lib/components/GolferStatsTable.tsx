@@ -9,8 +9,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/lib/components/ui/table";
-import { Button } from "@/lib/components/ui/button";
+} from "@/lib/components/functionalComponents/ui/table";
+import { Button } from "@/lib/components/functionalComponents/ui/button";
 
 interface GolferStats {
   id: string;

@@ -71,7 +71,7 @@ export default async function RootLayout({
             <LoadSeasonalData />
             <NavigationProvider>
               <main className="mx-auto mb-24 mt-4 max-w-4xl lg:mb-8 lg:mt-20">
-                <div className="5 mx-0">{children}</div>
+                <div className="mx-1">{children}</div>
               </main>
             </NavigationProvider>
           </AuthProvider>

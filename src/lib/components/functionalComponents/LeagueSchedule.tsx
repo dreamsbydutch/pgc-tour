@@ -1,4 +1,9 @@
 import { Course, Tier, Tournament } from "@prisma/client";
+import Image from "next/image";
+import { cn } from "@/lib/utils/core";
+import { getTournamentTimeline } from "@/lib/utils/domain/dates";
+import { isNonEmptyArray } from "@/lib/utils/core/types";
+import { capitalize } from "@/lib/utils/core/primitives";
 import {
   Table,
   TableBody,
@@ -6,29 +11,38 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
-import Image from "next/image";
-import { cn } from "@/lib/utils/core";
-import { getTournamentTimeline } from "@/lib/utils/domain/dates";
+} from "./ui/table";
+
+type MinimalTournament = {
+  id: string;
+  name: string;
+  logoUrl?: string | null;
+  startDate: Date;
+  endDate: Date;
+  seasonId?: string;
+  tier: { name: string };
+  course: { name: string; location: string };
+};
 
 export function LeagueSchedule({
   tournaments,
 }: {
-  tournaments: (Tournament & { tier: Tier; course: Course })[];
+  tournaments: MinimalTournament[];
 }) {
-  // Use getTournamentTimeline utility for current/previous/upcoming logic
   const timeline = getTournamentTimeline(tournaments);
-
-  // Find the index of the current tournament in the sorted array
+  const sortedTournaments = timeline.allSorted;
   const currentTournamentIndex = timeline.current
-    ? tournaments.findIndex((t) => t.id === timeline.current?.id)
+    ? sortedTournaments.findIndex((t) => t.id === timeline.current?.id)
     : -1;
-  const previousTournamentIndex = timeline.previous
-    ? tournaments.findIndex((t) => t.id === timeline.current?.id)
+  const previousTournamentIndex = timeline.past.slice(-1)[0]
+    ? sortedTournaments.findIndex(
+        (t) => t.id === timeline.past.slice(-1)[0]?.id,
+      )
     : -1;
 
+  if (!isNonEmptyArray(sortedTournaments)) return null;
   return (
-    <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
+    <div className="rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
       <div className="my-3 flex items-center justify-center gap-3">
         <Image
           src={"/logo512.png"}
@@ -62,19 +76,22 @@ export function LeagueSchedule({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {timeline.allSorted.map((tourney, i) => {
+          {sortedTournaments.map((tourney, i) => {
             const isCurrent = i === currentTournamentIndex;
-            const showBorderAfter = i === previousTournamentIndex && !isCurrent;
+            const showBorderAfter =
+              i === previousTournamentIndex && currentTournamentIndex === -1;
 
             return (
               <TableRow
                 key={tourney.id}
                 className={cn(
-                  tournaments[i - 1]?.tier.name !== "Playoff" &&
-                    tournaments[i]?.tier.name === "Playoff" &&
+                  sortedTournaments[i - 1]?.tier.name !== "Playoff" &&
+                    sortedTournaments[i]?.tier.name === "Playoff" &&
                     "border-t-2 border-t-slate-500",
-                  tournaments[i]?.tier.name === "Playoff" && "bg-yellow-50",
-                  tournaments[i]?.seasonId !== tournaments[i - 1]?.seasonId &&
+                  sortedTournaments[i]?.tier.name === "Playoff" &&
+                    "bg-yellow-50",
+                  sortedTournaments[i]?.seasonId !==
+                    sortedTournaments[i - 1]?.seasonId &&
                     i !== 0 &&
                     "border-t-4 border-t-slate-800",
                   tourney.tier.name === "Major" && "bg-blue-50",
@@ -95,7 +112,7 @@ export function LeagueSchedule({
                       height={128}
                     />
                     <span className={cn(isCurrent && "font-bold")}>
-                      {tourney.name}
+                      {capitalize(tourney.name)}
                     </span>
                   </div>
                 </TableCell>
@@ -125,7 +142,7 @@ export function LeagueSchedule({
                     "text-nowrap border-l text-center text-xs",
                   )}
                 >
-                  {tourney.tier?.name}
+                  {capitalize(tourney.tier?.name ?? "")}
                 </TableCell>
                 <TableCell
                   className={cn(
@@ -133,7 +150,7 @@ export function LeagueSchedule({
                     "min-w-48 border-l text-center text-xs",
                   )}
                 >
-                  {tourney.course?.name}
+                  {capitalize(tourney.course?.name ?? "")}
                 </TableCell>
                 <TableCell
                   className={cn(
@@ -141,7 +158,7 @@ export function LeagueSchedule({
                     "min-w-32 border-l text-center text-xs",
                   )}
                 >
-                  {tourney.course?.location}
+                  {capitalize(tourney.course?.location ?? "")}
                 </TableCell>
               </TableRow>
             );

@@ -8,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
+} from "../functionalComponents/ui/table";
 import { cn } from "@/lib/utils/core";
 import {
   formatMoney,

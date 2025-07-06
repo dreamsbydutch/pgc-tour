@@ -1,8 +1,8 @@
 "use client";
 
-import TournamentCountdown from "../../../../lib/components/smartComponents/TournamentCountdown";
+import TournamentCountdown from "../../../../lib/components/functionalComponents/TournamentCountdown";
 import { cn, formatMoney, formatRank } from "@/old-utils";
-import { Button } from "../../../../lib/components/ui/button";
+import { Button } from "../../../../lib/components/functionalComponents/ui/button";
 import { useState } from "react";
 import LoadingSpinner from "@/app/_components/LoadingSpinner";
 import { api } from "@/trpc/react";

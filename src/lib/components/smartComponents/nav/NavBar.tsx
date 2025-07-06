@@ -5,7 +5,7 @@ import { ArchiveIcon, BookText, Home, List, Trophy } from "lucide-react";
 import { UserAccountNav } from "./UserAccount";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Skeleton } from "../../ui/skeleton";
+import { Skeleton } from "../../functionalComponents/ui/skeleton";
 import { useHeaderUser } from "@/lib/providers/AuthProvider";
 import { api } from "@/trpc/react";
 import { cn } from "@/lib/utils/core";

@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
 import type { Course, TourCard, Tournament } from "@prisma/client";
-import { Button } from "@/lib/components/ui/button";
+import { Button } from "@/lib/components/functionalComponents/ui/button";
 import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
 import { api } from "@/trpc/react";
 import { teamCreateOnFormSubmit } from "@/server/api/actions/team";

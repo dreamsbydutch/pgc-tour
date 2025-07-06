@@ -1,26 +1,22 @@
 import Link from "next/link";
-import ChampionsPopup from "@components/smartComponents/ChampionsPopup";
 import HomePageStandings from "@components/smartComponents/HomePageStandings";
-import TournamentCountdown from "@components/smartComponents/TournamentCountdown";
 import HomePageLeaderboard from "@components/smartComponents/HomePageLeaderboard";
-import { LeagueSchedule } from "@components/functionalComponents/LeagueSchedule";
-import { getCurrentSchedule } from "@server/api/actions/schedule";
+import CurrentSchedule from "@/lib/components/smartComponents/CurrentSchedule";
+import CurrentChampions from "@/lib/components/smartComponents/CurrentChampions";
+import TournamentCountdownContainer from "@/lib/components/smartComponents/TournamentCountdownContainer";
 
 export default async function Home() {
-  const tournaments = await getCurrentSchedule();
-
-  // For authenticated users, show the main content
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-2">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      <ChampionsPopup />
+      <CurrentChampions />
       {/* <HomePageLeaderboard /> */}
-      <TournamentCountdown />
+      <TournamentCountdownContainer />
       <HomePageStandings />
       {/* <TourCardForm /> */}
-      {<LeagueSchedule {...{ tournaments }} />}
+      <CurrentSchedule />
       <div id="footer" className="mt-12 flex flex-col justify-start">
         <Link href={"/privacy"} className="text-xs text-slate-400">
           Privacy Policy

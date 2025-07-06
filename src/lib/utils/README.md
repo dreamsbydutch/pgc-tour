@@ -84,6 +84,7 @@
 - `isValidRound(round)` — Checks if a value is a valid round number (1-4).
 - `isValidTournamentDate(date)` — Checks if a date is valid for tournaments.
 - `isValidTournamentStatus(status)` — Checks if a value is a valid tournament status.
+- `getErrorMessage(error)` — Returns a user-friendly error message from an unknown error object.
 
 ## data/aggregation.ts — Utility Functions
 

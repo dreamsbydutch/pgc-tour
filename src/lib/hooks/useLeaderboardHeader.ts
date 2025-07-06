@@ -1,3 +1,5 @@
+"use client"
+
 /**
  * Leaderboard Header Hook
  *

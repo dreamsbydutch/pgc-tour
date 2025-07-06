@@ -6,13 +6,13 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@components/ui/dropdown-menu";
+} from "@/lib/components/functionalComponents/ui/dropdown-menu";
 import Image from "next/image";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import { Member, TourCard } from "@prisma/client";
 import MemberUpdateForm from "./MemberUpdateForm";
-import { Button } from "../../ui/button";
+import { Button } from "../../functionalComponents/ui/button";
 import { usePWAInstall } from "../../../hooks/usePWAInstall";
 import {
   handleLogout,
@@ -20,7 +20,7 @@ import {
 } from "../../../../app/(auth)/signin/actions";
 import type { AuthUser } from "../../../supabase/auth-helpers";
 import { LogInIcon } from "lucide-react";
-import { Skeleton } from "../../ui/skeleton";
+import { Skeleton } from "../../functionalComponents/ui/skeleton";
 import LittleFucker from "../LittleFucker";
 import { formatMoney, formatNumber } from "@/lib/utils/domain/formatting";
 import { usePushNotifications } from "@/lib/push";

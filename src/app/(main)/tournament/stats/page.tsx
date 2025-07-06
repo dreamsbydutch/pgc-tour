@@ -16,7 +16,7 @@ import {
   TableCell,
   TableHeader,
   TableRow,
-} from "@/lib/components/ui/table";
+} from "@/lib/components/functionalComponents/ui/table";
 import { useSearchParams } from "next/navigation";
 
 export default function Page() {

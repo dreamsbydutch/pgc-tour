@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "../ui/button";
+import { Button } from "../functionalComponents/ui/button";
 import Image from "next/image";
 import { createTourCard } from "@/server/api/actions/tour_card";
 import { type Dispatch, type SetStateAction, useState } from "react";

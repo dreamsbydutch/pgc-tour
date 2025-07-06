@@ -194,9 +194,9 @@ export function getTournamentStatus(
   endDate: Date,
   referenceDate = new Date(),
 ): "upcoming" | "current" | "completed" {
-  const now = referenceDate.getTime();
-  const start = startDate.getTime();
-  const end = endDate.getTime();
+  const now = new Date(referenceDate).getTime();
+  const start = new Date(startDate).getTime();
+  const end = new Date(endDate).getTime();
 
   if (now < start) {
     return "upcoming";

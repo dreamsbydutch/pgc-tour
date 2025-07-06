@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@ui/button";
+import { Button } from "@/lib/components/functionalComponents/ui/button";
 import Image from "next/image";
 import type { Tour, TourCard } from "@prisma/client";
 import { deleteTourCard } from "@server/api/actions/tour_card";
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@ui/dialog";
+} from "@/lib/components/functionalComponents/ui/dialog";
 import { api } from "@trpcLocal/react";
 import LoadingSpinner from "@components/functionalComponents/loading/LoadingSpinner";
 

@@ -1,5 +1,7 @@
 import React from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { isNonEmptyArray } from "@/lib/utils/core/types";
+import { capitalize } from "@/lib/utils/core/primitives";
 
 /**
  * Minimal Reusable Rulebook Components
@@ -67,8 +69,8 @@ interface RuleDisplayProps {
 export function RuleDisplay({ rule, className = "" }: RuleDisplayProps) {
   return (
     <div className={`mb-4 ${className}`}>
-      <p className="font-medium text-gray-800">{rule.ruleText}</p>
-      {rule.details && rule.details.length > 0 && (
+      <p className="font-medium text-gray-800">{capitalize(rule.ruleText)}</p>
+      {isNonEmptyArray(rule.details) && (
         <ul className="ml-4 mt-2 space-y-1">
           {rule.details.map((detail, index) => (
             <li key={index} className="flex items-start">
@@ -96,14 +98,15 @@ export function BulletList({
 }: BulletListProps) {
   return (
     <ul className={`space-y-2 ${className}`}>
-      {items.map((item, index) => (
-        <li key={index} className="flex items-start">
-          <span
-            className={`mr-2 mt-1 h-2 w-2 flex-shrink-0 rounded-full ${bulletColor}`}
-          ></span>
-          <span className="text-gray-700">{item}</span>
-        </li>
-      ))}
+      {isNonEmptyArray(items) &&
+        items.map((item, index) => (
+          <li key={index} className="flex items-start">
+            <span
+              className={`mr-2 mt-1 h-2 w-2 flex-shrink-0 rounded-full ${bulletColor}`}
+            ></span>
+            <span className="text-gray-700">{capitalize(item)}</span>
+          </li>
+        ))}
     </ul>
   );
 }

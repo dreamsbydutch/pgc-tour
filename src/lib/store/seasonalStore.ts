@@ -277,7 +277,11 @@ export const useSeasonalStore = create<SeasonalData>()(
             if (filters.status) {
               const now = new Date();
               tournaments = tournaments.filter((t) => {
-                const status = getTournamentStatus(t.startDate, t.endDate, now);
+                const status = getTournamentStatus(
+                  new Date(t.startDate),
+                  new Date(t.endDate),
+                  now,
+                );
                 return filters.status!.includes(status as TournamentStatus);
               });
               delete filterObj.status;
@@ -481,7 +485,11 @@ export const useSeasonalStore = create<SeasonalData>()(
           // Tournament stats
           const now = new Date();
           const tournamentsByStatus = groupBy(tournaments, (t) =>
-            getTournamentStatus(t.startDate, t.endDate, now),
+            getTournamentStatus(
+              new Date(t.startDate),
+              new Date(t.endDate),
+              now,
+            ),
           );
 
           const tournamentStats = {

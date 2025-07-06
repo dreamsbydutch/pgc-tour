@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Button } from "@/lib/components/ui/button";
+import { Button } from "@/lib/components/functionalComponents/ui/button";
 import { Icons } from "../../../lib/components/functionalComponents/Icons";
 import { signInWithGoogle } from "./actions";
 import Link from "next/link";

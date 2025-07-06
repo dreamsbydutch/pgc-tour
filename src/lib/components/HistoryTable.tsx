@@ -10,8 +10,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/lib/components/ui/table";
-import { Button } from "@/lib/components/ui/button";
+} from "@/lib/components/functionalComponents/ui/table";
+import { Button } from "@/lib/components/functionalComponents/ui/button";
 import { formatMoney } from "@/lib/utils/domain/formatting";
 
 // Add type definitions

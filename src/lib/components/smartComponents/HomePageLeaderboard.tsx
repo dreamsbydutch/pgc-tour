@@ -3,7 +3,10 @@
 import Link from "next/link";
 import LeaderboardHeader from "../../../app/(main)/tournament/_components/header/LeaderboardHeader";
 import { cn } from "@/lib/utils/core";
-import { HomePageList, HomePageListSkeleton } from "../HomePageList";
+import {
+  HomePageList,
+  HomePageListSkeleton,
+} from "../functionalComponents/HomePageList";
 import { useLeaderboard } from "@/lib/hooks";
 import type { TourGroup } from "@/lib/types";
 

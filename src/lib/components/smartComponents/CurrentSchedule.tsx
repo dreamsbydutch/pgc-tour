@@ -1,40 +1,13 @@
-"use client";
-
-import { useCurrentSchedule } from "@/lib/hooks";
 import { LeagueSchedule } from "@/lib/components/functionalComponents/LeagueSchedule";
+import { LeagueScheduleError } from "../functionalComponents/error/LeagueScheduleError";
+import { getCurrentSchedule } from "@/server/api/actions/schedule";
 
-/**
- * CurrentSchedule Component
- *
- * Displays the current season's tournament schedule using the LeagueSchedule component.
- * This is a smart component that fetches data using the useCurrentSchedule hook.
- */
-export function CurrentSchedule() {
-  const { tournaments, isLoading, error } = useCurrentSchedule();
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-8">
-        <div className="text-lg">Loading schedule...</div>
-      </div>
-    );
+export default async function CurrentSchedule() {
+  try {
+    const tournaments = await getCurrentSchedule();
+    if (!tournaments.length) return null;
+    return <LeagueSchedule tournaments={tournaments} />;
+  } catch (error) {
+    return <LeagueScheduleError error={error} />;
   }
-
-  if (error) {
-    return (
-      <div className="flex justify-center py-8">
-        <div className="text-lg text-red-600">Error loading schedule</div>
-      </div>
-    );
-  }
-
-  if (!tournaments.length) {
-    return (
-      <div className="flex justify-center py-8">
-        <div className="text-lg">No tournaments scheduled</div>
-      </div>
-    );
-  }
-
-  return <LeagueSchedule tournaments={tournaments} />;
 }

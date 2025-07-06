@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { HomePageList } from "@components/HomePageList";
+import { HomePageList } from "@/lib/components/functionalComponents/HomePageList";
 import { cn } from "@/lib/utils/core";
 import { getCurrentStandings } from "@/server/api/actions/standings";
+import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
 
 /**
  * Displays the standings for the homepage, showing the top players for each tour.
@@ -10,8 +11,10 @@ import { getCurrentStandings } from "@/server/api/actions/standings";
  */
 export default async function HomePageStandings() {
   const tours = await getCurrentStandings();
+  const self = await getMemberFromHeaders();
+
   return (
-    <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
+    <div className="rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
       <div className="my-3 flex items-center justify-center gap-3">
         <Image
           src={"/logo512.png"}
@@ -27,7 +30,12 @@ export default async function HomePageStandings() {
 
       <div className="grid grid-cols-2 font-varela">
         {tours?.map((tour, i) => {
-          const tourTeams = tour.tourCards.slice(0, 15);
+          // Map tourTeams to include stat fields
+          const tourTeams = tour.tourCards.slice(0, 15).map((team) => ({
+            ...team,
+            mainStat: team.points,
+            secondaryStat: team.earnings,
+          }));
           return (
             <Link
               key={tour.id}
@@ -38,7 +46,12 @@ export default async function HomePageStandings() {
               href={`/standings?tour=${tour.id}`}
               aria-label={`View standings for ${tour.shortForm} Tour`}
             >
-              <HomePageList tour={tour} teams={tourTeams} />
+              <HomePageList
+                tour={tour}
+                teams={tourTeams}
+                seasonId={tours?.[0]?.seasonId ?? ""}
+                self={self}
+              />
             </Link>
           );
         })}

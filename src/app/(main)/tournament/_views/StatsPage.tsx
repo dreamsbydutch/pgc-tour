@@ -11,7 +11,11 @@ import { useMainStore } from "@/lib/store/store";
 import { LeaderboardHeaderSkeleton } from "../_components/skeletons/LeaderboardHeaderSkeleton";
 import LeaderboardHeader from "../_components/header/LeaderboardHeader";
 import type { Team, Tour, TourCard, Tournament } from "@prisma/client";
-import { TableCell, TableHeader, TableRow } from "@/lib/components/ui/table";
+import {
+  TableCell,
+  TableHeader,
+  TableRow,
+} from "@/lib/components/functionalComponents/ui/table";
 
 export default function Page({ params }: { params: { tournamentId: string } }) {
   const tournaments = useMainStore((state) => state.seasonTournaments);

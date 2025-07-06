@@ -7,7 +7,7 @@ import PreTournamentPage, {
   TeamPickFormSkeleton,
 } from "@/app/(main)/tournament/_views/PreTournament";
 import LeaderboardHeader from "@/app/(main)/tournament/_components/header/LeaderboardHeader";
-import { TournamentCountdownSkeleton } from "@/lib/components/smartComponents/TournamentCountdown";
+import { TournamentCountdownSkeleton } from "@/lib/components/functionalComponents/TournamentCountdown";
 import ActiveTournamentView from "./_views/ActiveTournamentView";
 import PastTournamentView from "./_views/PastTournamentView";
 import HistoricalTournamentView from "./_views/HistoricalTournamentView";

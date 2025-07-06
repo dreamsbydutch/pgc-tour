@@ -1,15 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ChampionSectionSkeleton } from "../functionalComponents/loading/ChampionsPopupSkelton";
-import LittleFucker from "./LittleFucker";
+import LittleFucker from "../smartComponents/LittleFucker";
 import { formatScore } from "@/lib/utils/domain/golf";
-import { getLatestChampions } from "@/server/api/actions/champions";
 import { hasItems } from "@/lib/utils/core/arrays";
 import { capitalize } from "@/lib/utils/core/primitives";
 import { isNonEmptyString } from "@/lib/utils/core/types";
 import { getPath } from "@/lib/utils/core/objects";
 
-// Type for the champion data returned by getLatestChampions
 type ChampionData = {
   id: number;
   name: string;
@@ -40,6 +37,11 @@ type TournamentData = {
   logoUrl: string | null;
 };
 
+interface ChampionsPopupProps {
+  tournament: TournamentData;
+  champs: ChampionData[];
+}
+
 /**
  * ChampionsPopup Component
  *
@@ -50,14 +52,9 @@ type TournamentData = {
  *
  * Data is fetched from the global store and API when needed.
  */
-export default async function ChampionsPopup() {
-  const { tournament, champs } = await getLatestChampions();
+export function ChampionsPopup({ tournament, champs }: ChampionsPopupProps) {
   if (!tournament) return null;
-  if (!hasItems(champs)) return <ChampionSectionSkeleton />;
-
-  // Example: group champions by tour name (if needed for future UI)
-  // const champsByTour = groupBy(champs, champ => champ.tour.name);
-
+  if (!hasItems(champs)) return null;
   return (
     <div className="m-3 rounded-2xl bg-amber-100 bg-opacity-70 shadow-lg md:w-10/12 lg:w-7/12">
       <div className="mx-auto max-w-3xl p-2 text-center">
@@ -93,7 +90,6 @@ function ChampionSection({
   champion: ChampionData;
   tournament: TournamentData;
 }) {
-  // Use getPath for robust nested property access (future-proofing)
   const tourLogoUrl = getPath(champion, "tour.logoUrl") as
     | string
     | null

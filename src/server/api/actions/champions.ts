@@ -221,6 +221,17 @@ export async function getLatestChampions() {
       };
     }
 
+    // Only show if the tournament ended within the last 3 days
+    const daysSinceEnd =
+      (now.getTime() - recentTournament.endDate.getTime()) /
+      (1000 * 60 * 60 * 24);
+    if (daysSinceEnd > 3) {
+      return {
+        tournament: null,
+        champs: [],
+      };
+    }
+
     // Get all teams for this tournament
     const allTeams = await api.team.getByTournament({
       tournamentId: recentTournament.id,
