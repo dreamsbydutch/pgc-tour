@@ -13,7 +13,7 @@ export default function HomePageLeaderboard() {
   if (!tournament) return null;
   return (
     <div className="m-1 rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
-      <LeaderboardHeader focusTourney={tournament} />
+      {/* <LeaderboardHeader focusTourney={tournament} /> */}
       <div className="grid grid-cols-2 font-varela">
         {teamsByTour?.map((tourGroup: TourGroup, i: number) => {
           return (

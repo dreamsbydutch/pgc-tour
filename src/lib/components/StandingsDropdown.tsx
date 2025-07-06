@@ -6,7 +6,7 @@ import { api } from "@/trpc/react";
 import type { Member, Team, TourCard, Tournament } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
-import LoadingSpinner from "../../../../lib/components/functionalComponents/loading/LoadingSpinner";
+import LoadingSpinner from "./functionalComponents/loading/LoadingSpinner";
 
 export function StandingsTourCardInfo({
   tourCard,

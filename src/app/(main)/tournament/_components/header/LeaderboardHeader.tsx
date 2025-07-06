@@ -1,34 +1,77 @@
-import Image from "next/image";
-import HeaderDropdown from "./HeaderDropdownMenu";
-import { PopoverTrigger } from "@radix-ui/react-popover";
-import { Popover, PopoverContent } from "@/lib/components/ui/popover";
-import { cn, fetchDataGolf, formatMoney, formatRank } from "@/old-utils";
-import type { DatagolfCourseInputData } from "@/lib/types/datagolf_types";
-import type { Tier, Tournament } from "@prisma/client";
-import { useMainStore } from "@/lib/store/store";
+"use client";
 
 /**
  * LeaderboardHeader Component
  *
- * Displays the header for the leaderboard, including:
- * - Tournament name, logo, and date range.
- * - Course details and tier information.
- * - Dropdown for selecting tournaments and popovers for additional details.
+ * Simple, functional header component. Uses one hook call at the top for all data,
+ * then renders pure UI. Clean, simple data flow.
+ */
+
+"use client";
+
+import Image from "next/image";
+import { ChevronDown } from "lucide-react";
+import { useState, type Dispatch, type SetStateAction } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/lib/components/ui/dropdown-menu";
+import Link from "next/link";
+import { PopoverTrigger } from "@radix-ui/react-popover";
+import { Popover, PopoverContent } from "@/lib/components/ui/popover";
+import type { DatagolfCourseInputData } from "@/lib/types";
+import type { Tier, Tournament, Course } from "@prisma/client";
+import { formatMoney, formatRank } from "@/lib/utils/domain/formatting";
+import { cn } from "@/lib/utils/core";
+import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
+import type { LeaderboardHeaderData } from "@/server/actions";
+import { useOptimizedLeaderboardHeader } from "@/lib/hooks/useOptimizedLeaderboardHeader";
+
+export type TournamentWithIncludes = Tournament & {
+  course: Course;
+  tier: Tier;
+};
+
+export type TournamentGroup = TournamentWithIncludes[][];
+
+interface LeaderboardHeaderProps {
+  focusTourney: Tournament;
+  serverData: LeaderboardHeaderData;
+}
+
+/**
+ * Main LeaderboardHeader Component
  *
- * Props:
- * - focusTourney: The tournament data to display in the header.
- * - seasonId (optional): The current season ID.
+ * Simple functional component with one hook call for all data/logic.
  */
 export default function LeaderboardHeader({
   focusTourney,
-}: {
-  focusTourney: Tournament;
-}) {
-  const course = useMainStore((state) => state.seasonTournaments)?.find(
-    (t) => t.id === focusTourney.id,
-  )?.course;
-  const tier = useMainStore((state) => state.currentTiers)?.find(
-    (t) => t.id === focusTourney.tierId,
+  serverData,
+}: LeaderboardHeaderProps) {
+  // Single hook call for all data and logic
+  const {
+    course,
+    tier,
+    courseData,
+    courseDataLoading,
+    groupedTournaments,
+    dropdownTiers,
+    dropdownCourses,
+    leaderboardToggle,
+    onToggleChange,
+    getTierName,
+    getTournamentHref,
+  } = useOptimizedLeaderboardHeader(
+    focusTourney,
+    serverData.course,
+    serverData.tier,
+    serverData.tournaments,
+    serverData.tiers,
   );
   return (
     <div
@@ -56,7 +99,17 @@ export default function LeaderboardHeader({
 
         {/* Tournament Dropdown */}
         <div className="col-span-2 row-span-1 place-self-center text-center font-varela text-xs xs:text-sm sm:text-base md:text-lg">
-          <HeaderDropdown activeTourney={focusTourney} />
+          <HeaderDropdown
+            activeTourney={focusTourney}
+            groupedTournaments={groupedTournaments}
+            tiers={dropdownTiers}
+            courses={dropdownCourses}
+            isLoading={false} // No loading since we use server data
+            leaderboardToggle={leaderboardToggle}
+            onToggleChange={onToggleChange}
+            getTierName={getTierName}
+            getTournamentHref={getTournamentHref}
+          />
         </div>
 
         {/* Tournament Date Range */}
@@ -83,7 +136,11 @@ export default function LeaderboardHeader({
             {course?.name}
           </PopoverTrigger>
           <PopoverContent>
-            <CoursePopover {...{ focusTourney }} />
+            <CoursePopover
+              focusTourney={focusTourney}
+              courseData={courseData}
+              isLoading={courseDataLoading}
+            />
           </PopoverContent>
         </Popover>
 
@@ -167,18 +224,37 @@ function PointsAndPayoutsPopover({ tier }: { tier: Tier | null | undefined }) {
  *
  * Displays a popover with course details, including hole-by-hole information.
  * - Shows yardage, par, and average score for each hole.
+ * - Receives course data as props to maintain component purity.
  *
  * Props:
  * - focusTourney: The tournament data containing course information.
+ * - courseData: The course data from DataGolf API.
+ * - isLoading: Whether the course data is currently loading.
  */
-async function CoursePopover({ focusTourney }: { focusTourney: Tournament }) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const courseData: DatagolfCourseInputData = await fetchDataGolf(
-    "preds/live-hole-stats",
-    {},
-  );
+function CoursePopover({
+  focusTourney,
+  courseData,
+  isLoading,
+}: {
+  focusTourney: Tournament;
+  courseData: DatagolfCourseInputData | undefined;
+  isLoading: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <LoadingSpinner className="h-6 w-6" />
+      </div>
+    );
+  }
 
-  if (!courseData) return null;
+  if (!courseData) {
+    return (
+      <div className="p-4 text-center text-gray-500">
+        Course data not available
+      </div>
+    );
+  }
 
   return (
     <>
@@ -231,5 +307,237 @@ async function CoursePopover({ focusTourney }: { focusTourney: Tournament }) {
           );
         })}
     </>
+  );
+}
+
+/**
+ * HeaderDropdown Component
+ *
+ * Tournament selection dropdown component integrated within the leaderboard header.
+ * A purely functional component that displays a dropdown menu for selecting tournaments.
+ */
+function HeaderDropdown({
+  activeTourney,
+  groupedTournaments,
+  tiers,
+  courses,
+  isLoading = false,
+  leaderboardToggle,
+  onToggleChange,
+  getTierName,
+  getTournamentHref,
+}: {
+  activeTourney?: { id: string };
+  groupedTournaments: TournamentGroup;
+  tiers: Tier[];
+  courses: Course[];
+  isLoading?: boolean;
+  leaderboardToggle: "Tier" | "Date";
+  onToggleChange: (toggle: "Tier" | "Date") => void;
+  getTierName: (
+    tierName: string | undefined,
+    groupIndex: number,
+    isLive: boolean,
+  ) => string;
+  getTournamentHref: (
+    tournamentId: string,
+    viewMode: string,
+    groupIndex: number,
+    hasLiveTournament: boolean,
+  ) => string;
+}) {
+  const [tierEffect, setTierEffect] = useState(false);
+  const [dateEffect, setDateEffect] = useState(false);
+
+  if (isLoading) {
+    return (
+      <div
+        className="inline-flex w-full items-center justify-center rounded-lg bg-slate-600 px-5 py-0.5 text-slate-100 shadow-lg md:px-5 md:py-1"
+        aria-label="Customise options"
+      >
+        <LoadingSpinner className="my-0 h-[1.5rem] w-[1.5rem] border-gray-100 border-t-gray-800" />
+      </div>
+    );
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className="inline-flex w-full items-center justify-center rounded-lg bg-slate-600 px-3 py-0.5 text-slate-100 shadow-lg md:px-5 md:py-1"
+          aria-label="Customise options"
+        >
+          All <ChevronDown />
+        </button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuPortal>
+        <DropdownMenuContent
+          className="max-h-[70vh] overflow-y-scroll rounded-lg bg-white p-0 shadow-lg"
+          sideOffset={5}
+        >
+          <DropdownToggle
+            tierEffect={tierEffect}
+            setTierEffect={setTierEffect}
+            dateEffect={dateEffect}
+            setDateEffect={setDateEffect}
+            leaderboardToggle={leaderboardToggle}
+            onToggleChange={onToggleChange}
+          />
+          {groupedTournaments.map((group, i) => (
+            <div className="px-1" key={`group-${i}`}>
+              {i !== 0 && (
+                <DropdownMenuSeparator
+                  key={`sep-${i}`}
+                  className="mx-auto h-[1px] w-11/12 bg-slate-700"
+                />
+              )}
+              {leaderboardToggle === "Tier" && (
+                <DropdownMenuLabel className="text-center font-bold xs:text-lg lg:text-xl">
+                  {getTierName(
+                    tiers.find((tier) => tier.id === group[0]?.tierId)?.name,
+                    i,
+                    groupedTournaments.length === 5,
+                  )}
+                </DropdownMenuLabel>
+              )}
+              {group.map((tourney) => (
+                <DropdownMenuItem key={tourney.id} asChild className="py-0.5">
+                  <Link
+                    className="outline-none"
+                    href={getTournamentHref(
+                      tourney.id,
+                      leaderboardToggle,
+                      i,
+                      groupedTournaments.length === 5,
+                    )}
+                  >
+                    <TournamentItem
+                      tourney={tourney}
+                      tier={tiers.find((tier) => tier.id === tourney.tierId)}
+                      course={courses.find(
+                        (course) => course.id === tourney.courseId,
+                      )}
+                      isActive={activeTourney?.id === tourney.id}
+                    />
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </div>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenuPortal>
+    </DropdownMenu>
+  );
+}
+
+/**
+ * DropdownToggle Component
+ *
+ * Renders toggle buttons to switch between viewing tournaments by tier or by date.
+ */
+function DropdownToggle({
+  tierEffect,
+  setTierEffect,
+  dateEffect,
+  setDateEffect,
+  leaderboardToggle,
+  onToggleChange,
+}: {
+  tierEffect: boolean;
+  setTierEffect: Dispatch<SetStateAction<boolean>>;
+  dateEffect: boolean;
+  setDateEffect: Dispatch<SetStateAction<boolean>>;
+  leaderboardToggle: "Tier" | "Date";
+  onToggleChange: (toggle: "Tier" | "Date") => void;
+}) {
+  return (
+    <div className="mb-2 w-full min-w-[250px] text-center">
+      <button
+        onClick={() => {
+          onToggleChange("Tier");
+          setTierEffect(true);
+        }}
+        className={`${tierEffect && "animate-toggleClick"} w-1/2 text-nowrap px-6 py-1 text-lg font-bold sm:px-8 md:px-10${
+          leaderboardToggle === "Tier"
+            ? "shadow-btn bg-gray-600 text-gray-300"
+            : "shadow-btn bg-gray-300 text-gray-800"
+        }`}
+        onAnimationEnd={() => setTierEffect(false)}
+      >
+        By Tier
+      </button>
+      <button
+        onClick={() => {
+          onToggleChange("Date");
+          setDateEffect(true);
+        }}
+        className={`${dateEffect && "animate-toggleClick"} w-1/2 text-nowrap px-6 py-1 text-lg font-bold sm:px-8 md:px-10${
+          leaderboardToggle === "Date"
+            ? "shadow-btn bg-gray-600 text-gray-300"
+            : "shadow-btn bg-gray-300 text-gray-800"
+        }`}
+        onAnimationEnd={() => setDateEffect(false)}
+      >
+        By Date
+      </button>
+    </div>
+  );
+}
+
+/**
+ * TournamentItem Component
+ *
+ * Renders a single tournament item in the dropdown menu.
+ */
+function TournamentItem({
+  tourney,
+  tier,
+  course,
+  isActive,
+}: {
+  tourney: TournamentWithIncludes;
+  tier: Tier | undefined;
+  course: Course | undefined;
+  isActive: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "w-full select-none flex-row items-center justify-center rounded-md p-0.5 text-xs outline-none xs:text-sm sm:text-lg",
+        tier?.name === "Major" && "bg-slate-100",
+        tier?.name === "Playoff" && "bg-champ-100",
+        isActive && "font-bold",
+      )}
+    >
+      <div className="flex items-center justify-start gap-2">
+        {tourney.logoUrl && (
+          <Image
+            src={tourney.logoUrl}
+            alt={`${tourney.name} logo`}
+            width={28}
+            height={28}
+            className="h-7 w-7"
+          />
+        )}
+        {tourney.name}
+      </div>
+      <div
+        className={cn("pl-3 text-2xs text-slate-600 xs:text-xs")}
+      >{`${new Date(tourney.startDate).toLocaleDateString("en-us", {
+        month: "short",
+        day: "numeric",
+      })}-${
+        new Date(tourney.startDate).getMonth() ===
+        new Date(tourney.endDate).getMonth()
+          ? new Date(tourney.endDate).toLocaleDateString("en-us", {
+              day: "numeric",
+            })
+          : new Date(tourney.endDate).toLocaleDateString("en-us", {
+              month: "short",
+              day: "numeric",
+            })
+      } - ${course?.location}`}</div>
+    </div>
   );
 }

@@ -1,14 +1,13 @@
 "use client";
 
-import { cn, formatMoney, formatRank } from "@/old-utils";
-// Remove server action imports
+import { cn } from "@/lib/utils/core";
+import { formatMoney, formatRank } from "@/lib/utils/domain/formatting";
 import { Star } from "lucide-react";
 import { useState, type Dispatch, type SetStateAction } from "react";
-import LoadingSpinner from "../../../../lib/components/functionalComponents/loading/LoadingSpinner";
+import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
 import type { TourCard, Tour, Tier } from "@prisma/client";
 import { StandingsTourCardInfo } from "./StandingsDropdown";
-import LittleFucker from "../../../../lib/components/smartComponents/LittleFucker";
-import { useMainStore } from "@/lib/store/store";
+import LittleFucker from "@/lib/components/smartComponents/LittleFucker";
 import { api } from "@/trpc/react";
 import Image from "next/image";
 import {
@@ -16,6 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/lib/components/ui/popover";
+import { useUser } from "@/lib/hooks";
 
 /**
  * tourToggleButton Component
@@ -182,41 +182,35 @@ export function StandingsListing({
 }) {
   const [isFriendChanging, setIsFriendChanging] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const currentMember = useMainStore((state) => state.currentMember);
-  const setCurrentMember = useMainStore((state) => state.setCurrentMember);
-  const addFriend = api.member.addFriend.useMutation();
-  const removeFriend = api.member.removeFriend.useMutation();
+  const { user } = useUser();
+
+  // Get current member data
+  const { data: currentMember } = api.member.getSelf.useQuery(undefined, {
+    enabled: !!user,
+  });
+
+  // Handle friend operations using member update
+  const updateMember = api.member.update.useMutation();
 
   const handleAddFriend = () => {
     if (!currentMember) return;
     setIsFriendChanging(true);
-    setCurrentMember({
-      ...currentMember,
+    updateMember.mutate({
+      id: currentMember.id,
       friends: [...currentMember.friends, tourCard.memberId],
     });
-    addFriend.mutate({
-      memberId: currentMember.id,
-      friendId: tourCard.memberId,
-    });
-
     setIsFriendChanging(false);
   };
+
   const handleRemoveFriend = () => {
     if (!currentMember) return;
     setIsFriendChanging(true);
-    setCurrentMember({
-      ...currentMember,
+    updateMember.mutate({
+      id: currentMember.id,
       friends: currentMember.friends.filter(
         (friendId) => friendId !== tourCard.memberId,
       ),
     });
-    removeFriend.mutate({
-      memberId: currentMember.id,
-      friendsList: currentMember.friends.filter(
-        (friendId) => friendId !== tourCard.memberId,
-      ),
-    });
-
     setIsFriendChanging(false);
   };
 
@@ -246,7 +240,12 @@ export function StandingsListing({
         {/* Player Name */}
         <div className="col-span-5 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
           {tourCard.displayName}
-          {tourCard.win > 0 && <LittleFucker {...{ tourCard }} />}
+          {tourCard.win > 0 && (
+            <LittleFucker
+              memberId={tourCard.memberId}
+              seasonId={tourCard.seasonId}
+            />
+          )}
         </div>
 
         {/* Player Points */}
@@ -292,17 +291,21 @@ export function PlayoffStandingsListing({
   teams,
   strokes,
   className,
+  tour,
 }: {
   tourCard: TourCard;
   teams: TourCard[];
   strokes: number[];
   className?: string;
+  tour?: Tour;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const currentMember = useMainStore((state) => state.currentMember);
-  const tour = useMainStore((state) => state.tours)?.find(
-    (t) => t.id === tourCard.tourId,
-  );
+  const { user } = useUser();
+
+  // Get current member data
+  const { data: currentMember } = api.member.getSelf.useQuery(undefined, {
+    enabled: !!user,
+  });
 
   const teamsBetterCount = teams?.filter(
     (obj) => (obj.points ?? 0) > (tourCard.points ?? 0),
@@ -348,7 +351,12 @@ export function PlayoffStandingsListing({
         {/* Player Name */}
         <div className="col-span-5 place-self-center font-varela text-lg sm:text-xl">
           {tourCard.displayName}
-          {tourCard.win > 0 && <LittleFucker {...{ tourCard }} />}
+          {tourCard.win > 0 && (
+            <LittleFucker
+              memberId={tourCard.memberId}
+              seasonId={tourCard.seasonId}
+            />
+          )}
         </div>
 
         {/* Player Points */}

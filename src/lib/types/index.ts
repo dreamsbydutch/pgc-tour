@@ -76,3 +76,9 @@ export type ReturnType<T extends (...args: any) => any> = T extends (
 ) => infer R
   ? R
   : any;
+
+// ============================================================================
+// EXTERNAL API TYPES
+// ============================================================================
+
+export * from "./datagolf_types";

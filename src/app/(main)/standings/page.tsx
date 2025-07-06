@@ -8,8 +8,7 @@ import {
   StandingsHeader,
   StandingsListing,
   ToursToggleButton,
-} from "./_components/StandingsPage";
-import type { Tour, TourCard } from "@prisma/client";
+} from "@/lib/components/StandingsPage";
 import { useCurrentStandings, useUser } from "@/lib/hooks";
 import { api } from "@/trpc/react";
 
@@ -18,17 +17,46 @@ export default function Page({
 }: {
   searchParams: Record<string, string>;
 }) {
-  const tours = useMainStore((state) => state.tours);
-  const tourCard = useMainStore((state) => state.currentTourCard);
-  const inputTourId = searchParams.tour ?? tourCard?.tourId ?? "";
+  // Use the new hooks instead of store
+  const { tours, isLoading, error } = useCurrentStandings();
+  const { user } = useUser();
+
+  // Get current user's member data for their tour card
+  const { data: currentMember } = api.member.getSelf.useQuery(undefined, {
+    enabled: !!user,
+  });
+
+  // Get current user's tour card from the tours data
+  const userTourCard = tours
+    ?.flatMap((tour) => tour.tourCards)
+    .find((card) => card.memberId === currentMember?.id);
+
+  const inputTourId = searchParams.tour ?? userTourCard?.tourId ?? "";
 
   const [standingsToggle, setStandingsToggle] = useState<string>(
     inputTourId && inputTourId !== ""
       ? inputTourId
-      : (tourCard?.tourId ?? tours?.[0]?.id ?? ""),
+      : (userTourCard?.tourId ?? tours?.[0]?.id ?? ""),
   );
+
   const activeTour =
     tours?.find((tour) => tour.id === standingsToggle) ?? tours?.[0];
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-8">
+        <div className="text-lg">Loading standings...</div>
+      </div>
+    );
+  }
+
+  if (error || !tours?.length) {
+    return (
+      <div className="flex justify-center py-8">
+        <div className="text-lg text-red-600">Error loading standings</div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -37,7 +65,7 @@ export default function Page({
         Standings
       </div>
       <div className="font-italic text-center font-varela text-xs sm:text-sm md:text-base">
-        Click on a tour member to view thier stats and tournament history
+        Click on a tour member to view their stats and tournament history
       </div>
       {(tours?.length ?? 0) > 1 && (
         <div className="mx-auto my-4 flex w-full flex-row items-center justify-center gap-4 text-center">
@@ -56,7 +84,7 @@ export default function Page({
             tour={{
               name: "Playoffs",
               shortForm: "Playoffs",
-              seasonId: tourCard?.seasonId ?? "",
+              seasonId: userTourCard?.seasonId ?? "",
               id: "playoffs",
               buyIn: 0,
               playoffSpots: [30, 40],
@@ -79,159 +107,143 @@ export default function Page({
   );
 }
 
-function TourStandings({ activeTour }: { activeTour: Tour | undefined }) {
-  const tourCards = useMainStore((state) => state.tourCards);
+function TourStandings({
+  activeTour,
+}: {
+  activeTour: ReturnType<typeof useCurrentStandings>["tours"][0] | undefined;
+}) {
+  if (!activeTour) return null;
+
+  const tourCards = activeTour.tourCards;
+
+  // Filter tour cards for gold playoff spots (top N)
+  const goldCutCards = tourCards.filter(
+    (_card, index) => index < (activeTour.playoffSpots[0] ?? 15),
+  );
+
+  // Filter tour cards for silver playoff spots (next N)
+  const silverCutCards = tourCards.filter(
+    (_card, index) =>
+      index >= (activeTour.playoffSpots[0] ?? 15) &&
+      index <
+        (activeTour.playoffSpots[0] ?? 15) + (activeTour.playoffSpots[1] ?? 15),
+  );
+
+  // Filter remaining cards
+  const remainingCards = tourCards.filter(
+    (_card, index) =>
+      index >=
+      (activeTour.playoffSpots[0] ?? 15) + (activeTour.playoffSpots[1] ?? 15),
+  );
+
   return (
     <div className="mx-auto px-1">
       <StandingsHeader />
-      {tourCards
-        ?.filter((obj) => obj.tourId === activeTour?.id)
-        .sort((a, b) => (b.points ?? 0) - (a.points ?? 0))
-        .filter(
-          (obj) =>
-            +(obj.position?.replace("T", "") ?? 0) <=
-            (activeTour?.playoffSpots[0] ?? 0),
-        )
-        .map((tourCard) => (
-          <StandingsListing
-            key={tourCard.id}
-            {...{
-              tourCard,
-            }}
-          />
-        ))}
+
+      {/* Gold Playoff Qualifiers */}
+      {goldCutCards.map((tourCard) => (
+        <StandingsListing key={tourCard.id} tourCard={tourCard} />
+      ))}
+
       <div className="h-3 rounded-lg bg-champ-900 text-center text-2xs font-bold text-white">
         GOLD PLAYOFF CUT LINE
       </div>
-      {tourCards
-        ?.filter((obj) => obj.tourId === activeTour?.id)
-        .sort((a, b) => (b.points ?? 0) - (a.points ?? 0))
-        .filter(
-          (obj) =>
-            +(obj.position?.replace("T", "") ?? 0) >
-              (activeTour?.playoffSpots[0] ?? 0) &&
-            +(obj.position?.replace("T", "") ?? 0) <=
-              (activeTour?.playoffSpots[0] ?? 0) +
-                (activeTour?.playoffSpots[1] ?? 0),
-        )
-        .map((tourCard) => (
-          <StandingsListing
-            key={tourCard.id}
-            {...{
-              tourCard,
-            }}
-          />
-        ))}
+
+      {/* Silver Playoff Qualifiers */}
+      {silverCutCards.map((tourCard) => (
+        <StandingsListing key={tourCard.id} tourCard={tourCard} />
+      ))}
+
       <div className="h-3 rounded-lg bg-gray-400 text-center text-2xs font-bold text-white">
         SILVER PLAYOFF CUT LINE
       </div>
-      {tourCards
-        ?.filter((obj) => obj.tourId === activeTour?.id)
-        .sort((a, b) => (b.points ?? 0) - (a.points ?? 0))
-        .filter(
-          (obj) =>
-            +(obj.position?.replace("T", "") ?? 0) >
-            (activeTour?.playoffSpots[0] ?? 0) +
-              (activeTour?.playoffSpots[1] ?? 0),
-        )
-        .map((tourCard) => (
-          <StandingsListing
-            key={tourCard.id}
-            {...{
-              tourCard,
-            }}
-          />
-        ))}
+
+      {/* Remaining Players */}
+      {remainingCards.map((tourCard) => (
+        <StandingsListing key={tourCard.id} tourCard={tourCard} />
+      ))}
     </div>
   );
 }
 
-function PlayoffStandings({ tours }: { tours: Tour[] | null }) {
-  const tourCards = useMainStore((state) => state.tourCards);
-  const tiers = useMainStore((state) => state.currentTiers);
+function PlayoffStandings({
+  tours,
+}: {
+  tours: NonNullable<ReturnType<typeof useCurrentStandings>["tours"]>;
+}) {
+  // Get current tiers for playoff data
+  const { data: tiers } = api.tier.getCurrent.useQuery();
+
+  // Get all tour cards and separate into gold and silver teams
+  const allTourCards = tours.flatMap((tour) => tour.tourCards);
+
   const goldTeams = tours
-    ?.map(
-      (tour) =>
-        tourCards?.filter(
-          (obj) =>
-            obj.tourId === tour.id &&
-            +(obj.position?.replace("T", "") ?? 100) <=
-              (tour.playoffSpots[0] ?? 15),
-        ) ?? [],
+    .map((tour) =>
+      tour.tourCards.filter(
+        (card, index) => index < (tour.playoffSpots[0] ?? 15),
+      ),
     )
-    .flat();
+    .flat()
+    .sort((a, b) => (b.points || 0) - (a.points || 0));
+
   const silverTeams = tours
-    ?.map(
-      (tour) =>
-        tourCards?.filter(
-          (obj) =>
-            obj.tourId === tour.id &&
-            +(obj.position?.replace("T", "") ?? 100) >
-              (tour.playoffSpots[0] ?? 15) &&
-            +(obj.position?.replace("T", "") ?? 100) <=
-              (tour.playoffSpots[0] ?? 15) + (tour.playoffSpots[1] ?? 15),
-        ) ?? [],
+    .map((tour) =>
+      tour.tourCards.filter(
+        (card, index) =>
+          index >= (tour.playoffSpots[0] ?? 15) &&
+          index < (tour.playoffSpots[0] ?? 15) + (tour.playoffSpots[1] ?? 15),
+      ),
     )
-    .flat();
+    .flat()
+    .sort((a, b) => (b.points || 0) - (a.points || 0));
+
+  const playoffTier = tiers?.find((t) => t.name === "Playoff");
+
   return (
     <div className="mx-auto px-1">
       <GoldPlayoffHeader
         tier={{
           id: "gold",
           name: "Gold",
-          payouts:
-            tiers?.find((t) => t.name === "Playoff")?.payouts.slice(0, 30) ??
-            [],
-          points:
-            tiers?.find((t) => t.name === "Playoff")?.points.slice(0, 30) ?? [],
+          payouts: playoffTier?.payouts.slice(0, 30) ?? [],
+          points: playoffTier?.points.slice(0, 30) ?? [],
           seasonId: "",
           updatedAt: new Date(),
           createdAt: new Date(),
         }}
       />
-      {goldTeams
-        ?.sort((a, b) => (b.points ?? 0) - (a.points ?? 0))
-        .map((tourCard) => (
-          <PlayoffStandingsListing
-            key={tourCard.id}
-            {...{
-              tourCard,
-              teams: goldTeams,
-              strokes:
-                tiers?.find((t) => t.name === "Playoff")?.points.slice(0, 30) ??
-                [],
-            }}
-          />
-        ))}
+
+      {goldTeams.map((tourCard) => (
+        <PlayoffStandingsListing
+          key={tourCard.id}
+          tourCard={tourCard}
+          teams={goldTeams}
+          strokes={playoffTier?.points.slice(0, 30) ?? []}
+          tour={tours.find((t) => t.id === tourCard.tourId)}
+        />
+      ))}
+
       <SilverPlayoffHeader
         tier={{
           id: "silver",
-          name: "SIlver",
-          payouts:
-            tiers?.find((t) => t.name === "Playoff")?.payouts.slice(75, 85) ??
-            [],
-          points:
-            tiers?.find((t) => t.name === "Playoff")?.points.slice(75, 85) ??
-            [],
+          name: "Silver",
+          payouts: playoffTier?.payouts.slice(75, 85) ?? [],
+          points: playoffTier?.points.slice(75, 85) ?? [],
           seasonId: "",
           updatedAt: new Date(),
           createdAt: new Date(),
         }}
       />
-      {silverTeams
-        ?.sort((a, b) => (b.points ?? 0) - (a.points ?? 0))
-        .map((tourCard) => (
-          <PlayoffStandingsListing
-            key={tourCard.id}
-            {...{
-              tourCard,
-              teams: silverTeams,
-              strokes:
-                tiers?.find((t) => t.name === "Playoff")?.points.slice(0, 40) ??
-                [],
-            }}
-          />
-        ))}
+
+      {silverTeams.map((tourCard) => (
+        <PlayoffStandingsListing
+          key={tourCard.id}
+          tourCard={tourCard}
+          teams={silverTeams}
+          strokes={playoffTier?.points.slice(0, 40) ?? []}
+          tour={tours.find((t) => t.id === tourCard.tourId)}
+        />
+      ))}
     </div>
   );
 }

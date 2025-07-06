@@ -26,6 +26,24 @@ export { useTournament, useTournamentHistory } from "./useTournament";
 export { useCurrentSchedule } from "./useCurrentSchedule";
 
 /**
+ * Tournament dropdown data and logic
+ * Provides all data and utility functions needed for tournament dropdown components
+ */
+export { useTournamentDropdown } from "./useTournamentDropdown";
+
+/**
+ * Leaderboard header client-side logic
+ * Consolidates all client-side logic for the leaderboard header
+ */
+export { useLeaderboardHeaderClient } from "./useLeaderboardHeaderClient";
+
+/**
+ * Leaderboard header data and logic
+ * Provides all data and utility functions needed for leaderboard header components
+ */
+export { useLeaderboardHeader } from "./useLeaderboardHeader";
+
+/**
  * Current season tour standings
  * Provides current season's standings for all tours with tour cards sorted by points
  */
@@ -92,6 +110,12 @@ export { useChampionTrophies } from "./useChampionTrophies";
 export { useToast } from "./useToast";
 export { useUser } from "./useUser";
 export { usePWAInstall } from "./usePWAInstall";
+
+/**
+ * Course data from DataGolf API
+ * Provides course data for course popover display
+ */
+export { useCourseData } from "./useCourseData";
 
 // ============================================================================
 // EXPORT SUMMARY
