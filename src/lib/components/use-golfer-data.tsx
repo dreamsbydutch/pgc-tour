@@ -1,7 +1,35 @@
 import { useMemo } from "react";
-import { Golfer } from "./use-sorted-data";
 
-export function useGolferData(golfersData: any[] | undefined) {
+interface ProcessedGolferData {
+  name: string;
+  apps: number;
+  wins: number;
+  top5s: number;
+  top10s: number;
+  cutsMade: number;
+  avgUsage: number | null;
+  groupCounts: Record<number, number>;
+  lowGroup: number | null;
+  highGroup: number | null;
+  averageWorldRanking: number | null;
+  groupOne: number | null;
+  groupTwo: number | null;
+  groupThree: number | null;
+  groupFour: number | null;
+  groupFive: number | null;
+}
+
+interface RawGolferData {
+  playerName: string;
+  group: number | null;
+  position: string | null;
+  worldRank: number | null;
+  usage: number | null;
+}
+
+export function useGolferData(
+  golfersData: RawGolferData[] | undefined,
+): ProcessedGolferData[] {
   return useMemo(() => {
     if (!golfersData) return [];
 
@@ -80,7 +108,7 @@ export function useGolferData(golfersData: any[] | undefined) {
         highGroup: highGroup === -Infinity ? null : highGroup,
         averageWorldRanking: isNaN(avgWorldRanking) ? null : avgWorldRanking,
         ...groupPercentages,
-      } as Golfer;
+      };
     });
   }, [golfersData]);
 }

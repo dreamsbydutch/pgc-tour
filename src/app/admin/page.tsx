@@ -1,4 +1,4 @@
-import PaymentForm from "../_components/TransactionForm";
+import PaymentForm from "../../lib/components/TransactionForm";
 import type {
   DatagolfFieldInput,
   DataGolfLiveTournament,
@@ -8,8 +8,8 @@ import {
   EmailListLinkButton,
   UpdateGolfersButton,
   UpdateTeamsButton,
-} from "../_components/CreateGroupsButton";
-import HistoryButton from "../_components/HistoryButton";
+} from "../../lib/components/CreateGroupsButton";
+import HistoryButton from "../../lib/components/HistoryButton";
 import Link from "next/link";
 import { api } from "@/trpc/server";
 import { fetchDataGolf } from "@/lib/utils/system/api";

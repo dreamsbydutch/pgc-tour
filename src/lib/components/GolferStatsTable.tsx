@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { api } from "@/trpc/react";
 import {
   Table,
   TableBody,
@@ -34,6 +35,79 @@ export function GolferStatsTable() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+
+  // Fetch golfer statistics data using tRPC
+  const {
+    data: golferStats = [],
+    isLoading: loading,
+    error,
+  } = api.golfer.getAll.useQuery(undefined, {
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes
+    select: (data) => {
+      // Transform the raw golfer data into statistics
+      const statsMap = new Map<string, GolferStats>();
+
+      data.forEach((golfer) => {
+        const key = golfer.playerName;
+        if (!statsMap.has(key)) {
+          statsMap.set(key, {
+            id: golfer.id.toString(),
+            name: golfer.playerName,
+            appearances: 0,
+            wins: 0,
+            top5s: 0,
+            top10s: 0,
+            cutsMade: 0,
+            cutPercentage: "0",
+            avgFinish: 0,
+            seasons: [],
+          });
+        }
+
+        const stats = statsMap.get(key)!;
+        stats.appearances += 1;
+
+        // Count wins (position "1" or "T1")
+        if (golfer.position === "1" || golfer.position === "T1") {
+          stats.wins += 1;
+        }
+
+        // Count top 5s (position 1-5 or T2-T5)
+        const pos = parseInt(golfer.position?.replace("T", "") || "999");
+        if (pos <= 5) {
+          stats.top5s += 1;
+        }
+
+        // Count top 10s (position 1-10 or T2-T10)
+        if (pos <= 10) {
+          stats.top10s += 1;
+        }
+
+        // Count cuts made (not "CUT", "WD", "DQ")
+        if (golfer.position && !["CUT", "WD", "DQ"].includes(golfer.position)) {
+          stats.cutsMade += 1;
+        }
+
+        // Add season to seasons array if not already present
+        if (
+          golfer.tournament?.seasonId &&
+          !stats.seasons.includes(golfer.tournament.seasonId)
+        ) {
+          stats.seasons.push(golfer.tournament.seasonId);
+        }
+      });
+
+      // Calculate percentages and averages
+      return Array.from(statsMap.values()).map((stats) => ({
+        ...stats,
+        cutPercentage:
+          stats.appearances > 0
+            ? ((stats.cutsMade / stats.appearances) * 100).toFixed(1)
+            : "0",
+      }));
+    },
+  });
 
   // Use the optimized hook that pre-computes statistics with aggressive caching
 
@@ -89,7 +163,9 @@ export function GolferStatsTable() {
           <h2 className="text-2xl font-bold text-gray-900">
             Golfer Statistics
           </h2>
-          <p className="mt-1 text-red-600">Error loading data: {error}</p>
+          <p className="mt-1 text-red-600">
+            Error loading data: {error?.message || "An error occurred"}
+          </p>
         </div>
       </div>
     );

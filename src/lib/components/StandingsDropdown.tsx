@@ -1,6 +1,8 @@
 "use client";
 
-import { cn, formatRank } from "@/old-utils";
+import { cn } from "@/lib/utils/core/types";
+import { formatRank } from "@/lib/utils/domain/formatting";
+import { api } from "@/trpc/react";
 import type { Member, Team, TourCard, Tournament } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,24 +15,22 @@ export function StandingsTourCardInfo({
   tourCard: TourCard;
   member: Member | null | undefined;
 }) {
+  // Fetch data using tRPC
+  const { data: allTournaments } = api.tournament.getAll.useQuery();
+  const { data: allTiers } = api.tier.getAll.useQuery();
+  const { data: allTeams } = api.team.getAll.useQuery();
+
   // Get all tournaments in the season except playoffs
-  const tiers = useMainStore((state) => state.currentTiers)?.find(
-    (t) => t.name === "Playoff",
+  const playoffTier = allTiers?.find((t) => t.name === "Playoff");
+  const tourneys = allTournaments?.filter(
+    (t) => t.seasonId === tourCard.seasonId,
   );
-  const tourneys = useMainStore((state) => state.seasonTournaments);
-  const pastTourneys = useMainStore((state) => state.pastTournaments);
-  const filteredTourneys = tourneys?.filter((t) => t.tierId !== tiers?.id);
+  const filteredTourneys = tourneys?.filter(
+    (t) => t.tierId !== playoffTier?.id,
+  );
 
   // Get all teams associated with this player's tour card
-  const teams = pastTourneys?.reduce((acc, tournament) => {
-    const team = tournament.teams.find(
-      (team) => team.tourCardId === tourCard.id,
-    );
-    if (team) {
-      acc.push(team);
-    }
-    return acc;
-  }, [] as Team[]);
+  const teams = allTeams?.filter((team) => team.tourCardId === tourCard.id);
 
   return (
     <div
@@ -153,7 +153,7 @@ function TournamentHistoryRow({
   className?: string;
 }) {
   // Get tiers for displaying tournament importance
-  const tiers = useMainStore((state) => state.currentTiers);
+  const { data: tiers } = api.tier.getAll.useQuery();
   if (!tourneys || !teams) {
     // Replace the simple loading spinner with a proper skeleton UI
     return (

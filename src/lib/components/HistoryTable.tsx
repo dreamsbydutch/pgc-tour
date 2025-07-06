@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { api } from "@/trpc/react";
+import { useUser } from "@/lib/hooks";
 import {
   Table,
   TableBody,
@@ -11,7 +12,7 @@ import {
   TableRow,
 } from "@/lib/components/ui/table";
 import { Button } from "@/lib/components/ui/button";
-import { formatMoney } from "@/old-utils";
+import { formatMoney } from "@/lib/utils/domain/formatting";
 
 // Add type definitions
 type SortColumn = "earnings" | "wins" | "apps";
@@ -45,7 +46,13 @@ export function HistoryTable() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   // Get current user data from auth
-  const { member: currentMember } = useAuth();
+  const { user } = useUser();
+
+  // Fetch current member data if user is logged in
+  const { data: currentMember } = api.member.getById.useQuery(
+    { memberId: user?.id ?? "" },
+    { enabled: !!user?.id },
+  );
 
   // Fetch data using tRPC directly (simplified approach)
   const { data: members } = api.member.getAll.useQuery();
@@ -165,7 +172,8 @@ export function HistoryTable() {
         ? memberStats.filter(
             (member) =>
               member.id === currentMember.id ||
-              currentMember.friends?.includes(member.id),
+              (currentMember.friends &&
+                currentMember.friends.includes(member.id)),
           )
         : memberStats;
 

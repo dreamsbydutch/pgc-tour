@@ -1,17 +1,15 @@
-import { cn, formatMoney, formatNumber, formatRank } from "@/old-utils";
+"use client";
+
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { ruleList } from "./rules";
 import { RuleCategoryType } from "@/lib/components/functionalComponents/rulebookComponents";
-import { Tier } from "@prisma/client";
+import { cn } from "@/lib/utils/core";
+import {
+  PayoutsTable,
+  PointsTable,
+} from "@/lib/components/smartComponents/tierDataTables";
+import { CurrentSchedule } from "@/lib/components/smartComponents/CurrentSchedule";
 
 /**
  * RulebookPage Component

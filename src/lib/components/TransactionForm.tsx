@@ -5,7 +5,7 @@ import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import type { FormEvent } from "react";
 import { z } from "zod";
-import { FieldInfo } from "../../../lib/components/ui/FieldInfo";
+import { FieldInfo } from "./ui/FieldInfo";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -14,10 +14,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../../lib/components/ui/table";
+} from "./ui/table";
 import { processPayment } from "@/server/api/actions/transaction";
 import type { TransactionType } from "@prisma/client";
-import { Button } from "../../../lib/components/ui/button";
+import { Button } from "./ui/button";
 import { formatMoney } from "@/lib/utils/domain/formatting";
 
 const emptyTransaction = {
@@ -48,7 +48,11 @@ export default function PaymentForm() {
     onSubmit: async ({ value }) => {
       const member = allMembers?.find((obj) => obj.id === value.userId);
       value.description =
-        formatMoney(value.amount) + " payment made by " + (member?.firstname ?? "") + " " + (member?.lastname ?? "");
+        formatMoney(value.amount) +
+        " payment made by " +
+        (member?.firstname ?? "") +
+        " " +
+        (member?.lastname ?? "");
       await processPayment(value);
       await utils.member.invalidate();
       router.refresh();

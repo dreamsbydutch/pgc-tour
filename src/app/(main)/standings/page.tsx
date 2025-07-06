@@ -1,6 +1,5 @@
 "use client";
 
-import { useMainStore } from "@/lib/store/store";
 import { useState } from "react";
 import {
   GoldPlayoffHeader,
@@ -10,7 +9,9 @@ import {
   StandingsListing,
   ToursToggleButton,
 } from "./_components/StandingsPage";
-import type { Tour } from "@prisma/client";
+import type { Tour, TourCard } from "@prisma/client";
+import { useCurrentStandings, useUser } from "@/lib/hooks";
+import { api } from "@/trpc/react";
 
 export default function Page({
   searchParams,

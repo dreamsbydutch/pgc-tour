@@ -1,6 +1,7 @@
 "use client";
 
-import { HistoryTable } from "./HistoryTable";
+import { GolferStatsTable } from "../../../lib/components/GolferStatsTable";
+import { HistoryTable } from "../../../lib/components/HistoryTable";
 
 // Import our refactored component
 

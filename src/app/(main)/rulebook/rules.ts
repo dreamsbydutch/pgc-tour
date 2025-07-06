@@ -1,11 +1,11 @@
-import { RuleCategory } from "@/lib/components/functionalComponents/rulebookComponents";
+import { RuleCategoryType } from "@/lib/components/functionalComponents/rulebookComponents";
 
 /**
  * Rulebook Data
  *
  * Contains the static data for the rulebook, including categories and rules.
  */
-export const ruleList: RuleCategory[] = [
+export const ruleList: RuleCategoryType[] = [
   {
     category: "Schedule",
     rules: [

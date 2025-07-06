@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "../../../lib/components/ui/button";
+import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
-import LoadingSpinner from "../../../lib/components/functionalComponents/loading/LoadingSpinner";
+import LoadingSpinner from "./functionalComponents/loading/LoadingSpinner";
 
 export function CreateGroupsButton() {
   const [isClicked, setIsClicked] = useState(false);
