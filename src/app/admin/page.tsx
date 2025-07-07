@@ -106,7 +106,7 @@ export default async function AdminDashboard() {
         </div>
         <HistoryButton className="mt-4 w-3/4" />
       </div>
-      <PaymentForm />
+      {/* <PaymentForm /> */}
     </>
   );
 }

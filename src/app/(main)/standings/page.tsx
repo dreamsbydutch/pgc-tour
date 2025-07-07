@@ -86,17 +86,10 @@ export default function Page() {
           <ToursToggleButton
             key={"toggle-playoffs"}
             tour={{
-              name: "Playoffs",
-              shortForm: "Playoffs",
-              seasonId: userTourCard?.seasonId ?? "",
               id: "playoffs",
-              buyIn: 0,
-              playoffSpots: [30, 40],
+              shortForm: "Playoffs",
               logoUrl:
                 "https://jn9n1jxo7g.ufs.sh/f/94GU8p0EVxqPNsO8w6FZhY1BamONzvl3bLgdn0IXVM8fEoTC",
-              updatedAt: new Date(),
-              createdAt: new Date(),
-              // tourCards: [], // Removed property not in type
             }}
             tourToggle={standingsToggle}
             setTourToggle={setStandingsToggle}
