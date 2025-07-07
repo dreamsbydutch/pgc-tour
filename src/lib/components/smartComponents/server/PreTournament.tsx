@@ -1,7 +1,7 @@
 import type { Tournament } from "@prisma/client";
 import PreTournamentPageRender from "../../functionalComponents/client/PreTournamentPageRender";
 import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
-import { getTournamentTeamData } from "@/server/api/getTournamentTeamData";
+import { getTournamentTeamData } from "@/server/actions/getTournamentTeamData";
 
 export default async function PreTournamentPage({
   tournament,

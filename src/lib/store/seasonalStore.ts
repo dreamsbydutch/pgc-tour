@@ -1,169 +1,26 @@
 import {
-  Course,
-  Member,
-  Season,
-  Tier,
-  Tour,
-  TourCard,
-  Tournament,
-} from "@prisma/client";
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import {
-  createCrudOps,
   filterItems,
   sortItems,
   searchItems,
-} from "../utils/data/processing";
-import { groupBy } from "../utils/core/arrays";
-import { calculateStats, countByField } from "../utils/data/aggregation";
-import { getTournamentStatus } from "../utils/domain/golf";
-import { isApproachingQuota } from "../utils/system/storage";
-
-// Minimal types for store - only essential data without heavy includes
-type MinimalCourse = Pick<Course, "id" | "name" | "location" | "par" | "apiId">;
-type MinimalTier = Pick<Tier, "id" | "name" | "seasonId">;
-type MinimalTour = Pick<
-  Tour,
-  "id" | "name" | "logoUrl" | "buyIn" | "shortForm" | "seasonId"
->;
-type MinimalTourCard = Pick<
-  TourCard,
-  | "id"
-  | "memberId"
-  | "tourId"
-  | "seasonId"
-  | "displayName"
-  | "earnings"
-  | "points"
-  | "position"
->;
-type MinimalTournament = Pick<
-  Tournament,
-  | "id"
-  | "name"
-  | "logoUrl"
-  | "startDate"
-  | "endDate"
-  | "livePlay"
-  | "currentRound"
-  | "seasonId"
-  | "courseId"
-  | "tierId"
-> & {
-  course: MinimalCourse;
-  tier: MinimalTier;
-};
-
-// Utility types
-type SortDirection = "asc" | "desc";
-type TournamentStatus = "upcoming" | "current" | "completed";
-
-type TournamentFilters = {
-  status?: TournamentStatus[];
-  tierIds?: string[];
-  courseIds?: string[];
-  dateRange?: { start: Date; end: Date };
-};
-
-type TourCardFilters = {
-  tourIds?: string[];
-  earnings?: { min?: number; max?: number };
-  points?: { min?: number; max?: number };
-  hasEarnings?: boolean;
-};
-
-type BatchUpdate<T> = { id: string; updates: Partial<T> };
-
-type SeasonalData = {
-  // Core data
-  season: Season | null;
-  member: Member | null;
-  tourCard: TourCard | null;
-  allTourCards: MinimalTourCard[] | null;
-  tournaments: MinimalTournament[] | null;
-  tiers: MinimalTier[] | null;
-  tours: MinimalTour[] | null;
-  lastLoaded: number | null;
-
-  // Basic operations
-  setSeasonalData: (data: Partial<SeasonalData>) => void;
-  reset: () => void;
-  updateMember: (member: Member) => void;
-  clearAndSet: (data: Partial<SeasonalData>) => void;
-
-  // Generic getters with filtering and sorting
-  getTournaments: (
-    filters?: TournamentFilters,
-    sortBy?: keyof MinimalTournament,
-    direction?: SortDirection,
-  ) => MinimalTournament[];
-  getTourCards: (
-    filters?: TourCardFilters,
-    sortBy?: keyof MinimalTourCard,
-    direction?: SortDirection,
-  ) => MinimalTourCard[];
-  getTours: (
-    sortBy?: keyof MinimalTour,
-    direction?: SortDirection,
-  ) => MinimalTour[];
-  getTiers: (
-    sortBy?: keyof MinimalTier,
-    direction?: SortDirection,
-  ) => MinimalTier[];
-  getCourses: (location?: string) => MinimalCourse[];
-
-  // CRUD operations
-  updateItem: <T extends { id: string }>(
-    type: "tournaments" | "tourCards" | "tours" | "tiers",
-    id: string,
-    updates: Partial<T>,
-  ) => void;
-  addItem: <T>(
-    type: "tournaments" | "tourCards" | "tours" | "tiers",
-    item: T,
-  ) => void;
-  removeItem: (
-    type: "tournaments" | "tourCards" | "tours" | "tiers",
-    id: string,
-  ) => void;
-  batchUpdate: <T extends { id: string }>(
-    type: "tournaments" | "tourCards",
-    updates: BatchUpdate<T>[],
-  ) => void;
-
-  // Search operations
-  search: (
-    query: string,
-    types?: ("tournaments" | "tourCards" | "tours" | "tiers")[],
-  ) => {
-    tournaments: MinimalTournament[];
-    tourCards: MinimalTourCard[];
-    tours: MinimalTour[];
-    tiers: MinimalTier[];
-  };
-
-  // Computed values
-  getStats: () => {
-    tournaments: {
-      total: number;
-      byStatus: Record<TournamentStatus, number>;
-      byTier: Record<string, number>;
-    };
-    tourCards: {
-      total: number;
-      active: number;
-      earnings: ReturnType<typeof calculateStats>;
-      byTour: Record<string, number>;
-    };
-    tours: { total: number; totalBuyIn: number; avgBuyIn: number };
-  };
-
-  // Utility
-  isDataStale: () => boolean;
-  getDataAge: () => number;
-  validateData: () => { isValid: boolean; errors: string[] };
-};
+  batchUpdateItems,
+  cn,
+} from "../utils/main";
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import type {
+  MinimalCourse,
+  MinimalTier,
+  MinimalTour,
+  MinimalTourCard,
+  MinimalTournament,
+  SortDirection,
+  TournamentStatus,
+  TournamentFilters,
+  TourCardFilters,
+  BatchUpdate,
+  SeasonalData,
+} from "./seasonalTypes";
+import type { Member, Season, TourCard } from "@prisma/client";
 
 // Export types for external use
 export type {
@@ -181,390 +38,209 @@ export type {
 };
 export type { BatchUpdate };
 
+// --- Zustand store ---
 export const useSeasonalStore = create<SeasonalData>()(
-  persist(
-    (set, get) => {
-      // Create CRUD operations for each data type
-      const tournamentCrud = createCrudOps<MinimalTournament>();
-      const tourCardCrud = createCrudOps<MinimalTourCard>();
-      const tourCrud = createCrudOps<MinimalTour>();
-      const tierCrud = createCrudOps<MinimalTier>();
-
-      return {
-        season: null,
-        member: null,
-        tourCard: null,
-        allTourCards: null,
-        tournaments: null,
-        tiers: null,
-        tours: null,
-        lastLoaded: null,
-
-        // Basic operations
-        setSeasonalData: (data) =>
-          set((state) => ({ ...state, ...data, lastLoaded: Date.now() })),
-
-        reset: () =>
-          set({
-            season: null,
-            member: null,
-            tourCard: null,
-            allTourCards: null,
-            tournaments: null,
-            tiers: null,
-            tours: null,
-            lastLoaded: null,
-          }),
-
-        updateMember: (member: Member) =>
-          set((state) => ({
-            ...state,
-            member: { ...state.member, ...member },
-          })),
-
-        clearAndSet: (data) => {
-          // Clear localStorage first to prevent quota issues
-          if (typeof window !== "undefined") {
-            try {
-              if (process.env.NODE_ENV === "development") {
-                console.log("📊 Before clearing seasonal data:");
-              }
-              localStorage.removeItem("seasonal-data-storage");
-            } catch (e) {
-              console.warn("Failed to clear localStorage:", e);
-            }
-          }
-
-          const newData = {
-            season: null,
-            member: null,
-            tourCard: null,
-            allTourCards: null,
-            tournaments: null,
-            tiers: null,
-            tours: null,
-            lastLoaded: Date.now(),
-            ...data,
-          };
-
-          set(newData);
-
-          // Log storage usage after setting new data
-          if (
-            typeof window !== "undefined" &&
-            process.env.NODE_ENV === "development"
-          ) {
-            setTimeout(() => {
-              console.log("📊 After setting seasonal data:");
-              if (isApproachingQuota()) {
-                console.warn(
-                  "⚠️ Seasonal data is approaching localStorage quota!",
-                );
-              }
-            }, 100);
-          }
-        },
-
-        // Generic getters with filtering and sorting
-        getTournaments: (filters, sortBy, direction = "asc") => {
-          const state = get();
-          let tournaments = state.tournaments ?? [];
-
-          // Apply filters
-          if (filters) {
-            // Convert status filter for tournament filtering
-            const filterObj: any = { ...filters };
-            if (filters.status) {
-              const now = new Date();
-              tournaments = tournaments.filter((t) => {
-                const status = getTournamentStatus(
-                  new Date(t.startDate),
-                  new Date(t.endDate),
-                  now,
-                );
-                return filters.status!.includes(status as TournamentStatus);
-              });
-              delete filterObj.status;
-            }
-            tournaments = filterItems(tournaments, filterObj);
-          }
-
-          // Apply sorting
-          if (sortBy) {
-            tournaments = sortItems(tournaments, sortBy, direction);
-          }
-
-          return tournaments;
-        },
-
-        getTourCards: (filters, sortBy, direction = "desc") => {
-          const state = get();
-          let tourCards = state.allTourCards ?? [];
-
-          // Apply filters
-          if (filters) {
-            const filterObj: any = { ...filters };
-
-            // Helper for range filtering
-            const applyRange = (
-              arr: typeof tourCards,
-              key: keyof typeof filters,
-              field: keyof MinimalTourCard,
-            ) => {
-              const range = filters[key] as
-                | { min?: number; max?: number }
-                | undefined;
-              if (!range) return arr;
-              let result = arr;
-              if (range.min !== undefined) {
-                result = result.filter((tc) => {
-                  const val = tc[field];
-                  return (
-                    typeof val === "number" && val !== null && val >= range.min!
-                  );
-                });
-              }
-              if (range.max !== undefined) {
-                result = result.filter((tc) => {
-                  const val = tc[field];
-                  return (
-                    typeof val === "number" && val !== null && val <= range.max!
-                  );
-                });
-              }
-              delete filterObj[key];
-              return result;
-            };
-
-            tourCards = applyRange(tourCards, "earnings", "earnings");
-            tourCards = applyRange(tourCards, "points", "points");
-
-            // Handle hasEarnings
-            if (filters.hasEarnings) {
-              tourCards = tourCards.filter((tc) => tc.earnings > 0);
-              delete filterObj.hasEarnings;
-            }
-
-            tourCards = filterItems(tourCards, filterObj);
-          }
-
-          // Apply sorting
-          if (sortBy) {
-            tourCards = sortItems(tourCards, sortBy, direction);
-          }
-
-          return tourCards;
-        },
-
-        getTours: (sortBy, direction = "asc") => {
-          const state = get();
-          let tours = state.tours ?? [];
-          return sortBy ? sortItems(tours, sortBy, direction) : tours;
-        },
-
-        getTiers: (sortBy, direction = "asc") => {
-          const state = get();
-          let tiers = state.tiers ?? [];
-          return sortBy ? sortItems(tiers, sortBy, direction) : tiers;
-        },
-
-        getCourses: (location) => {
-          const state = get();
-          const courses: MinimalCourse[] = [];
-          const seenIds = new Set<string>();
-
-          state.tournaments?.forEach((t) => {
-            if (!seenIds.has(t.course.id)) {
-              courses.push(t.course);
-              seenIds.add(t.course.id);
-            }
-          });
-
-          return location
-            ? courses.filter((c) => c.location === location)
-            : courses;
-        },
-
-        // CRUD operations
-        updateItem: (type, id, updates) => {
-          set((state) => {
-            const field = type === "tourCards" ? "allTourCards" : type;
-            const items = state[field] ?? [];
-            return {
-              ...state,
-              [field]: items.map((item: any) =>
-                item.id === id ? { ...item, ...updates } : item,
-              ),
-            };
-          });
-        },
-
-        addItem: (type, item) => {
-          set((state) => {
-            const field = type === "tourCards" ? "allTourCards" : type;
-            const items = state[field] ?? [];
-            return {
-              ...state,
-              [field]: [...items, item],
-            };
-          });
-        },
-
-        removeItem: (type, id) => {
-          set((state) => {
-            const field = type === "tourCards" ? "allTourCards" : type;
-            const items = state[field] ?? [];
-            return {
-              ...state,
-              [field]: items.filter((item: any) => item.id !== id),
-            };
-          });
-        },
-
-        batchUpdate: (type, updates) => {
-          set((state) => {
-            const field = type === "tourCards" ? "allTourCards" : type;
-            const items = state[field] ?? [];
-            const updateMap = new Map(updates.map((u) => [u.id, u.updates]));
-
-            return {
-              ...state,
-              [field]: items.map((item: any) => {
-                const update = updateMap.get(item.id);
-                return update ? { ...item, ...update } : item;
-              }),
-            };
-          });
-        },
-
-        // Search operations
-        search: (
-          query,
-          types = ["tournaments", "tourCards", "tours", "tiers"],
-        ) => {
-          const state = get();
-          const results = {
-            tournaments: [] as MinimalTournament[],
-            tourCards: [] as MinimalTourCard[],
-            tours: [] as MinimalTour[],
-            tiers: [] as MinimalTier[],
-          };
-
-          if (types.includes("tournaments") && state.tournaments) {
-            results.tournaments = searchItems(state.tournaments, query, [
-              "name",
-              "course.name",
-              "course.location",
-              "tier.name",
-            ]);
-          }
-
-          if (types.includes("tourCards") && state.allTourCards) {
-            results.tourCards = searchItems(state.allTourCards, query, [
-              "displayName",
-            ]);
-          }
-
-          if (types.includes("tours") && state.tours) {
-            results.tours = searchItems(state.tours, query, [
-              "name",
-              "shortForm",
-            ]);
-          }
-
-          if (types.includes("tiers") && state.tiers) {
-            results.tiers = searchItems(state.tiers, query, ["name"]);
-          }
-
-          return results;
-        },
-
-        // Computed values
-        getStats: () => {
-          const state = get();
-          const tournaments = state.tournaments ?? [];
-          const tourCards = state.allTourCards ?? [];
-          const tours = state.tours ?? [];
-
-          // Tournament stats
+  persist((set, get) => ({
+    season: null, member: null, tourCard: null, allTourCards: null,
+    tournaments: null, tiers: null, tours: null, lastLoaded: null,
+    setSeasonalData: data => set(s => ({ ...s, ...data, lastLoaded: Date.now() })),
+    reset: () => set({ season: null, member: null, tourCard: null, allTourCards: null, tournaments: null, tiers: null, tours: null, lastLoaded: null }),
+    updateMember: member => set(s => ({ ...s, member: { ...s.member, ...member } })),
+    clearAndSet: data => {
+      if (typeof window !== "undefined") {
+        try {
+          if (process.env.NODE_ENV === "development") console.log("📊 Before clearing seasonal data:");
+          localStorage.removeItem("seasonal-data-storage");
+        } catch (e) { console.warn("Failed to clear localStorage:", e); }
+      }
+      set({ season: null, member: null, tourCard: null, allTourCards: null, tournaments: null, tiers: null, tours: null, lastLoaded: Date.now(), ...data });
+      if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+        setTimeout(() => {
+          console.log("📊 After setting seasonal data:");
+          if (isApproachingQuota()) console.warn("⚠️ Seasonal data is approaching localStorage quota!");
+        }, 100);
+      }
+    },
+    getTournaments: (filters, sortBy, direction = "asc") => {
+      let tournaments = get().tournaments ?? [];
+      if (filters) {
+        const filterObj: any = { ...filters };
+        if (filters.status) {
           const now = new Date();
-          const tournamentsByStatus = groupBy(tournaments, (t) =>
-            getTournamentStatus(
-              new Date(t.startDate),
-              new Date(t.endDate),
-              now,
-            ),
-          );
-
-          const tournamentStats = {
-            total: tournaments.length,
-            byStatus: {
-              upcoming: tournamentsByStatus.upcoming?.length ?? 0,
-              current: tournamentsByStatus.current?.length ?? 0,
-              completed: tournamentsByStatus.completed?.length ?? 0,
-            } as Record<TournamentStatus, number>,
-            byTier: countByField(tournaments, "tierId"),
-          };
-
-          // Tour card stats
-          const earnings = tourCards.map((tc) => tc.earnings);
-          const tourCardStats = {
-            total: tourCards.length,
-            active: tourCards.filter((tc) => tc.earnings > 0 || tc.points > 0)
-              .length,
-            earnings: calculateStats(earnings),
-            byTour: countByField(tourCards, "tourId"),
-          };
-
-          // Tour stats
-          const buyIns = tours.map((t) => t.buyIn);
-          const tourStats = {
-            total: tours.length,
-            totalBuyIn: buyIns.reduce((sum, b) => sum + b, 0),
-            avgBuyIn:
-              buyIns.length > 0
-                ? buyIns.reduce((sum, b) => sum + b, 0) / buyIns.length
-                : 0,
-          };
-
-          return {
-            tournaments: tournamentStats,
-            tourCards: tourCardStats,
-            tours: tourStats,
-          };
+          tournaments = tournaments.filter(t => filters.status!.includes(getTournamentStatus(new Date(t.startDate), new Date(t.endDate), now)));
+          delete filterObj.status;
+        }
+        tournaments = filterItems(tournaments, filterObj);
+      }
+      return sortBy ? sortItems(tournaments, sortBy, direction) : tournaments;
+    },
+    getTourCards: (filters, sortBy, direction = "desc") => {
+      let tourCards = get().allTourCards ?? [];
+      if (filters) {
+        const filterObj: any = { ...filters };
+        const applyRange = (arr: typeof tourCards, key: keyof typeof filters, field: keyof MinimalTourCard) => {
+          const range = filters[key] as { min?: number; max?: number } | undefined;
+          if (!range) return arr;
+          let result = arr;
+          if (range.min !== undefined) result = result.filter(tc => typeof tc[field] === "number" && tc[field] !== null && tc[field] >= range.min!);
+          if (range.max !== undefined) result = result.filter(tc => typeof tc[field] === "number" && tc[field] !== null && tc[field] <= range.max!);
+          delete filterObj[key];
+          return result;
+        };
+        tourCards = applyRange(tourCards, "earnings", "earnings");
+        tourCards = applyRange(tourCards, "points", "points");
+        if (filters.hasEarnings) { tourCards = tourCards.filter(tc => tc.earnings > 0); delete filterObj.hasEarnings; }
+        tourCards = filterItems(tourCards, filterObj);
+      }
+      return sortBy ? sortItems(tourCards, sortBy, direction) : tourCards;
+    },
+    getTours: (sortBy, direction = "asc") => {
+      const tours = get().tours ?? [];
+      return sortBy ? sortItems(tours, sortBy, direction) : tours;
+    },
+    getTiers: (sortBy, direction = "asc") => {
+      const tiers = get().tiers ?? [];
+      return sortBy ? sortItems(tiers, sortBy, direction) : tiers;
+    },
+    getCourses: location => {
+      const { tournaments } = get();
+      const courses: MinimalCourse[] = [];
+      const seenIds = new Set<string>();
+      tournaments?.forEach(t => { if (!seenIds.has(t.course.id)) { courses.push(t.course); seenIds.add(t.course.id); } });
+      return location ? courses.filter(c => c.location === location) : courses;
+    },
+    updateItem: (type, id, updates) => set(s => {
+      const field = type === "tourCards" ? "allTourCards" : type;
+      const items = s[field] ?? [];
+      return { ...s, [field]: items.map((item: any) => item.id === id ? { ...item, ...updates } : item) };
+    }),
+    addItem: (type, item) => set(s => {
+      const field = type === "tourCards" ? "allTourCards" : type;
+      const items = s[field] ?? [];
+      return { ...s, [field]: [...items, item] };
+    }),
+    removeItem: (type, id) => set(s => {
+      const field = type === "tourCards" ? "allTourCards" : type;
+      const items = s[field] ?? [];
+      return { ...s, [field]: items.filter((item: any) => item.id !== id) };
+    }),
+    batchUpdate: (type, updates) => set(s => {
+      const field = type === "tourCards" ? "allTourCards" : type;
+      const items = s[field] ?? [];
+      const updateMap = new Map(updates.map(u => [u.id, u.updates]));
+      return { ...s, [field]: items.map((item: any) => updateMap.has(item.id) ? { ...item, ...updateMap.get(item.id)! } : item) };
+    }),
+    search: (query, types = ["tournaments", "tourCards", "tours", "tiers"]) => {
+      const s = get();
+      return {
+        tournaments: types.includes("tournaments") && s.tournaments ? searchItems(s.tournaments, query, ["name", "course.name", "course.location", "tier.name"]) : [],
+        tourCards: types.includes("tourCards") && s.allTourCards ? searchItems(s.allTourCards, query, ["displayName"]) : [],
+        tours: types.includes("tours") && s.tours ? searchItems(s.tours, query, ["name", "shortForm"]) : [],
+        tiers: types.includes("tiers") && s.tiers ? searchItems(s.tiers, query, ["name"]) : [],
+      };
+    },
+    getStats: () => {
+      const s = get();
+      const tournaments = s.tournaments ?? [], tourCards = s.allTourCards ?? [], tours = s.tours ?? [];
+      const now = new Date();
+      const tournamentsByStatus = groupBy<MinimalTournament, string>(
+        tournaments,
+        (t: MinimalTournament) => getTournamentStatus(new Date(t.startDate), new Date(t.endDate), now)
+      );
+      return {
+        tournaments: {
+          total: tournaments.length,
+          byStatus: {
+            upcoming: tournamentsByStatus.upcoming?.length ?? 0,
+            current: tournamentsByStatus.current?.length ?? 0,
+            completed: tournamentsByStatus.completed?.length ?? 0,
+          },
+          byTier: countByField(tournaments, "tierId"),
         },
-
-        // Utility
-        isDataStale: () => {
-          const state = get();
-          const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-          return !state.lastLoaded || Date.now() - state.lastLoaded > maxAge;
+        tourCards: {
+          total: tourCards.length,
+          active: tourCards.filter(tc => tc.earnings > 0 || tc.points > 0).length,
+          earnings: calculateStats(tourCards.map(tc => tc.earnings)),
+          byTour: countByField(tourCards, "tourId"),
         },
-
-        getDataAge: () => {
-          const state = get();
-          return state.lastLoaded ? Date.now() - state.lastLoaded : 0;
-        },
-
-        validateData: () => {
-          const state = get();
-          const errors: string[] = [];
-
-          if (!state.tournaments) errors.push("Tournaments data is missing");
-          if (!state.allTourCards) errors.push("Tour cards data is missing");
-          if (!state.tours) errors.push("Tours data is missing");
-          if (!state.tiers) errors.push("Tiers data is missing");
-
-          return { isValid: errors.length === 0, errors };
+        tours: {
+          total: tours.length,
+          totalBuyIn: tours.reduce((sum, b) => sum + b.buyIn, 0),
+          avgBuyIn: tours.length ? tours.reduce((sum, b) => sum + b.buyIn, 0) / tours.length : 0,
         },
       };
     },
-    {
-      name: "seasonal-data-storage",
-      storage:
-        typeof window !== "undefined"
-          ? createJSONStorage(() => localStorage)
-          : undefined,
+    isDataStale: () => {
+      const { lastLoaded } = get();
+      return !lastLoaded || Date.now() - lastLoaded > 24 * 60 * 60 * 1000;
     },
-  ),
+    getDataAge: () => {
+      const { lastLoaded } = get();
+      return lastLoaded ? Date.now() - lastLoaded : 0;
+    },
+    validateData: () => {
+      const { tournaments, allTourCards, tours, tiers } = get();
+      const errors = [];
+      if (!tournaments) errors.push("Tournaments data is missing");
+      if (!allTourCards) errors.push("Tour cards data is missing");
+      if (!tours) errors.push("Tours data is missing");
+      if (!tiers) errors.push("Tiers data is missing");
+      return { isValid: errors.length === 0, errors };
+    },
+  }), {
+    name: "seasonal-data-storage",
+    storage: typeof window !== "undefined" ? createJSONStorage(() => localStorage) : undefined,
+  })
 );
+
+// --- Minimal local helpers (move to utils/main.ts if needed elsewhere) ---
+const groupBy = <T, K extends string = string>(arr: T[], fn: (item: T) => K): Record<K, T[]> =>
+  arr.reduce((acc, item) => {
+    const key = fn(item);
+    (acc[key] = acc[key] || []).push(item);
+    return acc;
+  }, {} as Record<K, T[]>);
+
+const calculateStats = (numbers: number[]) => {
+  if (!numbers.length) return { total: 0, average: 0, median: 0, min: 0, max: 0 };
+  const sorted = [...numbers].sort((a, b) => a - b);
+  const total = numbers.reduce((sum, n) => sum + n, 0);
+  return {
+    total,
+    average: total / numbers.length,
+    median: sorted[Math.floor(sorted.length / 2)] ?? 0,
+    min: sorted[0] ?? 0,
+    max: sorted[sorted.length - 1] ?? 0,
+  };
+};
+
+const countByField = <T>(items: T[], field: keyof T) =>
+  items.reduce((acc, item) => {
+    const key = String(item[field]);
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+const getTournamentStatus = (
+  start: Date,
+  end: Date,
+  ref: Date = new Date(),
+): 'upcoming' | 'current' | 'completed' => {
+  const now = ref.getTime(), s = new Date(start).getTime(), e = new Date(end).getTime();
+  return now < s ? 'upcoming' : now <= e ? 'current' : 'completed';
+};
+
+const isApproachingQuota = (threshold = 0.8) => {
+  if (typeof window === 'undefined' || !window.localStorage) return false;
+  try {
+    const quota = 5 * 1024 * 1024;
+    let total = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) total += (localStorage.getItem(key) || '').length;
+    }
+    return total / quota > threshold;
+  } catch {
+    return false;
+  }
+};

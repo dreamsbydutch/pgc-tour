@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import LittleFucker from "../../smartComponents/client/LittleFucker";
 import { formatScore } from "@/lib/utils/domain/golf";
-import { hasItems } from "@/lib/utils/core/arrays";
+import { hasItems } from "@/lib/utils/main";
 import { capitalize } from "@/lib/utils/core/primitives";
 import { isNonEmptyString } from "@/lib/utils/core/types";
 import { getPath } from "@/lib/utils/core/objects";
