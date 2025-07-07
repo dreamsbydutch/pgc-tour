@@ -15,6 +15,7 @@ import type {
   TourCardFilters,
   EnhancedTourCardsResult,
 } from "@/lib/types";
+import { useCurrentSeason } from "./useSeasons";
 
 /**
  * Returns filtered tour cards with configurable sorting
@@ -223,4 +224,14 @@ export function useTourCardsEnhanced(filters?: TourCardFilters) {
       },
     };
   }, [getTourCards, allTourCards, filters]);
+}
+
+export function useCurrentSeasonTourCardId(
+  memberId: string,
+): string | undefined {
+  const cards = useTourCards({ memberIds: [memberId] });
+  const currentSeason = useCurrentSeason();
+  if (!currentSeason) return undefined;
+  const card = cards.find((c) => c.seasonId === currentSeason.id);
+  return card?.id;
 }

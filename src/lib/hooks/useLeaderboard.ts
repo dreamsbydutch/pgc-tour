@@ -10,7 +10,6 @@
 
 import { api } from "@/trpc/react";
 import { useSeasonalStore } from "../store/seasonalStore";
-import { teams } from "@/lib/utils";
 import { useMemo } from "react";
 import { useTournament } from "./useTournament";
 import type {

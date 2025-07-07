@@ -1,4 +1,4 @@
-import { RuleCategoryType } from "@/lib/components/functionalComponents/RulebookComponents";
+import { RuleCategoryType } from "@/lib/components/functionalComponents/client/RulebookComponents";
 
 /**
  * Rulebook Data

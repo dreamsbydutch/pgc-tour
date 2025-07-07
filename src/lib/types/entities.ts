@@ -85,19 +85,24 @@ export type MinimalTournament = {
   endDate: Date;
   livePlay: boolean | null;
   currentRound: number | null;
-  seasonId: string;
-  courseId: string;
-  tierId: string;
+  season: {
+    id: string;
+    year: number;
+  };
   course: {
     id: string;
     name: string;
     location: string;
     par: number;
+    front: number;
+    back: number;
     apiId: string;
   };
   tier: {
     id: string;
     name: string;
+    points: number[];
+    payouts: number[];
     seasonId: string;
   };
 };

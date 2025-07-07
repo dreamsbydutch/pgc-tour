@@ -61,12 +61,22 @@ export default function NavBar({ className }: { className?: string }) {
       {navItems.map(({ href, icon: Icon, label }) => (
         <div key={href}>
           <div className="flex lg:hidden">
-            <NavItem href={href} isActive={pathName === href}>
+            <NavItem
+              href={href}
+              isActive={
+                href === "/" ? pathName === href : pathName.startsWith(href)
+              }
+            >
               <Icon size={"2.5rem"} className="mx-auto" />
             </NavItem>
           </div>
           <div className="hidden lg:flex">
-            <NavItem href={href} isActive={pathName === href}>
+            <NavItem
+              href={href}
+              isActive={
+                href === "/" ? pathName === href : pathName.startsWith(href)
+              }
+            >
               <div className="flex items-center justify-center gap-2">
                 <Icon size={"1.5rem"} className="mx-auto" />
                 <span className="font-barlow text-2xl font-semibold">

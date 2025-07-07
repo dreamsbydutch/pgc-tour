@@ -8,166 +8,72 @@ import Image from "next/image";
 import Link from "next/link";
 import LoadingSpinner from "./functionalComponents/loading/LoadingSpinner";
 
-export function StandingsTourCardInfo({
-  tourCard,
-  member,
-}: {
-  tourCard: TourCard;
-  member: Member | null | undefined;
-}) {
-  // Fetch data using tRPC
-  const { data: allTournaments } = api.tournament.getAll.useQuery();
-  const { data: allTiers } = api.tier.getAll.useQuery();
-  const { data: allTeams } = api.team.getAll.useQuery();
-
-  // Get all tournaments in the season except playoffs (robust)
-  const filteredTourneys = getNonPlayoffTournaments(
-    allTournaments,
-    tourCard.seasonId,
-    allTiers,
-  );
-
-  // Get all teams associated with this player's tour card
-  const teams = getTeamsForTourCard(allTeams, tourCard.id);
-
-  return (
-    <div
-      className={cn(
-        "col-span-17 w-full border-b border-slate-300 px-2 pb-4 pt-2 font-normal",
-        member?.id === tourCard?.memberId &&
-          "bg-gradient-to-b from-slate-200 via-slate-100 to-slate-100",
-        member?.friends.includes(tourCard.memberId) &&
-          "bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50",
-      )}
-    >
-      {/* Player Statistics Header */}
-      <div className="grid grid-flow-row grid-cols-5 pt-1.5 text-center">
-        <div className="place-self-center font-varela text-3xs font-bold 2xs:text-2xs sm:text-sm">
-          Wins
-        </div>
-        <div className="place-self-center font-varela text-3xs font-bold 2xs:text-2xs sm:text-sm">
-          Top Tens
-        </div>
-        <div className="place-self-center font-varela text-3xs font-bold 2xs:text-2xs sm:text-sm">
-          Cuts Made
-        </div>
-        <div className="place-self-center font-varela text-3xs font-bold 2xs:text-2xs sm:text-sm">
-          Weekday Avg.
-        </div>
-        <div className="place-self-center font-varela text-3xs font-bold 2xs:text-2xs sm:text-sm">
-          Weekend Avg.
-        </div>
-      </div>
-
-      {/* Player Statistics Values */}
-      <div className="grid grid-flow-row grid-cols-5 pb-3 text-center">
-        <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
-          {tourCard.win}
-        </div>
-        <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
-          {tourCard.topTen}
-        </div>
-        <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
-          {tourCard.madeCut} / {tourCard.appearances}
-        </div>
-        {/* Weekday Average Score */}
-        <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
-          {!teams ? (
-            <div className="h-4 w-8 animate-pulse rounded bg-slate-300" />
-          ) : (
-            calculateAverageScore(teams, "weekday")
-          )}
-        </div>
-        {/* Weekend Average Score */}
-        <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
-          {!teams ? (
-            <div className="h-4 w-8 animate-pulse rounded bg-slate-300" />
-          ) : (
-            calculateAverageScore(teams, "weekend")
-          )}
-        </div>
-      </div>
-
-      {/* Tournament History Section */}
-      {(filteredTourneys?.length ?? 0) > 10 ? (
-        <>
-          <TournamentHistoryRow
-            tourneys={filteredTourneys?.slice(
-              0,
-              Math.round(filteredTourneys.length / 2),
-            )}
-            teams={teams}
-            className="border-b"
-          />
-          <TournamentHistoryRow
-            tourneys={filteredTourneys?.slice(
-              Math.round(filteredTourneys.length / 2),
-              filteredTourneys.length,
-            )}
-            teams={teams}
-          />
-        </>
-      ) : (
-        <TournamentHistoryRow tourneys={filteredTourneys} teams={teams} />
-      )}
-    </div>
-  );
-}
-
-// --- Helper functions for robust/efficient filtering ---
-function getNonPlayoffTournaments(
+// Pure helper: filter non-playoff tournaments
+const getNonPlayoffTournaments = (
   allTournaments: Tournament[] | undefined,
   seasonId: string,
   allTiers: { id: string; name: string }[] | undefined,
-): Tournament[] | undefined {
-  if (!allTournaments || !allTiers) return undefined;
-  // Exclude tournaments whose tier name includes 'Playoff'
-  const playoffTierIds = allTiers
-    .filter((t) => t.name.toLowerCase().includes("playoff"))
-    .map((t) => t.id);
-  return allTournaments
-    .filter((t) => t.seasonId === seasonId)
-    .filter((t) => !playoffTierIds.includes(t.tierId))
-    .sort(
-      (a, b) =>
-        new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
-    );
-}
+) =>
+  allTournaments && allTiers
+    ? allTournaments
+        .filter((t) => t.seasonId === seasonId)
+        .filter(
+          (t) =>
+            !allTiers
+              .filter((tier) => tier.name.toLowerCase().includes("playoff"))
+              .map((tier) => tier.id)
+              .includes(t.tierId),
+        )
+        .sort(
+          (a, b) =>
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+        )
+    : undefined;
 
-function getTeamsForTourCard(
+// Pure helper: filter teams for a tour card
+const getTeamsForTourCard = (
   allTeams: Team[] | undefined,
   tourCardId: string,
-): Team[] | undefined {
-  if (!allTeams) return undefined;
-  return allTeams.filter((team) => team.tourCardId === tourCardId);
-}
+) => (allTeams ? allTeams.filter((team) => team.tourCardId === tourCardId) : undefined);
 
-function calculateAverageScore(
-  teams: Team[],
-  type: "weekday" | "weekend",
-): number {
+// Pure helper: calculate average score
+const calculateAverageScore = (teams: Team[] = [], type: "weekday" | "weekend") => {
   const rounds =
     type === "weekday"
-      ? teams.reduce(
-          (acc, team) => acc + (team.roundOne ?? 0) + (team.roundTwo ?? 0),
-          0,
-        )
-      : teams.reduce(
-          (acc, team) => acc + (team.roundThree ?? 0) + (team.roundFour ?? 0),
-          0,
-        );
+      ? teams.reduce((acc, t) => acc + (t.roundOne ?? 0) + (t.roundTwo ?? 0), 0)
+      : teams.reduce((acc, t) => acc + (t.roundThree ?? 0) + (t.roundFour ?? 0), 0);
 
   const roundCount =
     type === "weekday"
-      ? teams.filter((t) => t.roundOne).length +
-        teams.filter((t) => t.roundTwo).length
-      : teams.filter((t) => t.roundThree).length +
-        teams.filter((t) => t.roundFour).length;
+      ? teams.filter((t) => t.roundOne).length + teams.filter((t) => t.roundTwo).length
+      : teams.filter((t) => t.roundThree).length + teams.filter((t) => t.roundFour).length;
 
   return Math.round((rounds / (roundCount || 1)) * 10) / 10;
-}
+};
 
-function TournamentHistoryRow({
+// Pure helper: render tournament result
+const renderTournamentResult = (
+  team: Team | undefined,
+  tournament: Tournament,
+  isWinner: boolean,
+): JSX.Element | string => {
+  if (!team) {
+    if (new Date(tournament.endDate) > new Date()) return "-";
+    return "DNP";
+  }
+  if (team.position === "CUT") return "CUT";
+  return (
+    <>
+      {team.position}
+      <span className={cn("text-2xs", isWinner && "text-xs")}>
+        {team.position ? formatRank(+team.position.replace("T", "")).slice(-2) : ""}
+      </span>
+    </>
+  );
+};
+
+// Tournament history row (functional, stateless)
+const TournamentHistoryRow = ({
   tourneys,
   teams,
   className,
@@ -175,11 +81,9 @@ function TournamentHistoryRow({
   tourneys: Tournament[] | undefined;
   teams: Team[] | undefined;
   className?: string;
-}) {
-  // Get tiers for displaying tournament importance
+}) => {
   const { data: tiers } = api.tier.getAll.useQuery();
   if (!tourneys || !teams) {
-    // Replace the simple loading spinner with a proper skeleton UI
     return (
       <div
         className={cn(
@@ -192,10 +96,7 @@ function TournamentHistoryRow({
             key={i}
             className="flex h-full flex-col items-center justify-center border-r border-dotted border-gray-400"
           >
-            {/* Logo skeleton */}
             <div className="flex h-8 w-8 animate-pulse items-center justify-center rounded-full bg-slate-200 xs:h-10 xs:w-10 sm:h-12 sm:w-12 md:h-14 md:w-14" />
-
-            {/* Position skeleton */}
             <div className="h-4 w-6 animate-pulse rounded bg-slate-200" />
           </div>
         ))}
@@ -230,7 +131,6 @@ function TournamentHistoryRow({
             key={tournament.id}
           >
             <div className={cn("py-1")}>
-              {/* Tournament Logo */}
               <Link href={"/tournament/" + tournament.id}>
                 {!tournament.logoUrl ? (
                   <LoadingSpinner className="w-4" />
@@ -246,8 +146,6 @@ function TournamentHistoryRow({
                   </div>
                 )}
               </Link>
-
-              {/* Tournament Result */}
               <div
                 className={cn(
                   didNotPlay && "text-red-900",
@@ -264,33 +162,98 @@ function TournamentHistoryRow({
       })}
     </div>
   );
-}
+};
 
-function renderTournamentResult(
-  team: Team | undefined,
-  tournament: Tournament,
-  isWinner: boolean,
-): JSX.Element | string {
-  if (!team) {
-    if (new Date(tournament.endDate) > new Date()) {
-      return "-"; // Future tournament
-    }
-    return "DNP"; // Did not participate
-  }
+// Main functional component
+export function StandingsTourCardInfo({
+  tourCard,
+  member,
+}: {
+  tourCard: TourCard;
+  member: Member | null | undefined;
+}) {
+  const { data: allTournaments } = api.tournament.getAll.useQuery();
+  const { data: allTiers } = api.tier.getAll.useQuery();
+  const { data: allTeams } = api.team.getAll.useQuery();
 
-  if (team.position === "CUT") {
-    return "CUT"; // Cut from tournament
-  }
+  const filteredTourneys = getNonPlayoffTournaments(
+    allTournaments,
+    tourCard.seasonId,
+    allTiers,
+  );
+  const teams = getTeamsForTourCard(allTeams, tourCard.id);
 
-  // Player finished with a position
   return (
-    <>
-      {team.position}
-      <span className={cn("text-2xs", isWinner && "text-xs")}>
-        {team.position
-          ? formatRank(+team.position.replace("T", "")).slice(-2)
-          : ""}
-      </span>
-    </>
+    <div
+      className={cn(
+        "col-span-17 w-full border-b border-slate-300 px-2 pb-4 pt-2 font-normal",
+        member?.id === tourCard?.memberId &&
+          "bg-gradient-to-b from-slate-200 via-slate-100 to-slate-100",
+        member?.friends.includes(tourCard.memberId) &&
+          "bg-gradient-to-b from-slate-100 via-slate-50 to-slate-50",
+      )}
+    >
+      {/* Player Statistics Header */}
+      <div className="grid grid-flow-row grid-cols-5 pt-1.5 text-center">
+        {["Wins", "Top Tens", "Cuts Made", "Weekday Avg.", "Weekend Avg."].map((label) => (
+          <div
+            key={label}
+            className="place-self-center font-varela text-3xs font-bold 2xs:text-2xs sm:text-sm"
+          >
+            {label}
+          </div>
+        ))}
+      </div>
+
+      {/* Player Statistics Values */}
+      <div className="grid grid-flow-row grid-cols-5 pb-3 text-center">
+        <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
+          {tourCard.win}
+        </div>
+        <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
+          {tourCard.topTen}
+        </div>
+        <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
+          {tourCard.madeCut} / {tourCard.appearances}
+        </div>
+        <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
+          {!teams ? (
+            <div className="h-4 w-8 animate-pulse rounded bg-slate-300" />
+          ) : (
+            calculateAverageScore(teams, "weekday")
+          )}
+        </div>
+        <div className="place-self-center font-varela text-xs 2xs:text-sm sm:text-base md:text-lg">
+          {!teams ? (
+            <div className="h-4 w-8 animate-pulse rounded bg-slate-300" />
+          ) : (
+            calculateAverageScore(teams, "weekend")
+          )}
+        </div>
+      </div>
+
+      {/* Tournament History Section */}
+      {(filteredTourneys?.length ?? 0) > 10 ? (
+        <>
+          <TournamentHistoryRow
+            tourneys={filteredTourneys?.slice(
+              0,
+              Math.round(filteredTourneys.length / 2),
+            )}
+            teams={teams}
+            className="border-b"
+          />
+          <TournamentHistoryRow
+            tourneys={filteredTourneys?.slice(
+              Math.round(filteredTourneys.length / 2),
+              filteredTourneys.length,
+            )}
+            teams={teams}
+          />
+        </>
+      ) : (
+        <TournamentHistoryRow tourneys={filteredTourneys} teams={teams} />
+      )}
+    </div>
   );
 }

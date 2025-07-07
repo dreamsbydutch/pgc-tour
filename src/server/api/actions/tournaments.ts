@@ -8,12 +8,7 @@
 
 import { db } from "@/server/db";
 import { tournaments } from "@/lib/utils/domain/tournaments";
-import { getTournamentStatus } from "@/lib/utils/domain/golf";
-import type {
-  TournamentHookResult,
-  EnhancedTournamentHookResult,
-  MinimalTournament,
-} from "@/lib/types";
+import type { TournamentHookResult, MinimalTournament } from "@/lib/types";
 import type { Tournament } from "@prisma/client";
 
 /**
@@ -44,19 +39,24 @@ export async function getTournamentData(
       endDate: t.endDate,
       livePlay: t.livePlay,
       currentRound: t.currentRound,
-      seasonId: t.seasonId,
-      courseId: t.courseId,
-      tierId: t.tierId,
+      season: {
+        id: t.season.id,
+        year: t.season.year,
+      },
       course: {
         id: t.course.id,
         name: t.course.name,
         location: t.course.location,
         par: t.course.par,
+        front: t.course.front,
+        back: t.course.back,
         apiId: t.course.apiId,
       },
       tier: {
         id: t.tier.id,
         name: t.tier.name,
+        payouts: t.tier.payouts,
+        points: t.tier.points,
         seasonId: t.tier.seasonId,
       },
     }));
@@ -70,7 +70,10 @@ export async function getTournamentData(
 
     // Convert filtered results to MinimalTournament format
     const convertToMinimal = (
-      t: Tournament | null,
+      t: Omit<
+        Tournament,
+        "apiId" | "createdAt" | "updatedAt" | "seasonId" | "tierId" | "courseId"
+      > | null,
     ): MinimalTournament | null => {
       if (!t) return null;
       const fullTournament = allTournaments.find((ft) => ft.id === t.id);
@@ -84,25 +87,35 @@ export async function getTournamentData(
         endDate: fullTournament.endDate,
         livePlay: fullTournament.livePlay,
         currentRound: fullTournament.currentRound,
-        seasonId: fullTournament.seasonId,
-        courseId: fullTournament.courseId,
-        tierId: fullTournament.tierId,
+        season: {
+          id: fullTournament.season.id,
+          year: fullTournament.season.year,
+        },
         course: {
           id: fullTournament.course.id,
           name: fullTournament.course.name,
           location: fullTournament.course.location,
           par: fullTournament.course.par,
+          front: fullTournament.course.front,
+          back: fullTournament.course.back,
           apiId: fullTournament.course.apiId,
         },
         tier: {
           id: fullTournament.tier.id,
           name: fullTournament.tier.name,
+          points: fullTournament.tier.points,
+          payouts: fullTournament.tier.payouts,
           seasonId: fullTournament.tier.seasonId,
         },
       };
     };
 
-    const convertArrayToMinimal = (arr: Tournament[]): MinimalTournament[] => {
+    const convertArrayToMinimal = (
+      arr: Omit<
+        Tournament,
+        "apiId" | "createdAt" | "updatedAt" | "seasonId" | "tierId" | "courseId"
+      >[],
+    ): MinimalTournament[] => {
       return arr
         .map((t) => convertToMinimal(t))
         .filter(Boolean) as MinimalTournament[];
@@ -118,6 +131,9 @@ export async function getTournamentData(
       upcoming: convertArrayToMinimal(upcoming),
       completed: convertArrayToMinimal(completed),
       all: tournamentList,
+      currentSeason: tournamentList.filter(
+        (a) => a.season.year === new Date().getFullYear(),
+      ),
       season,
       isLoading: false,
       error: null,
@@ -131,6 +147,7 @@ export async function getTournamentData(
       upcoming: [],
       completed: [],
       all: [],
+      currentSeason: [],
       season: null,
       isLoading: false,
       error: error instanceof Error ? error.message : "Unknown error",

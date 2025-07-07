@@ -3,10 +3,10 @@
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
 import { ruleList } from "./rules";
-import { RuleCategoryType } from "@/lib/components/functionalComponents/RulebookComponents";
+import { RuleCategoryType } from "@/lib/components/functionalComponents/client/RulebookComponents";
 import { cn } from "@/lib/utils/core";
-import CurrentSchedule from "@/lib/components/smartComponents/CurrentScheduleClient";
-import { TierTableContainer } from "@/lib/components/smartComponents/TierTableContainerClient";
+import CurrentSchedule from "@/lib/components/smartComponents/client/CurrentScheduleClient";
+import { TierTableContainer } from "@/lib/components/smartComponents/client/TierTableContainerClient";
 
 /**
  * RulebookPage Component

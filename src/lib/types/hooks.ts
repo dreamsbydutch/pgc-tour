@@ -125,6 +125,7 @@ export interface TournamentHookResult {
   upcoming: MinimalTournament[];
   completed: MinimalTournament[];
   all: MinimalTournament[];
+  currentSeason: MinimalTournament[];
   season: any | null; // Season type from Prisma
   isLoading: boolean;
   error: string | null;

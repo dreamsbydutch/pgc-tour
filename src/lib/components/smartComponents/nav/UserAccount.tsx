@@ -21,7 +21,7 @@ import {
 import type { AuthUser } from "../../../supabase/auth-helpers";
 import { LogInIcon } from "lucide-react";
 import { Skeleton } from "../../functionalComponents/ui/skeleton";
-import LittleFucker from "../LittleFucker";
+import LittleFucker from "../client/LittleFucker";
 import { formatMoney, formatNumber } from "@/lib/utils/domain/formatting";
 import { usePushNotifications } from "@/lib/push";
 
@@ -111,7 +111,7 @@ function UserAccountNavMenu({
           />
           <AdminButton member={member} />
           <InstallAppButton />
-          <PushNotificationButton member={member} />
+          {/* <PushNotificationButton member={member} /> */}
           <SignOutButton setIsSigningOut={setIsSigningOut} />
         </DropdownMenuContent>
       </DropdownMenu>

@@ -7,6 +7,36 @@
  */
 
 import { api } from "@/trpc/server";
+import type { Tournament, Tour, TourCard, Golfer } from "@prisma/client";
+
+// --- Types for ChampionsPopup ---
+type ChampionData = Omit<
+  TourCard,
+  | "createdAt"
+  | "updatedAt"
+  | "earnings"
+  | "points"
+  | "win"
+  | "topTen"
+  | "madeCut"
+  | "appearances"
+  | "seasonId"
+  | "tourId"
+  | "memberId"
+  | "id"
+> & {
+  id: number;
+  name: string;
+  totalScore: number;
+  tour: Pick<Tour, "id" | "name" | "logoUrl">;
+  tourCard: Pick<TourCard, "id" | "displayName"> | null;
+  golfers: Array<Pick<Golfer, "id" | "playerName" | "score" | "position">>;
+};
+
+type TournamentData = Pick<
+  Tournament,
+  "id" | "name" | "startDate" | "endDate" | "logoUrl"
+>;
 
 /**
  * Get recent champions data
@@ -252,30 +282,29 @@ export async function getLatestChampions() {
     const allTours = await api.tour.getAll();
 
     // Enrich champion teams with tour and golfer data
-    const enrichedChamps = await Promise.all(
+    const enrichedChamps: ChampionData[] = await Promise.all(
       championTeams.map(async (team) => {
-        // Find the tour card and tour
         const tourCard = allTourCards.find((tc) => tc.id === team.tourCardId);
         const tour = allTours.find((t) => t.id === tourCard?.tourId);
-
-        // Get golfers for this team using the golferIds array
-        const teamGolfers =
+        const golfers =
           team.golferIds && team.golferIds.length > 0
             ? allGolfers
                 .filter((golfer) => team.golferIds.includes(golfer.apiId))
                 .map((golfer) => ({
                   id: golfer.id,
-                  name: golfer.playerName || "Unknown",
+                  playerName: golfer.playerName,
                   score: golfer.score || 0,
                   position: golfer.position || "N/A",
                 }))
             : [];
-
+        // Construct the result object explicitly to match ChampionData type
         return {
           id: team.id,
           name: team.tourCard?.displayName || "Unknown Team",
-          position: team.position,
           totalScore: team.score || 0,
+          position: team.position || "",
+          displayName: team.tourCard?.displayName || "Unknown Team",
+          playoff: 0,
           tour: tour
             ? {
                 id: tour.id,
@@ -292,11 +321,8 @@ export async function getLatestChampions() {
                 id: tourCard.id,
                 displayName: tourCard.displayName,
               }
-            : {
-                id: "",
-                displayName: "Unknown",
-              },
-          golfers: teamGolfers,
+            : null,
+          golfers,
         };
       }),
     );

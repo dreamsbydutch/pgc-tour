@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { Button } from "@/lib/components/functionalComponents/ui/button";
-import { Icons } from "../../../lib/components/functionalComponents/Icons";
+import { Icons } from "../../../lib/components/functionalComponents/client/Icons";
 import { signInWithGoogle } from "./actions";
 import Link from "next/link";
 import { useUser } from "@/lib/hooks/useUser";

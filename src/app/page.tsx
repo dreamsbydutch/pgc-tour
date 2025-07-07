@@ -1,9 +1,9 @@
 import Link from "next/link";
-import HomePageStandings from "@components/smartComponents/HomePageStandings";
-import HomePageLeaderboard from "@components/smartComponents/HomePageLeaderboard";
-import CurrentSchedule from "@/lib/components/smartComponents/CurrentSchedule";
-import CurrentChampions from "@/lib/components/smartComponents/CurrentChampions";
-import TournamentCountdownContainer from "@/lib/components/smartComponents/TournamentCountdownContainer";
+import HomePageStandings from "@/lib/components/smartComponents/server/HomePageStandings";
+import HomePageLeaderboard from "@/lib/components/smartComponents/server/HomePageLeaderboard";
+import CurrentSchedule from "@/lib/components/smartComponents/server/CurrentSchedule";
+import CurrentChampions from "@/lib/components/smartComponents/server/CurrentChampions";
+import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
 
 export default async function Home() {
   return (
