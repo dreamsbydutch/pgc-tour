@@ -45,7 +45,7 @@ export default async function HomePageLeaderboard() {
                 <HomePageList
                   tour={tourGroup.tour as Tour}
                   teams={tourTeams}
-                  seasonId={tournament.seasonId}
+                  seasonId={tournament.season.id}
                   self={self}
                 />
               ) : (

@@ -1,33 +1,27 @@
 "use server";
 
-import { getLeaderboardHeaderData } from "@/server/actions/leaderboard-header";
 import { LeaderboardHeader } from "../../functionalComponents/client/LeaderboardHeader";
+import { getTournamentData } from "@/server/api/actions";
 
 interface LeaderboardHeaderContainerProps {
   focusTourney: {
     id: string;
-    logoUrl: string | null;
-    name: string;
-    startDate: Date;
-    endDate: Date;
-    currentRound: number | null;
-    seasonId: string;
-    tierId: string;
   };
 }
 
 export default async function LeaderboardHeaderContainer({
   focusTourney,
 }: LeaderboardHeaderContainerProps) {
-  const { course, tier, groupedTournaments } =
-    await getLeaderboardHeaderData(focusTourney);
+  const { all } = await getTournamentData();
+  const outputTourney = all.find((t) => t.id === focusTourney.id);
+  const seasonTourneys = all.filter(
+    (t) => t.season.id === outputTourney?.season.id,
+  );
 
   return (
     <LeaderboardHeader
-      focusTourney={focusTourney}
-      course={course}
-      tier={tier}
-      groupedTournaments={groupedTournaments}
+      focusTourney={outputTourney!}
+      inputTournaments={seasonTourneys}
     />
   );
 }

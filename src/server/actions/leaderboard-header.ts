@@ -61,13 +61,13 @@ export async function getLeaderboardHeaderData(focusTourney: {
   startDate: Date;
   endDate: Date;
   currentRound: number | null;
-  seasonId: string;
-  tierId: string;
+  season: { id: string };
+  tier: { id: string };
 }): Promise<LeaderboardHeaderProps> {
   // Fetch tournaments, tiers, and courses in parallel
   const [tournaments, tiers, courses] = await Promise.all([
-    api.tournament.getBySeason({ seasonId: focusTourney.seasonId }),
-    api.tier.getBySeason({ seasonId: focusTourney.seasonId }),
+    api.tournament.getBySeason({ seasonId: focusTourney.season.id }),
+    api.tier.getBySeason({ seasonId: focusTourney.season.id }),
     api.course.getAll(),
   ]);
 
@@ -85,11 +85,11 @@ export async function getLeaderboardHeaderData(focusTourney: {
       }
     : undefined;
 
-  const tier = tiers.find((t) => t.id === focusTourney.tierId)
+  const tier = tiers.find((t) => t.id === focusTourney.tier.id)
     ? {
-        name: tiers.find((t) => t.id === focusTourney.tierId)!.name,
-        points: tiers.find((t) => t.id === focusTourney.tierId)!.points,
-        payouts: tiers.find((t) => t.id === focusTourney.tierId)!.payouts,
+        name: tiers.find((t) => t.id === focusTourney.tier.id)!.name,
+        points: tiers.find((t) => t.id === focusTourney.tier.id)!.points,
+        payouts: tiers.find((t) => t.id === focusTourney.tier.id)!.payouts,
       }
     : undefined;
 

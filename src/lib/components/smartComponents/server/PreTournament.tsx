@@ -61,7 +61,6 @@ export default async function PreTournamentPage({
       isTeamLoading={isTeamLoading}
       teamError={teamError as string | null}
       pickingTeam={false}
-      setPickingTeam={() => {}}
     />
   );
 }

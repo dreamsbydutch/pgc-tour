@@ -12,8 +12,13 @@ import { api } from "@/trpc/react";
 import { useSeasonalStore } from "../store/seasonalStore";
 import { validation } from "@/lib/utils";
 import { useMemo } from "react";
-import type { ChampionsResult, EnhancedChampionsResult } from "@/lib/types";
-import type { MinimalTour, MinimalTourCard, EnrichedTeam } from "@/lib/types";
+import type {
+  ChampionsResult,
+  EnhancedChampionsResult,
+  MinimalTour,
+  MinimalTourCard,
+  EnrichedTeam,
+} from "@/lib/types";
 
 /**
  * Returns recent tournament champions with configurable day limit
@@ -33,15 +38,13 @@ export function useRecentChampions(
       "endDate",
       "desc",
     );
-    return completed && completed.length > 0 ? completed[0] : null;
+    return completed?.[0] ?? null;
   }, [getTournaments]);
 
   // Validate timing - tournament must be within the specified day limit
   const validationResult = useMemo(() => {
-    if (!recentTournament) {
+    if (!recentTournament)
       return { isValid: false, error: "No recent tournaments" };
-    }
-
     return validation.validateTournamentWindow(recentTournament, daysLimit);
   }, [recentTournament, daysLimit]);
 
@@ -51,10 +54,18 @@ export function useRecentChampions(
     isLoading,
     error: apiError,
   } = api.team.getChampionsByTournament.useQuery(
-    { tournamentId: recentTournament!.id },
+    { tournamentId: recentTournament?.id ?? "" },
     { enabled: !!recentTournament && validationResult.isValid },
   );
 
+  // Helper to ensure tournament has required 'season' property for type compatibility
+  function withSeasonProp(t: any): MinimalTour | null {
+    if (!t) return null;
+    if ("season" in t) return t;
+    return { ...t, season: undefined } as MinimalTour;
+  }
+
+  // Memoize the result for performance
   return useMemo(() => {
     const now = new Date();
     const daysAgo = recentTournament
@@ -63,8 +74,6 @@ export function useRecentChampions(
             (1000 * 60 * 60 * 24),
         )
       : 0;
-
-    // Create enhanced timing information
     const timing = {
       daysLimit,
       daysAgo,
@@ -74,79 +83,47 @@ export function useRecentChampions(
         : null,
     };
 
-    // Validation failed case
+    // Helper to build the result object
+    const buildResult = (overrides: Partial<EnhancedChampionsResult>) => ({
+      tournament: withSeasonProp(recentTournament),
+      champs: [],
+      champions: [],
+      error: null,
+      isLoading: false,
+      timing,
+      stats: {
+        championCount: 0,
+        totalWinnings: undefined,
+        averageScore: undefined,
+      },
+      context: { previousChampions: undefined, seasonChampions: undefined },
+      meta: {
+        validationStatus: "valid" as const,
+        cacheStatus: "miss" as const,
+      },
+      ...overrides,
+    });
+
     if (!validationResult.isValid) {
-      return {
-        tournament: recentTournament || null,
-        champs: [], // For backward compatibility
-        champions: [],
+      return buildResult({
         error: validationResult.error || "Tournament validation failed",
-        isLoading: false,
-        timing,
-        stats: {
-          championCount: 0,
-          totalWinnings: undefined,
-          averageScore: undefined,
-        },
-        context: {
-          previousChampions: undefined,
-          seasonChampions: undefined,
-        },
         meta: {
           validationStatus: "expired" as const,
           cacheStatus: "miss" as const,
         },
-      };
+      });
     }
-
-    // Loading state
     if (isLoading) {
-      return {
-        tournament: recentTournament || null,
-        champs: [], // For backward compatibility
-        champions: [],
-        error: null,
-        isLoading: true,
-        timing,
-        stats: {
-          championCount: 0,
-          totalWinnings: undefined,
-          averageScore: undefined,
-        },
-        context: {
-          previousChampions: undefined,
-          seasonChampions: undefined,
-        },
-        meta: {
-          validationStatus: "valid" as const,
-          cacheStatus: "miss" as const,
-        },
-      };
+      return buildResult({ isLoading: true });
     }
-
-    // Error state
     if (apiError || !championTeams) {
-      return {
-        tournament: recentTournament || null,
-        champs: [], // For backward compatibility
-        champions: [],
+      return buildResult({
         error: apiError?.message || "Failed to load champions",
-        isLoading: false,
-        timing,
-        stats: {
-          championCount: 0,
-          totalWinnings: undefined,
-          averageScore: undefined,
-        },
-        context: {
-          previousChampions: undefined,
-          seasonChampions: undefined,
-        },
         meta: {
           validationStatus: "unavailable" as const,
           cacheStatus: "miss" as const,
         },
-      };
+      });
     }
 
     // Enrich champion teams using the same pattern as useLeaderboard
@@ -155,51 +132,37 @@ export function useRecentChampions(
       tours || [],
       tourCards || [],
     );
-
-    // Calculate champion statistics
     const championScores = enrichedChampions
       .map((team) => parseFloat(String(team.score || "0")))
       .filter((score) => !isNaN(score) && score > 0);
-
     const averageScore =
       championScores.length > 0
         ? championScores.reduce((a, b) => a + b, 0) / championScores.length
         : undefined;
-
     const totalWinnings = enrichedChampions.reduce(
       (total, team) => total + parseFloat(String(team.tourCard?.earnings || 0)),
       0,
     );
-
-    // Create enhanced statistics
-    const stats = {
-      championCount: enrichedChampions.length,
-      totalWinnings: totalWinnings > 0 ? totalWinnings : undefined,
-      averageScore,
-    };
-
-    // Create context (could be enhanced with historical data)
-    const context = {
-      previousChampions: undefined, // Could fetch previous tournament champions
-      seasonChampions: undefined, // Could fetch all season champions
-    };
-
-    // Create metadata
-    const meta = {
-      validationStatus: "valid" as const,
-      cacheStatus: "hit" as const,
-    };
-
     return {
-      tournament: recentTournament || null,
-      champs: enrichedChampions, // For backward compatibility
+      tournament: withSeasonProp(recentTournament),
+      champs: enrichedChampions,
       champions: enrichedChampions,
       error: null,
       isLoading: false,
       timing,
-      stats,
-      context,
-      meta,
+      stats: {
+        championCount: enrichedChampions.length,
+        totalWinnings: totalWinnings > 0 ? totalWinnings : undefined,
+        averageScore,
+      },
+      context: {
+        previousChampions: undefined,
+        seasonChampions: undefined,
+      },
+      meta: {
+        validationStatus: "valid" as const,
+        cacheStatus: "hit" as const,
+      },
     };
   }, [
     recentTournament,
@@ -215,34 +178,21 @@ export function useRecentChampions(
 
 // ============================================================================
 // TEMPORARY TEAM PROCESSING UTILITIES
-// Reuses the same enrichment logic as useLeaderboard for consistency
 // ============================================================================
 
-/**
- * Enriches teams with tour and tourCard data, filtering out incomplete entries
- * This mirrors the existing logic to maintain compatibility
- */
 function enrichTeamsWithTourData(
   teams: any[],
   tours: MinimalTour[],
   tourCards: MinimalTourCard[],
 ): EnrichedTeam[] {
-  if (!teams || teams.length === 0) return [];
-
+  if (!teams?.length) return [];
   return teams
     .map((team) => {
-      // Find associated tour card and tour
       const tourCard = tourCards.find((card) => card.id === team.tourCardId);
       if (!tourCard) return null;
-
       const tour = tours.find((t) => t.id === tourCard.tourId);
       if (!tour) return null;
-
-      return {
-        ...team,
-        tour,
-        tourCard,
-      } as EnrichedTeam;
+      return { ...team, tour, tourCard } as EnrichedTeam;
     })
     .filter((team): team is EnrichedTeam => team !== null);
 }

@@ -83,7 +83,6 @@ export default function PreTournamentPageRender(props: PreTournamentPageProps) {
           member={member}
           existingTeam={existingTeam}
           teamGolfers={teamGolfers}
-          setPickingTeam={setPickingTeam}
         />
       )}
     </div>
@@ -132,7 +131,6 @@ const TeamPickForm = memo(function TeamPickForm({
   member,
   existingTeam,
   teamGolfers,
-  setPickingTeam,
 }: {
   member?: Pick<Member, "firstname" | "lastname" | "account"> | null;
   tourCard?: Pick<TourCard, "points" | "earnings" | "position"> | null;
@@ -140,7 +138,6 @@ const TeamPickForm = memo(function TeamPickForm({
   teamGolfers:
     | Pick<Golfer, "id" | "playerName" | "worldRank" | "rating" | "group">[]
     | undefined;
-  setPickingTeam: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [isOpeningForm, setIsOpeningForm] = useState(false);
 
@@ -175,7 +172,6 @@ const TeamPickForm = memo(function TeamPickForm({
         key={existingTeam?.id}
         onClick={() => {
           setIsOpeningForm(true);
-          setPickingTeam(true);
         }}
         disabled={(member?.account ?? 0) > 0}
         variant={"action"}
