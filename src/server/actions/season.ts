@@ -1,6 +1,6 @@
 "use server";
 
-import { Season } from "@prisma/client";
+import type { Season } from "@prisma/client";
 import { db } from "../db";
 
 /**

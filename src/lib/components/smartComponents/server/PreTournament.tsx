@@ -16,11 +16,13 @@ export default async function PreTournamentPage({
   // Fetch member (user) from headers (server-side)
   const member = await getMemberFromHeaders();
   const tourCard = await getCurrentTourCard();
-  // Fetch all team/golfer/tourCard data for this tournament and member
-  const team = await getTournamentTeamData({
-    tournamentId: tournament.id,
-    tourCardId: tourCard?.id!,
-  });
+  // Only fetch team if tourCard exists
+  const team = tourCard
+    ? await getTournamentTeamData({
+        tournamentId: tournament.id,
+        tourCardId: tourCard.id,
+      })
+    : null;
 
   // No need for pickingTeam/setPickingTeam in server component; pass as false and a no-op
   return (
@@ -31,7 +33,7 @@ export default async function PreTournamentPage({
         member={member}
         tourCard={tourCard}
         existingTeam={team}
-        teamGolfers={team.golfers}
+        teamGolfers={team ? team.golfers : []}
       />
     </>
   );

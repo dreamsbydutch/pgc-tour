@@ -1,6 +1,6 @@
 "use client";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import { createClient } from "../supabase/client";
 import type { Member } from "@prisma/client";
 

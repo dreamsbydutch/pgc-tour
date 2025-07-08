@@ -4,7 +4,7 @@ import { getGolfersByTournament } from "@/server/actions/golfers";
 import { getTeamByTournamentAndUser } from "@/server/actions/team";
 import { getCurrentTourCard } from "@/server/actions/tourCard";
 import { getNextTournament } from "@/server/actions/tournament";
-import { Golfer, Team } from "@prisma/client";
+import type { Golfer, Team } from "@prisma/client";
 
 // (should match your explicit form field types)
 type GolferFormFields = Pick<
@@ -45,12 +45,22 @@ export default async function CreateTeamPage({
 }) {
   const tourCard = await getCurrentTourCard();
   const tournament = await getNextTournament();
+
+  // Ensure both tourCard and tournament are defined before proceeding
+  if (!tourCard || !tournament) {
+    return (
+      <div className="text-red-500">
+        Tournament or Tour Card not found.
+      </div>
+    );
+  }
+
   const existingTeam = await getTeamByTournamentAndUser(
-    tournament?.id!,
-    tourCard?.id!,
+    tournament.id,
+    tourCard.id,
   );
 
-  if (tournament?.id !== params.tournamentId) {
+  if (tournament.id !== params.tournamentId) {
     return (
       <div className="text-red-500">
         Tournament not found - {params.tournamentId}

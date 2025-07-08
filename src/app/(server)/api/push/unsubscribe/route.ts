@@ -1,12 +1,21 @@
 // API route for unsubscribing from push notifications
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
+
+type Subscription = {
+  endpoint: string;
+};
+
+type RequestBody = {
+  subscription: Subscription;
+};
 
 export async function POST(request: NextRequest) {
   try {
-    const { subscription } = await request.json();
+    const body = (await request.json()) as Partial<RequestBody>;
+    const { subscription } = body;
 
-    if (!subscription?.endpoint) {
+    if (!subscription || typeof subscription.endpoint !== "string") {
       return NextResponse.json(
         { error: "Subscription endpoint required" },
         { status: 400 },

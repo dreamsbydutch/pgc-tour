@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import NavBar from "@components/smartComponents/nav/NavBar";
 
 export function NavigationProvider({ children }: { children: ReactNode }) {

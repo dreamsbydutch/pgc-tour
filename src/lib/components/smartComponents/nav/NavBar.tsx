@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ArchiveIcon, BookText, Home, List, Trophy } from "lucide-react";
+import { BookText, Home, List, Trophy } from "lucide-react";
 import { UserAccountNav } from "./UserAccount";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

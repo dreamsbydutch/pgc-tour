@@ -3,7 +3,6 @@
 import { Button } from "@/lib/components/functionalComponents/ui/button";
 import Image from "next/image";
 import type { Tour, TourCard } from "@prisma/client";
-import { deleteTourCard } from "@server/api/actions/tour_card";
 import { useState, useCallback } from "react";
 import {
   Dialog,
@@ -16,6 +15,7 @@ import {
 } from "@/lib/components/functionalComponents/ui/dialog";
 import { api } from "@trpcLocal/react";
 import LoadingSpinner from "@components/functionalComponents/loading/LoadingSpinner";
+import { deleteTourCard } from "@/server/actions/tourCard";
 
 export function TourCardOutput({
   name,
@@ -78,10 +78,15 @@ const TourCardChangeButton = ({
   const handleDelete = useCallback(async () => {
     setIsLoading(true);
     setConfirmEffect(true);
-    await utils.tour.invalidate();
-    await deleteTourCard({ tourCard });
-    setIsModalOpen(false);
-    setIsLoading(false);
+    try {
+      await utils.tour.invalidate();
+      await deleteTourCard({ tourCard });
+    } catch (error) {
+      console.error("Error deleting tour card:", error);
+    } finally {
+      setIsModalOpen(false);
+      setIsLoading(false);
+    }
   }, [tourCard, utils]);
 
   const handleButtonClick = useCallback(() => {

@@ -6,7 +6,7 @@ import { Button } from "@/lib/components/functionalComponents/ui/button";
 import { Icons } from "../../../lib/components/functionalComponents/client/Icons";
 import { signInWithGoogle } from "./actions";
 import Link from "next/link";
-import { useUser } from "@/lib/hooks/useUser";
+import { useUser } from "@/lib/hooks/hooks";
 
 export default function SignInPage() {
   const { user, isLoading } = useUser();

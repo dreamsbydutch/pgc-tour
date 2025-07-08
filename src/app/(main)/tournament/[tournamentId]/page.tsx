@@ -10,9 +10,10 @@ export default async function TournamentPage({
   params: { tournamentId: string };
 }) {
   const currentSeason = await getCurrentSeason();
-  const { season: allTournaments } = await getTournamentInfo(
-    currentSeason?.id!,
-  );
+  if (!currentSeason) {
+    redirect("/tournament");
+  }
+  const { season: allTournaments } = await getTournamentInfo(currentSeason.id);
   const focusTourney = allTournaments.find((t) => t.id === params.tournamentId);
   if (!focusTourney) {
     redirect("/tournament");

@@ -15,14 +15,14 @@ export default function LittleFucker({
   memberId,
   seasonId,
 }: LittleFuckerProps) {
-  if (!memberId) return null;
-
+  
   const { championTrophies, isLoading, showSeasonText, isLargeSize } =
-    useChampionTrophies({
-      memberId,
-      seasonId,
-    });
-
+  useChampionTrophies({
+    memberId,
+    seasonId,
+  });
+  
+  if (!memberId) return null;
   if (isLoading || !isNonEmptyArray(championTrophies)) return null;
 
   return (

@@ -1,4 +1,4 @@
-import { Course, Tier, Tournament } from "@prisma/client";
+import type { Course, Tier, Tournament } from "@prisma/client";
 import Image from "next/image";
 import { capitalize, cn, getTournamentTimeline } from "@/lib/utils/main";
 import {

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Golfer, TourCard, Tournament } from "@prisma/client";
+import type { Golfer, TourCard, Tournament } from "@prisma/client";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
@@ -247,11 +247,4 @@ function ErrorMessage({ message }: { message: string }) {
     </div>
   );
 }
-function LoadingState({ message }: { message: string }) {
-  return (
-    <div className="flex min-h-[50vh] flex-col items-center justify-center">
-      <LoadingSpinner />
-      <p className="mt-4 text-gray-600">{message}</p>
-    </div>
-  );
-}
+

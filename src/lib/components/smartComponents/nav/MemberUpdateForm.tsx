@@ -7,7 +7,7 @@ import { z } from "zod";
 import { FieldInfo } from "../../functionalComponents/ui/FieldInfo";
 import { Button } from "../../functionalComponents/ui/button";
 import { useRouter } from "next/navigation";
-import { Member } from "@prisma/client";
+import type { Member } from "@prisma/client";
 import { useSeasonalStore } from "@store/seasonalStore";
 import { api } from "@/trpc/react";
 import { getErrorMessage } from "@/lib/utils/main";

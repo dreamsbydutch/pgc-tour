@@ -45,7 +45,7 @@ export function TournamentCountdown({
 
     // Cleanup the interval on component unmount
     return () => clearInterval(timer);
-  }, [isClient, tourney.startDate]);
+  }, [isClient, tourney.startDate, timeLeft]);
 
   if (!isClient) {
     return <TournamentCountdownSkeleton />;
@@ -68,8 +68,8 @@ export function TournamentCountdown({
             />
           </div>
           <div className="font-varela text-2xl font-bold sm:text-3xl md:text-4xl">
-            {twoDigits(timeLeft.days)}:{twoDigits(timeLeft.hours)}:
-            {twoDigits(timeLeft.minutes)}:{twoDigits(timeLeft.seconds)}
+            {twoDigits(timeLeft?.days??0)}:{twoDigits(timeLeft?.hours??0)}:
+            {twoDigits(timeLeft?.minutes??0)}:{twoDigits(timeLeft?.seconds??0)}
             <div className="text-2xs md:text-xs">Days : Hrs : Mins : Secs</div>
           </div>
         </div>

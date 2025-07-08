@@ -5,7 +5,6 @@ import type { Tournament, TourCard, Tour, Golfer, Team } from "@prisma/client";
 import {
   capitalize,
   formatScore,
-  getPath,
   hasItems,
   isNonEmptyString,
 } from "@/lib/utils/main";

@@ -77,7 +77,7 @@ export async function getLeaderboardHeaderData(focusTourney: {
   tier: { id: string };
 }): Promise<LeaderboardHeaderProps> {
   // Fetch tournaments, tiers, and courses in parallel
-  const [tournaments, tiers, courses] = await Promise.all([
+  const [tournaments, tiers] = await Promise.all([
     api.tournament.getBySeason({ seasonId: focusTourney.season.id }),
     api.tier.getBySeason({ seasonId: focusTourney.season.id }),
     api.course.getAll(),

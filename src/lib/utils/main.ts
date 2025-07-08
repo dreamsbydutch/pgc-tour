@@ -85,9 +85,9 @@ export function sortMultiple<T>(
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       if (key === undefined) continue;
-      const dir = directions[i] || "asc";
-      const aVal = a[key as keyof T];
-      const bVal = b[key as keyof T];
+      const dir = directions[i] ?? "asc";
+      const aVal = a[key];
+      const bVal = b[key];
       if (aVal == null || bVal == null) continue;
       if (aVal < bVal) return dir === "asc" ? -1 : 1;
       if (aVal > bVal) return dir === "asc" ? 1 : -1;
@@ -96,26 +96,28 @@ export function sortMultiple<T>(
   });
 }
 
-/**
- * Generic filter function that applies multiple filter criteria
- * @param items - Items to filter
- * @param filters - Filter criteria object
- * @returns Filtered array
- * @example
- * filterItems([{status: 'active', type: 'A'}], {status: 'active'})
- */
-export function filterItems<T>(items: T[], filters: Record<string, any>): T[] {
+export function filterItems<T>(items: T[], filters: Record<string, unknown>): T[] {
   return items.filter((item) =>
     Object.entries(filters).every(([key, value]) => {
       if (value == null) return true;
-      const itemValue = (item as any)[key];
+      const itemValue = (item as Record<string, unknown>)[key];
       if (Array.isArray(value)) return value.includes(itemValue);
       if (typeof value === "object" && value !== null) {
-        if ("min" in value && itemValue < value.min) return false;
-        if ("max" in value && itemValue > value.max) return false;
+        if (
+          "min" in value &&
+          typeof itemValue === "number" &&
+          itemValue < (value as { min: number }).min
+        )
+          return false;
+        if (
+          "max" in value &&
+          typeof itemValue === "number" &&
+          itemValue > (value as { max: number }).max
+        )
+          return false;
         if ("start" in value && "end" in value) {
-          const d = new Date(itemValue);
-          return d >= value.start && d <= value.end;
+          const d = new Date(itemValue as string | number | Date);
+          return d >= (value as { start: Date }).start && d <= (value as { end: Date }).end;
         }
       }
       if (typeof value === "boolean") return Boolean(itemValue) === value;
@@ -124,15 +126,6 @@ export function filterItems<T>(items: T[], filters: Record<string, any>): T[] {
   );
 }
 
-/**
- * Generic search function with support for nested fields
- * @param items - Items to search
- * @param query - Search query
- * @param searchFields - Fields to search in
- * @returns Filtered array matching search query
- * @example
- * searchItems([{name: 'John', course: {name: 'Pine Valley'}}], 'pine', ['name', 'course.name'])
- */
 export function searchItems<T>(
   items: T[],
   query: string,
@@ -142,12 +135,19 @@ export function searchItems<T>(
   const lowerQuery = query.toLowerCase();
   return items.filter((item) =>
     searchFields.some((field) => {
-      let value: any = item;
+      let value: unknown = item;
       for (const key of String(field).split(".")) {
-        value = value?.[key];
+        value = (value as Record<string, unknown>)[key];
         if (value == null) break;
       }
-      return value && String(value).toLowerCase().includes(lowerQuery);
+      if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+      ) {
+        return String(value).toLowerCase().includes(lowerQuery);
+      }
+      return false;
     }),
   );
 }
@@ -276,22 +276,6 @@ export function isOneOf<T extends readonly unknown[]>(
   options: T,
 ): value is T[number] {
   return options.includes(value);
-}
-
-/**
- * Assertion function that throws if value is never
- * Useful for exhaustive type checking
- * @param value - Value that should never be reached
- * @throws Error if called
- * @example
- * switch (status) {
- *   case "pending": return handlePending();
- *   case "complete": return handleComplete();
- *   default: assertNever(status); // TypeScript error if new status added
- * }
- */
-export function assertNever(value: never): never {
-  throw new Error(`Unexpected value: ${value}`);
 }
 
 /**
@@ -424,7 +408,7 @@ export function isValidTournamentStatus(
  */
 export function formatNumber(
   n: number | string | null | undefined,
-  maxFractionDigits: number = 1,
+  maxFractionDigits = 1,
 ): string {
   if (n == null || n === "") return "-";
   const num = typeof n === "string" ? parseFloat(n) : n;
@@ -507,7 +491,7 @@ export function formatRank(number: number | string | null | undefined): string {
   if (num <= 0) return "0th";
   if (num >= 11 && num <= 13) return num + "th";
   const lastDigit = num % 10;
-  return num + (["th", "st", "nd", "rd"][lastDigit] || "th");
+  return num + (["th", "st", "nd", "rd"][lastDigit] ?? "th");
 }
 
 /**
@@ -551,7 +535,7 @@ export function formatDate(
 export function formatName(name: string, type: "display" | "full"): string {
   if (typeof name !== "string" || !name.trim()) return "";
   const [firstNameRaw, ...rest] = name.trim().split(/\s+/);
-  const firstName = firstNameRaw || "";
+  const firstName = firstNameRaw ?? "";
   const lastName = rest.join(" ");
   const cap = (s: string) =>
     s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
@@ -625,8 +609,8 @@ const DATAGOLF_API_KEY = process.env.NEXT_PUBLIC_DATAGOLF_API_KEY;
  */
 export async function fetchDataGolf(
   endpoint: string,
-  params: Record<string, any> = {},
-): Promise<any> {
+  params: Record<string, string | number | boolean | undefined> = {},
+): Promise<unknown> {
   if (!DATAGOLF_API_KEY) {
     throw new Error("Missing DataGolf API key (NEXT_PUBLIC_DATAGOLF_API_KEY)");
   }
@@ -700,11 +684,11 @@ export function capitalize(str: string): string {
  * getPath({ a: { b: { c: 42 } } }, 'a.b.c') // 42
  * getPath({ a: { b: 1 } }, 'a.b.c') // undefined
  */
-export function getPath<T = any, R = any>(obj: T, path: string): R | undefined {
+export function getPath<T = unknown, R = unknown>(obj: T, path: string): R | undefined {
   if (!obj || typeof path !== "string" || !path) return undefined;
   return path
     .split(".")
-    .reduce<any>((acc, key) => (acc && key in acc ? acc[key] : undefined), obj);
+    .reduce<unknown>((acc, key) => (acc && key in (acc as object) ? (acc as Record<string, unknown>)[key] : undefined), obj) as R | undefined;
 }
 
 /**
@@ -791,13 +775,13 @@ export function getErrorMessage(error: unknown): string {
     typeof error === "object" &&
     error &&
     "message" in error &&
-    typeof (error as any).message === "string"
+    typeof (error as { message: unknown }).message === "string"
   ) {
-    return (error as any).message;
+    return (error as { message: string }).message;
   }
   try {
-    return JSON.stringify(error);
+    return JSON.stringify(error, Object.getOwnPropertyNames(error));
   } catch {
-    return String(error);
+    return "Unserializable error";
   }
 }

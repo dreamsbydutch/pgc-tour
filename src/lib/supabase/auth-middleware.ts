@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function authGuard(request: NextRequest) {
-  let response = NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: request.headers,
     },
@@ -41,9 +41,9 @@ export async function authGuard(request: NextRequest) {
   // If user exists, set basic user data in headers
   if (user) {
     // Set basic user data in headers for downstream server components
-    response.headers.set("x-user-id", user.id);
-    response.headers.set("x-user-email", user.email!);
-    response.headers.set("x-user-avatar", user.user_metadata?.avatar_url ?? "");
+    response.headers.set("x-user-id", String(user.id));
+    response.headers.set("x-user-email", String(user.email ?? ""));
+    response.headers.set("x-user-avatar", String(user.user_metadata?.avatar_url ?? ""));
 
     // Admin access check (using email directly from Supabase)
     if (

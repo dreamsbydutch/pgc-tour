@@ -89,7 +89,7 @@ export async function getTournamentInfo(seasonId: string) {
 }
 
 // Helper to ensure startDate and endDate are Date objects
-function normalizeTournamentDates<T extends { startDate: any; endDate: any }>(
+function normalizeTournamentDates<T extends { startDate: string | number | Date; endDate: string | number | Date }>(
   tournament: T | null,
 ): T | null {
   if (!tournament) return null;
@@ -106,8 +106,8 @@ function normalizeTournamentDates<T extends { startDate: any; endDate: any }>(
   };
 }
 
-function normalizeTournamentArray<T extends { startDate: any; endDate: any }>(
+function normalizeTournamentArray<T extends { startDate: string | number | Date; endDate: string | number | Date }>(
   tournaments: T[],
 ): T[] {
-  return tournaments.map((t) => normalizeTournamentDates(t) as T);
+  return tournaments.map((t) => normalizeTournamentDates(t)!);
 }

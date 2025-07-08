@@ -1,7 +1,7 @@
 import { getErrorMessage } from "@/lib/utils/main";
 
 export function TierTableError({ error }: { error?: unknown }) {
-  let message = getErrorMessage(error);
+  const message = getErrorMessage(error);
 
   return (
     <div className="flex flex-col items-center py-6">

@@ -1,7 +1,7 @@
 // "use server";
 
 import { api } from "@/trpc/server";
-import { Team, TourCard, Tournament } from "@prisma/client";
+import type { Team, TourCard, Tournament } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -92,42 +92,44 @@ async function updateTourCards({
   tourCards: TourCard[];
   allTeams: (Team & { tournament: Tournament })[];
 }) {
-  const updatedTourCards = tourCards.map(async (card) => {
-    const teams = allTeams.filter((team) => team.tourCardId === card.id);
-    const earnings = teams.reduce((sum, team) => sum + (team.earnings ?? 0), 0);
-    const points = teams.reduce((sum, team) => sum + (team.points ?? 0), 0);
-    const win = teams.filter(
-      (team) =>
-        (team.position && team.position[0] === "T"
-          ? +(team.position?.replace("T", "") ?? 100)
-          : +(team.position ?? 100)) === 1,
-    ).length;
-    const appearances = teams.length;
-    const topTen = teams.filter(
-      (team) =>
-        (team.position && team.position[0] === "T"
-          ? +(team.position?.replace("T", "") ?? 100)
-          : +(team.position ?? 100)) <= 10,
-    ).length;
-    const madeCut = teams.filter((team) => team.position !== "CUT").length;
-    const ties = tourCards.filter((obj) => obj.points === card.points).length;
-    const pos =
-      tourCards.filter(
-        (obj) => (obj.points ?? 0) > points && obj.tourId === card.tourId,
-      ).length + 1;
-    const position = (ties > 1 ? "T" : "") + pos;
-    await api.tourCard.update({
-      id: card.id,
-      appearances,
-      earnings,
-      points,
-      win,
-      topTen,
-      position,
-      madeCut,
-    });
-    return card;
-  });
+  await Promise.all(
+    tourCards.map(async (card) => {
+      const teams = allTeams.filter((team) => team.tourCardId === card.id);
+      const earnings = teams.reduce((sum, team) => sum + (team.earnings ?? 0), 0);
+      const points = teams.reduce((sum, team) => sum + (team.points ?? 0), 0);
+      const win = teams.filter(
+        (team) =>
+          (team.position && team.position.startsWith("T")
+            ? +(team.position?.replace("T", "") ?? 100)
+            : +(team.position ?? 100)) === 1,
+      ).length;
+      const appearances = teams.length;
+      const topTen = teams.filter(
+        (team) =>
+          (team.position && team.position.startsWith("T")
+            ? +(team.position?.replace("T", "") ?? 100)
+            : +(team.position ?? 100)) <= 10,
+      ).length;
+      const madeCut = teams.filter((team) => team.position !== "CUT").length;
+      const ties = tourCards.filter((obj) => obj.points === card.points).length;
+      const pos =
+        tourCards.filter(
+          (obj) => (obj.points ?? 0) > points && obj.tourId === card.tourId,
+        ).length + 1;
+      const position = (ties > 1 ? "T" : "") + pos;
+      await api.tourCard.update({
+        id: card.id,
+        appearances,
+        earnings,
+        points,
+        win,
+        topTen,
+        position,
+        madeCut,
+      });
+      return card;
+    }),
+  );
   return;
 }
 

@@ -10,7 +10,7 @@ import {
 import Image from "next/image";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
-import { Member, TourCard } from "@prisma/client";
+import type { Member, TourCard } from "@prisma/client";
 import MemberUpdateForm from "./MemberUpdateForm";
 import { Button } from "../../functionalComponents/ui/button";
 import { usePWAInstall } from "../../../hooks/usePWAInstall";
@@ -22,14 +22,13 @@ import type { AuthUser } from "../../../supabase/auth-helpers";
 import { LogInIcon } from "lucide-react";
 import { Skeleton } from "../../functionalComponents/ui/skeleton";
 import LittleFucker from "../client/LittleFucker";
-import { usePushNotifications } from "@/lib/push";
 import { formatMoney, formatNumber } from "@/lib/utils/main";
 
 // Move handleSignIn outside component to prevent recreation
 const handleSignInAction = (
   setIsGoogleLoading: Dispatch<SetStateAction<boolean>>,
 ) => {
-  signInWithGoogle({ setIsGoogleLoading });
+  void signInWithGoogle({ setIsGoogleLoading });
 };
 
 /**
@@ -213,27 +212,27 @@ function InstallAppButton() {
     </>
   );
 }
-function PushNotificationButton({ member }: { member: Member }) {
-  const { isPushSubscribed, handleToggle } = usePushNotifications(member.id);
+// function PushNotificationButton({ member }: { member: Member }) {
+//   const { isPushSubscribed, handleToggle } = usePushNotifications(member.id);
 
-  return (
-    <>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleToggle}
-          className="w-full"
-        >
-          {isPushSubscribed
-            ? "🔕 Disable Notifications"
-            : "🔔 Enable Notifications"}
-        </Button>
-      </DropdownMenuItem>
-    </>
-  );
-}
+//   return (
+//     <>
+//       <DropdownMenuSeparator />
+//       <DropdownMenuItem>
+//         <Button
+//           variant="secondary"
+//           size="sm"
+//           onClick={handleToggle}
+//           className="w-full"
+//         >
+//           {isPushSubscribed
+//             ? "🔕 Disable Notifications"
+//             : "🔔 Enable Notifications"}
+//         </Button>
+//       </DropdownMenuItem>
+//     </>
+//   );
+// }
 function SignInButton({
   isLoading,
   onClick,

@@ -103,6 +103,10 @@ export function LoadSeasonalData() {
     memberQuery.error,
     tourCardQuery.error,
     storeDataQuery.error,
+    seasonQuery.isError,
+    memberQuery.isError,
+    tourCardQuery.isError,
+    storeDataQuery.isError,
   ]);
 
   // Log data age in development

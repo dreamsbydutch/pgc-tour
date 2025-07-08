@@ -13,21 +13,17 @@ import { useCurrentStandings } from "@/lib/hooks/hooks";
 export default function Page() {
   const searchParams = useSearchParams();
   const {
-    teams,
     tours,
     tiers,
     tourCards,
     currentTourCard,
-    currentMember,
-    tournaments,
-    seasonId,
     isLoading,
     error,
   } = useCurrentStandings();
 
   // Get default tour from search params if present
   const defaultTourId =
-    searchParams.get("tour") || currentTourCard?.tourId || "";
+    searchParams.get("tour") ?? currentTourCard?.tourId ?? "";
   const [standingsToggle, setStandingsToggle] = useState<string>(defaultTourId);
 
   // Update activeTour when toggle changes
@@ -239,7 +235,7 @@ function PlayoffStandings({
 /**
  * Returns all tour cards for a given tour with position <= 15 (including ties at 15).
  */
-export function getGoldCutCards(
+function getGoldCutCards(
   tour: Tour & { tourCards?: TourCard[] },
 ): (TourCard & { points?: number; position?: string | number })[] {
   const cards = getTourCardsForTour(tour);
@@ -249,7 +245,7 @@ export function getGoldCutCards(
 /**
  * Returns all tour cards for a given tour with 16 <= position <= 35 (including ties).
  */
-export function getSilverCutCards(
+function getSilverCutCards(
   tour: Tour & { tourCards?: TourCard[] },
 ): (TourCard & { points?: number; position?: string | number })[] {
   const cards = getTourCardsForTour(tour);
@@ -262,7 +258,7 @@ export function getSilverCutCards(
 /**
  * Returns all tour cards for a given tour with position > 35.
  */
-export function getRemainingCards(
+function getRemainingCards(
   tour: Tour & { tourCards?: TourCard[] },
 ): (TourCard & { points?: number; position?: string | number })[] {
   const cards = getTourCardsForTour(tour);
@@ -283,8 +279,17 @@ function getTourCardsForTour(
       points?: number;
       position?: string | number;
     })[];
-  } else if (typeof window !== "undefined" && (window as any).allTourCards) {
-    cards = ((window as any).allTourCards as TourCard[]).filter(
+  } else if (
+    typeof window !== "undefined" &&
+    (window as Window & { allTourCards?: TourCard[] }).allTourCards
+  ) {
+    cards = ((window as Window & { allTourCards?: TourCard[] }).allTourCards ?? []).map(a => {
+      return {
+        ...a,
+        points: a.points ?? 0,
+        position: a.position ?? undefined,
+      } as TourCard & { points?: number; position?: string | number };
+    }).filter(
       (tc) => tc.tourId === tour.id,
     );
   }
@@ -298,7 +303,7 @@ function getTourCardsForTour(
 function parsePosition(pos: string | number | undefined | null): number {
   if (typeof pos === "number") return pos;
   if (typeof pos === "string") {
-    const match = pos.match(/\d+/);
+    const match = /\d+/.exec(pos);
     if (match) return parseInt(match[0], 10);
   }
   return Infinity;

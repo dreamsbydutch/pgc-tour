@@ -38,7 +38,7 @@ export function usePushNotifications(
       }
     };
 
-    checkPushNotifications();
+    void checkPushNotifications();
   }, []);
 
   const handleToggle = async () => {

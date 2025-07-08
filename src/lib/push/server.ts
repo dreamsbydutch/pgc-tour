@@ -7,7 +7,6 @@
 
 import type {
   TournamentNotification,
-  TournamentNotificationType,
 } from "./types";
 
 /**

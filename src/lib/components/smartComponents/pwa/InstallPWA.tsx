@@ -2,8 +2,14 @@
 
 import { useState, useEffect } from "react";
 
+// Type for the beforeinstallprompt event
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+}
+
 export function useInstallPWA() {
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
@@ -11,7 +17,7 @@ export function useInstallPWA() {
     // Check if app is already installed
     const isAppInstalled =
       window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as any).standalone === true;
+      (window.navigator as { standalone?: boolean }).standalone === true;
     setIsInstalled(isAppInstalled);
 
     // Listen for install prompt
@@ -19,7 +25,7 @@ export function useInstallPWA() {
       // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault();
       // Store the event so it can be triggered later
-      setInstallPrompt(e);
+      setInstallPrompt(e as BeforeInstallPromptEvent);
       setIsInstallable(true);
     };
 
@@ -48,7 +54,7 @@ export function useInstallPWA() {
 
     try {
       // Show the install prompt
-      installPrompt.prompt();
+      await installPrompt.prompt();
       // Wait for the user to respond to the prompt
       const result = await installPrompt.userChoice;
 

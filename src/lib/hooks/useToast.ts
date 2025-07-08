@@ -14,7 +14,7 @@
  */
 
 import { useEffect, useState } from "react";
-import {
+import type {
   ToastActionElement,
   ToastProps,
 } from "../components/functionalComponents/ui/toast";

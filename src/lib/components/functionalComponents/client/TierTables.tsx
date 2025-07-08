@@ -20,7 +20,7 @@ export function PayoutsTable({ tiers }: { tiers: MinimalTier[] }) {
   );
   // Add Silver tier using Playoff payouts sliced at 75
   const playoffTier = sortedTiers.find((tier) => tier.name === "Playoff");
-  let tiersWithSilver = [...sortedTiers];
+  const tiersWithSilver = [...sortedTiers];
   if (playoffTier && playoffTier?.payouts.length > 75) {
     const silverTier = {
       ...playoffTier,

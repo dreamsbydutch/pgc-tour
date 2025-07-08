@@ -48,7 +48,7 @@ export async function getRecentChampions(): Promise<RecentChampionsResult> {
 
   // Get all golfers for all golferIds in champion teams (number[])
   const allGolferApiIds = Array.from(
-    new Set(teams.flatMap((t) => t.golferIds as number[])),
+    new Set(teams.flatMap((t) => t.golferIds)),
   );
   const golfers = allGolferApiIds.length
     ? await db.golfer.findMany({ where: { apiId: { in: allGolferApiIds } } })
@@ -63,7 +63,7 @@ export async function getRecentChampions(): Promise<RecentChampionsResult> {
   const champions: RecentChampionTourCard[] = tourCards.map((tc) => {
     const team = teams.find((t) => t.tourCardId === tc.id)!;
     const tour = tours.find((t) => t.id === tc.tourId)!;
-    const teamGolfers = (team.golferIds as number[])
+    const teamGolfers = (team.golferIds)
       .map((id) => golfers.find((g) => g.apiId === id))
       .filter(Boolean) as Golfer[];
     return {

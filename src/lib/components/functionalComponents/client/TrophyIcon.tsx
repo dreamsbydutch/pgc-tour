@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Tournament } from "@prisma/client";
+import type { Tournament } from "@prisma/client";
 import { cn, isDate } from "@/lib/utils/main";
 
 // Use Pick for minimal Tournament type in ChampionTrophyTeam
@@ -55,7 +55,7 @@ export function TrophyIcon({
   );
 
   const year = isDate(tournament.startDate)
-    ? (tournament.startDate as Date).getFullYear()
+    ? tournament.startDate.getFullYear()
     : new Date(tournament.startDate).getFullYear();
 
   return (

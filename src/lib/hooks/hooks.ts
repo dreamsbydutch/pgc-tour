@@ -25,10 +25,9 @@ import {
   useTiers,
 } from "../store/seasonalStoreHooks";
 import { useMemo } from "react";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import type { DatagolfCourseInputData } from "@/lib/types/datagolf_types";
 import { fetchDataGolf } from "../utils/main";
-import { error } from "console";
 
 // ===================== useUser =====================
 /**
@@ -64,7 +63,7 @@ export function useRecentChampions() {
     return (
       tournaments
         .filter((t) => t.endDate < now)
-        .sort((a, b) => b.endDate.getTime() - a.endDate.getTime())[0] || null
+        .sort((a, b) => b.endDate.getTime() - a.endDate.getTime())[0] ?? null
     );
   }, [tournaments]);
   const isWithin = useMemo(() => {
@@ -88,7 +87,7 @@ export function useRecentChampions() {
       .filter((team) => team.position === "1" || team.position === "T1")
       .map((team) => ({
         ...team,
-        tourCard: allTourCards.find((tc) => tc.id === team.tourCardId) || null,
+        tourCard: allTourCards.find((tc) => tc.id === team.tourCardId) ?? null,
       }));
   }, [teams, allTourCards]);
   return {
@@ -122,7 +121,7 @@ export function useChampionsByTournamentId(tournamentId: string | undefined) {
       .filter((team) => team.position === "1" || team.position === "T1")
       .map((team) => ({
         ...team,
-        tourCard: allTourCards.find((tc) => tc.id === team.tourCardId) || null,
+        tourCard: allTourCards.find((tc) => tc.id === team.tourCardId) ?? null,
       }));
   }, [teams, allTourCards]);
   return {
@@ -273,13 +272,13 @@ export function useChampionTrophies({
  *   if (data) { ... }
  */
 export function useCourseData(
-  enabled: boolean = true,
+  enabled = true,
 ): UseQueryResult<DatagolfCourseInputData, unknown> {
   return useQuery<DatagolfCourseInputData, unknown>({
     queryKey: ["course-data"],
     queryFn: async () => {
-      const data = await fetchDataGolf("preds/live-hole-stats", {});
-      return data as DatagolfCourseInputData;
+      const data = await fetchDataGolf("preds/live-hole-stats", {}) as DatagolfCourseInputData
+      return data;
     },
     enabled,
     staleTime: 5 * 60 * 1000,
@@ -316,7 +315,7 @@ export function useCurrentSchedule() {
 
   // Filter tournaments for current season
   const currentSeasonTournaments =
-    tournaments?.filter((t) => t.seasonId === currentSeasonId) || [];
+    tournaments?.filter((t) => t.seasonId === currentSeasonId) ?? [];
 
   // Attach tier to each tournament (course is already attached)
   const tournamentsWithDetails = currentSeasonTournaments
@@ -359,7 +358,7 @@ export function useCurrentStandings() {
   // Get all teams for all tournaments in the current season
   const tournamentIds = useMemo(
     () =>
-      tournaments?.filter((t) => t.seasonId === seasonId).map((t) => t.id) ||
+      tournaments?.filter((t) => t.seasonId === seasonId).map((t) => t.id) ??
       [],
     [tournaments, seasonId],
   );
@@ -370,7 +369,7 @@ export function useCurrentStandings() {
     () =>
       allTeams.data?.filter((team) =>
         tournamentIds.includes(team.tournamentId),
-      ) || [],
+      ) ?? [],
     [allTeams.data, tournamentIds],
   );
 
@@ -384,7 +383,7 @@ export function useCurrentStandings() {
     tourCards,
     currentTourCard,
     currentMember,
-    tournaments: tournaments?.filter((t) => t.seasonId === seasonId) || [],
+    tournaments: tournaments?.filter((t) => t.seasonId === seasonId) ?? [],
     seasonId,
     isLoading,
     error,

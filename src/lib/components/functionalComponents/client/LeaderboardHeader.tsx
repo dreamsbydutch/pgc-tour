@@ -204,7 +204,7 @@ function HeaderDropdown({
 
   // Group tournaments by tier name
   const groupByTier = (tournaments: TournamentDropdownItem[]) => {
-    const groups: { [tier: string]: TournamentDropdownItem[] } = {};
+    const groups: Record<string, TournamentDropdownItem[]> = {};
     tournaments.forEach((item) => {
       const tier = item.tier?.name || "Other";
       if (!groups[tier]) groups[tier] = [];
@@ -218,7 +218,7 @@ function HeaderDropdown({
         const bIdx = tierOrder.indexOf(b[0]);
         return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
       })
-      .map(([tier, items]) =>
+      .map(([_tier, items]) =>
         items.sort(
           (a, b) =>
             new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),

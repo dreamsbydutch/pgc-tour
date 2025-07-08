@@ -7,7 +7,7 @@ import type {
   DatagolfRankingInput,
 } from "@/lib/types/datagolf_types";
 import { NextResponse } from "next/server";
-import { fetchDataGolf } from "@/lib/utils/system/api";
+import { fetchDataGolf } from "@/lib/utils/main";
 // import fs from "fs";
 
 export async function GET(request: Request) {

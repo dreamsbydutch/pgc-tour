@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { cache } from "react";
 import { db } from "../../server/db";
-import { Member } from "@prisma/client";
+import type { Member } from "@prisma/client";
 
 export interface AuthUser {
   id: string;
@@ -31,7 +31,7 @@ export async function getUserFromHeaders(): Promise<AuthUser | null> {
   return {
     id: userId,
     email: userEmail,
-    avatar: userAvatar || undefined,
+    avatar: userAvatar ?? undefined,
   };
 }
 /**
@@ -72,7 +72,7 @@ export async function getAuthFromHeaders(): Promise<AuthData> {
  */
 export async function getMemberIdFromHeaders(): Promise<string | null> {
   const member = await getMemberFromHeaders();
-  return member?.id || null;
+  return member?.id ?? null;
 }
 
 /**
@@ -95,7 +95,7 @@ export async function isAdminFromHeaders(): Promise<boolean> {
 /**
  * Get member with specific relations - use for complex data needs.
  */
-export const getMemberWithRelations = cache(async (include: any = {}) => {
+export const getMemberWithRelations = cache(async (include: Record<string, unknown> = {}) => {
   const user = await getUserFromHeaders();
   if (!user) return null;
 

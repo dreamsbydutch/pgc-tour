@@ -20,7 +20,7 @@ import type {
   TourCard,
   Tournament,
 } from "@prisma/client";
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import { ToursToggleButton } from "@/lib/components/functionalComponents/client/ToursToggle";
 import {
@@ -172,18 +172,13 @@ const countryFlag = (code: string | null) =>
 function useLeaderboardLogic(props: LeaderboardViewProps) {
   const {
     variant,
-    tournament,
     tours = [],
-    actualTours = [],
-    tourCard,
-    golfers,
-    teams,
     tourCards = [],
     inputTour = "",
   } = props;
 
   let toggleTours: LeaderboardTour[] = [];
-  let playoffKey = "gold";
+  const playoffKey = "gold";
   if (variant === "playoff") {
     const goldPlayoff: LeaderboardTour = {
       id: "gold",
@@ -476,7 +471,6 @@ const LeaderboardListing: React.FC<LeaderboardListingProps> = ({
   team,
   tourCard,
   course,
-  teamGolfers,
   member,
 }) => {
   const [isOpen, setIsOpen] = useState(false);

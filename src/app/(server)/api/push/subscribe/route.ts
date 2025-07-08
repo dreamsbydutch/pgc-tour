@@ -2,15 +2,37 @@
  * API route for subscribing to push notifications
  * Saves push subscription data to the database linked to a member ID
  */
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
+
+type SubscriptionKeys = {
+  p256dh: string;
+  auth: string;
+};
+
+type Subscription = {
+  endpoint: string;
+  keys?: SubscriptionKeys;
+  getKey?: (name: "p256dh" | "auth") => string;
+};
+
+type RequestBody = {
+  subscription: Subscription;
+  memberId: string;
+};
 
 export async function POST(request: NextRequest) {
   try {
-    const { subscription, memberId } = await request.json();
+    const body = (await request.json()) as Partial<RequestBody>;
+    const { subscription, memberId } = body;
 
     // Validate required fields
-    if (!subscription || !memberId) {
+    if (
+      !subscription ||
+      typeof subscription.endpoint !== "string" ||
+      !memberId ||
+      typeof memberId !== "string"
+    ) {
       return NextResponse.json(
         { error: "Subscription and memberId are required" },
         { status: 400 },
@@ -35,18 +57,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract encryption keys from subscription
-    let p256dh: string;
-    let auth: string;
+    let p256dh: string | undefined;
+    let auth: string | undefined;
 
     try {
-      if (subscription.getKey) {
-        // Standard method for extracting keys
+      if (typeof subscription.getKey === "function") {
         p256dh = subscription.getKey("p256dh");
         auth = subscription.getKey("auth");
-      } else {
-        // Fallback for different subscription formats
-        p256dh = subscription.keys?.p256dh;
-        auth = subscription.keys?.auth;
+      } else if (subscription.keys) {
+        p256dh = subscription.keys.p256dh;
+        auth = subscription.keys.auth;
       }
 
       if (!p256dh || !auth) {

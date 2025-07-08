@@ -1,14 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { createTourCard } from "@/server/api/actions/tour_card";
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { api } from "@/trpc/react";
 import { useSeasonalStore } from "@/lib/store/seasonalStore";
-import { MinimalTour } from "@/lib/types";
 import LoadingSpinner from "./functionalComponents/loading/LoadingSpinner";
 import { Button } from "./functionalComponents/ui/button";
+import type { Tour } from "@prisma/client";
+import { createTourCard } from "@/server/actions/tourCard";
 
 export function TourCardForm() {
   const [isCreatingTourCard, setIsCreatingTourCard] = useState(false);
@@ -48,7 +48,7 @@ const TourCardFormButton = ({
   isCreatingTourCard,
   setIsCreatingTourCard,
 }: {
-  tour: MinimalTour;
+  tour: Tour;
   isCreatingTourCard: boolean;
   setIsCreatingTourCard: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
@@ -63,9 +63,14 @@ const TourCardFormButton = ({
     setIsCreatingTourCard(true);
     setIsLoading(true);
     setEffect(true);
-    await createTourCard({ tour, seasonId: tour.seasonId });
-    await utils.tour.invalidate();
-    setIsLoading(false);
+    try {
+      await createTourCard({ tourId: tour.id, seasonId: tour.seasonId });
+      await utils.tour.invalidate();
+    } catch (error) {
+      console.error("Error creating tour card:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [tour, utils, setIsCreatingTourCard]);
 
   return (
@@ -87,16 +92,16 @@ const TourCardFormButton = ({
       ) : (
         <>
           <Image
-            src={tour.logoUrl}
+            src={typeof tour.logoUrl === "string" ? tour.logoUrl : ""}
             alt="Tour Logo"
             width={128}
             height={128}
             className="w-4/5"
           />
-          {tour.name}
+          {typeof tour.name === "string" ? tour.name : ""}
           <div className="text-xs text-slate-600">
             {spotsRemaining <= 0
-              ? `${tour.name} is full!`
+              ? `${typeof tour.name === "string" ? tour.name : "Tour"} is full!`
               : `${spotsRemaining} spots remaining`}
           </div>
           <div className="text-xs text-slate-600">Buy-in: $100</div>

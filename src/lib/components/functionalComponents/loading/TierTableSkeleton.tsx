@@ -3,6 +3,9 @@ import { Skeleton } from "../ui/skeleton";
 export function TierTableSkeleton() {
   // Mimic the table structure with skeletons
   const tierCount = 4;
+  const rowCount = 35;
+  const tierArray = Array.from({ length: tierCount });
+  const rowArray = Array.from({ length: rowCount });
 
   return (
     <div className="flex w-full flex-col items-center">
@@ -17,7 +20,7 @@ export function TierTableSkeleton() {
                 <th>
                   <Skeleton className="mx-auto h-4 w-12" />
                 </th>
-                {[...Array(tierCount)].map((_, i) => (
+                {tierArray.map((_, i) => (
                   <th key={i}>
                     <Skeleton className="mx-auto h-4 w-16" />
                   </th>
@@ -25,12 +28,12 @@ export function TierTableSkeleton() {
               </tr>
             </thead>
             <tbody>
-              {[...Array(35)].map((_, rowIdx) => (
+              {rowArray.map((_, rowIdx) => (
                 <tr key={rowIdx}>
                   <td>
                     <Skeleton className="mx-auto h-4 w-10" />
                   </td>
-                  {[...Array(tierCount)].map((_, colIdx) => (
+                  {tierArray.map((_, colIdx) => (
                     <td key={colIdx}>
                       <Skeleton className="mx-auto h-4 w-16" />
                     </td>

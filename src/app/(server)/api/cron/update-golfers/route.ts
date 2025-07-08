@@ -10,7 +10,7 @@ import type {
 } from "@/lib/types/datagolf_types";
 import type { Course, Golfer, Team, Tournament } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { fetchDataGolf } from "@/lib/utils/system/api";
+import { fetchDataGolf } from "@/lib/utils/main";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL.
@@ -175,7 +175,6 @@ async function updateExistingGolfers(
         updateData,
         liveGolfer,
         fieldGolfer,
-        fieldData,
         tournament,
       );
 
@@ -262,7 +261,7 @@ async function updateExistingGolfers(
       await api.golfer.update({
         id: golfer.id,
         ...(updateData.position !== undefined && {
-          position: updateData.position || undefined,
+          position: updateData.position ?? undefined,
         }),
         ...(updateData.score !== undefined && {
           score: updateData.score ?? undefined,
@@ -304,7 +303,6 @@ function setRoundTeeTimesAndScores(
   updateData: Partial<Golfer>,
   liveGolfer: DatagolfLiveGolfer | undefined,
   fieldGolfer: DatagolfFieldGolfer | undefined,
-  fieldData: DatagolfFieldInput,
   tournament: Tournament & { course: Course },
 ) {
   // Round One

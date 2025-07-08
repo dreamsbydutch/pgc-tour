@@ -1,4 +1,3 @@
-import PaymentForm from "../../lib/components/smartComponents/client/TransactionForm";
 import type {
   DatagolfFieldInput,
   DataGolfLiveTournament,
@@ -12,7 +11,7 @@ import {
 } from "../../lib/components/functionalComponents/client/CreateGroupsButton";
 import Link from "next/link";
 import { api } from "@/trpc/server";
-import { fetchDataGolf } from "@/lib/utils/system/api";
+import { fetchDataGolf } from "@/lib/utils/main";
 
 export default async function AdminDashboard() {
   const currentTourney = await api.tournament.getActive();

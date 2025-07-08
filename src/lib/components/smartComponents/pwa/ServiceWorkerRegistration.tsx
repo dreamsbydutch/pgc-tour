@@ -2,6 +2,14 @@
 
 import { useEffect } from "react";
 
+interface SWMessageEvent extends MessageEvent {
+  data: {
+    type?: string;
+    url?: string;
+    [key: string]: unknown;
+  };
+}
+
 export default function ServiceWorkerRegistration() {
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -33,10 +41,10 @@ export default function ServiceWorkerRegistration() {
         });
 
       // Listen for service worker messages
-      navigator.serviceWorker.addEventListener("message", (event) => {
+      navigator.serviceWorker.addEventListener("message", (event: SWMessageEvent) => {
         console.log("Message from SW:", event.data);
 
-        if (event.data.type === "CACHE_UPDATED") {
+        if (event.data && event.data.type === "CACHE_UPDATED") {
           // Handle cache updates
           console.log("Cache updated for:", event.data.url);
         }
@@ -44,13 +52,13 @@ export default function ServiceWorkerRegistration() {
 
       // Request persistent storage
       if ("storage" in navigator && "persist" in navigator.storage) {
-        navigator.storage.persist().then((persistent) => {
+        void navigator.storage.persist().then((persistent) => {
           console.log("Persistent storage:", persistent);
         });
       }
 
       // Register for background sync (if supported)
-      navigator.serviceWorker.ready.then((registration) => {
+      void navigator.serviceWorker.ready.then((registration) => {
         if ("sync" in registration) {
           console.log("Background sync is supported");
         }
