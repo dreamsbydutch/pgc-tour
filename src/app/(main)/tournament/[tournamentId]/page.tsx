@@ -1,6 +1,5 @@
 import { LeaderboardHeader } from "@/lib/components/functionalComponents/client/LeaderboardHeader";
 import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
-import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
 import { getCurrentSeason } from "@/server/actions/season";
 import { getTournamentInfo } from "@/server/actions/tournament";
 import { redirect } from "next/navigation";

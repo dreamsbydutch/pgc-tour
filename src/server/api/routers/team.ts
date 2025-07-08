@@ -116,7 +116,38 @@ export const teamRouter = createTRPCRouter({
         orderBy: { score: "asc" },
       });
     }),
-
+  createOrUpdate: publicProcedure
+    .input(
+      z.object({
+        golferIds: z.array(z.number()),
+        tournamentId: z.string(),
+        tourCardId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log(input);
+      // Try to find an existing team for this tourCard and tournament
+      const existing = await ctx.db.team.findFirst({
+        where: {
+          tourCardId: input.tourCardId,
+          tournamentId: input.tournamentId,
+        },
+      });
+      console.log("Existing team:", existing);
+      if (existing) {
+        // Update the existing team
+        return ctx.db.team.update({
+          where: { id: existing.id },
+          data: {
+            golferIds: input.golferIds,
+          },
+        });
+      }
+      // Otherwise, create a new team
+      return ctx.db.team.create({
+        data: input,
+      });
+    }),
   create: adminProcedure
     .input(
       z.object({
