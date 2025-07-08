@@ -2,15 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { HomePageList } from "@/lib/components/functionalComponents/client/HomePageList";
 import { cn } from "@/lib/utils/main";
-import { getCurrentStandings } from "@/server/api/actions/standings";
 import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
+import { getCurrentStandings } from "@/server/actions/standings";
 
 /**
  * Displays the standings for the homepage, showing the top players for each tour.
  * Uses the new PGC Tour Store with aggressive caching for optimal performance.
  */
 export default async function HomePageStandings() {
-  const tours = await getCurrentStandings();
+  const { tours, tourCards } = await getCurrentStandings();
   const self = await getMemberFromHeaders();
 
   return (
@@ -31,7 +31,10 @@ export default async function HomePageStandings() {
       <div className="grid grid-cols-2 font-varela">
         {tours?.map((tour, i) => {
           // Map tourTeams to include stat fields
-          const tourTeams = tour.tourCards.slice(0, 15).map((team) => ({
+          const tourCard = tourCards
+            .filter((tc) => tc.tourId === tour.id)
+            .sort((a, b) => b.points - a.points);
+          const tourTeams = tourCard?.slice(0, 15).map((team) => ({
             ...team,
             mainStat: team.points,
             secondaryStat: team.earnings,

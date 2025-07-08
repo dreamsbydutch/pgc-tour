@@ -323,7 +323,12 @@ export function useCurrentSchedule() {
     .map((t) => {
       const tier = tiers?.find((tier) => tier.id === t.tierId);
       if (!tier) return null; // Exclude tournaments with missing tier
-      return { ...t, tier };
+      // Ensure startDate and endDate are Date objects
+      const startDate =
+        t.startDate instanceof Date ? t.startDate : new Date(t.startDate);
+      const endDate =
+        t.endDate instanceof Date ? t.endDate : new Date(t.endDate);
+      return { ...t, startDate, endDate, tier };
     })
     .filter(
       (t): t is typeof t & { tier: NonNullable<typeof t>["tier"] } => !!t,
@@ -369,13 +374,7 @@ export function useCurrentStandings() {
     [allTeams.data, tournamentIds],
   );
 
-  const isLoading =
-    allTeams.isLoading ||
-    !tours ||
-    !tiers ||
-    !tourCards ||
-    !tournaments ||
-    !seasonId;
+  const isLoading = allTeams.isLoading || !tours || !tourCards || !seasonId;
   const error = allTeams.error;
 
   return {

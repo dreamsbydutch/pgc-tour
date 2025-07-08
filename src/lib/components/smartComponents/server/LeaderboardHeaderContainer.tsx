@@ -1,21 +1,22 @@
 "use server";
 
+import { getTournamentInfo } from "@/server/actions/tournament";
 import { LeaderboardHeader } from "../../functionalComponents/client/LeaderboardHeader";
-import { getTournamentData } from "@/server/api/actions";
 
 interface LeaderboardHeaderContainerProps {
   focusTourney: {
     id: string;
+    seasonId: string;
   };
 }
 
 export default async function LeaderboardHeaderContainer({
   focusTourney,
 }: LeaderboardHeaderContainerProps) {
-  const { all } = await getTournamentData();
-  const outputTourney = all.find((t) => t.id === focusTourney.id);
-  const seasonTourneys = all.filter(
-    (t) => t.season.id === outputTourney?.season.id,
+  const { season } = await getTournamentInfo(focusTourney.seasonId);
+  const outputTourney = season.find((t) => t.id === focusTourney.id);
+  const seasonTourneys = season.filter(
+    (t) => t.seasonId === outputTourney?.seasonId,
   );
 
   return (

@@ -48,9 +48,17 @@ export function LoadSeasonalData() {
 
   useEffect(() => {
     if (allLoaded && !hasErrors && isDataStale && storeDataQuery.data) {
+      // Normalize tournament date fields to Date objects
+      const normalizedTournaments = storeDataQuery.data.tournaments.map(
+        (t) => ({
+          ...t,
+          startDate: new Date(t.startDate),
+          endDate: new Date(t.endDate),
+        }),
+      );
       setSeasonalData({
         season: seasonQuery.data ?? null,
-        tournaments: storeDataQuery.data.tournaments,
+        tournaments: normalizedTournaments,
         tiers: storeDataQuery.data.tiers,
         tours: storeDataQuery.data.tours,
       });

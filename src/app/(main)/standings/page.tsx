@@ -88,21 +88,36 @@ export default function Page() {
         </div>
       )}
       {standingsToggle === "playoffs" ? (
-        <PlayoffStandings tours={tours} tiers={tiers} />
+        <PlayoffStandings tours={tours} tiers={tiers} tourCards={tourCards} />
       ) : (
-        <TourStandings activeTour={displayedTour} />
+        <TourStandings
+          activeTour={displayedTour}
+          tourCards={tourCards?.filter((a) => a.tourId === displayedTour?.id)}
+        />
       )}
     </>
   );
 }
 
 // Abstracted TourStandings logic
-function TourStandings({ activeTour }: { activeTour: Tour | undefined }) {
-  if (!activeTour) return null;
+function TourStandings({
+  activeTour,
+  tourCards,
+}: {
+  activeTour: Tour | undefined;
+  tourCards?: TourCard[];
+}) {
+  if (!activeTour || !tourCards) return null;
 
-  const goldCutCards = getGoldCutCards(activeTour);
-  const silverCutCards = getSilverCutCards(activeTour);
-  const remainingCards = getRemainingCards(activeTour);
+  const tourData = { ...activeTour, tourCards };
+  console.log("Active Tour:", activeTour);
+  const goldCutCards = getGoldCutCards(tourData);
+  const silverCutCards = getSilverCutCards(tourData);
+  const remainingCards = getRemainingCards(tourData);
+
+  console.log("Gold Cut Cards:", goldCutCards);
+  console.log("Silver Cut Cards:", silverCutCards);
+  console.log("Remaining Cards:", remainingCards);
 
   return (
     <div className="mx-auto px-1">
@@ -149,14 +164,24 @@ function TourStandings({ activeTour }: { activeTour: Tour | undefined }) {
 // Abstracted PlayoffStandings logic
 function PlayoffStandings({
   tours,
+  tourCards,
   tiers,
 }: {
   tours: Tour[];
+  tourCards?: TourCard[] | null;
   tiers: Tier[] | null;
 }) {
-  const goldTeams = getGoldTeams(tours);
-  const silverTeams = getSilverTeams(tours);
-  const playoffTier = getPlayoffTier(tiers);
+  const goldTeams = tourCards
+    ? tourCards.filter((card) => parsePosition(card.position) <= 15)
+    : [];
+  const silverTeams = tourCards
+    ? tourCards.filter(
+        (card) =>
+          parsePosition(card.position) <= 35 &&
+          parsePosition(card.position) > 15,
+      )
+    : [];
+  const playoffTier = tiers?.find((t) => t.name === "Playoff");
 
   return (
     <div className="mx-auto px-1">
@@ -189,8 +214,8 @@ function PlayoffStandings({
         tier={{
           id: "silver",
           name: "Silver",
-          payouts: playoffTier?.payouts.slice(75, 85) ?? [],
-          points: playoffTier?.points.slice(75, 85) ?? [],
+          payouts: playoffTier?.payouts.slice(75, 115) ?? [],
+          points: playoffTier?.points.slice(0, 30) ?? [],
           seasonId: "",
           updatedAt: new Date(),
           createdAt: new Date(),

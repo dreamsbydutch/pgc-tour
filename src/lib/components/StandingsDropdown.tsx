@@ -1,12 +1,11 @@
 "use client";
 
-import { cn } from "@/lib/utils/core/types";
-import { formatRank } from "@/lib/utils/domain/formatting";
 import { api } from "@/trpc/react";
 import type { Member, Team, TourCard, Tournament } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import LoadingSpinner from "./functionalComponents/loading/LoadingSpinner";
+import { cn, formatRank } from "../utils/main";
 
 // Pure helper: filter non-playoff tournaments
 const getNonPlayoffTournaments = (
@@ -34,19 +33,30 @@ const getNonPlayoffTournaments = (
 const getTeamsForTourCard = (
   allTeams: Team[] | undefined,
   tourCardId: string,
-) => (allTeams ? allTeams.filter((team) => team.tourCardId === tourCardId) : undefined);
+) =>
+  allTeams
+    ? allTeams.filter((team) => team.tourCardId === tourCardId)
+    : undefined;
 
 // Pure helper: calculate average score
-const calculateAverageScore = (teams: Team[] = [], type: "weekday" | "weekend") => {
+const calculateAverageScore = (
+  teams: Team[] = [],
+  type: "weekday" | "weekend",
+) => {
   const rounds =
     type === "weekday"
       ? teams.reduce((acc, t) => acc + (t.roundOne ?? 0) + (t.roundTwo ?? 0), 0)
-      : teams.reduce((acc, t) => acc + (t.roundThree ?? 0) + (t.roundFour ?? 0), 0);
+      : teams.reduce(
+          (acc, t) => acc + (t.roundThree ?? 0) + (t.roundFour ?? 0),
+          0,
+        );
 
   const roundCount =
     type === "weekday"
-      ? teams.filter((t) => t.roundOne).length + teams.filter((t) => t.roundTwo).length
-      : teams.filter((t) => t.roundThree).length + teams.filter((t) => t.roundFour).length;
+      ? teams.filter((t) => t.roundOne).length +
+        teams.filter((t) => t.roundTwo).length
+      : teams.filter((t) => t.roundThree).length +
+        teams.filter((t) => t.roundFour).length;
 
   return Math.round((rounds / (roundCount || 1)) * 10) / 10;
 };
@@ -66,7 +76,9 @@ const renderTournamentResult = (
     <>
       {team.position}
       <span className={cn("text-2xs", isWinner && "text-xs")}>
-        {team.position ? formatRank(+team.position.replace("T", "")).slice(-2) : ""}
+        {team.position
+          ? formatRank(+team.position.replace("T", "")).slice(-2)
+          : ""}
       </span>
     </>
   );
@@ -195,14 +207,16 @@ export function StandingsTourCardInfo({
     >
       {/* Player Statistics Header */}
       <div className="grid grid-flow-row grid-cols-5 pt-1.5 text-center">
-        {["Wins", "Top Tens", "Cuts Made", "Weekday Avg.", "Weekend Avg."].map((label) => (
-          <div
-            key={label}
-            className="place-self-center font-varela text-3xs font-bold 2xs:text-2xs sm:text-sm"
-          >
-            {label}
-          </div>
-        ))}
+        {["Wins", "Top Tens", "Cuts Made", "Weekday Avg.", "Weekend Avg."].map(
+          (label) => (
+            <div
+              key={label}
+              className="place-self-center font-varela text-3xs font-bold 2xs:text-2xs sm:text-sm"
+            >
+              {label}
+            </div>
+          ),
+        )}
       </div>
 
       {/* Player Statistics Values */}

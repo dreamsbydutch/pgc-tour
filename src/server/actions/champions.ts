@@ -30,8 +30,7 @@ export async function getRecentChampions(): Promise<RecentChampionsResult> {
   // Only return if ended within last 3 days
   const end = new Date(recentTournament.endDate);
   const diff = (now.getTime() - end.getTime()) / (1000 * 60 * 60 * 24);
-  if (diff < 0 || diff > 3)
-    return { tournament: recentTournament, champions: [] };
+  if (diff < 0 || diff > 3) return { tournament: null, champions: [] };
 
   // Get all champion teams (position "1" or "T1") for this tournament
   const teams = await db.team.findMany({
