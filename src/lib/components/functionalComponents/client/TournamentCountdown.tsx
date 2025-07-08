@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { Tournament } from "@prisma/client";
+import { TournamentCountdownSkeleton } from "../loading/TournamentCountdownSkeleton";
 
 /**
  * TournamentCountdown Component
@@ -20,10 +21,23 @@ export function TournamentCountdown({
 }: {
   tourney: Pick<Tournament, "name" | "logoUrl" | "startDate">;
 }) {
-  // State to store the time left until the tournament starts
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(tourney.startDate));
+  const [isClient, setIsClient] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null); // Don't calculate initially
 
   useEffect(() => {
+    setIsClient(true);
+    // Set initial time when component mounts on client
+    setTimeLeft(calculateTimeLeft(tourney.startDate));
+  }, [tourney.startDate]);
+
+  useEffect(() => {
+    if (!isClient || !timeLeft) return;
+
     // Update the time left every second
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft(tourney.startDate));
@@ -31,7 +45,11 @@ export function TournamentCountdown({
 
     // Cleanup the interval on component unmount
     return () => clearInterval(timer);
-  }, [tourney.startDate]);
+  }, [isClient, tourney.startDate]);
+
+  if (!isClient) {
+    return <TournamentCountdownSkeleton />;
+  }
 
   return (
     <div className="mx-auto my-4 w-11/12 max-w-3xl rounded-2xl bg-gray-100 p-2 shadow-md md:w-10/12 lg:w-7/12">
