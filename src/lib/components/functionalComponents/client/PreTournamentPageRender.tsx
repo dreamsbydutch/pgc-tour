@@ -12,6 +12,7 @@ import { Button } from "../ui/button";
 import LoadingSpinner from "../loading/LoadingSpinner";
 import { useState, memo } from "react";
 import { cn, formatMoney, formatRank } from "@/lib/utils/main";
+import { useRouter } from "next/navigation";
 
 interface PreTournamentPageProps {
   tournament: Pick<Tournament, "id" | "name" | "logoUrl" | "startDate">;
@@ -30,9 +31,9 @@ export default function PreTournamentPageRender(props: PreTournamentPageProps) {
   const canPickTeam = msUntilStart <= 4 * 24 * 60 * 60 * 1000;
   return (
     <div>
-      <TournamentCountdown tourney={tournament} key={tournament.id} />
       {canPickTeam && tourCard && member && (
         <TeamPickForm
+          tournament={tournament}
           tourCard={tourCard}
           member={member}
           existingTeam={existingTeam}
@@ -43,12 +44,14 @@ export default function PreTournamentPageRender(props: PreTournamentPageProps) {
   );
 }
 
-const TeamPickForm = memo(function TeamPickForm({
+function TeamPickForm({
+  tournament,
   tourCard,
   member,
   existingTeam,
   teamGolfers,
 }: {
+  tournament: Pick<Tournament, "id" | "name" | "logoUrl" | "startDate">;
   member?: Pick<Member, "firstname" | "lastname" | "account"> | null;
   tourCard?: Pick<TourCard, "points" | "earnings" | "position"> | null;
   existingTeam: Pick<Team, "id"> | null | undefined;
@@ -57,6 +60,16 @@ const TeamPickForm = memo(function TeamPickForm({
     | undefined;
 }) {
   const [isOpeningForm, setIsOpeningForm] = useState(false);
+  const router = useRouter();
+
+  const handleOpenForm = () => {
+    setIsOpeningForm(true);
+    console.log(`Opening form for tournament ${tournament.id}`);
+    router.push(`/tournament/${tournament.id}/create-team`);
+    console.log(`Opening form for tournament ${tournament.id}`);
+    // Reset opening state after navigation
+    setIsOpeningForm(false);
+  };
 
   return (
     <div className="mx-auto mb-4 w-fit max-w-4xl rounded-lg border border-slate-400 bg-slate-100 px-6 py-2 text-center shadow-xl">
@@ -86,12 +99,8 @@ const TeamPickForm = memo(function TeamPickForm({
           </div>
         ))}
       <Button
-        key={existingTeam?.id}
-        onClick={() => {
-          setIsOpeningForm(true);
-          window.location.href = window.location.pathname + "/create-team";
-        }}
-        disabled={(member?.account ?? 0) > 0}
+        onClick={handleOpenForm}
+        disabled={isOpeningForm || (member?.account ?? 0) > 0}
         variant={"action"}
         className="mb-4 mt-8 text-xl"
         size="lg"
@@ -106,4 +115,4 @@ const TeamPickForm = memo(function TeamPickForm({
       </Button>
     </div>
   );
-});
+}
