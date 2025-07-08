@@ -5,8 +5,8 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { api } from "@/trpc/react";
 import { useSeasonalStore } from "@/lib/store/seasonalStore";
-import LoadingSpinner from "./functionalComponents/loading/LoadingSpinner";
-import { Button } from "./functionalComponents/ui/button";
+import LoadingSpinner from "../functionalComponents/loading/LoadingSpinner";
+import { Button } from "../functionalComponents/ui/button";
 import type { Tour } from "@prisma/client";
 import { createTourCard } from "@/server/actions/tourCard";
 

@@ -1,27 +1,45 @@
-"use client";
-
 import Image from "next/image";
 import { cn, isDate } from "@/lib/utils/main";
 
-export function TrophyIcon({
-  team,
+export default function LittleFucker({
+  champions,
   showSeasonText,
-  isLargeSize,
 }: {
-  team: {
+  champions: {
     id: number;
-    tournament?: {
+    tournament: {
       name: string;
       logoUrl: string | null;
       startDate: Date;
-    } | null;
-  };
+    };
+  }[];
   showSeasonText: boolean;
-  isLargeSize: boolean;
 }) {
-  const tournament = team.tournament;
-  if (!tournament) return null;
+  return (
+    <div className="flex flex-row">
+      {champions.map((team) => (
+        <TrophyIcon
+          key={team.id}
+          {...{ team, showSeasonText, tournament: team.tournament }}
+        />
+      ))}
+    </div>
+  );
+}
 
+function TrophyIcon({
+  tournament,
+  team,
+  showSeasonText,
+}: {
+  tournament: {
+    name: string;
+    logoUrl: string | null;
+    startDate: Date;
+  };
+  team: { id: number };
+  showSeasonText: boolean;
+}) {
   const isTourChamp = tournament.name === "TOUR Championship";
   const isCanadianOpen =
     tournament.name === "RBC Canadian Open" ||
@@ -43,13 +61,7 @@ export function TrophyIcon({
 
   const textClass = cn(
     "font-semibold text-slate-800",
-    isLargeSize
-      ? isTourChamp
-        ? "text-sm"
-        : "text-xs"
-      : isTourChamp
-        ? "text-xs"
-        : "text-2xs",
+    isTourChamp ? "text-xs" : "text-2xs",
   );
 
   const year = isDate(tournament.startDate)
@@ -61,8 +73,8 @@ export function TrophyIcon({
       <Image
         src={logoUrl}
         alt={`${tournament.name} Championship Logo`}
-        width={isLargeSize ? 192 : 128}
-        height={isLargeSize ? 192 : 128}
+        width={128}
+        height={128}
         className={imgClass}
       />
       {showSeasonText && <span className={textClass}>{year}</span>}

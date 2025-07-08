@@ -3,9 +3,11 @@ import HomePageStandings from "@/lib/components/smartComponents/server/HomePageS
 import HomePageLeaderboard from "@/lib/components/smartComponents/server/HomePageLeaderboard";
 import CurrentSchedule from "@/lib/components/smartComponents/server/CurrentSchedule";
 import CurrentChampions from "@/lib/components/smartComponents/server/CurrentChampions";
-import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
+import { TournamentCountdown } from "@/lib/components/TournamentCountdown";
+import { getNextTournament } from "@/server/actions/tournament";
 
 export default async function Home() {
+  const nextTourney = await getNextTournament();
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-2">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
@@ -13,7 +15,7 @@ export default async function Home() {
       </h1>
       <CurrentChampions />
       <HomePageLeaderboard />
-      <TournamentCountdownContainer />
+      <TournamentCountdown tourney={nextTourney ?? undefined} />
       <HomePageStandings />
       {/* <TourCardForm /> */}
       <CurrentSchedule />

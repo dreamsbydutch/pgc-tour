@@ -2,8 +2,8 @@ import type { Tournament } from "@prisma/client";
 import PreTournamentPageRender from "../../functionalComponents/client/PreTournamentPageRender";
 import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
 import { getTournamentTeamData } from "@/server/actions/getTournamentTeamData";
-import TournamentCountdownContainer from "./TournamentCountdownContainer";
 import { getCurrentTourCard } from "@/server/actions/tourCard";
+import { TournamentCountdown } from "../../TournamentCountdown";
 
 export default async function PreTournamentPage({
   tournament,
@@ -27,7 +27,7 @@ export default async function PreTournamentPage({
   // No need for pickingTeam/setPickingTeam in server component; pass as false and a no-op
   return (
     <>
-      <TournamentCountdownContainer inputTourney={tournament} />
+      <TournamentCountdown tourney={tournament} />
       <PreTournamentPageRender
         tournament={tournament}
         member={member}

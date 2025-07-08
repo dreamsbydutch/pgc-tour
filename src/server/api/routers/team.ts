@@ -91,9 +91,7 @@ export const teamRouter = createTRPCRouter({
         },
         include: {
           tournament: true,
-          tourCard: {
-            include: { member: true },
-          },
+          tourCard: true
         },
         orderBy: { createdAt: "desc" },
       });

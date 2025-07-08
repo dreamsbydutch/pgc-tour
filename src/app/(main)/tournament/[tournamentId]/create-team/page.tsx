@@ -1,4 +1,4 @@
-import { CreateTeamForm } from "@/lib/components/CreateTeamForm";
+import { CreateTeamForm } from "@/lib/components/smartComponents/CreateTeamForm";
 import LeaderboardHeaderContainer from "@/lib/components/smartComponents/server/LeaderboardHeaderContainer";
 import { getGolfersByTournament } from "@/server/actions/golfers";
 import { getTeamByTournamentAndUser } from "@/server/actions/team";
@@ -49,9 +49,7 @@ export default async function CreateTeamPage({
   // Ensure both tourCard and tournament are defined before proceeding
   if (!tourCard || !tournament) {
     return (
-      <div className="text-red-500">
-        Tournament or Tour Card not found.
-      </div>
+      <div className="text-red-500">Tournament or Tour Card not found.</div>
     );
   }
 

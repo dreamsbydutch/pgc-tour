@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import LittleFucker from "../../smartComponents/client/LittleFucker";
+import LittleFucker from "../../LittleFucker";
 import type { Tour, Member } from "@prisma/client";
 import { cn } from "@/lib/utils/main";
 
