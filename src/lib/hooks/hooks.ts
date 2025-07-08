@@ -16,11 +16,19 @@
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { useSeasonalStore } from "../store/seasonalStore";
 import { api } from "@/trpc/react";
-import { useTournaments, useAllTourCards } from "../store/seasonalStoreHooks";
+import {
+  useTournaments,
+  useAllTourCards,
+  useMember,
+  useSeason,
+  useTours,
+  useTiers,
+} from "../store/seasonalStoreHooks";
 import { useMemo } from "react";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import type { DatagolfCourseInputData } from "@/lib/types/datagolf_types";
 import { fetchDataGolf } from "../utils/main";
+import { error } from "console";
 
 // ===================== useUser =====================
 /**
@@ -325,6 +333,60 @@ export function useCurrentSchedule() {
   const error = undefined; // Could be extended to handle store errors
   return {
     tournaments: tournamentsWithDetails,
+    isLoading,
+    error,
+  };
+}
+
+export function useCurrentStandings() {
+  const currentMember = useMember();
+  const season = useSeason();
+  const seasonId = season?.id;
+  const tournaments = useTournaments();
+  const tourCards = useAllTourCards();
+  const tours = useTours();
+  const tiers = useTiers();
+  const currentTourCard = useMemo(() => {
+    if (!tourCards || !currentMember) return null;
+    return tourCards.find((tc) => tc.memberId === currentMember.id);
+  }, [tourCards, currentMember]);
+
+  // Get all teams for all tournaments in the current season
+  const tournamentIds = useMemo(
+    () =>
+      tournaments?.filter((t) => t.seasonId === seasonId).map((t) => t.id) ||
+      [],
+    [tournaments, seasonId],
+  );
+  const allTeams = api.team.getAll.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
+  const teams = useMemo(
+    () =>
+      allTeams.data?.filter((team) =>
+        tournamentIds.includes(team.tournamentId),
+      ) || [],
+    [allTeams.data, tournamentIds],
+  );
+
+  const isLoading =
+    allTeams.isLoading ||
+    !tours ||
+    !tiers ||
+    !tourCards ||
+    !tournaments ||
+    !seasonId;
+  const error = allTeams.error;
+
+  return {
+    teams,
+    tours,
+    tiers,
+    tourCards,
+    currentTourCard,
+    currentMember,
+    tournaments: tournaments?.filter((t) => t.seasonId === seasonId) || [],
+    seasonId,
     isLoading,
     error,
   };

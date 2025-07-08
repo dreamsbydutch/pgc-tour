@@ -5,28 +5,33 @@ import {
   StandingsHeader,
   StandingsListing,
 } from "@/lib/components/functionalComponents/client/StandingsPage";
-import type { TourCard } from "@prisma/client";
+import type { Tier, Tour, TourCard } from "@prisma/client";
 import { ToursToggleButton } from "@/lib/components/functionalComponents/client/ToursToggle";
 import { useSearchParams } from "next/navigation";
+import { useCurrentStandings } from "@/lib/hooks/hooks";
 
 export default function Page() {
   const searchParams = useSearchParams();
   const {
+    teams,
     tours,
+    tiers,
+    tourCards,
+    currentTourCard,
+    currentMember,
+    tournaments,
+    seasonId,
     isLoading,
     error,
-    userTourCard,
-    activeTour,
-    tiers,
-    member,
-  }: UseCurrentStandingsResult = useCurrentStandings();
+  } = useCurrentStandings();
 
   // Get default tour from search params if present
-  const defaultTourId = searchParams.get("tour") || activeTour?.id || "";
+  const defaultTourId =
+    searchParams.get("tour") || currentTourCard?.tourId || "";
   const [standingsToggle, setStandingsToggle] = useState<string>(defaultTourId);
 
   // Update activeTour when toggle changes
-  const displayedTour: StandingsTour | undefined =
+  const displayedTour =
     tours?.find((tour) => tour.id === standingsToggle) ?? tours?.[0];
 
   // TODO: Create a much better loading skeleton and error page for this standings page
@@ -92,11 +97,7 @@ export default function Page() {
 }
 
 // Abstracted TourStandings logic
-function TourStandings({
-  activeTour,
-}: {
-  activeTour: StandingsTour | undefined;
-}) {
+function TourStandings({ activeTour }: { activeTour: Tour | undefined }) {
   if (!activeTour) return null;
 
   const goldCutCards = getGoldCutCards(activeTour);
@@ -150,8 +151,8 @@ function PlayoffStandings({
   tours,
   tiers,
 }: {
-  tours: StandingsTour[];
-  tiers: StandingsTier[];
+  tours: Tour[];
+  tiers: Tier[] | null;
 }) {
   const goldTeams = getGoldTeams(tours);
   const silverTeams = getSilverTeams(tours);
@@ -208,4 +209,72 @@ function PlayoffStandings({
       ))}
     </div>
   );
+}
+
+/**
+ * Returns all tour cards for a given tour with position <= 15 (including ties at 15).
+ */
+export function getGoldCutCards(
+  tour: Tour & { tourCards?: TourCard[] },
+): (TourCard & { points?: number; position?: string | number })[] {
+  const cards = getTourCardsForTour(tour);
+  return cards.filter((card) => parsePosition(card.position) <= 15);
+}
+
+/**
+ * Returns all tour cards for a given tour with 16 <= position <= 35 (including ties).
+ */
+export function getSilverCutCards(
+  tour: Tour & { tourCards?: TourCard[] },
+): (TourCard & { points?: number; position?: string | number })[] {
+  const cards = getTourCardsForTour(tour);
+  return cards.filter((card) => {
+    const pos = parsePosition(card.position);
+    return pos >= 16 && pos <= 35;
+  });
+}
+
+/**
+ * Returns all tour cards for a given tour with position > 35.
+ */
+export function getRemainingCards(
+  tour: Tour & { tourCards?: TourCard[] },
+): (TourCard & { points?: number; position?: string | number })[] {
+  const cards = getTourCardsForTour(tour);
+  return cards.filter((card) => parsePosition(card.position) > 35);
+}
+
+/**
+ * Helper to get all tour cards for a tour, sorted by points descending.
+ * Assumes tourCards are attached to the tour, or can be filtered from global state.
+ */
+function getTourCardsForTour(
+  tour: Tour & { tourCards?: TourCard[] },
+): (TourCard & { points?: number; position?: string | number })[] {
+  let cards: (TourCard & { points?: number; position?: string | number })[] =
+    [];
+  if (tour.tourCards) {
+    cards = tour.tourCards as (TourCard & {
+      points?: number;
+      position?: string | number;
+    })[];
+  } else if (typeof window !== "undefined" && (window as any).allTourCards) {
+    cards = ((window as any).allTourCards as TourCard[]).filter(
+      (tc) => tc.tourId === tour.id,
+    );
+  }
+  return cards.sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
+}
+
+/**
+ * Parses a position string/number (e.g., "T15", 12, "1") to a number for comparison.
+ * Returns Infinity if not parseable.
+ */
+function parsePosition(pos: string | number | undefined | null): number {
+  if (typeof pos === "number") return pos;
+  if (typeof pos === "string") {
+    const match = pos.match(/\d+/);
+    if (match) return parseInt(match[0], 10);
+  }
+  return Infinity;
 }

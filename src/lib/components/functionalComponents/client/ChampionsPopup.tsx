@@ -1,29 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import LittleFucker from "../../smartComponents/client/LittleFucker";
-import type { Tournament, TourCard, Tour, Golfer } from "@prisma/client";
-import { capitalize, formatScore, getPath, hasItems, isNonEmptyString } from "@/lib/utils/main";
+import type { Tournament, TourCard, Tour, Golfer, Team } from "@prisma/client";
+import {
+  capitalize,
+  formatScore,
+  getPath,
+  hasItems,
+  isNonEmptyString,
+} from "@/lib/utils/main";
 
-type ChampionData = Omit<
-  TourCard,
-  | "createdAt"
-  | "updatedAt"
-  | "earnings"
-  | "points"
-  | "win"
-  | "topTen"
-  | "madeCut"
-  | "appearances"
-  | "seasonId"
-  | "tourId"
-  | "memberId"
-  | "id"
-> & {
-  id: number;
-  name: string;
-  totalScore: number;
+type ChampionData = Pick<TourCard, "id" | "memberId" | "displayName"> & {
   tour: Pick<Tour, "id" | "name" | "logoUrl">;
-  tourCard: Pick<TourCard, "id" | "displayName"> | null;
+  team: Pick<Team, "id" | "score">;
   golfers: Array<Pick<Golfer, "id" | "playerName" | "score" | "position">>;
 };
 
@@ -85,14 +74,9 @@ function ChampionSection({
   champion: ChampionData;
   tournament: TournamentData;
 }) {
-  const tourLogoUrl = getPath(champion, "tour.logoUrl") as
-    | string
-    | null
-    | undefined;
-  const tourName = getPath(champion, "tour.name") as string | undefined;
-  const displayName =
-    (getPath(champion, "tourCard.displayName") as string | undefined) ||
-    champion.name;
+  const tourLogoUrl = champion.tour.logoUrl;
+  const tourName = champion.tour.name;
+  const displayName = champion.displayName;
 
   return (
     <Link
@@ -114,12 +98,12 @@ function ChampionSection({
           <div className="text-xl font-semibold">
             {capitalize(displayName)}
             <LittleFucker
-              memberId={champion.tourCard?.id || ""}
+              memberId={champion.id || ""}
               seasonId={tournament.id}
             />
           </div>
           <div className="text-lg font-semibold">
-            {formatScore(champion.totalScore)}
+            {formatScore(champion.team.score)}
           </div>
         </div>
         {/* Team golfers grid */}
