@@ -2,74 +2,68 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import type { Tournament } from "@prisma/client";
-import { TournamentCountdownSkeleton } from "../loading/TournamentCountdownSkeleton";
 
 /**
  * TournamentCountdown Component
  *
- * Presentational component that displays the countdown timer for a tournament.
- * - Receives tournament details and start time as props.
- * - Updates the countdown timer every second.
+ * Displays a live countdown timer to a tournament's start date.
  *
  * Props:
- * - tourney: The tournament object containing details like name and logo URL.
- * - startDateTime: The start date and time of the tournament.
+ * - tourney: {
+ *     name: string; // Tournament name
+ *     logoUrl: string | null; // Tournament logo URL (optional)
+ *     startDate: Date; // Tournament start date/time
+ *   }
+ *
+ * Shows a skeleton loader while loading or if no tournament is provided.
  */
 export function TournamentCountdown({
   tourney,
 }: {
-  tourney: Pick<Tournament, "name" | "logoUrl" | "startDate">;
+  /**
+   * Tournament details for countdown display
+   */
+  tourney?: { name: string; logoUrl: string | null; startDate: Date };
 }) {
-  const [isClient, setIsClient] = useState(false);
-  const [timeLeft, setTimeLeft] = useState<{
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-  } | null>(null); // Don't calculate initially
+  /**
+   * State for the remaining time until the tournament starts
+   */
+  const [timeLeft, setTimeLeft] = useState<TimeLeftType>(null);
 
+  // Set up countdown timer on mount and when startDate changes
   useEffect(() => {
-    setIsClient(true);
-    // Set initial time when component mounts on client
-    setTimeLeft(calculateTimeLeft(tourney.startDate));
-  }, [tourney.startDate]);
-
-  useEffect(() => {
-    if (!isClient || !timeLeft) return;
-
-    // Update the time left every second
+    setTimeLeft(calculateTimeLeft(tourney?.startDate ?? new Date()));
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft(tourney.startDate));
+      setTimeLeft(calculateTimeLeft(tourney?.startDate ?? new Date()));
     }, 1000);
-
-    // Cleanup the interval on component unmount
     return () => clearInterval(timer);
-  }, [isClient, tourney.startDate, timeLeft]);
+  }, [tourney?.startDate]);
 
-  if (!isClient) {
+  // Show skeleton if no tournament or countdown not ready
+  if (!tourney || timeLeft === null) {
     return <TournamentCountdownSkeleton />;
   }
 
   return (
-    <div className="mx-auto my-4 w-11/12 max-w-3xl rounded-2xl bg-gray-100 p-2 shadow-md md:w-10/12 lg:w-7/12">
+    <div className="mx-auto my-4 w-11/12 max-w-xl rounded-2xl bg-gray-100 p-2 shadow-md">
       <div className="text-center">
-        <h1 className="px-3 font-varela text-2xl font-bold sm:text-3xl md:text-4xl">
+        <h1 className="px-4 font-varela text-2xl font-bold xs:text-3xl md:text-4xl">
           Countdown until {tourney.name}
         </h1>
-        <div className="flex w-full items-center justify-center pb-3">
+        <div className="flex w-full items-center justify-center gap-2 pb-3">
           <div>
             <Image
-              className="max-h-32 w-full md:max-h-40"
+              className="h-16 w-full xs:h-20 md:h-28"
               alt="Tourney Logo"
               src={tourney.logoUrl ?? ""}
               width={80}
               height={80}
             />
           </div>
-          <div className="font-varela text-2xl font-bold sm:text-3xl md:text-4xl">
-            {twoDigits(timeLeft?.days??0)}:{twoDigits(timeLeft?.hours??0)}:
-            {twoDigits(timeLeft?.minutes??0)}:{twoDigits(timeLeft?.seconds??0)}
+          <div className="font-varela text-2xl font-bold xs:text-3xl md:text-4xl">
+            {twoDigits(timeLeft?.days ?? 0)}:{twoDigits(timeLeft?.hours ?? 0)}:
+            {twoDigits(timeLeft?.minutes ?? 0)}:
+            {twoDigits(timeLeft?.seconds ?? 0)}
             <div className="text-2xs md:text-xs">Days : Hrs : Mins : Secs</div>
           </div>
         </div>
@@ -79,25 +73,18 @@ export function TournamentCountdown({
 }
 
 /**
- * twoDigits Utility Function
- *
- * Pads a number with leading zeros to ensure it has at least two digits.
- *
- * @param num - The number to pad.
- * @returns A string representation of the number with at least two digits.
+ * Pads a number to two digits with leading zero if needed
+ * @param num Number to pad
+ * @returns Two-digit string
  */
-export const twoDigits = (num: number) => String(num).padStart(2, "0");
+const twoDigits = (num: number) => String(num).padStart(2, "0");
 
 /**
- * calculateTimeLeft Utility Function
- *
- * Calculates the time left until a given start date and time.
- * - If the start date has passed, all values are set to zero.
- *
- * @param startDateTime - The start date and time to calculate the difference from.
- * @returns An object containing the time left in days, hours, minutes, and seconds.
+ * Calculates the time left until a given start date
+ * @param startDateTime The target date/time
+ * @returns TimeLeftType object or null if time is up
  */
-const calculateTimeLeft = (startDateTime: Date) => {
+const calculateTimeLeft = (startDateTime: Date): TimeLeftType => {
   const difference = +new Date(startDateTime) - +new Date();
   let timeLeft: TimeLeftType;
 
@@ -109,29 +96,50 @@ const calculateTimeLeft = (startDateTime: Date) => {
       seconds: Math.floor((difference / 1000) % 60),
     };
   } else {
-    timeLeft = {
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0,
-    };
+    timeLeft = null;
   }
 
   return timeLeft;
 };
 
 /**
- * TimeLeftType
- *
- * Represents the structure of the time left until the tournament starts.
- * - days: The number of days left.
- * - hours: The number of hours left.
- * - minutes: The number of minutes left.
- * - seconds: The number of seconds left.
+ * Type for the countdown time left
  */
 type TimeLeftType = {
   days: number;
   hours: number;
   minutes: number;
   seconds: number;
-};
+} | null;
+
+/**
+ * Skeleton loader for TournamentCountdown
+ * Displays a placeholder UI while loading
+ */
+function TournamentCountdownSkeleton() {
+  return (
+    <div className="mx-auto my-4 w-11/12 max-w-xl rounded-2xl bg-gray-100 p-2 shadow-md">
+      <div className="flex flex-col items-center justify-center gap-1 px-3">
+        <div className="h-8 w-5/6 max-w-lg animate-pulse rounded-lg bg-slate-200"></div>
+        <div className="h-8 w-2/3 max-w-lg animate-pulse rounded-lg bg-slate-200"></div>
+      </div>
+      <div className="my-3 flex items-center justify-center gap-2">
+        <div className="h-16 w-16 animate-pulse rounded-lg bg-slate-200 xs:h-20 xs:w-20 md:h-28 md:w-28"></div>
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-row gap-1">
+            <div className="h-8 w-8 animate-pulse rounded-lg bg-slate-200"></div>
+            <div className="h-8 w-8 animate-pulse rounded-lg bg-slate-200"></div>
+            <div className="h-8 w-8 animate-pulse rounded-lg bg-slate-200"></div>
+            <div className="h-8 w-8 animate-pulse rounded-lg bg-slate-200"></div>
+          </div>
+          <div className="flex flex-row justify-center gap-1">
+            <div className="h-3 w-6 animate-pulse rounded-lg bg-slate-200"></div>
+            <div className="h-3 w-6 animate-pulse rounded-lg bg-slate-200"></div>
+            <div className="h-3 w-6 animate-pulse rounded-lg bg-slate-200"></div>
+            <div className="h-3 w-6 animate-pulse rounded-lg bg-slate-200"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
