@@ -1,3 +1,3 @@
-export default function CreateTeamPageWrapper() {
+export default function CreateTeamPage() {
   return <>CREATE</>;
 }

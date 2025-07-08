@@ -22,61 +22,16 @@ interface PreTournamentPageProps {
     Golfer,
     "id" | "playerName" | "worldRank" | "rating" | "group"
   >[];
-  isTeamLoading: boolean;
-  teamError?: string | null;
-  pickingTeam: boolean;
 }
 
 export default function PreTournamentPageRender(props: PreTournamentPageProps) {
-  const {
-    tournament,
-    member,
-    tourCard,
-    existingTeam,
-    teamGolfers,
-    isTeamLoading,
-    teamError,
-    pickingTeam,
-  } = props;
-
-  // Show team creation page if pickingTeam is true
-  if (pickingTeam) {
-    return null;
-  }
-
-  // Show loading skeleton if loading
-  if (isTeamLoading) {
-    return (
-      <>
-        <TournamentCountdown tourney={tournament} />
-        <TeamPickFormSkeleton existingTeam={existingTeam} />
-      </>
-    );
-  }
-
-  // Show error if there is one
-  if (teamError) {
-    return (
-      <>
-        <TournamentCountdown tourney={tournament} />
-        <ErrorBanner message={teamError ?? "Unknown error"} />
-      </>
-    );
-  }
-
-  // Show countdown if missing required data
-  if (!tourCard || !member) {
-    return <TournamentCountdown tourney={tournament} key={tournament.id} />;
-  }
-
-  // Only allow team pick within 4 days of tournament start
+  const { tournament, member, tourCard, existingTeam, teamGolfers } = props;
   const msUntilStart = new Date(tournament.startDate).getTime() - Date.now();
   const canPickTeam = msUntilStart <= 4 * 24 * 60 * 60 * 1000;
-
   return (
     <div>
       <TournamentCountdown tourney={tournament} key={tournament.id} />
-      {canPickTeam && (
+      {canPickTeam && tourCard && member && (
         <TeamPickForm
           tourCard={tourCard}
           member={member}
@@ -84,43 +39,6 @@ export default function PreTournamentPageRender(props: PreTournamentPageProps) {
           teamGolfers={teamGolfers}
         />
       )}
-    </div>
-  );
-}
-
-const ErrorBanner = memo(function ErrorBanner({
-  message,
-}: {
-  message: string;
-}) {
-  return (
-    <div className="flex h-32 w-full items-center justify-center text-red-500">
-      Error loading tournament data: {message}
-    </div>
-  );
-});
-
-export function TeamPickFormSkeleton({
-  existingTeam,
-}: {
-  existingTeam?: Pick<Team, "id"> | null;
-}) {
-  return (
-    <div>
-      <div className="mx-auto my-4 w-fit max-w-4xl rounded-lg border border-slate-400 bg-slate-100 px-6 py-2 text-center shadow-xl">
-        <div className="mx-auto mb-3 h-8 w-48 animate-pulse rounded bg-slate-200"></div>
-        <div className="mx-auto mb-4 h-6 w-64 animate-pulse rounded bg-slate-200"></div>
-        {existingTeam &&
-          Array.from({ length: 10 }).map((_, i) => (
-            <div
-              key={i}
-              className={`py-0.5 ${i % 2 !== 0 && i < 9 ? "border-b border-slate-500" : ""}`}
-            >
-              <div className="mx-auto h-6 w-3/4 animate-pulse rounded bg-slate-200"></div>
-            </div>
-          ))}
-        <div className="mx-auto mb-4 mt-8 h-10 w-40 animate-pulse rounded bg-slate-300"></div>
-      </div>
     </div>
   );
 }
@@ -171,6 +89,7 @@ const TeamPickForm = memo(function TeamPickForm({
         key={existingTeam?.id}
         onClick={() => {
           setIsOpeningForm(true);
+          window.location.href = window.location.pathname + "/create-team";
         }}
         disabled={(member?.account ?? 0) > 0}
         variant={"action"}

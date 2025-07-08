@@ -14,7 +14,7 @@ export default async function PreTournamentPage({
   // Fetch member (user) from headers (server-side)
   const member = await getMemberFromHeaders();
   // Fetch all team/golfer/tourCard data for this tournament and member
-  const { tourCard, existingTeam, teamGolfers, isTeamLoading, teamError } =
+  const { tourCard, existingTeam, teamGolfers } =
     await getTournamentTeamData({
       tournamentId: tournament.id,
       memberId: member?.id ?? null,
@@ -24,43 +24,11 @@ export default async function PreTournamentPage({
   // No need for pickingTeam/setPickingTeam in server component; pass as false and a no-op
   return (
     <PreTournamentPageRender
-      tournament={{
-        id: tournament.id,
-        name: tournament.name,
-        logoUrl: tournament.logoUrl,
-        startDate: tournament.startDate,
-      }}
-      member={
-        member
-          ? {
-              firstname: member.firstname,
-              lastname: member.lastname,
-              account: member.account,
-            }
-          : null
-      }
-      tourCard={
-        tourCard
-          ? {
-              points: tourCard.points,
-              earnings: tourCard.earnings,
-              position: tourCard.position,
-            }
-          : null
-      }
-      existingTeam={existingTeam ? { id: existingTeam.id } : null}
-      teamGolfers={
-        teamGolfers?.map((g) => ({
-          id: g.id,
-          playerName: g.playerName,
-          worldRank: g.worldRank,
-          rating: g.rating,
-          group: g.group,
-        })) ?? null
-      }
-      isTeamLoading={isTeamLoading}
-      teamError={teamError as string | null}
-      pickingTeam={false}
+      tournament={tournament}
+      member={member}
+      tourCard={tourCard}
+      existingTeam={existingTeam}
+      teamGolfers={teamGolfers}
     />
   );
 }

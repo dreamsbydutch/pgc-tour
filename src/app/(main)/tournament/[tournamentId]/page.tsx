@@ -1,4 +1,5 @@
 import { LeaderboardHeader } from "@/lib/components/functionalComponents/client/LeaderboardHeader";
+import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
 import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
 import { getCurrentSeason } from "@/server/actions/season";
 import { getTournamentInfo } from "@/server/actions/tournament";
@@ -23,18 +24,8 @@ export default async function TournamentPage({
         {...{ focusTourney, inputTournaments: allTournaments }}
       />
       {focusTourney.startDate > new Date() && (
-        <TournamentCountdownContainer inputTourney={focusTourney} />
+        <PreTournamentPage tournament={focusTourney} />
       )}
-      {/* <PreTournamentPageRender
-        tournament={focusTourney}
-        member={member}
-        tourCard={tourCard}
-        existingTeam={existingTeam}
-        teamGolfers={teamGolfers}
-        isTeamLoading={isTeamLoading}
-        teamError={teamError as string | null}
-        pickingTeam={false}
-      /> */}
     </div>
   );
 }
