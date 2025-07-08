@@ -3,6 +3,7 @@ import PreTournamentPageRender from "../../functionalComponents/client/PreTourna
 import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
 import { getTournamentTeamData } from "@/server/actions/getTournamentTeamData";
 import TournamentCountdownContainer from "./TournamentCountdownContainer";
+import { getCurrentTourCard } from "@/server/actions/tourCard";
 
 export default async function PreTournamentPage({
   tournament,
@@ -14,11 +15,11 @@ export default async function PreTournamentPage({
 }) {
   // Fetch member (user) from headers (server-side)
   const member = await getMemberFromHeaders();
+  const tourCard = await getCurrentTourCard();
   // Fetch all team/golfer/tourCard data for this tournament and member
-  const { tourCard, existingTeam, teamGolfers } = await getTournamentTeamData({
+  const team = await getTournamentTeamData({
     tournamentId: tournament.id,
-    memberId: member?.id ?? null,
-    seasonId: tournament.seasonId,
+    tourCardId: tourCard?.id!,
   });
 
   // No need for pickingTeam/setPickingTeam in server component; pass as false and a no-op
@@ -29,8 +30,8 @@ export default async function PreTournamentPage({
         tournament={tournament}
         member={member}
         tourCard={tourCard}
-        existingTeam={existingTeam}
-        teamGolfers={teamGolfers}
+        existingTeam={team}
+        teamGolfers={team.golfers}
       />
     </>
   );

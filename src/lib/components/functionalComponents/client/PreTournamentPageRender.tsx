@@ -7,10 +7,9 @@ import type {
   TourCard,
   Tournament,
 } from "@prisma/client";
-import { TournamentCountdown } from "./TournamentCountdown";
 import { Button } from "../ui/button";
 import LoadingSpinner from "../loading/LoadingSpinner";
-import { useState, memo } from "react";
+import { useState } from "react";
 import { cn, formatMoney, formatRank } from "@/lib/utils/main";
 import { useRouter } from "next/navigation";
 
@@ -64,11 +63,7 @@ function TeamPickForm({
 
   const handleOpenForm = () => {
     setIsOpeningForm(true);
-    console.log(`Opening form for tournament ${tournament.id}`);
     router.push(`/tournament/${tournament.id}/create-team`);
-    console.log(`Opening form for tournament ${tournament.id}`);
-    // Reset opening state after navigation
-    setIsOpeningForm(false);
   };
 
   return (
@@ -81,10 +76,9 @@ function TeamPickForm({
       )}
       <div className="text-lg font-bold">{`${formatRank(+(tourCard?.position ?? 0))} - ${tourCard?.points.toLocaleString()} pts${tourCard?.earnings ? " - " + formatMoney(tourCard?.earnings ?? 0) : ""}`}</div>
       {teamGolfers
-        ?.slice()
-        .sort((a, b) => (a.worldRank ?? Infinity) - (b.worldRank ?? Infinity))
-        .sort((a, b) => (a.group ?? Infinity) - (b.group ?? Infinity))
-        .map((golfer, i) => (
+        ?.sort((a, b) => (a.worldRank ?? Infinity) - (b.worldRank ?? Infinity))
+        ?.sort((a, b) => (a.group ?? Infinity) - (b.group ?? Infinity))
+        ?.map((golfer, i) => (
           <div
             key={golfer?.id}
             className={cn(
