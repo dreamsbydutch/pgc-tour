@@ -1,6 +1,14 @@
 import Image from "next/image";
 import { cn, isDate } from "@/lib/utils/main";
 
+/**
+ * LittleFucker Component
+ *
+ * Displays a row of trophy icons for champion teams, each with an tournament logo and optional season/year text.
+ *
+ * @param champions - Array of champion objects, each with an id and tournament details
+ * @param showSeasonText - Whether to display the tournament year below the trophy icon
+ */
 export default function LittleFucker({
   champions,
   showSeasonText,
@@ -27,6 +35,16 @@ export default function LittleFucker({
   );
 }
 
+/**
+ * TrophyIcon Component
+ *
+ * Renders a single trophy icon (tournament logo) and optionally the year for a champion team.
+ * Handles special cases for TOUR Championship and Canadian Open logos.
+ *
+ * @param tournament - Tournament details (name, logoUrl, startDate)
+ * @param team - Team object (id)
+ * @param showSeasonText - Whether to display the year below the icon
+ */
 function TrophyIcon({
   tournament,
   team,
@@ -40,16 +58,20 @@ function TrophyIcon({
   team: { id: number };
   showSeasonText: boolean;
 }) {
+  // Special logo for TOUR Championship
   const isTourChamp = tournament.name === "TOUR Championship";
+  // Special logo for Canadian Open
   const isCanadianOpen =
     tournament.name === "RBC Canadian Open" ||
     tournament.name === "Canadian Open";
+  // Select logo URL based on tournament
   const logoUrl = isCanadianOpen
     ? "https://jn9n1jxo7g.ufs.sh/f/3f3580a5-8a7f-4bc3-a16c-53188869acb2-x8pl2f.png"
     : isTourChamp
       ? "https://jn9n1jxo7g.ufs.sh/f/94GU8p0EVxqPNsO8w6FZhY1BamONzvl3bLgdn0IXVM8fEoTC"
       : (tournament.logoUrl ?? "");
 
+  // Set image class based on tournament
   const imgClass = cn(
     "inline-block",
     isCanadianOpen
@@ -59,11 +81,13 @@ function TrophyIcon({
         : "h-6 w-6 mx-0.5",
   );
 
+  // Set text class based on tournament
   const textClass = cn(
     "font-semibold text-slate-800",
     isTourChamp ? "text-xs" : "text-2xs",
   );
 
+  // Get year from startDate (handles both Date and string)
   const year = isDate(tournament.startDate)
     ? tournament.startDate.getFullYear()
     : new Date(tournament.startDate).getFullYear();
