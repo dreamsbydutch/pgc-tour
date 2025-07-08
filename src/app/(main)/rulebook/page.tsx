@@ -5,8 +5,15 @@ import { useState } from "react";
 import { ruleList } from "./rules";
 import type { RuleCategoryType } from "@/lib/components/functionalComponents/client/RulebookComponents";
 import { cn } from "@/lib/utils/main";
-import CurrentSchedule from "@/lib/components/smartComponents/client/CurrentScheduleClient";
-import { TierTableContainer } from "@/lib/components/smartComponents/client/TierTableContainerClient";
+import { useCurrentSchedule } from "@/lib/hooks/hooks";
+import { LeagueSchedule } from "@/lib/components/LeagueSchedule";
+import { TournamentWithRelations } from "@/server/actions/tournament";
+import { Tier } from "@prisma/client";
+import { useTiers } from "@/lib/store/seasonalStoreHooks";
+import {
+  PayoutsTable,
+  PointsTable,
+} from "@/lib/components/functionalComponents/client/TierTables";
 
 /**
  * RulebookPage Component
@@ -16,6 +23,8 @@ import { TierTableContainer } from "@/lib/components/smartComponents/client/Tier
  * - Dynamically fetches data for the current season and tiers.
  */
 export default function RulebookPage() {
+  const schedule = useCurrentSchedule();
+  const tiers = useTiers();
   return (
     <>
       <div className="pb-4 pt-2 text-center font-yellowtail text-7xl lg:text-[5.5rem]">
@@ -28,6 +37,14 @@ export default function RulebookPage() {
           {...{
             ruleData: section,
             i,
+            schedule:
+              section.category === "Schedule"
+                ? schedule.tournaments
+                : undefined,
+            tiers:
+              section.category === "Payouts" || section.category === "Scoring"
+                ? tiers
+                : undefined,
           }}
         />
       ))}
@@ -50,9 +67,13 @@ export default function RulebookPage() {
 function RuleCategory({
   ruleData,
   i,
+  schedule,
+  tiers,
 }: {
   ruleData: RuleCategoryType;
   i: number;
+  schedule?: TournamentWithRelations[] | null;
+  tiers?: Tier[] | null;
 }) {
   const [showState, setShowState] = useState(false);
 
@@ -91,12 +112,14 @@ function RuleCategory({
             )}
           </div>
         ))}
-        {ruleData.category === "Schedule" && <CurrentSchedule />}
-        {ruleData.category === "Payouts" && (
-          <TierTableContainer type="payouts" />
+        {ruleData.category === "Schedule" && schedule && (
+          <LeagueSchedule tournaments={schedule} />
         )}
-        {ruleData.category === "Scoring" && (
-          <TierTableContainer type="points" />
+        {ruleData.category === "Payouts" && tiers && (
+          <PayoutsTable tiers={tiers} />
+        )}
+        {ruleData.category === "Scoring" && tiers && (
+          <PointsTable tiers={tiers} />
         )}
       </div>
     </div>

@@ -1,13 +1,15 @@
 import Link from "next/link";
 import HomePageStandings from "@/lib/components/smartComponents/server/HomePageStandings";
 import HomePageLeaderboard from "@/lib/components/smartComponents/server/HomePageLeaderboard";
-import CurrentSchedule from "@/lib/components/smartComponents/server/CurrentSchedule";
 import CurrentChampions from "@/lib/components/smartComponents/server/CurrentChampions";
 import { TournamentCountdown } from "@/lib/components/TournamentCountdown";
 import { getNextTournament } from "@/server/actions/tournament";
+import { getCurrentSchedule } from "@/server/actions/schedule";
+import { LeagueSchedule } from "@/lib/components/LeagueSchedule";
 
 export default async function Home() {
   const nextTourney = await getNextTournament();
+  const schedule = await getCurrentSchedule();
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-2">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
@@ -18,7 +20,7 @@ export default async function Home() {
       <TournamentCountdown tourney={nextTourney ?? undefined} />
       <HomePageStandings />
       {/* <TourCardForm /> */}
-      <CurrentSchedule />
+      <LeagueSchedule tournaments={schedule.tournaments} />
       <div id="footer" className="mt-12 flex flex-col justify-start">
         <Link href={"/privacy"} className="text-xs text-slate-400">
           Privacy Policy

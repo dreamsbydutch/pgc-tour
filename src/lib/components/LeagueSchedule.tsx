@@ -1,4 +1,3 @@
-import type { Course, Tier, Tournament } from "@prisma/client";
 import Image from "next/image";
 import { capitalize, cn, getTournamentTimeline } from "@/lib/utils/main";
 import {
@@ -8,36 +7,51 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
-import { isNonEmptyArray } from "@tanstack/react-form";
+} from "./functionalComponents/ui/table";
+import {
+  Skeleton,
+  SVGSkeleton,
+} from "@/lib/components/functionalComponents/ui/skeleton";
 
-// Use Pick/Omit on Prisma types for strict minimal types
-
-type MinimalTournament = Pick<
-  Tournament,
-  "id" | "name" | "logoUrl" | "startDate" | "endDate" | "seasonId"
-> & {
-  tier: Pick<Tier, "name">;
-  course: Pick<Course, "name" | "location">;
-};
-
+/**
+ * LeagueSchedule Component
+ *
+ * Displays a table of all league tournaments, including their logos, dates, tier, course, and location.
+ * Highlights the current tournament and visually separates playoffs and new seasons.
+ *
+ * @param tournaments - Array of tournament objects to display in the schedule
+ */
 export function LeagueSchedule({
   tournaments,
 }: {
-  tournaments: MinimalTournament[];
+  tournaments: {
+    id: string;
+    name: string;
+    logoUrl: string | null;
+    startDate: Date;
+    endDate: Date;
+    seasonId: string;
+    tier: { name: string };
+    course: { name: string; location: string };
+  }[];
 }) {
+  // Get timeline info (all, current, past, etc.)
   const timeline = getTournamentTimeline(tournaments);
   const sortedTournaments = timeline.all;
+  // Index of the current tournament in the sorted list
   const currentTournamentIndex = timeline.current
     ? sortedTournaments.findIndex((t) => t.id === timeline.current?.id)
     : -1;
+  // Index of the most recent past tournament
   const previousTournamentIndex = timeline.past.slice(-1)[0]
     ? sortedTournaments.findIndex(
         (t) => t.id === timeline.past.slice(-1)[0]?.id,
       )
     : -1;
 
-  if (!isNonEmptyArray(sortedTournaments)) return null;
+  // Show skeleton if no tournaments
+  if (!sortedTournaments || sortedTournaments.length === 0)
+    return <LeagueScheduleSkeleton />;
   return (
     <div className="rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
       <div className="my-3 flex items-center justify-center gap-3">
@@ -55,26 +69,28 @@ export function LeagueSchedule({
       <Table className="mx-auto font-varela">
         <TableHeader>
           <TableRow>
-            <TableHead className="span text-center text-xs font-bold">
+            <TableHead className="p-1 text-center text-xs font-bold">
               Tournament
             </TableHead>
-            <TableHead className="border-l text-center text-xs font-bold">
+            <TableHead className="border-l p-1 text-center text-xs font-bold">
               Dates
             </TableHead>
-            <TableHead className="border-l text-center text-xs font-bold">
+            <TableHead className="border-l p-1 text-center text-xs font-bold">
               Tier
             </TableHead>
-            <TableHead className="border-l text-center text-xs font-bold">
+            <TableHead className="border-l p-1 text-center text-xs font-bold">
               Course
             </TableHead>
-            <TableHead className="border-l text-center text-xs font-bold">
+            <TableHead className="border-l p-1 text-center text-xs font-bold">
               Location
             </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sortedTournaments.map((tourney, i) => {
+            // Highlight current tournament row
             const isCurrent = i === currentTournamentIndex;
+            // Show a border after the last completed tournament if no current
             const showBorderAfter =
               i === previousTournamentIndex && currentTournamentIndex === -1;
 
@@ -82,16 +98,21 @@ export function LeagueSchedule({
               <TableRow
                 key={tourney.id}
                 className={cn(
+                  // Add border before playoffs
                   sortedTournaments[i - 1]?.tier.name !== "Playoff" &&
                     sortedTournaments[i]?.tier.name === "Playoff" &&
                     "border-t-2 border-t-slate-500",
+                  // Highlight playoff rows
                   sortedTournaments[i]?.tier.name === "Playoff" &&
                     "bg-yellow-50",
+                  // Add thick border for new season
                   sortedTournaments[i]?.seasonId !==
                     sortedTournaments[i - 1]?.seasonId &&
                     i !== 0 &&
                     "border-t-4 border-t-slate-800",
+                  // Highlight major tournaments
                   tourney.tier.name === "Major" && "bg-blue-50",
+                  // Dashed border after last completed tournament
                   showBorderAfter &&
                     "border-b-[3px] border-dashed border-b-blue-800",
                 )}
@@ -162,6 +183,74 @@ export function LeagueSchedule({
           })}
         </TableBody>
       </Table>
+    </div>
+  );
+}
+
+/**
+ * LeagueScheduleSkeleton Component
+ *
+ * Displays a loading skeleton that mimics the LeagueSchedule table layout.
+ * Uses shimmer/animated placeholders for a better loading experience.
+ *
+ * @param rows - Number of skeleton rows to display (default: 16)
+ */
+export function LeagueScheduleSkeleton({ rows = 16 }: { rows?: number }) {
+  return (
+    <div className="-lg m-1 animate-pulse border border-slate-300 bg-gray-50 shadow-lg">
+      <div className="my-3 flex items-center justify-center gap-3">
+        <SVGSkeleton className="-full h-14 w-14" />
+        <Skeleton className="h-10 w-48" />
+      </div>
+      <div className="mx-auto w-full max-w-5xl">
+        <div className="overflow-x-auto">
+          <table className="w-full font-varela">
+            <thead>
+              <tr>
+                <th className="span text-center text-xs font-bold">
+                  <Skeleton className="mx-auto h-4 w-20" />
+                </th>
+                <th className="border-l text-center text-xs font-bold">
+                  <Skeleton className="mx-auto h-4 w-16" />
+                </th>
+                <th className="border-l text-center text-xs font-bold">
+                  <Skeleton className="mx-auto h-4 w-12" />
+                </th>
+                <th className="border-l text-center text-xs font-bold">
+                  <Skeleton className="mx-auto h-4 w-16" />
+                </th>
+                <th className="border-l text-center text-xs font-bold">
+                  <Skeleton className="mx-auto h-4 w-20" />
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: rows }).map((_, i) => (
+                <tr key={i} className="border-b border-slate-200">
+                  <td className="min-w-48 text-xs">
+                    <div className="flex items-center justify-evenly gap-1 text-center">
+                      <SVGSkeleton className="h-8 w-8 object-contain" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  </td>
+                  <td>
+                    <Skeleton className="mx-auto h-4 w-20" />
+                  </td>
+                  <td>
+                    <Skeleton className="mx-auto h-4 w-12" />
+                  </td>
+                  <td>
+                    <Skeleton className="mx-auto h-4 w-16" />
+                  </td>
+                  <td>
+                    <Skeleton className="mx-auto h-4 w-20" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
