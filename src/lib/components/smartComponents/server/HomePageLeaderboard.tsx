@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { cn } from "@/lib/utils/core";
+import { cn } from "@/lib/utils/main";
 import type { TourGroup } from "@/lib/types";
 import { HomePageList } from "../../functionalComponents/client/HomePageList";
 import { HomePageListSkeleton } from "../../functionalComponents/loading/HomePageListSkeleton";

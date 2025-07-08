@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 import { Skeleton } from "../../functionalComponents/ui/skeleton";
 import { useHeaderUser } from "@/lib/providers/AuthProvider";
 import { api } from "@/trpc/react";
-import { cn } from "@/lib/utils/core";
+import { cn } from "@/lib/utils/main";
 
 // Move navItems outside component to prevent recreation on every render
 const navItems = [

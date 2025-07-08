@@ -1,4 +1,3 @@
-import { getCurrentTournament, getNextTournament } from "@/server/api/actions";
 import { redirect } from "next/navigation";
 
 export default async function TournamentIndexPage() {

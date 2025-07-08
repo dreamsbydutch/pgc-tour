@@ -1,5 +1,16 @@
 "use client";
 
+/**
+ * LeaderboardView Component (deep refactor)
+ *
+ * - All types/interfaces grouped at top
+ * - All helpers and subcomponents grouped and documented
+ * - Main export at bottom
+ * - All props and helpers fully typed
+ * - Memoization and callbacks for performance
+ * - Readable, maintainable, and organized
+ */
+
 import type {
   Course,
   Golfer,
@@ -9,7 +20,7 @@ import type {
   TourCard,
   Tournament,
 } from "@prisma/client";
-import { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { ToursToggleButton } from "@/lib/components/functionalComponents/client/ToursToggle";
 import {
@@ -39,49 +50,34 @@ import {
   TW,
 } from "country-flag-icons/react/3x2";
 import { MoveDownIcon, MoveHorizontalIcon, MoveUpIcon } from "lucide-react";
-import { formatScore, getGolferTeeTime } from "@utils/domain/golf";
-import { formatPercentage, formatMoney } from "@utils/domain/formatting";
-import { filterItems } from "@utils/data/processing";
-import { sortMultiple } from "@utils/data/sorting";
-import { cn } from "@utils/core";
+import {
+  cn,
+  filterItems,
+  formatMoney,
+  formatPercentage,
+  formatScore,
+  getGolferTeeTime,
+  sortMultiple,
+} from "@utils/main";
 import {
   Table,
   TableRow,
 } from "@/lib/components/functionalComponents/ui/table";
 
-/**
- * Unified LeaderboardPage Component
- *
- * Props:
- * - variant: 'regular' | 'historical' | 'playoff'
- * - tournament: The tournament data.
- * - tours: The list of tours available for the tournament (for regular/historical).
- * - actualTours: The list of actual tours (for playoff).
- * - tourCard (optional): The user's tour card data.
- * - member (optional): The current member (user) data.
- * - golfers: The list of golfers for the tournament.
- * - teams: The list of teams for the tournament.
- * - tourCards: All tour cards for playoff logic (optional).
- * - inputTour: The initial active tour ID.
- */
+// ================= TYPES =================
 export type LeaderboardVariant = "regular" | "historical" | "playoff";
-
-// --- Types ---
 export type LeaderboardCourse = Omit<
   Course,
   "createdAt" | "updatedAt" | "location" | "apiId"
 >;
-
 export type LeaderboardTour = Omit<
   Tour,
   "createdAt" | "updatedAt" | "buyIn" | "playoffSpots" | "seasonId"
 >;
-
 export type LeaderboardGolfer = Omit<
   Golfer,
   "createdAt" | "updatedAt" | "earnings" | "tournamentId"
 >;
-
 export type LeaderboardTeam = Omit<
   Team,
   | "createdAt"
@@ -93,7 +89,6 @@ export type LeaderboardTeam = Omit<
   | "tourCardId"
   | "makeCut"
 > & { tourCard: LeaderboardTourCard | null };
-
 export type LeaderboardTourCard = Omit<
   TourCard,
   | "createdAt"
@@ -106,16 +101,16 @@ export type LeaderboardTourCard = Omit<
   | "appearances"
   | "position"
 >;
-
 export type LeaderboardMember = Omit<
   Member,
   "createdAt" | "updatedAt" | "firstname" | "lastname" | "email" | "account"
 >;
-
 export type LeaderboardTournament = Omit<
   Tournament,
   "createdAt" | "updatedAt"
-> & { course: LeaderboardCourse | null };
+> & {
+  course: LeaderboardCourse | null;
+};
 
 export interface LeaderboardViewProps {
   variant: LeaderboardVariant;
@@ -129,7 +124,6 @@ export interface LeaderboardViewProps {
   tourCards?: LeaderboardTourCard[];
   inputTour?: string;
 }
-
 export interface LeaderboardListingProps {
   type: "PGC" | "PGA";
   tournament: LeaderboardTournament;
@@ -143,113 +137,38 @@ export interface LeaderboardListingProps {
   member?: LeaderboardMember | null;
 }
 
-export default function LeaderboardView(props: LeaderboardViewProps) {
-  const { member, tournament, golfers, teams, tourCard } = props;
-  const { toggleTours, defaultToggle } = useLeaderboardLogic(props);
-  const [activeTour, setActiveTour] = useState<string>(defaultToggle);
+// ================= HELPERS =================
+const countryFlags = [
+  { key: "USA", image: <US /> },
+  { key: "RSA", image: <ZA /> },
+  { key: "SWE", image: <SE /> },
+  { key: "KOR", image: <KR /> },
+  { key: "AUS", image: <AU /> },
+  { key: "FRA", image: <FR /> },
+  { key: "FIN", image: <FI /> },
+  { key: "JPN", image: <JP /> },
+  { key: "CHI", image: <CN /> },
+  { key: "ENG", image: <GB /> },
+  { key: "NOR", image: <NO /> },
+  { key: "ARG", image: <AR /> },
+  { key: "VEN", image: <VE /> },
+  { key: "DEN", image: <DK /> },
+  { key: "TPE", image: <TW /> },
+  { key: "CAN", image: <CA /> },
+  { key: "ITA", image: <IT /> },
+  { key: "GER", image: <DE /> },
+  { key: "IRL", image: <IE /> },
+  { key: "BEL", image: <BE /> },
+  { key: "COL", image: <CO /> },
+  { key: "PUR", image: <PR /> },
+  { key: "PHI", image: <PH /> },
+  { key: "NIR", image: <GB /> },
+  { key: "AUT", image: <AT /> },
+  { key: "SCO", image: <GB /> },
+];
+const countryFlag = (code: string | null) =>
+  countryFlags.find((obj) => obj.key === code)?.image;
 
-  // --- Render helpers ---
-  const renderRows = () => {
-    const activeShortForm = toggleTours.find(
-      (tour) => tour.id === activeTour,
-    )?.shortForm;
-    if (activeShortForm === "PGA") {
-      return sortGolfersForSpecialPositions(golfers ?? []).map((golfer) => (
-        <LeaderboardListing
-          key={golfer.id}
-          {...{
-            type: "PGA",
-            tournament,
-            tournamentGolfers: golfers,
-            tourCard,
-            userTourCard: tourCard,
-            golfer,
-          }}
-        />
-      ));
-    }
-    if (props.variant === "playoff") {
-      return sortTeamsForSpecialPositions(teams ?? [])
-        .filter(
-          (t) =>
-            t.tourCard?.playoff ===
-            (activeTour === "gold" ? 1 : activeTour === "silver" ? 2 : 1),
-        )
-        .map((team) => (
-          <LeaderboardListing
-            key={team.id}
-            {...{
-              type: "PGC",
-              tournament,
-              tournamentGolfers: golfers,
-              tourCard,
-              userTourCard: tourCard,
-              team,
-            }}
-          />
-        ));
-    }
-    return sortTeamsForSpecialPositions(teams ?? [])
-      .filter((team) => team.tourCard?.tourId === activeTour)
-      .map((team) => (
-        <LeaderboardListing
-          key={team.id}
-          {...{
-            type: "PGC",
-            tournament,
-            tournamentGolfers: golfers,
-            tourCard,
-            userTourCard: tourCard,
-            team,
-          }}
-        />
-      ));
-  };
-
-  return (
-    <div className="mx-auto mt-2 w-full max-w-4xl md:w-11/12 lg:w-8/12">
-      {/* Admin-only link to tournament stats */}
-      {member?.role === "admin" && (
-        <Link
-          className="mb-8 flex w-fit flex-row items-center justify-center self-start rounded-md border border-gray-400 px-2 py-0.5"
-          href={`/tournament/${tournament.id}/stats`}
-        >
-          Tournament Stats
-        </Link>
-      )}
-      {/* Tour toggle buttons */}
-      <div className="mx-auto my-4 flex w-full max-w-xl items-center justify-center gap-4">
-        {toggleTours.map((tour) => (
-          <ToursToggleButton
-            key={tour.id}
-            tour={tour}
-            tourToggle={activeTour}
-            setTourToggle={setActiveTour}
-          />
-        ))}
-      </div>
-      {/* Leaderboard content */}
-      <div>
-        <LeaderboardHeaderRow
-          {...{
-            tournamentOver: tournament.currentRound === 5,
-            activeTour:
-              toggleTours.find((tour) => tour.id === activeTour)?.shortForm ??
-              "",
-          }}
-        />
-        {renderRows()}
-        {toggleTours.find((tour) => tour.id === activeTour) == null && (
-          <div className="py-4 text-center text-lg font-bold">
-            Choose a tour using the toggle buttons
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// --- Logic helpers ---
 function useLeaderboardLogic(props: LeaderboardViewProps) {
   const {
     variant,
@@ -324,48 +243,15 @@ function useLeaderboardLogic(props: LeaderboardViewProps) {
   return { toggleTours, defaultToggle };
 }
 
-// --- Utility and helper functions ---
-const countryFlags = [
-  { key: "USA", image: <US /> },
-  { key: "RSA", image: <ZA /> },
-  { key: "SWE", image: <SE /> },
-  { key: "KOR", image: <KR /> },
-  { key: "AUS", image: <AU /> },
-  { key: "FRA", image: <FR /> },
-  { key: "FIN", image: <FI /> },
-  { key: "JPN", image: <JP /> },
-  { key: "CHI", image: <CN /> },
-  { key: "ENG", image: <GB /> },
-  { key: "NOR", image: <NO /> },
-  { key: "ARG", image: <AR /> },
-  { key: "VEN", image: <VE /> },
-  { key: "DEN", image: <DK /> },
-  { key: "TPE", image: <TW /> },
-  { key: "CAN", image: <CA /> },
-  { key: "ITA", image: <IT /> },
-  { key: "GER", image: <DE /> },
-  { key: "IRL", image: <IE /> },
-  { key: "BEL", image: <BE /> },
-  { key: "COL", image: <CO /> },
-  { key: "PUR", image: <PR /> },
-  { key: "PHI", image: <PH /> },
-  { key: "NIR", image: <GB /> },
-  { key: "AUT", image: <AT /> },
-  { key: "SCO", image: <GB /> },
-];
-const countryFlag = (code: string | null) =>
-  countryFlags.find((obj) => obj.key === code)?.image;
-
 const getSortedTeamGolfers = (
   team: LeaderboardTeam,
   teamGolfers: LeaderboardGolfer[] = [],
 ) =>
-  sortMultiple(filterItems(teamGolfers, { apiId: team.golferIds }), [
-    { field: "today", direction: "asc", type: "number" },
-    { field: "thru", direction: "asc", type: "number" },
-    { field: "score", direction: "asc", type: "number" },
-    { field: "group", direction: "asc", type: "number" },
-  ]);
+  sortMultiple(
+    filterItems(teamGolfers, { apiId: team.golferIds }),
+    ["today", "thru", "score", "group"],
+    ["asc", "asc", "asc", "asc"],
+  );
 
 const getGolferRowClass = (
   team: LeaderboardTeam,
@@ -418,7 +304,8 @@ const sortGolfersForSpecialPositions = (golfers: LeaderboardGolfer[]) =>
             : (b.score ?? 999)),
   );
 
-const PositionChange = ({ posChange }: { posChange: number }) =>
+// ================= SUBCOMPONENTS =================
+const PositionChange: React.FC<{ posChange: number }> = ({ posChange }) =>
   posChange === 0 ? (
     <span className="ml-1 flex items-center justify-center text-3xs">
       <MoveHorizontalIcon className="w-2" />
@@ -439,13 +326,10 @@ const PositionChange = ({ posChange }: { posChange: number }) =>
     </span>
   );
 
-const PGADropdown = ({
-  golfer,
-  userTeam,
-}: {
+const PGADropdown: React.FC<{
   golfer: LeaderboardGolfer;
   userTeam?: LeaderboardTeam;
-}) => (
+}> = ({ golfer, userTeam }) => (
   <div
     className={cn(
       "col-span-10 mb-2 rounded-lg border-b border-l border-r border-slate-300 p-2 pt-1 shadow-lg",
@@ -512,15 +396,11 @@ const PGADropdown = ({
   </div>
 );
 
-const TeamGolfersTable = ({
-  team,
-  teamGolfers,
-  course,
-}: {
+const TeamGolfersTable: React.FC<{
   team: LeaderboardTeam;
   teamGolfers: LeaderboardGolfer[] | undefined;
   course?: LeaderboardCourse | null;
-}) => {
+}> = ({ team, teamGolfers, course }) => {
   const sortedGolfers = getSortedTeamGolfers(team, teamGolfers);
   return (
     <Table className="scrollbar-hidden mx-auto w-full max-w-3xl border border-gray-700 text-center font-varela">
@@ -587,7 +467,7 @@ const TeamGolfersTable = ({
   );
 };
 
-const LeaderboardListing = ({
+const LeaderboardListing: React.FC<LeaderboardListingProps> = ({
   type,
   tournament,
   tournamentGolfers,
@@ -598,7 +478,7 @@ const LeaderboardListing = ({
   course,
   teamGolfers,
   member,
-}: LeaderboardListingProps) => {
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const posChange =
     type === "PGA"
@@ -722,46 +602,152 @@ const LeaderboardListing = ({
   );
 };
 
-function LeaderboardHeaderRow({
-  tournamentOver,
-  activeTour,
-}: {
+const LeaderboardHeaderRow: React.FC<{
   tournamentOver: boolean;
   activeTour: string;
-}) {
+}> = ({ tournamentOver, activeTour }) => (
+  <div className="mx-auto grid max-w-4xl grid-flow-row grid-cols-10 text-center sm:grid-cols-16">
+    <div className="col-span-2 place-self-center font-varela text-sm font-bold sm:col-span-3">
+      Rank
+    </div>
+    <div className="col-span-4 place-self-center font-varela text-base font-bold">
+      Name
+    </div>
+    <div className="col-span-2 place-self-center font-varela text-sm font-bold">
+      Score
+    </div>
+    <div className="col-span-1 place-self-center font-varela text-2xs">
+      {tournamentOver ? (activeTour === "PGA" ? "Group" : "Points") : "Today"}
+    </div>
+    <div className="col-span-1 place-self-center font-varela text-2xs">
+      {tournamentOver ? (activeTour === "PGA" ? "Rating" : "Earnings") : "Thru"}
+    </div>
+    <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:flex">
+      R1
+    </div>
+    <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:flex">
+      R2
+    </div>
+    <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:flex">
+      R3
+    </div>
+    <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:flex">
+      R4
+    </div>
+  </div>
+);
+
+// ================= MAIN COMPONENT =================
+const LeaderboardView: React.FC<LeaderboardViewProps> = (props) => {
+  const { member, tournament, golfers, teams, tourCard } = props;
+  const { toggleTours, defaultToggle } = useLeaderboardLogic(props);
+  const [activeTour, setActiveTour] = useState<string>(defaultToggle);
+
+  // Memoize row rendering for performance
+  const renderRows = useCallback(() => {
+    const activeShortForm = toggleTours.find(
+      (tour) => tour.id === activeTour,
+    )?.shortForm;
+    if (activeShortForm === "PGA") {
+      return sortGolfersForSpecialPositions(golfers ?? []).map((golfer) => (
+        <LeaderboardListing
+          key={golfer.id}
+          {...{
+            type: "PGA",
+            tournament,
+            tournamentGolfers: golfers,
+            tourCard,
+            userTourCard: tourCard,
+            golfer,
+          }}
+        />
+      ));
+    }
+    if (props.variant === "playoff") {
+      return sortTeamsForSpecialPositions(teams ?? [])
+        .filter(
+          (t) =>
+            t.tourCard?.playoff ===
+            (activeTour === "gold" ? 1 : activeTour === "silver" ? 2 : 1),
+        )
+        .map((team) => (
+          <LeaderboardListing
+            key={team.id}
+            {...{
+              type: "PGC",
+              tournament,
+              tournamentGolfers: golfers,
+              tourCard,
+              userTourCard: tourCard,
+              team,
+            }}
+          />
+        ));
+    }
+    return sortTeamsForSpecialPositions(teams ?? [])
+      .filter((team) => team.tourCard?.tourId === activeTour)
+      .map((team) => (
+        <LeaderboardListing
+          key={team.id}
+          {...{
+            type: "PGC",
+            tournament,
+            tournamentGolfers: golfers,
+            tourCard,
+            userTourCard: tourCard,
+            team,
+          }}
+        />
+      ));
+  }, [
+    toggleTours,
+    activeTour,
+    golfers,
+    teams,
+    tourCard,
+    tournament,
+    props.variant,
+  ]);
+
   return (
-    <div className="mx-auto grid max-w-4xl grid-flow-row grid-cols-10 text-center sm:grid-cols-16">
-      <div className="col-span-2 place-self-center font-varela text-sm font-bold sm:col-span-3">
-        Rank
+    <div className="mx-auto mt-2 w-full max-w-4xl md:w-11/12 lg:w-8/12">
+      {/* Admin-only link to tournament stats */}
+      {member?.role === "admin" && (
+        <Link
+          className="mb-8 flex w-fit flex-row items-center justify-center self-start rounded-md border border-gray-400 px-2 py-0.5"
+          href={`/tournament/${tournament.id}/stats`}
+        >
+          Tournament Stats
+        </Link>
+      )}
+      {/* Tour toggle buttons */}
+      <div className="mx-auto my-4 flex w-full max-w-xl items-center justify-center gap-4">
+        {toggleTours.map((tour) => (
+          <ToursToggleButton
+            key={tour.id}
+            tour={tour}
+            tourToggle={activeTour}
+            setTourToggle={setActiveTour}
+          />
+        ))}
       </div>
-      <div className="col-span-4 place-self-center font-varela text-base font-bold">
-        Name
-      </div>
-      <div className="col-span-2 place-self-center font-varela text-sm font-bold">
-        Score
-      </div>
-      <div className="col-span-1 place-self-center font-varela text-2xs">
-        {tournamentOver ? (activeTour === "PGA" ? "Group" : "Points") : "Today"}
-      </div>
-      <div className="col-span-1 place-self-center font-varela text-2xs">
-        {tournamentOver
-          ? activeTour === "PGA"
-            ? "Rating"
-            : "Earnings"
-          : "Thru"}
-      </div>
-      <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:flex">
-        R1
-      </div>
-      <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:flex">
-        R2
-      </div>
-      <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:flex">
-        R3
-      </div>
-      <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:flex">
-        R4
+      {/* Leaderboard content */}
+      <div>
+        <LeaderboardHeaderRow
+          tournamentOver={tournament.currentRound === 5}
+          activeTour={
+            toggleTours.find((tour) => tour.id === activeTour)?.shortForm ?? ""
+          }
+        />
+        {renderRows()}
+        {toggleTours.find((tour) => tour.id === activeTour) == null && (
+          <div className="py-4 text-center text-lg font-bold">
+            Choose a tour using the toggle buttons
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default LeaderboardView;

@@ -19,11 +19,11 @@ export async function GET(request: Request) {
 
   const rankingsData = (await fetchDataGolf(
     "preds/get-dg-rankings",
-    null,
+    {},
   )) as DatagolfRankingInput;
   const fieldData = (await fetchDataGolf(
     "field-updates",
-    null,
+    {},
   )) as DatagolfFieldInput;
 
   const currentTourney = (await api.tournament.getInfo()).next;

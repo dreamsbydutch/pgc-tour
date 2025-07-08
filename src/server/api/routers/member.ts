@@ -54,7 +54,7 @@ export const memberRouter = createTRPCRouter({
       });
     }),
 
-  update: adminProcedure
+  update: protectedProcedure
     .input(
       z.object({
         id: z.string(),

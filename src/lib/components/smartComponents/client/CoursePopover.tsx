@@ -1,17 +1,32 @@
+/**
+ * @file CoursePopover.tsx
+ * @description
+ *   Displays a popover with detailed course and hole statistics for the current round.
+ *   Fetches live course data and shows average score vs. par for each hole, with color-coded scoring.
+ *
+ *   Usage:
+ *     <CoursePopover currentRound={1} />
+ *
+ *   Props:
+ *     - currentRound: number | null — The round number to display stats for.
+ */
+
 "use client";
 
-import { useCoursePopover } from "@/lib/hooks/useCoursePopover";
 import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
-import { formatScore } from "@/lib/utils/domain/golf";
-import { formatRank } from "@/lib/utils/domain/formatting";
-import { cn } from "@/lib/utils/core";
+import { useCourseData } from "@/lib/hooks/hooks";
+import { cn, formatRank, formatScore } from "@/lib/utils/main";
 
 export function CoursePopover({
+  /**
+   * The current round number to display stats for.
+   */
   currentRound,
 }: {
   currentRound: number | null;
 }) {
-  const { courseData, isLoading } = useCoursePopover(currentRound);
+  // Fetch course data (live hole stats)
+  const { data: courseData, isLoading } = useCourseData();
 
   if (isLoading) {
     return (
@@ -31,9 +46,11 @@ export function CoursePopover({
 
   return (
     <>
+      {/* Map over holes in the current round and display stats */}
       {courseData.courses[0]?.rounds
         ?.find((round) => round.round_num === currentRound)
         ?.holes?.map((hole, i) => {
+          // Gather average scores for this hole across all rounds
           const holes = courseData.courses[0]?.rounds
             ?.map(
               (round) =>
@@ -41,12 +58,15 @@ export function CoursePopover({
             )
             .filter((score): score is number => typeof score === "number");
 
+          // Calculate the average score for this hole
           const averageScore = holes?.length
             ? holes.reduce((sum, score) => sum + score, 0) / holes.length
             : 0;
 
+          // Difference from par for this hole
           const scoreDifference = averageScore - hole.par;
-          const formattedScore = formatScore(scoreDifference) || "E";
+          // Format the score for display (E, +N, -N)
+          const formattedScore = formatScore(scoreDifference) || "-";
 
           return (
             <div

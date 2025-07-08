@@ -20,15 +20,15 @@ export async function GET(request: Request) {
   // Fetch external golf data.
   const liveData = (await fetchDataGolf(
     "preds/in-play",
-    null,
+    {},
   )) as DataGolfLiveTournament;
   const fieldData = (await fetchDataGolf(
     "field-updates",
-    null,
+    {},
   )) as DatagolfFieldInput;
   const rankingsData = (await fetchDataGolf(
     "preds/get-dg-rankings",
-    null,
+    {},
   )) as DatagolfRankingInput;
 
   // Get the current tournament; if none, redirect.

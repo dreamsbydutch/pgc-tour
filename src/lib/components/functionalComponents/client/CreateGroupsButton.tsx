@@ -45,3 +45,7 @@ export const UpdateTeamsButton = () => (
 export const EmailListLinkButton = () => (
   <NavActionButton label="Email List" to="/admin/email-list" />
 );
+
+export const HistoryButton = () => (
+  <NavActionButton label="History" to="/history" />
+);

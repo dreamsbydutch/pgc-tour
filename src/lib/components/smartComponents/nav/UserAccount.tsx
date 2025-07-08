@@ -22,8 +22,8 @@ import type { AuthUser } from "../../../supabase/auth-helpers";
 import { LogInIcon } from "lucide-react";
 import { Skeleton } from "../../functionalComponents/ui/skeleton";
 import LittleFucker from "../client/LittleFucker";
-import { formatMoney, formatNumber } from "@/lib/utils/domain/formatting";
 import { usePushNotifications } from "@/lib/push";
+import { formatMoney, formatNumber } from "@/lib/utils/main";
 
 // Move handleSignIn outside component to prevent recreation
 const handleSignInAction = (

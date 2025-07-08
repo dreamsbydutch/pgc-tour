@@ -1,4 +1,4 @@
-import { getErrorMessage } from "@/lib/utils/core/types";
+import { getErrorMessage } from "@/lib/utils/main";
 
 /**
  * LeagueScheduleError Component

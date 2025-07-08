@@ -1,15 +1,21 @@
 /**
- * Leaderboard Header Actions
+ * @file leaderboard-header.ts
+ * @description
+ *   Server action for fetching and processing all data needed by the leaderboard header component.
+ *   Fetches tournaments, tiers, and courses for the season, finds the focus tournament, and groups tournaments by tier for dropdowns.
+ *   All types and return values are fully documented for IntelliSense and maintainability.
  *
- * Server actions for fetching data needed by the leaderboard header component.
- * Uses tournament utilities for proper data processing and business logic.
+ *   Usage:
+ *     const data = await getLeaderboardHeaderData(focusTourney);
+ *     data.focusTourney, data.course, data.tier, data.groupedTournaments, etc.
  */
 
-import { MinimalTournament } from "@/lib/types";
 import { api } from "@/trpc/server";
-import type { Tournament } from "@prisma/client";
+import type { Tournament, Course } from "@prisma/client";
 
-// Define a type for the grouped tournament dropdown items
+/**
+ * Dropdown item for grouped tournaments by tier.
+ */
 type GroupedTournamentDropdownItem = {
   tournament: {
     id: string;
@@ -21,10 +27,15 @@ type GroupedTournamentDropdownItem = {
   tier: { name: string };
   course: { location: string };
 };
+/**
+ * Grouped tournaments for dropdown: array of arrays, each group is a tier.
+ */
 type GroupedTournaments = GroupedTournamentDropdownItem[][];
 
-// Pure presentational component
-interface LeaderboardHeaderProps {
+/**
+ * Props returned for the leaderboard header component.
+ */
+export interface LeaderboardHeaderProps {
   focusTourney: {
     id: string;
     logoUrl: string | null;
@@ -33,26 +44,27 @@ interface LeaderboardHeaderProps {
     endDate: Date;
     currentRound: number | null;
   };
-  course:
-    | {
-        name: string;
-        location: string;
-        par: number;
-        front: number;
-        back: number;
-      }
-    | undefined;
-  tier: { name: string; points: number[]; payouts: number[] } | undefined;
+  course?: {
+    name: string;
+    location: string;
+    par: number;
+    front: number;
+    back: number;
+  };
+  tier?: { name: string; points: number[]; payouts: number[] };
   groupedTournaments: GroupedTournaments;
   isLoading?: boolean;
 }
 
 /**
- * Fetches and processes all data needed for the leaderboard header component
- * Uses tournament utilities for proper business logic and data processing
+ * Fetches and processes all data needed for the leaderboard header component.
  *
- * @param focusTourney - The tournament to fetch data for
+ * @param focusTourney - The tournament to fetch data for (must include season and tier ids)
  * @returns Promise containing processed course, tier, tournaments, and grouped data
+ *
+ * @example
+ *   const data = await getLeaderboardHeaderData(focusTourney);
+ *   data.groupedTournaments.forEach(...)
  */
 export async function getLeaderboardHeaderData(focusTourney: {
   id: string;
@@ -85,31 +97,29 @@ export async function getLeaderboardHeaderData(focusTourney: {
       }
     : undefined;
 
-  const tier = tiers.find((t) => t.id === focusTourney.tier.id)
+  const tierObj = tiers.find((t) => t.id === focusTourney.tier.id);
+  const tier = tierObj
     ? {
-        name: tiers.find((t) => t.id === focusTourney.tier.id)!.name,
-        points: tiers.find((t) => t.id === focusTourney.tier.id)!.points,
-        payouts: tiers.find((t) => t.id === focusTourney.tier.id)!.payouts,
+        name: tierObj.name,
+        points: tierObj.points,
+        payouts: tierObj.payouts,
       }
     : undefined;
 
   // Group tournaments by tier for dropdown
   const groupedTournaments: GroupedTournaments = Object.values(
-    tournaments.reduce(
+    tournaments.reduce<Record<string, (Tournament & { course: Course })[]>>(
       (groups, tournament) => {
         const tierId = tournament.tierId;
         if (!groups[tierId]) groups[tierId] = [];
         groups[tierId].push(tournament);
         return groups;
       },
-      {} as Record<string, Tournament[]>,
+      {},
     ),
   ).map((group) =>
     group.map((tournament) => {
       const tierObj = tiers.find((tier) => tier.id === tournament.tierId);
-      const courseObj = courses.find(
-        (course) => course.id === tournament.courseId,
-      );
       return {
         tournament: {
           id: tournament.id,
@@ -119,7 +129,7 @@ export async function getLeaderboardHeaderData(focusTourney: {
           endDate: tournament.endDate,
         },
         tier: { name: tierObj?.name ?? "" },
-        course: { location: courseObj?.location ?? "" },
+        course: { location: tournament.course.location ?? "" },
       };
     }),
   );

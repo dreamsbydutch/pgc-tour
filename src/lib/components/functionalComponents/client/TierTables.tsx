@@ -7,12 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { cn } from "@/lib/utils/core";
-import {
-  formatMoney,
-  formatNumber,
-  formatRank,
-} from "@/lib/utils/domain/formatting";
+import { cn, formatMoney, formatNumber, formatRank } from "@/lib/utils/main";
 
 // Use Pick/Omit for minimal Tier type
 

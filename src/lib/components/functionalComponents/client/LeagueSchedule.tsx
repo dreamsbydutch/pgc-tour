@@ -1,9 +1,6 @@
 import { Course, Tier, Tournament } from "@prisma/client";
 import Image from "next/image";
-import { cn } from "@/lib/utils/core";
-import { getTournamentTimeline } from "@/lib/utils/domain/dates";
-import { isNonEmptyArray } from "@/lib/utils/core/types";
-import { capitalize } from "@/lib/utils/core/primitives";
+import { capitalize, cn, getTournamentTimeline } from "@/lib/utils/main";
 import {
   Table,
   TableBody,
@@ -12,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import { isNonEmptyArray } from "@tanstack/react-form";
 
 // Use Pick/Omit on Prisma types for strict minimal types
 
@@ -29,7 +27,7 @@ export function LeagueSchedule({
   tournaments: MinimalTournament[];
 }) {
   const timeline = getTournamentTimeline(tournaments);
-  const sortedTournaments = timeline.allSorted;
+  const sortedTournaments = timeline.all;
   const currentTournamentIndex = timeline.current
     ? sortedTournaments.findIndex((t) => t.id === timeline.current?.id)
     : -1;

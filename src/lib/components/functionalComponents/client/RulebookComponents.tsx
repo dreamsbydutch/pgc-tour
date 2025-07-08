@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
 import React from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { isNonEmptyArray } from "@/lib/utils/core/types";
-import { capitalize } from "@/lib/utils/core/primitives";
+import { isNonEmptyArray } from "@tanstack/react-form";
+import { capitalize } from "@/lib/utils/main";
 
 /**
  * Minimal Reusable Rulebook Components
@@ -81,7 +81,7 @@ export function RuleDisplay({ rule, className = "" }: RuleDisplayProps) {
       <p className="font-medium text-gray-800">{capitalize(rule.ruleText)}</p>
       {isNonEmptyArray(rule.details) && (
         <ul className="ml-4 mt-2 space-y-1">
-          {rule.details.map((detail, index) => (
+          {rule.details?.map((detail, index) => (
             <li key={index} className="flex items-start">
               <span className="mr-2 mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></span>
               <span className="text-sm text-gray-600">{detail}</span>

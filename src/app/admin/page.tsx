@@ -6,10 +6,10 @@ import type {
 import {
   CreateGroupsButton,
   EmailListLinkButton,
+  HistoryButton,
   UpdateGolfersButton,
   UpdateTeamsButton,
 } from "../../lib/components/functionalComponents/client/CreateGroupsButton";
-import HistoryButton from "../../lib/components/functionalComponents/client/HistoryButton";
 import Link from "next/link";
 import { api } from "@/trpc/server";
 import { fetchDataGolf } from "@/lib/utils/system/api";
@@ -19,11 +19,11 @@ export default async function AdminDashboard() {
 
   const liveData = (await fetchDataGolf(
     "preds/in-play",
-    null,
+    {},
   )) as DataGolfLiveTournament;
   const fieldData = (await fetchDataGolf(
     "field-updates",
-    null,
+    {},
   )) as DatagolfFieldInput;
 
   return (
@@ -102,9 +102,9 @@ export default async function AdminDashboard() {
           </div>
           <div className="scrollbar-hidden flex w-full flex-row flex-nowrap justify-around overflow-scroll">
             <EmailListLinkButton />
+            <HistoryButton />
           </div>
         </div>
-        <HistoryButton className="mt-4 w-3/4" />
       </div>
       {/* <PaymentForm /> */}
     </>

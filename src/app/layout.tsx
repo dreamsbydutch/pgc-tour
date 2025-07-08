@@ -10,7 +10,7 @@ import { LoadSeasonalData } from "@store/loadSeasonalData";
 import ServiceWorkerRegistration from "@components/smartComponents/pwa/ServiceWorkerRegistration";
 import { getAuthFromHeaders } from "@supabase/auth-helpers";
 import { NavigationProvider } from "@providers/NavProvider";
-import { cn } from "@lib/utils/core";
+import { cn } from "@/lib/utils/main";
 
 const varela = Varela({
   weight: ["400"],

@@ -4,16 +4,25 @@ import { useEffect } from "react";
 import { useSeasonalStore } from "@/lib/store/seasonalStore";
 import { api } from "@/trpc/react";
 
+/**
+ * Loads and initializes all seasonal data into the store on first page load or when data is stale.
+ * - Loads static data (season, tournaments, tiers, tours) and dynamic data (member, tourCard, allTourCards).
+ * - Uses setSeasonalData for static data and setMember/setTourCard/setAllTourCards for dynamic data.
+ * - Only updates the store if all queries succeed and data is stale.
+ */
 export function LoadSeasonalData() {
-  const clearAndSet = useSeasonalStore((s) => s.clearAndSet);
-  const isDataStale = useSeasonalStore((s) => s.isDataStale);
-  const getDataAge = useSeasonalStore((s) => s.getDataAge);
+  const setSeasonalData = useSeasonalStore((s) => s.setSeasonalData);
+  const setMember = useSeasonalStore((s) => s.setMember);
+  const setTourCard = useSeasonalStore((s) => s.setTourCard);
+  const setAllTourCards = useSeasonalStore((s) => s.setAllTourCards);
+  const lastLoaded = useSeasonalStore((s) => s.lastLoaded);
+  const isDataStale =
+    lastLoaded === null || Date.now() - lastLoaded > 24 * 60 * 60 * 1000;
+  const getDataAge = lastLoaded ? Date.now() - lastLoaded : 0;
 
   const seasonQuery = api.season.getCurrent.useQuery();
   const memberQuery = api.member.getSelf.useQuery();
   const tourCardQuery = api.tourCard.getSelfCurrent.useQuery();
-
-  // Use optimized store route for minimal data
   const storeDataQuery = api.store.getSeasonalData.useQuery(
     { seasonId: seasonQuery.data?.id ?? "" },
     {
@@ -38,28 +47,28 @@ export function LoadSeasonalData() {
     storeDataQuery.isError;
 
   useEffect(() => {
-    // Only update if data is stale and all queries succeeded
-    if (allLoaded && !hasErrors && isDataStale() && storeDataQuery.data) {
-      console.log("🔄 Loading fresh seasonal data...");
-
-      // Use clearAndSet to prevent quota issues
-      clearAndSet({
-        season: seasonQuery.data,
-        member: memberQuery.data,
-        tourCard: tourCardQuery.data,
-        allTourCards: storeDataQuery.data.allTourCards,
+    if (allLoaded && !hasErrors && isDataStale && storeDataQuery.data) {
+      setSeasonalData({
+        season: seasonQuery.data ?? null,
         tournaments: storeDataQuery.data.tournaments,
         tiers: storeDataQuery.data.tiers,
         tours: storeDataQuery.data.tours,
       });
-
-      console.log("✅ Seasonal data loaded successfully");
+      setMember(memberQuery.data!);
+      setTourCard(tourCardQuery.data!);
+      setAllTourCards(storeDataQuery.data.allTourCards);
+      if (process.env.NODE_ENV === "development") {
+        console.log("✅ Seasonal data loaded successfully");
+      }
     }
   }, [
     allLoaded,
     hasErrors,
     isDataStale,
-    clearAndSet,
+    setSeasonalData,
+    setMember,
+    setTourCard,
+    setAllTourCards,
     seasonQuery.data,
     memberQuery.data,
     tourCardQuery.data,
@@ -91,12 +100,36 @@ export function LoadSeasonalData() {
   // Log data age in development
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
-      const ageMinutes = Math.round(getDataAge() / 1000 / 60);
+      const ageMinutes = Math.round(getDataAge / 1000 / 60);
       if (ageMinutes > 0) {
         console.log(`📅 Seasonal data age: ${ageMinutes} minutes`);
       }
     }
   }, [getDataAge]);
+
+  // Force reload when a tournament startDate or endDate passes
+  useEffect(() => {
+    const tournaments = storeDataQuery.data?.tournaments;
+    if (!tournaments || tournaments.length === 0) return;
+    const now = Date.now();
+    // Find the next startDate or endDate in the future
+    const nextTimestamp = tournaments
+      .flatMap((t) => [
+        new Date(t.startDate).getTime(),
+        new Date(t.endDate).getTime(),
+      ])
+      .filter((ts) => ts > now)
+      .sort((a, b) => a - b)[0];
+    if (!nextTimestamp) return;
+    const timeout = setTimeout(
+      () => {
+        // Invalidate the store by resetting lastLoaded (forces reload on next render)
+        useSeasonalStore.getState().reset();
+      },
+      nextTimestamp - now + 1000,
+    ); // Add 1s buffer
+    return () => clearTimeout(timeout);
+  }, [storeDataQuery.data?.tournaments]);
 
   return null;
 }

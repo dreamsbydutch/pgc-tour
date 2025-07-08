@@ -5,20 +5,6 @@ import {
   StandingsHeader,
   StandingsListing,
 } from "@/lib/components/functionalComponents/client/StandingsPage";
-import {
-  useCurrentStandings,
-  StandingsTour,
-  StandingsTier,
-  UseCurrentStandingsResult,
-} from "@/lib/hooks/useCurrentStandings";
-import {
-  getGoldCutCards,
-  getSilverCutCards,
-  getRemainingCards,
-  getGoldTeams,
-  getSilverTeams,
-  getPlayoffTier,
-} from "@/lib/utils/standings/helpers";
 import type { TourCard } from "@prisma/client";
 import { ToursToggleButton } from "@/lib/components/functionalComponents/client/ToursToggle";
 import { useSearchParams } from "next/navigation";

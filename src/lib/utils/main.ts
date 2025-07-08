@@ -33,11 +33,14 @@ export function groupBy<T, K extends string | number | symbol>(
   array: T[],
   keyFn: (item: T) => K,
 ): Record<K, T[]> {
-  return array.reduce((acc, item) => {
-    const key = keyFn(item);
-    (acc[key] ||= []).push(item);
-    return acc;
-  }, {} as Record<K, T[]>);
+  return array.reduce(
+    (acc, item) => {
+      const key = keyFn(item);
+      (acc[key] ||= []).push(item);
+      return acc;
+    },
+    {} as Record<K, T[]>,
+  );
 }
 
 /**
@@ -60,6 +63,35 @@ export function sortItems<T>(
     if (aVal == null || bVal == null) return 0;
     if (aVal < bVal) return direction === "asc" ? -1 : 1;
     if (aVal > bVal) return direction === "asc" ? 1 : -1;
+    return 0;
+  });
+}
+
+/**
+ * Sorts an array of objects by multiple keys and directions.
+ * @param items - Array of objects to sort
+ * @param keys - Array of keys to sort by (in priority order)
+ * @param directions - Array of directions ("asc" or "desc") for each key
+ * @returns Sorted array
+ * @example
+ * sortMultiple([{a: 2, b: 1}, {a: 1, b: 2}], ["a", "b"], ["asc", "desc"])
+ */
+export function sortMultiple<T>(
+  items: T[],
+  keys: (keyof T)[],
+  directions: ("asc" | "desc")[] = [],
+): T[] {
+  return [...items].sort((a, b) => {
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (key === undefined) continue;
+      const dir = directions[i] || "asc";
+      const aVal = a[key as keyof T];
+      const bVal = b[key as keyof T];
+      if (aVal == null || bVal == null) continue;
+      if (aVal < bVal) return dir === "asc" ? -1 : 1;
+      if (aVal > bVal) return dir === "asc" ? 1 : -1;
+    }
     return 0;
   });
 }
@@ -88,7 +120,7 @@ export function filterItems<T>(items: T[], filters: Record<string, any>): T[] {
       }
       if (typeof value === "boolean") return Boolean(itemValue) === value;
       return itemValue === value;
-    })
+    }),
   );
 }
 
@@ -116,7 +148,7 @@ export function searchItems<T>(
         if (value == null) break;
       }
       return value && String(value).toLowerCase().includes(lowerQuery);
-    })
+    }),
   );
 }
 
@@ -133,7 +165,9 @@ export function batchUpdateItems<T extends { id: string }>(
   updates: Array<{ id: string; updates: Partial<T> }>,
 ): T[] {
   const updateMap = new Map(updates.map((u) => [u.id, u.updates]));
-  return items.map((item) => updateMap.has(item.id) ? { ...item, ...updateMap.get(item.id)! } : item);
+  return items.map((item) =>
+    updateMap.has(item.id) ? { ...item, ...updateMap.get(item.id)! } : item,
+  );
 }
 
 // ===== TYPE GUARDS & VALIDATION =====
@@ -186,7 +220,12 @@ export function isValidEmail(email: unknown): email is string {
  */
 export function isValidUrl(url: unknown): url is string {
   if (!isNonEmptyString(url)) return false;
-  try { new URL(url); return true; } catch { return false; }
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -354,7 +393,12 @@ export function isValidRound(round: unknown): round is number {
  * isValidTournamentDate(new Date("1900-01-01")) // false
  */
 export function isValidTournamentDate(date: unknown): date is Date {
-  return date instanceof Date && !isNaN(date.getTime()) && date.getFullYear() >= 1950 && date.getFullYear() <= new Date().getFullYear() + 50;
+  return (
+    date instanceof Date &&
+    !isNaN(date.getTime()) &&
+    date.getFullYear() >= 1950 &&
+    date.getFullYear() <= new Date().getFullYear() + 50
+  );
 }
 
 /**
@@ -368,7 +412,9 @@ export function isValidTournamentDate(date: unknown): date is Date {
 export function isValidTournamentStatus(
   status: unknown,
 ): status is "upcoming" | "current" | "completed" {
-  return status === "upcoming" || status === "current" || status === "completed";
+  return (
+    status === "upcoming" || status === "current" || status === "completed"
+  );
 }
 
 // ===== FORMATTERS =====
@@ -384,18 +430,29 @@ export function formatNumber(
   const num = typeof n === "string" ? parseFloat(n) : n;
   if (typeof num !== "number" || isNaN(num) || !isFinite(num)) return "-";
   try {
-    return Intl.NumberFormat("en-US", { maximumFractionDigits: Math.max(0, Math.min(20, maxFractionDigits)) }).format(num);
-  } catch { return String(num); }
+    return Intl.NumberFormat("en-US", {
+      maximumFractionDigits: Math.max(0, Math.min(20, maxFractionDigits)),
+    }).format(num);
+  } catch {
+    return String(num);
+  }
 }
 
 /**
  * Formats a number in compact notation (1.2K, 3.4M, etc.)
  */
-export function formatCompactNumber(n: number | string | null | undefined): string {
+export function formatCompactNumber(
+  n: number | string | null | undefined,
+): string {
   const num = safeNumber(n, 0);
   try {
-    return Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(num);
-  } catch { return formatNumber(num); }
+    return Intl.NumberFormat("en-US", {
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(num);
+  } catch {
+    return formatNumber(num);
+  }
 }
 
 /**
@@ -411,8 +468,15 @@ export function formatMoney(
     const absNum = Math.abs(num);
     if (absNum >= 1e6) return "$" + (num / 1e6).toFixed(1) + "M";
     if (absNum >= 1e4) return "$" + (num / 1e3).toFixed(0) + "k";
-    return Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: short ? 0 : 2, minimumFractionDigits: short ? 0 : 2 }).format(num);
-  } catch { return "-"; }
+    return Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: short ? 0 : 2,
+      minimumFractionDigits: short ? 0 : 2,
+    }).format(num);
+  } catch {
+    return "-";
+  }
 }
 
 /**
@@ -425,8 +489,14 @@ export function formatPercentage(
   const num = safeNumber(value, 0);
   const percentage = asDecimal ? num * 100 : num;
   try {
-    return Intl.NumberFormat("en-US", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(asDecimal ? num : num / 100);
-  } catch { return `${percentage.toFixed(1)}%`; }
+    return Intl.NumberFormat("en-US", {
+      style: "percent",
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }).format(asDecimal ? num : num / 100);
+  } catch {
+    return `${percentage.toFixed(1)}%`;
+  }
 }
 
 /**
@@ -448,8 +518,14 @@ export function formatTime(time: Date | string | null | undefined): string {
   try {
     const date = typeof time === "string" ? new Date(time) : time;
     if (isNaN(date.getTime())) return "N/A";
-    return date.toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
-  } catch { return "N/A"; }
+    return date.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    });
+  } catch {
+    return "N/A";
+  }
 }
 
 /**
@@ -464,7 +540,9 @@ export function formatDate(
     const dateObj = typeof date === "string" ? new Date(date) : date;
     if (isNaN(dateObj.getTime())) return "N/A";
     return dateObj.toLocaleDateString("en-US", { dateStyle: format });
-  } catch { return "N/A"; }
+  } catch {
+    return "N/A";
+  }
 }
 
 /**
@@ -475,9 +553,43 @@ export function formatName(name: string, type: "display" | "full"): string {
   const [firstNameRaw, ...rest] = name.trim().split(/\s+/);
   const firstName = firstNameRaw || "";
   const lastName = rest.join(" ");
-  const cap = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
-  if (type === "full") return lastName ? `${cap(firstName)} ${cap(lastName)}` : cap(firstName);
+  const cap = (s: string) =>
+    s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
+  if (type === "full")
+    return lastName ? `${cap(firstName)} ${cap(lastName)}` : cap(firstName);
   return lastName ? `${cap(firstName)[0]}. ${cap(lastName)}` : cap(firstName);
+}
+
+/**
+ * Formats a tournament date range as a human-readable string.
+ * If start and end are in the same month, omits the repeated month.
+ *
+ * @param start - Start date (Date or string)
+ * @param end - End date (Date or string)
+ * @returns Formatted date range (e.g., "Apr 10–12, 2025" or "Apr 28 – May 1, 2025")
+ * @example
+ * formatTournamentDateRange("2025-04-10", "2025-04-12") // "Apr 10–12, 2025"
+ * formatTournamentDateRange("2025-04-28", "2025-05-01") // "Apr 28 – May 1, 2025"
+ */
+export function formatTournamentDateRange(
+  start: Date | string,
+  end: Date | string,
+): string {
+  const startDate = typeof start === "string" ? new Date(start) : start;
+  const endDate = typeof end === "string" ? new Date(end) : end;
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return "";
+  const sameMonth =
+    startDate.getFullYear() === endDate.getFullYear() &&
+    startDate.getMonth() === endDate.getMonth();
+  const year = startDate.getFullYear();
+  const startMonth = startDate.toLocaleString("en-US", { month: "short" });
+  const endMonth = endDate.toLocaleString("en-US", { month: "short" });
+  const startDay = startDate.getDate();
+  const endDay = endDate.getDate();
+  if (sameMonth) {
+    return `${startMonth} ${startDay}–${endDay}, ${year}`;
+  }
+  return `${startMonth} ${startDay} – ${endMonth} ${endDay}, ${year}`;
 }
 
 // ===== GENERAL UTILITIES =====
@@ -489,4 +601,203 @@ function safeNumber(value: unknown, fallback = 0): number {
   if (value == null) return fallback;
   const num = typeof value === "string" ? parseFloat(value) : Number(value);
   return isNaN(num) || !isFinite(num) ? fallback : num;
+}
+/**
+ * @file api.ts
+ * @description
+ *   Utility function for fetching data from the DataGolf API.
+ *   Handles GET requests and returns parsed JSON data.
+ *
+ *   Usage:
+ *     - fetchDataGolf(endpoint, params?): Fetches data from DataGolf API endpoint with optional query params.
+ */
+
+const DATAGOLF_BASE_URL = "https://feeds.datagolf.com/";
+const DATAGOLF_API_KEY = process.env.NEXT_PUBLIC_DATAGOLF_API_KEY;
+
+/**
+ * Fetches data from the DataGolf API.
+ *
+ * @param endpoint - The DataGolf API endpoint (e.g., "preds/live-hole-stats")
+ * @param params - Optional query parameters as an object
+ * @returns Parsed JSON data from the API
+ * @throws Error if the request fails or the API key is missing
+ */
+export async function fetchDataGolf(
+  endpoint: string,
+  params: Record<string, any> = {},
+): Promise<any> {
+  if (!DATAGOLF_API_KEY) {
+    throw new Error("Missing DataGolf API key (NEXT_PUBLIC_DATAGOLF_API_KEY)");
+  }
+  const url = new URL(endpoint, DATAGOLF_BASE_URL);
+  url.searchParams.set("key", DATAGOLF_API_KEY);
+  for (const [k, v] of Object.entries(params)) {
+    url.searchParams.set(k, String(v));
+  }
+  const res = await fetch(url.toString());
+  if (!res.ok) {
+    throw new Error(`DataGolf API error: ${res.status} ${res.statusText}`);
+  }
+  return res.json();
+}
+
+/**
+ * Formats a golf score for display.
+ * Returns 'E' for even (0), '+N' for positive, and '-N' for negative scores.
+ *
+ * @param score - The golf score as a number
+ * @returns Formatted score string
+ * @example
+ * formatScore(0) // 'E'
+ * formatScore(2) // '+2'
+ * formatScore(-5.4) // '-5.4'
+ */
+export function formatScore(score: number | null): string {
+  if (!score) return "-";
+  if (score === 0) return "E";
+  if (score > 0) return `+${score}`;
+  return String(score);
+}
+
+/**
+ * Checks if an array or object has any items/keys.
+ * @param value - Array or object to check
+ * @returns True if array has length > 0 or object has at least one key
+ * @example
+ * hasItems([1, 2, 3]) // true
+ * hasItems([]) // false
+ * hasItems({ a: 1 }) // true
+ * hasItems({}) // false
+ */
+export function hasItems(value: unknown): boolean {
+  if (Array.isArray(value)) return value.length > 0;
+  if (value && typeof value === "object") return Object.keys(value).length > 0;
+  return false;
+}
+
+/**
+ * Capitalizes the first letter of a string.
+ * @param str - String to capitalize
+ * @returns Capitalized string
+ * @example
+ * capitalize("hello") // "Hello"
+ * capitalize("Golf") // "Golf"
+ */
+export function capitalize(str: string): string {
+  if (typeof str !== "string" || !str.length) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * Safely gets a nested property from an object using a dot-separated path string.
+ * Returns undefined if any part of the path is missing.
+ *
+ * @param obj - The object to traverse
+ * @param path - Dot-separated path string (e.g., 'a.b.c')
+ * @returns The value at the given path, or undefined if not found
+ * @example
+ * getPath({ a: { b: { c: 42 } } }, 'a.b.c') // 42
+ * getPath({ a: { b: 1 } }, 'a.b.c') // undefined
+ */
+export function getPath<T = any, R = any>(obj: T, path: string): R | undefined {
+  if (!obj || typeof path !== "string" || !path) return undefined;
+  return path
+    .split(".")
+    .reduce<any>((acc, key) => (acc && key in acc ? acc[key] : undefined), obj);
+}
+
+/**
+ * Gets a golfer's tee time string for the current round from a golfer object.
+ * Returns the tee time for the current round (e.g., roundOneTeeTime, roundTwoTeeTime, etc.),
+ * or undefined if not found.
+ *
+ * @param golfer - Golfer object with round and tee time fields
+ * @returns Tee time string or undefined
+ * @example
+ * getGolferTeeTime({ round: 2, roundTwoTeeTime: "8:00 AM" }) // "8:00 AM"
+ */
+export function getGolferTeeTime(golfer: {
+  round?: number | null;
+  roundOneTeeTime?: string | null;
+  roundTwoTeeTime?: string | null;
+  roundThreeTeeTime?: string | null;
+  roundFourTeeTime?: string | null;
+}): string | undefined {
+  if (!golfer || typeof golfer.round !== "number") return undefined;
+  const roundMap = [
+    undefined,
+    "roundOneTeeTime",
+    "roundTwoTeeTime",
+    "roundThreeTeeTime",
+    "roundFourTeeTime",
+  ];
+  const key = roundMap[golfer.round];
+  return key && golfer[key as keyof typeof golfer]
+    ? String(golfer[key as keyof typeof golfer])
+    : undefined;
+}
+
+/**
+ * Returns a timeline object for tournaments: current, past, and all (sorted by startDate ascending).
+ *
+ * @param tournaments - Array of tournaments with startDate and endDate fields
+ * @returns { current: T | undefined, past: T[], all: T[] } where all is sorted by startDate ascending
+ * @example
+ * getTournamentTimeline([{ startDate: new Date(), endDate: new Date() }])
+ */
+export function getTournamentTimeline<
+  T extends { startDate: Date; endDate: Date },
+>(tournaments: T[]): { current: T | undefined; past: T[]; all: T[] } {
+  const now = new Date();
+  const all = [...tournaments].sort(
+    (a, b) => a.startDate.getTime() - b.startDate.getTime(),
+  );
+  const current = all.find((t) => t.startDate <= now && t.endDate >= now);
+  const past = all.filter((t) => t.endDate < now);
+  return { current, past, all };
+}
+
+/**
+ * Type guard for Date objects (validates instanceof Date and not NaN)
+ * @param value - Value to check
+ * @returns True if value is a valid Date object
+ * @example
+ * isDate(new Date()) // true
+ * isDate('2020-01-01') // false
+ * isDate(new Date('invalid')) // false
+ */
+export function isDate(value: unknown): value is Date {
+  return value instanceof Date && !isNaN(value.getTime());
+}
+
+/**
+ * Extracts a human-readable error message from any error-like value.
+ * Handles Error objects, fetch errors, and plain strings.
+ *
+ * @param error - The error value to extract a message from
+ * @returns The error message as a string
+ * @example
+ * getErrorMessage(new Error('Oops')) // 'Oops'
+ * getErrorMessage('Something went wrong') // 'Something went wrong'
+ * getErrorMessage({ message: 'Failed' }) // 'Failed'
+ * getErrorMessage(undefined) // 'Unknown error'
+ */
+export function getErrorMessage(error: unknown): string {
+  if (!error) return "Unknown error";
+  if (typeof error === "string") return error;
+  if (error instanceof Error && error.message) return error.message;
+  if (
+    typeof error === "object" &&
+    error &&
+    "message" in error &&
+    typeof (error as any).message === "string"
+  ) {
+    return (error as any).message;
+  }
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
 }

@@ -13,10 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from "../../functionalComponents/ui/table";
-import { processPayment } from "@/server/api/actions/transaction";
 import type { TransactionType } from "@prisma/client";
 import { Button } from "../../functionalComponents/ui/button";
-import { formatMoney } from "@/lib/utils/domain/formatting";
+import { formatMoney } from "@/lib/utils/main";
+import { processPayment } from "@/server/actions/transactions";
 
 const paymentSchema = z.object({
   userId: z.string().min(1, "Please select a member"),

@@ -8,11 +8,10 @@ import type {
   Tournament,
 } from "@prisma/client";
 import { TournamentCountdown } from "./TournamentCountdown";
-import { formatMoney, formatRank } from "../../../utils/domain/formatting";
 import { Button } from "../ui/button";
 import LoadingSpinner from "../loading/LoadingSpinner";
-import { cn } from "../../../utils/core";
 import { useState, memo } from "react";
+import { cn, formatMoney, formatRank } from "@/lib/utils/main";
 
 interface PreTournamentPageProps {
   tournament: Pick<Tournament, "id" | "name" | "logoUrl" | "startDate">;

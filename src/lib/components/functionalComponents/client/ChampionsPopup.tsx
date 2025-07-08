@@ -1,12 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import LittleFucker from "../../smartComponents/client/LittleFucker";
-import { formatScore } from "@/lib/utils/domain/golf";
-import { hasItems } from "@/lib/utils/main";
-import { capitalize } from "@/lib/utils/core/primitives";
-import { isNonEmptyString } from "@/lib/utils/core/types";
-import { getPath } from "@/lib/utils/core/objects";
 import type { Tournament, TourCard, Tour, Golfer } from "@prisma/client";
+import { capitalize, formatScore, getPath, hasItems, isNonEmptyString } from "@/lib/utils/main";
 
 type ChampionData = Omit<
   TourCard,

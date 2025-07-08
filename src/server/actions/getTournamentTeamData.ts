@@ -1,26 +1,78 @@
+/**
+ * Server action to fetch a user's team, tour card, and golfers for a tournament.
+ *
+ * Returns minimal, type-safe objects for use in team-building and tournament UIs.
+ *
+ * - Returns the user's tour card for the season (if any)
+ * - Returns the user's team for the tournament (if any)
+ * - Returns all golfers for the tournament, and the subset on the user's team
+ * - Handles errors gracefully and provides a loading/error state
+ *
+ * @module server/actions/getTournamentTeamData
+ */
 import { api } from "@/trpc/server";
 import type { Team, Golfer, TourCard } from "@prisma/client";
 
-// Minimal types for return values
+/**
+ * Minimal tour card type for team/tournament UI.
+ * Only includes fields needed for team selection and display.
+ */
 export type MinimalTourCard = Pick<
   TourCard,
   "id" | "seasonId" | "memberId" | "points" | "earnings" | "position"
 >;
+
+/**
+ * Minimal team type for team/tournament UI.
+ * Only includes fields needed for team selection and display.
+ */
 export type MinimalTeam = Pick<
   Team,
   "id" | "tournamentId" | "tourCardId" | "golferIds"
 >;
+
+/**
+ * Minimal golfer type for team/tournament UI.
+ * Only includes fields needed for team selection and display.
+ */
 export type MinimalGolfer = Pick<
   Golfer,
   "id" | "playerName" | "worldRank" | "rating" | "group"
 >;
 
+/**
+ * Arguments for getTournamentTeamData.
+ */
 interface GetTournamentTeamDataArgs {
+  /** Tournament ID to fetch team/golfers for */
   tournamentId: string;
+  /** Member ID (user), or null if not logged in */
   memberId: string | null;
+  /** Season ID for the tournament */
   seasonId: string;
 }
 
+/**
+ * Fetches the user's team, tour card, and golfers for a tournament.
+ *
+ * Returns minimal objects for use in team-building and tournament UIs.
+ *
+ * @param {GetTournamentTeamDataArgs} args - Arguments for fetching team data
+ * @returns {Promise<{
+ *   tourCard: MinimalTourCard | null;
+ *   existingTeam: MinimalTeam | null;
+ *   teamGolfers: MinimalGolfer[];
+ *   isTeamLoading: boolean;
+ *   teamError: string | null;
+ * }>} Team/tour card/golfer data for the tournament
+ *
+ * @example
+ * const { tourCard, existingTeam, teamGolfers, isTeamLoading, teamError } = await getTournamentTeamData({
+ *   tournamentId: "...",
+ *   memberId: "...",
+ *   seasonId: "..."
+ * });
+ */
 export async function getTournamentTeamData({
   tournamentId,
   memberId,

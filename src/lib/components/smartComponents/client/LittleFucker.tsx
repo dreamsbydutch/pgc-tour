@@ -1,11 +1,11 @@
 "use client";
 
-import { isNonEmptyArray } from "@/lib/utils/core/types";
-import { useChampionTrophies } from "@/lib/hooks";
 import {
   type ChampionTrophyTeam,
   TrophyIcon,
 } from "@/lib/components/functionalComponents/client/TrophyIcon";
+import { useChampionTrophies } from "@/lib/hooks/hooks";
+import { isNonEmptyArray } from "@tanstack/react-form";
 
 interface LittleFuckerProps {
   memberId: string;

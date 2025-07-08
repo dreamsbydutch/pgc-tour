@@ -1,6 +1,5 @@
 import { LeaderboardHeader } from "@/lib/components/functionalComponents/client/LeaderboardHeader";
 import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
-import { getTournamentData } from "@/server/api/actions";
 import { redirect } from "next/navigation";
 
 export default async function TournamentPage({

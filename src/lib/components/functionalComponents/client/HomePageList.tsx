@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import LittleFucker from "../../smartComponents/client/LittleFucker";
-import { cn } from "@utils/core";
-import type { Tour, TourCard, Member } from "@prisma/client";
+import type { Tour, Member } from "@prisma/client";
+import { cn } from "@/lib/utils/main";
 
 // Only include the minimal required fields for each type
 type MinimalTour = Pick<Tour, "logoUrl" | "shortForm">;

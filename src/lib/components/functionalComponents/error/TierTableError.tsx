@@ -1,4 +1,4 @@
-import { getErrorMessage } from "@/lib/utils/core/types";
+import { getErrorMessage } from "@/lib/utils/main";
 
 export function TierTableError({ error }: { error?: unknown }) {
   let message = getErrorMessage(error);

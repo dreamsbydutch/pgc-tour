@@ -14,13 +14,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/lib/components/functionalComponents/ui/popover";
-import { formatTournamentDateRange } from "@/lib/utils/domain/dates";
-import {
-  formatMoney,
-  formatRank,
-  formatNumber,
-} from "@/lib/utils/domain/formatting";
-import { MAX_PAYOUTS_DISPLAY, YARDAGE_PRECISION } from "@/lib/utils/constants";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
@@ -34,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/lib/components/functionalComponents/ui/dropdown-menu";
 import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
-import { cn } from "@/lib/utils/core";
+import { cn, formatMoney, formatNumber, formatRank, formatTournamentDateRange } from "@/lib/utils/main";
 import { CoursePopover } from "../../smartComponents/client/CoursePopover";
 import type { Tournament, Tier, Course } from "@prisma/client";
 
@@ -129,7 +122,7 @@ export function LeaderboardHeader({
           {focusTourney.course?.front &&
           focusTourney.course?.back &&
           focusTourney.course?.par
-            ? `${formatNumber(focusTourney.course.front, YARDAGE_PRECISION)} - ${formatNumber(focusTourney.course.back, YARDAGE_PRECISION)} - ${formatNumber(focusTourney.course.par, YARDAGE_PRECISION)}`
+            ? `${formatNumber(focusTourney.course.front, 1)} - ${formatNumber(focusTourney.course.back, 1)} - ${formatNumber(focusTourney.course.par, 1)}`
             : "-"}
         </div>
 
@@ -160,7 +153,7 @@ function PointsAndPayoutsPopover({
       {/* Rank Column */}
       <div className="mx-auto flex w-fit flex-col">
         <div className="text-base font-semibold text-white">Rank</div>
-        {tier.payouts.slice(0, MAX_PAYOUTS_DISPLAY).map((_, i) => (
+        {tier.payouts.slice(0, 35).map((_, i) => (
           <div key={i} className="text-xs">
             {formatRank(i + 1)}
           </div>
@@ -169,7 +162,7 @@ function PointsAndPayoutsPopover({
       {/* Payouts Column */}
       <div className="mx-auto flex w-fit flex-col">
         <div className="text-base font-semibold">Payouts</div>
-        {tier.payouts.slice(0, MAX_PAYOUTS_DISPLAY).map((payout) => (
+        {tier.payouts.slice(0, 35).map((payout) => (
           <div key={"payout-" + payout} className="text-xs">
             {formatMoney(payout)}
           </div>
@@ -178,9 +171,9 @@ function PointsAndPayoutsPopover({
       {/* Points Column */}
       <div className="mx-auto flex w-fit flex-col">
         <div className="text-base font-semibold">Points</div>
-        {tier.points.slice(0, MAX_PAYOUTS_DISPLAY).map((points) => (
+        {tier.points.slice(0, 35).map((points) => (
           <div key={"points-" + points} className="text-xs">
-            {formatNumber(points, YARDAGE_PRECISION)}
+            {formatNumber(points, 1)}
           </div>
         ))}
       </div>
@@ -415,7 +408,6 @@ function TournamentItem({
         {formatTournamentDateRange(
           tourney.startDate,
           tourney.endDate,
-          tourney.course.location,
         )}
       </div>
     </div>

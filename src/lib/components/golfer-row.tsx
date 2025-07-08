@@ -3,7 +3,7 @@
 //   TableCell,
 //   TableRow,
 // } from "@/lib/components/functionalComponents/ui/table";
-// import { cn } from "@/lib/utils/core";
+// import { cn } from "@/lib/utils/main";;
 // import { Tournament } from "@prisma/client";
 
 // interface GolferRowProps {

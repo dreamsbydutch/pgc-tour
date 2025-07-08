@@ -1,7 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils/core";
-import { formatMoney, formatRank } from "@/lib/utils/domain/formatting";
+import { cn, formatMoney, formatRank } from "@/lib/utils/main";
 import { Star } from "lucide-react";
 import { useState } from "react";
 import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";

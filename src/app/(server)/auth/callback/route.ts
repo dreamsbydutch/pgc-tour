@@ -3,8 +3,8 @@
 import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
-import { formatName } from "@/lib/utils/domain/formatting";
 import { api } from "@/trpc/server";
+import { formatName } from "@/lib/utils/main";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL

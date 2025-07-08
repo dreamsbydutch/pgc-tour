@@ -1,9 +1,9 @@
 "use client";
 
+import { cn } from "@/lib/utils/main";
 import { Tour } from "@prisma/client";
 import Image from "next/image";
 import { Dispatch, SetStateAction, useState } from "react";
-import { cn } from "../../../utils/core";
 
 export function ToursToggleButton({
   tour,

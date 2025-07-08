@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { cn, isDate } from "@/lib/utils/core/types";
 import { Tournament } from "@prisma/client";
+import { cn, isDate } from "@/lib/utils/main";
 
 // Use Pick for minimal Tournament type in ChampionTrophyTeam
 export interface ChampionTrophyTeam {
