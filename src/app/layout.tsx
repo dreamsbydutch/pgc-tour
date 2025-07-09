@@ -52,6 +52,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // Only get initial auth data for SSR - client will manage state afterwards
   const { user, member } = await getAuthData();
 
   return (

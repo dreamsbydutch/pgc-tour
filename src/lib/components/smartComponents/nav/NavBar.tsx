@@ -34,16 +34,16 @@ const navItems = [
  * - className (optional): Additional CSS classes to style the component.
  */
 export default function NavBar({ className }: { className?: string }) {
-  const userData = useHeaderUser();
+  const { user, member, isLoading: isAuthLoading } = useHeaderUser();
   const pathName = usePathname();
 
   const { data: tourCards, isLoading: isLoadingTourCards } =
     api.tourCard.getByUserId.useQuery(
       {
-        userId: userData?.member?.id ?? "",
+        userId: member?.id ?? "",
       },
       {
-        enabled: !!userData?.member?.id,
+        enabled: !!member?.id,
         retry: 3,
         staleTime: 1000 * 60 * 5,
         gcTime: 1000 * 60 * 10,
@@ -87,14 +87,14 @@ export default function NavBar({ className }: { className?: string }) {
           </div>
         </div>
       ))}
-      {isLoadingTourCards ? (
+      {isLoadingTourCards || isAuthLoading ? (
         <Skeleton
           className={`h-[1.5rem] w-[1.5rem] rounded-full lg:h-[2.5rem] lg:w-[2.5rem]`}
         />
       ) : (
         <UserAccountNav
-          user={userData?.user ?? null}
-          member={userData?.member ?? null}
+          user={user}
+          member={member}
           tourCards={tourCards ?? []}
         />
       )}
