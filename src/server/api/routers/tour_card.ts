@@ -1,10 +1,9 @@
 import { z } from "zod";
 
 import {
-  adminProcedure,
+  publicProcedure,
   createTRPCRouter,
   protectedProcedure,
-  publicProcedure,
 } from "@/server/api/trpc";
 
 export const tourCardRouter = createTRPCRouter({
@@ -117,7 +116,7 @@ export const tourCardRouter = createTRPCRouter({
     });
   }),
 
-  create: adminProcedure
+  create: publicProcedure
     .input(
       z.object({
         displayName: z.string().min(1),
@@ -132,7 +131,7 @@ export const tourCardRouter = createTRPCRouter({
       });
     }),
 
-  update: adminProcedure
+  update: publicProcedure
     .input(
       z.object({
         id: z.string(),
@@ -155,7 +154,7 @@ export const tourCardRouter = createTRPCRouter({
       });
     }),
 
-  delete: adminProcedure
+  delete: publicProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.tourCard.delete({ where: { id: input.id } });

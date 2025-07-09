@@ -6,7 +6,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../../lib/components/functionalComponents/ui/table";
+} from "../../../lib/components/ui/table";
 
 export default async function AdminDashboard() {
   const currentTourney = (await api.tournament.getInfo()).next;

@@ -1,19 +1,19 @@
 import { z } from "zod";
 
 import {
-  adminProcedure,
+  publicProcedure,
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
 
 export const pushSubscriptionRouter = createTRPCRouter({
-  getAll: adminProcedure.query(async ({ ctx }) => {
+  getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.pushSubscription.findMany({
       orderBy: { createdAt: "desc" },
     });
   }),
 
-  getById: adminProcedure
+  getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       return ctx.db.pushSubscription.findUnique({

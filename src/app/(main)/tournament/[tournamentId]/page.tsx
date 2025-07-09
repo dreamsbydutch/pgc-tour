@@ -1,6 +1,13 @@
-import { LeaderboardHeader } from "@/lib/components/functionalComponents/client/LeaderboardHeader";
-import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
+import { LeaderboardHeader } from "@/lib/smartComponents/functionalComponents/client/LeaderboardHeader";
+import LeaderboardView from "@/lib/smartComponents/Leaderboard";
+import PreTournamentPage from "@/lib/smartComponents/server/PreTournament";
+import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
+import { getGolfersByTournament } from "@/server/actions/golfers";
 import { getCurrentSeason } from "@/server/actions/season";
+import { getTeamsByTournament } from "@/server/actions/team";
+import { getTiersBySeason } from "@/server/actions/tier";
+import { getToursBySeason } from "@/server/actions/tour";
+import { getAllTourCards, getCurrentTourCard } from "@/server/actions/tourCard";
 import { getTournamentInfo } from "@/server/actions/tournament";
 import { redirect } from "next/navigation";
 
@@ -15,6 +22,14 @@ export default async function TournamentPage({
   }
   const { season: allTournaments } = await getTournamentInfo(currentSeason.id);
   const focusTourney = allTournaments.find((t) => t.id === params.tournamentId);
+
+  const golfers = await getGolfersByTournament(focusTourney?.id ?? "");
+  const teams = await getTeamsByTournament(focusTourney?.id ?? "");
+  const tours = await getToursBySeason(currentSeason.id);
+  const tourCards = await getAllTourCards();
+  const member = await getMemberFromHeaders();
+  const tourCard = await getCurrentTourCard();
+
   if (!focusTourney) {
     redirect("/tournament");
   }
@@ -26,6 +41,16 @@ export default async function TournamentPage({
       {focusTourney.startDate > new Date() && (
         <PreTournamentPage tournament={focusTourney} />
       )}
+      <LeaderboardView
+        tournament={focusTourney}
+        golfers={golfers}
+        teams={teams}
+        tours={tours}
+        tourCards={tourCards}
+        member={member}
+        tourCard={tourCard}
+        variant="historical"
+      />
     </div>
   );
 }

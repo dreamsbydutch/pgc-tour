@@ -2,19 +2,19 @@ import { z } from "zod";
 import { TransactionType } from "@prisma/client";
 
 import {
-  adminProcedure,
+  publicProcedure,
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
 
 export const transactionRouter = createTRPCRouter({
-  getAll: adminProcedure.query(async ({ ctx }) => {
+  getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.transactions.findMany({
       orderBy: { id: "desc" },
     });
   }),
 
-  getById: adminProcedure
+  getById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
       return ctx.db.transactions.findUnique({
@@ -31,7 +31,7 @@ export const transactionRouter = createTRPCRouter({
       });
     }),
 
-  getBySeason: adminProcedure
+  getBySeason: publicProcedure
     .input(z.object({ seasonId: z.string() }))
     .query(async ({ ctx, input }) => {
       return ctx.db.transactions.findMany({
@@ -40,7 +40,7 @@ export const transactionRouter = createTRPCRouter({
       });
     }),
 
-  create: adminProcedure
+  create: publicProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -56,7 +56,7 @@ export const transactionRouter = createTRPCRouter({
       });
     }),
 
-  update: adminProcedure
+  update: publicProcedure
     .input(
       z.object({
         id: z.number(),
@@ -73,7 +73,7 @@ export const transactionRouter = createTRPCRouter({
       });
     }),
 
-  delete: adminProcedure
+  delete: publicProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.transactions.delete({ where: { id: input.id } });

@@ -3,17 +3,14 @@
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
 import { ruleList } from "./rules";
-import type { RuleCategoryType } from "@/lib/components/functionalComponents/client/RulebookComponents";
+import type { RuleCategoryType } from "@/lib/smartComponents/functionalComponents/client/RulebookComponents";
 import { cn } from "@/lib/utils/main";
 import { useCurrentSchedule } from "@/lib/hooks/hooks";
 import { LeagueSchedule } from "@/lib/components/LeagueSchedule";
 import { TournamentWithRelations } from "@/server/actions/tournament";
 import { Tier } from "@prisma/client";
 import { useTiers } from "@/lib/store/seasonalStoreHooks";
-import {
-  PayoutsTable,
-  PointsTable,
-} from "@/lib/components/functionalComponents/client/TierTables";
+import { PayoutsTable, PointsTable } from "@/lib/components/TierTables";
 
 /**
  * RulebookPage Component

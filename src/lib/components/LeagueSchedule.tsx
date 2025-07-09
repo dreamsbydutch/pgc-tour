@@ -7,11 +7,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./functionalComponents/ui/table";
-import {
-  Skeleton,
-  SVGSkeleton,
-} from "@/lib/components/functionalComponents/ui/skeleton";
+} from "./ui/table";
+import { Skeleton, SVGSkeleton } from "@/lib/components/ui/skeleton";
 
 /**
  * LeagueSchedule Component
@@ -28,15 +25,20 @@ export function LeagueSchedule({
     id: string;
     name: string;
     logoUrl: string | null;
-    startDate: Date;
-    endDate: Date;
+    startDate: string;
+    endDate: string;
     seasonId: string;
     tier: { name: string };
     course: { name: string; location: string };
   }[];
 }) {
+  const parsedTournaments = tournaments.map((t) => ({
+    ...t,
+    startDate: new Date(t.startDate),
+    endDate: new Date(t.endDate),
+  }));
   // Get timeline info (all, current, past, etc.)
-  const timeline = getTournamentTimeline(tournaments);
+  const timeline = getTournamentTimeline(parsedTournaments);
   const sortedTournaments = timeline.all;
   // Index of the current tournament in the sorted list
   const currentTournamentIndex = timeline.current

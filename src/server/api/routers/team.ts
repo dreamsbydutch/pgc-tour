@@ -1,10 +1,9 @@
 import { z } from "zod";
 
 import {
-  adminProcedure,
+  publicProcedure,
   createTRPCRouter,
   protectedProcedure,
-  publicProcedure,
 } from "@/server/api/trpc";
 
 export const teamRouter = createTRPCRouter({
@@ -91,12 +90,28 @@ export const teamRouter = createTRPCRouter({
         },
         include: {
           tournament: true,
-          tourCard: true
+          tourCard: true,
         },
         orderBy: { createdAt: "desc" },
       });
     }),
 
+  getChampionsByUser: publicProcedure
+    .input(z.object({ memberId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.team.findMany({
+        where: {
+          tourCard: { memberId: input.memberId },
+          OR: [{ position: "1" }, { position: "T1" }],
+        },
+        include: {
+          tournament: {
+            select: { name: true, logoUrl: true, startDate: true },
+          },
+        },
+        orderBy: { tournament: { tier: { payouts: "asc" } } },
+      });
+    }),
   getChampionsByTournament: publicProcedure
     .input(z.object({ tournamentId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -146,7 +161,7 @@ export const teamRouter = createTRPCRouter({
         data: input,
       });
     }),
-  create: adminProcedure
+  create: publicProcedure
     .input(
       z.object({
         golferIds: z.array(z.number()),
@@ -160,7 +175,7 @@ export const teamRouter = createTRPCRouter({
       });
     }),
 
-  update: adminProcedure
+  update: publicProcedure
     .input(
       z.object({
         id: z.number(),
@@ -187,7 +202,7 @@ export const teamRouter = createTRPCRouter({
       });
     }),
 
-  delete: adminProcedure
+  delete: publicProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.team.delete({ where: { id: input.id } });

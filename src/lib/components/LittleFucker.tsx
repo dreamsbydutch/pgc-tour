@@ -13,16 +13,19 @@ export default function LittleFucker({
   champions,
   showSeasonText,
 }: {
-  champions: {
-    id: number;
-    tournament: {
-      name: string;
-      logoUrl: string | null;
-      startDate: Date;
-    };
-  }[];
+  champions:
+    | {
+        id: number;
+        tournament: {
+          name: string;
+          logoUrl: string | null;
+          startDate: Date;
+        };
+      }[]
+    | null;
   showSeasonText: boolean;
 }) {
+  if (!champions || champions.length === 0) return null;
   return (
     <div className="flex flex-row">
       {champions.map((team) => (

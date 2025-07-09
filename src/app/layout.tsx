@@ -7,7 +7,7 @@ import Script from "next/script";
 import { AuthProvider } from "@providers/AuthProvider";
 import { TRPCReactProvider } from "@trpcLocal/react";
 import { LoadSeasonalData } from "@store/loadSeasonalData";
-import ServiceWorkerRegistration from "@components/smartComponents/pwa/ServiceWorkerRegistration";
+import ServiceWorkerRegistration from "@/lib/components/pwa/ServiceWorkerRegistration";
 import { getAuthFromHeaders } from "@supabase/auth-helpers";
 import { NavigationProvider } from "@providers/NavProvider";
 import { cn } from "@/lib/utils/main";

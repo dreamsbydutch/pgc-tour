@@ -1,9 +1,8 @@
 import { z } from "zod";
 
 import {
-  adminProcedure,
-  createTRPCRouter,
   publicProcedure,
+  createTRPCRouter,
 } from "@/server/api/trpc";
 
 export const tournamentRouter = createTRPCRouter({
@@ -130,7 +129,7 @@ export const tournamentRouter = createTRPCRouter({
     });
   }),
 
-  create: adminProcedure
+  create: publicProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -149,7 +148,7 @@ export const tournamentRouter = createTRPCRouter({
       });
     }),
 
-  update: adminProcedure
+  update: publicProcedure
     .input(
       z.object({
         id: z.string(),
@@ -169,7 +168,7 @@ export const tournamentRouter = createTRPCRouter({
       });
     }),
 
-  delete: adminProcedure
+  delete: publicProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.tournament.delete({ where: { id: input.id } });

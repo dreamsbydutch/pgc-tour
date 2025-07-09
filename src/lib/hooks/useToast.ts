@@ -14,10 +14,7 @@
  */
 
 import { useEffect, useState } from "react";
-import type {
-  ToastActionElement,
-  ToastProps,
-} from "../components/functionalComponents/ui/toast";
+import type { ToastActionElement, ToastProps } from "../components/ui/toast";
 
 /**
  * Toast notification object, as stored in state.

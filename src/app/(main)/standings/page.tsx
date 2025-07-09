@@ -4,22 +4,16 @@ import { useState } from "react";
 import {
   StandingsHeader,
   StandingsListing,
-} from "@/lib/components/functionalComponents/client/StandingsPage";
+} from "@/lib/smartComponents/functionalComponents/client/StandingsPage";
 import type { Tier, Tour, TourCard } from "@prisma/client";
-import { ToursToggleButton } from "@/lib/components/functionalComponents/client/ToursToggle";
+import { ToursToggleButton } from "@/lib/components/ToursToggle";
 import { useSearchParams } from "next/navigation";
 import { useCurrentStandings } from "@/lib/hooks/hooks";
 
 export default function Page() {
   const searchParams = useSearchParams();
-  const {
-    tours,
-    tiers,
-    tourCards,
-    currentTourCard,
-    isLoading,
-    error,
-  } = useCurrentStandings();
+  const { tours, tiers, tourCards, currentTourCard, isLoading, error } =
+    useCurrentStandings();
 
   // Get default tour from search params if present
   const defaultTourId =
@@ -283,15 +277,17 @@ function getTourCardsForTour(
     typeof window !== "undefined" &&
     (window as Window & { allTourCards?: TourCard[] }).allTourCards
   ) {
-    cards = ((window as Window & { allTourCards?: TourCard[] }).allTourCards ?? []).map(a => {
-      return {
-        ...a,
-        points: a.points ?? 0,
-        position: a.position ?? undefined,
-      } as TourCard & { points?: number; position?: string | number };
-    }).filter(
-      (tc) => tc.tourId === tour.id,
-    );
+    cards = (
+      (window as Window & { allTourCards?: TourCard[] }).allTourCards ?? []
+    )
+      .map((a) => {
+        return {
+          ...a,
+          points: a.points ?? 0,
+          position: a.position ?? undefined,
+        } as TourCard & { points?: number; position?: string | number };
+      })
+      .filter((tc) => tc.tourId === tour.id);
   }
   return cards.sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
 }

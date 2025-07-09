@@ -1,13 +1,53 @@
 "use server";
 
 import { db } from "../db";
-import type { Tournament, Tier, Course, Season } from "@prisma/client";
 
-export type ScheduleTournament = Tournament & { tier: Tier; course: Course };
+export type ScheduleTournament = {
+  name: string;
+  id: string;
+  seasonId: string;
+  apiId: string | null;
+  tierId: string;
+  courseId: string;
+  logoUrl: string | null;
+  currentRound: number | null;
+  livePlay: boolean | null;
+  tier: {
+    name: string;
+    id: string;
+    payouts: number[];
+    points: number[];
+    seasonId: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  course: {
+    name: string;
+    id: string;
+    apiId: string;
+    location: string;
+    par: number;
+    front: number;
+    back: number;
+    timeZoneOffset: number;
+    createdAt: string;
+    updatedAt: string;
+  };
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type CurrentScheduleResult = {
   tournaments: ScheduleTournament[];
-  season: Season | null;
+  season: {
+    number: number;
+    id: string;
+    year: number;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
 };
 
 /**
@@ -28,12 +68,36 @@ export async function getCurrentSchedule(): Promise<CurrentScheduleResult> {
   });
 
   // Only include tournaments with a tier and course
-  const tournamentsWithDetails = tournaments.filter(
-    (t): t is ScheduleTournament => !!t.tier && !!t.course,
-  );
+  const tournamentsWithDetails = tournaments
+    .filter((t) => !!t.tier && !!t.course)
+    .map((t) => {
+      return {
+        ...t,
+        startDate: t.startDate.toISOString(),
+        endDate: t.endDate.toISOString(),
+        createdAt: t.createdAt.toISOString(),
+        updatedAt: t.updatedAt.toISOString(),
+        tier: {
+          ...t.tier,
+          createdAt: t.tier.createdAt.toISOString(),
+          updatedAt: t.tier.updatedAt.toISOString(),
+        },
+        course: {
+          ...t.course,
+          createdAt: t.course.createdAt.toISOString(),
+          updatedAt: t.course.updatedAt.toISOString(),
+        },
+      };
+    });
 
   return {
     tournaments: tournamentsWithDetails,
-    season,
+    season: {
+      number: season.number,
+      id: season.id,
+      year: season.year,
+      createdAt: season.createdAt.toISOString(),
+      updatedAt: season.updatedAt.toISOString(),
+    },
   };
 }

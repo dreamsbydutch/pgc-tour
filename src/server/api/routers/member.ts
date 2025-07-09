@@ -1,10 +1,9 @@
 import { z } from "zod";
 
 import {
-  adminProcedure,
+  publicProcedure,
   createTRPCRouter,
   protectedProcedure,
-  publicProcedure,
 } from "@/server/api/trpc";
 
 export const memberRouter = createTRPCRouter({
@@ -38,7 +37,7 @@ export const memberRouter = createTRPCRouter({
     });
   }),
 
-  create: adminProcedure
+  create: publicProcedure
     .input(
       z.object({
         id: z.string(),
@@ -74,7 +73,7 @@ export const memberRouter = createTRPCRouter({
       });
     }),
 
-  delete: adminProcedure
+  delete: publicProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return ctx.db.member.delete({ where: { id: input.id } });
