@@ -7,9 +7,9 @@ import { Controller, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { api } from "@/trpc/react";
 import { z } from "zod";
-import { Button } from "../functionalComponents/ui/button";
-import LoadingSpinner from "../functionalComponents/loading/LoadingSpinner";
 import { cn } from "../../utils/main";
+import { Button } from "./functionalComponents/ui/button";
+import LoadingSpinner from "./functionalComponents/loading/LoadingSpinner";
 
 const golferSchema = z.object({
   groups: z

@@ -53,8 +53,8 @@ export function createAuthMiddleware() {
     // Set auth headers
     if (user && !error) {
       response.headers.set(AUTH_HEADERS.USER_ID, user.id);
-      response.headers.set(AUTH_HEADERS.USER_EMAIL, user.email || "");
-      response.headers.set(AUTH_HEADERS.USER_AVATAR, user.user_metadata?.avatar_url || "");
+      response.headers.set(AUTH_HEADERS.USER_EMAIL, user.email ?? "");
+      response.headers.set(AUTH_HEADERS.USER_AVATAR, user.user_metadata?.avatar_url as string ?? "");
       response.headers.set(AUTH_HEADERS.AUTH_STATUS, "authenticated");
     } else {
       response.headers.set(AUTH_HEADERS.AUTH_STATUS, "unauthenticated");

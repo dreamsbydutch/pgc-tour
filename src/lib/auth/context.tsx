@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         cache: "no-store",
       });
       if (!response.ok) return null;
-      const data = await response.json();
+      const data = await response.json() as { member: Member };
       return data.member;
     } catch {
       return null;
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await updateAuthState(session?.user ?? null);
     };
     
-    initAuth();
+    void initAuth();
   }, [updateAuthState, supabase.auth]);
 
   // Listen for auth changes

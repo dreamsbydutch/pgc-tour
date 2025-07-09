@@ -35,7 +35,7 @@ export async function getUserFromHeaders(): Promise<AuthUser | null> {
   return {
     id: userId,
     email: userEmail,
-    avatar: userAvatar || undefined,
+    avatar: userAvatar ?? undefined,
   };
 }
 
@@ -94,7 +94,7 @@ export async function isAdmin(): Promise<boolean> {
  */
 export async function getUserId(): Promise<string | null> {
   const user = await getUserFromHeaders();
-  return user?.id || null;
+  return user?.id ?? null;
 }
 
 /**
@@ -102,7 +102,7 @@ export async function getUserId(): Promise<string | null> {
  */
 export async function getUserEmail(): Promise<string | null> {
   const user = await getUserFromHeaders();
-  return user?.email || null;
+  return user?.email ?? null;
 }
 
 /**
@@ -110,7 +110,7 @@ export async function getUserEmail(): Promise<string | null> {
  */
 export async function getMemberId(): Promise<string | null> {
   const member = await getMemberFromHeaders();
-  return member?.id || null;
+  return member?.id ?? null;
 }
 
 /**
