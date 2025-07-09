@@ -13,7 +13,7 @@
 
 "use client";
 
-import LoadingSpinner from "@/lib/smartComponents/functionalComponents/loading/LoadingSpinner";
+import LoadingSpinner from "@/lib/components/smartComponents/functionalComponents/loading/LoadingSpinner";
 import { useCourseData } from "@/lib/hooks/hooks";
 import { cn, formatRank, formatScore } from "@/lib/utils/main";
 

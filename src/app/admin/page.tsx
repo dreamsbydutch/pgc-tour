@@ -8,7 +8,7 @@ import {
   HistoryButton,
   UpdateGolfersButton,
   UpdateTeamsButton,
-} from "../../lib/smartComponents/functionalComponents/client/CreateGroupsButton";
+} from "../../lib/components/smartComponents/functionalComponents/client/CreateGroupsButton";
 import Link from "next/link";
 import { api } from "@/trpc/server";
 import { fetchDataGolf } from "@/lib/utils/main";

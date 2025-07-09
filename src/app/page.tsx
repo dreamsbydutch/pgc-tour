@@ -1,32 +1,27 @@
 import Link from "next/link";
-import HomePageStandings from "@/lib/smartComponents/server/HomePageStandings";
-import HomePageLeaderboard from "@/lib/smartComponents/server/HomePageLeaderboard";
-import { TournamentCountdown } from "@/lib/components/TournamentCountdown";
-import { getNextTournament } from "@/server/actions/tournament";
-import { getCurrentSchedule } from "@/server/actions/schedule";
-import { LeagueSchedule } from "@/lib/components/LeagueSchedule";
-import { getRecentChampions } from "@/server/actions/champions";
-import { ChampionsPopup } from "@/lib/smartComponents/functionalComponents/client/ChampionsPopup";
-import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
-import { getCurrentStandings } from "@/server/actions/standings";
+import HomePageStandings from "@/lib/components/smartComponents/server/HomePageStandings";
+// import HomePageLeaderboard from "@/lib/components/smartComponents/server/HomePageLeaderboard";
+import CurrentSchedule from "@/lib/components/smartComponents/server/CurrentSchedule";
+// import CurrentChampions from "@/lib/components/smartComponents/server/CurrentChampions";
+// import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
+import { getAuthData } from "@/lib/auth/utils";
+import SignInPage from "./(auth)/signin/page";
+// import { getCurrentTourCard } from "@/server/actions/tourCard";
+import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
 
 export default async function Home() {
-  const self = await getMemberFromHeaders();
-  const nextTourney = await getNextTournament();
-  const schedule = await getCurrentSchedule();
-  const { tours, tourCards } = await getCurrentStandings();
-  const { tournament, champions } = await getRecentChampions();
+  const {isAuthenticated} = await getAuthData()
+
+  if (!isAuthenticated) return <SignInPage />;
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-2">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      {tournament && (
-        <ChampionsPopup tournament={tournament} champs={champions} />
-      )}
+      <TournamentCountdownContainer />
+      {/* <CurrentChampions /> */}
       {/* <HomePageLeaderboard /> */}
-      {nextTourney && <TournamentCountdown tourney={nextTourney} />}
       <HomePageStandings />
       {/* <TourCardForm /> */}
       <LeagueSchedule tournaments={schedule.tournaments} />

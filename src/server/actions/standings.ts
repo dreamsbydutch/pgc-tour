@@ -3,7 +3,7 @@
 import { db } from "../db";
 import { getCurrentSeason } from "./season";
 import type { Team, TourCard, Member, Tournament, Tour, Tier } from "@prisma/client";
-import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
+import { getMemberFromHeaders } from "@/lib/auth/utils";
 import { getCurrentTourCard } from "./tourCard";
 
 export type CurrentStandingsResult = {

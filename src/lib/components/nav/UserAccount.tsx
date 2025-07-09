@@ -6,20 +6,21 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/lib/components/ui/dropdown-menu";
+} from "@/lib/components/smartComponents/functionalComponents/ui/dropdown-menu";
 import Image from "next/image";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import MemberUpdateForm from "./MemberUpdateForm";
-import { Button } from "../ui/button";
-import { usePWAInstall } from "../../hooks/usePWAInstall";
+import { Button } from "../functionalComponents/ui/button";
+import { usePWAInstall } from "../../../hooks/usePWAInstall";
 import {
   handleLogout,
   signInWithGoogle,
-} from "../../../app/(auth)/signin/actions";
+} from "../../../../app/(auth)/signin/actions";
+import type { HeaderUser } from "../../../auth";
 import { LogInIcon } from "lucide-react";
-import { Skeleton } from "../ui/skeleton";
-import LittleFucker from "../LittleFucker";
+import { Skeleton } from "../functionalComponents/ui/skeleton";
+import LittleFucker from "../client/LittleFucker";
 import { formatMoney, formatNumber } from "@/lib/utils/main";
 
 // Move handleSignIn outside component to prevent recreation
@@ -43,33 +44,9 @@ export function UserAccountNav({
   tourCards,
   champions,
 }: {
-  user: { avatar?: string | undefined } | null;
-  member: {
-    id: string;
-    role: string;
-    email: string;
-    firstname: string | null;
-    lastname: string | null;
-  } | null;
-  tourCards:
-    | {
-        topTen: number;
-        appearances: number;
-        win: number;
-        points: number;
-        earnings: number;
-      }[]
-    | null;
-  champions:
-    | {
-        id: number;
-        tournament: {
-          name: string;
-          logoUrl: string | null;
-          startDate: Date;
-        };
-      }[]
-    | null;
+  user: HeaderUser | null;
+  member: Member | null;
+  tourCards: TourCard[] | null;
 }) {
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false); // State for Google sign-in loading
   const [isSigningOut, setIsSigningOut] = useState<boolean>(false); // State for sign-out process
@@ -111,33 +88,9 @@ function UserAccountNavMenu({
   champions,
   setIsSigningOut,
 }: {
-  user: { avatar?: string | undefined } | null;
-  member: {
-    id: string;
-    role: string;
-    email: string;
-    firstname: string | null;
-    lastname: string | null;
-  } | null;
-  tourCards:
-    | {
-        topTen: number;
-        appearances: number;
-        win: number;
-        points: number;
-        earnings: number;
-      }[]
-    | null;
-  champions:
-    | {
-        id: number;
-        tournament: {
-          name: string;
-          logoUrl: string | null;
-          startDate: Date;
-        };
-      }[]
-    | null;
+  user: HeaderUser;
+  member: Member;
+  tourCards: TourCard[];
   setIsSigningOut: Dispatch<SetStateAction<boolean>>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -183,35 +136,9 @@ function UserInfo({
   isEditing,
   setIsEditing,
 }: {
-  user: {
-    avatar?: string | undefined;
-  } | null;
-  member: {
-    id: string;
-    firstname: string | null;
-    lastname: string | null;
-    email: string;
-    role: string;
-  };
-  tourCards:
-    | {
-        topTen: number;
-        appearances: number;
-        win: number;
-        points: number;
-        earnings: number;
-      }[]
-    | null;
-  champions:
-    | {
-        id: number;
-        tournament: {
-          name: string;
-          logoUrl: string | null;
-          startDate: Date;
-        };
-      }[]
-    | null;
+  user: HeaderUser;
+  member: Member;
+  tourCards: TourCard[];
   isEditing: boolean;
   setIsEditing: Dispatch<SetStateAction<boolean>>;
 }) {
@@ -369,7 +296,7 @@ function UserAvatar({
   user,
   size,
 }: {
-  user: { avatar?: string | undefined } | null;
+  user: HeaderUser;
   size?: "small" | "large";
 }) {
   if (!user || !user.avatar)

@@ -1,8 +1,5 @@
-import { LeaderboardHeader } from "@/lib/smartComponents/functionalComponents/client/LeaderboardHeader";
-import LeaderboardView from "@/lib/smartComponents/Leaderboard";
-import PreTournamentPage from "@/lib/smartComponents/server/PreTournament";
-import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
-import { getGolfersByTournament } from "@/server/actions/golfers";
+import { LeaderboardHeader } from "@/lib/components/smartComponents/functionalComponents/client/LeaderboardHeader";
+import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
 import { getCurrentSeason } from "@/server/actions/season";
 import { getTeamsByTournament } from "@/server/actions/team";
 import { getTiersBySeason } from "@/server/actions/tier";
@@ -17,10 +14,7 @@ export default async function TournamentPage({
   params: { tournamentId: string };
 }) {
   const currentSeason = await getCurrentSeason();
-  if (!currentSeason) {
-    redirect("/tournament");
-  }
-  const { season: allTournaments } = await getTournamentInfo(currentSeason.id);
+  const { season: allTournaments } = await getTournamentInfo(currentSeason?.id??"");
   const focusTourney = allTournaments.find((t) => t.id === params.tournamentId);
 
   const golfers = await getGolfersByTournament(focusTourney?.id ?? "");

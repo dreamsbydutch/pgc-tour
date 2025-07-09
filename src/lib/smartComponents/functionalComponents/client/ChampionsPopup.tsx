@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import LittleFucker from "../../../components/LittleFucker";
+import LittleFucker from "../../client/LittleFucker";
 import type { Tournament, TourCard, Tour, Golfer, Team } from "@prisma/client";
 import {
   capitalize,

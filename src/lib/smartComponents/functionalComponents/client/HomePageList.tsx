@@ -1,245 +1,34 @@
-import Image from "next/image";
-import Link from "next/link";
-import { cn } from "@/lib/utils/main";
-import LittleFucker from "@/lib/components/LittleFucker";
-import type { ReactNode } from "react";
-import { HomePageListSkeleton } from "../loading/HomePageListSkeleton";
+"use client";
 
-/**
- * Generic grid component for displaying a list of tours and their teams.
- */
-type HomePageListGridProps<TTour, TTeam> = {
-  tours: TTour[];
-  getTeams: (tour: TTour) => TTeam[];
-  self: { id: string; friends: string[] };
-  champions?:
-    | {
-        id: number;
-        tournament: {
-          name: string;
-          logoUrl: string | null;
-          startDate: Date;
-        };
-      }[]
-    | null;
-  header: ReactNode;
-  getLink: (tour: TTour) => string;
-  getAriaLabel: (tour: TTour) => string;
+import Image from "next/image";
+import LittleFucker from "../../client/LittleFucker";
+import type { Tour, Member } from "@prisma/client";
+import { cn } from "@/lib/utils/main";
+
+// Only include the minimal required fields for each type
+type MinimalTour = Pick<Tour, "logoUrl" | "shortForm">;
+
+type MinimalTeam = {
+  id: number | string;
+  memberId: string;
+  position: string | null;
+  displayName: string;
+  mainStat: number | string | null;
+  secondaryStat: number | string | null;
 };
 
-function HomePageListGrid<TTour, TTeam>({
-  tours,
-  getTeams,
-  self,
-  champions,
-  header,
-  getLink,
-  getAriaLabel,
-}: HomePageListGridProps<TTour, TTeam>) {
-  return (
-    <div className="rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
-      <div className="my-3 flex items-center justify-center gap-3">
-        {header}
-      </div>
-      <div className="grid grid-cols-2 font-varela">
-        {tours.map((tour, i) => (
-          <Link
-            key={(tour as any).id ?? i}
-            className={cn(
-              "flex flex-col",
-              i === 0 && "border-r border-slate-800",
-            )}
-            href={getLink(tour)}
-            aria-label={getAriaLabel(tour)}
-          >
-            {tour ? (
-              <HomePageList
-                tour={tour}
-                teams={getTeams(tour)}
-                self={self}
-                champions={champions}
-              />
-            ) : (
-              <HomePageListSkeleton />
-            )}
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
+type MinimalSelf = Pick<Member, "id" | "friends"> | null | undefined;
 
-/**
- * Standings version with explicit input types.
- */
-export function HomePageStandings({
-  tours,
-  tourCards,
-  self,
-  champions,
-}: {
-  tours: { id: string; logoUrl: string | null; shortForm: string }[];
-  tourCards: {
-    id: string;
-    tourId: string;
-    points: number;
-    earnings: number;
-    position: string;
-    displayName: string;
-    memberId: string;
-  }[];
-  self: { id: string; friends: string[] };
-  champions?:
-    | {
-        id: number;
-        tournament: {
-          name: string;
-          logoUrl: string | null;
-          startDate: Date;
-        };
-      }[]
-    | null;
-}) {
-  return (
-    <HomePageListGrid
-      tours={tours}
-      getTeams={(tour) =>
-        tourCards
-          .filter((tc) => tc.tourId === tour.id)
-          .sort((a, b) => b.points - a.points)
-          .slice(0, 15)
-          .map((team) => ({
-            ...team,
-            mainStat: team.points,
-            secondaryStat: team.earnings,
-          }))
-      }
-      self={self}
-      champions={champions}
-      header={
-        <>
-          <Image
-            src="/logo512.png"
-            alt="PGC Logo"
-            width={56}
-            height={56}
-            className="h-14 w-14"
-          />
-          <h2 className="pb-1 font-yellowtail text-5xl sm:text-6xl md:text-7xl">
-            Standings
-          </h2>
-        </>
-      }
-      getLink={(tour) => `/standings?tour=${tour.id}`}
-      getAriaLabel={(tour) => `View standings for ${tour.shortForm} Tour`}
-    />
-  );
-}
-
-/**
- * Leaderboard version with explicit input types.
- */
-export function HomePageLeaderboard({
-  tours,
-  currentTournament,
-  self,
-  champions,
-}: {
-  tours: {
-    id: string;
-    logoUrl: string | null;
-    shortForm: string;
-    teams: {
-      id: string;
-      tourCard: { displayName: string; memberId: string };
-      position: string;
-      score: number;
-      thru: number;
-    }[];
-  }[];
-  currentTournament: { id: string; seasonId: string };
-  self: { id: string; friends: string[] };
-  champions?:
-    | {
-        id: number;
-        tournament: {
-          name: string;
-          logoUrl: string | null;
-          startDate: Date;
-        };
-      }[]
-    | null;
-}) {
-  return (
-    <HomePageListGrid
-      tours={tours}
-      getTeams={(tour) =>
-        tour.teams.slice(0, 15).map((team) => ({
-          ...team,
-          id: team.id,
-          displayName: team.tourCard.displayName,
-          position: team.position,
-          memberId: team.tourCard.memberId,
-          mainStat: team.score,
-          secondaryStat: team.thru,
-        }))
-      }
-      self={self}
-      champions={champions}
-      header={
-        <>
-          <Image
-            src="/logo512.png"
-            alt="PGC Logo"
-            width={56}
-            height={56}
-            className="h-14 w-14"
-          />
-          <h2 className="pb-1 font-yellowtail text-5xl sm:text-6xl md:text-7xl">
-            Leaderboard
-          </h2>
-        </>
-      }
-      // header={<LeaderboardHeaderContainer focusTourney={currentTournament} />}
-      getLink={(tour) =>
-        `/tournament?id=${currentTournament.id}&tour=${tour.id}`
-      }
-      getAriaLabel={(tour) => `View leaderboard for ${tour.shortForm} Tour`}
-    />
-  );
-}
-
-/**
- * HomePageList component for rendering a single tour's teams.
- */
 export function HomePageList({
   tour,
   teams,
+  seasonId,
   self,
-  champions,
 }: {
-  tour: { logoUrl: string | null; shortForm: string };
-  teams:
-    | {
-        id: number | string;
-        memberId: string;
-        position: string | null;
-        displayName: string;
-        mainStat: number | string | null;
-        secondaryStat: number | string | null;
-      }[]
-    | null;
-  self: { id: string; friends: string[] };
-  champions?:
-    | {
-        id: number;
-        tournament: {
-          name: string;
-          logoUrl: string | null;
-          startDate: Date;
-        };
-      }[]
-    | null;
+  tour: MinimalTour;
+  teams: MinimalTeam[] | null;
+  seasonId: string;
+  self: MinimalSelf;
 }) {
   return (
     <>
@@ -257,15 +46,13 @@ export function HomePageList({
         {teams?.map((team) => (
           <SingleListing
             key={team.id}
+            memberId={team.memberId}
+            seasonId={seasonId}
             position={team.position}
             displayName={team.displayName}
             mainStat={team.mainStat}
             secondaryStat={team.secondaryStat}
-            champions={champions ?? null}
-            isSelf={self.id === team.memberId}
-            isFriend={
-              self.friends.some((friend) => friend === team.memberId) ?? false
-            }
+            self={self}
           />
         ))}
       </div>
@@ -273,35 +60,26 @@ export function HomePageList({
   );
 }
 
-/**
- * Renders a single team listing row.
- */
 function SingleListing({
+  seasonId,
+  memberId,
   position,
   displayName,
   mainStat,
   secondaryStat,
-  champions,
-  isSelf,
-  isFriend,
+  self,
 }: {
+  seasonId: string;
+  memberId: string;
   position: string | null;
   displayName: string;
   mainStat: number | string | null;
   secondaryStat: number | string | null;
-  champions:
-    | {
-        id: number;
-        tournament: {
-          name: string;
-          logoUrl: string | null;
-          startDate: Date;
-        };
-      }[]
-    | null;
-  isSelf: boolean;
-  isFriend: boolean;
+  self: MinimalSelf;
 }) {
+  const isFriend = !!self?.friends?.includes(memberId);
+  const isSelf = self?.id === memberId;
+
   return (
     <div
       className={cn(
@@ -315,7 +93,7 @@ function SingleListing({
       </div>
       <div className="col-span-5 flex items-center justify-center place-self-center py-0.5 text-sm md:col-span-6">
         {displayName}
-        <LittleFucker champions={champions} showSeasonText={false} />
+        <LittleFucker memberId={memberId} seasonId={seasonId} />
       </div>
       <div className="col-span-2 place-self-center py-0.5 text-sm">
         {mainStat}

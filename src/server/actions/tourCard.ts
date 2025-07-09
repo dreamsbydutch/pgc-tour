@@ -1,6 +1,6 @@
 "use server";
 
-import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
+import { getMemberFromHeaders } from "@/lib/auth/utils";
 import { db } from "../db";
 import { getCurrentSeason } from "./season";
 import type { TourCard } from "@prisma/client";

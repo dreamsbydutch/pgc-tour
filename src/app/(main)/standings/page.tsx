@@ -4,9 +4,9 @@ import { useState } from "react";
 import {
   StandingsHeader,
   StandingsListing,
-} from "@/lib/smartComponents/functionalComponents/client/StandingsPage";
+} from "@/lib/components/smartComponents/functionalComponents/client/StandingsPage";
 import type { Tier, Tour, TourCard } from "@prisma/client";
-import { ToursToggleButton } from "@/lib/components/ToursToggle";
+import { ToursToggleButton } from "@/lib/components/smartComponents/functionalComponents/client/ToursToggle";
 import { useSearchParams } from "next/navigation";
 import { useCurrentStandings } from "@/lib/hooks/hooks";
 

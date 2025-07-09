@@ -1,6 +1,10 @@
 import { BookText, Home, List, Trophy } from "lucide-react";
 import { UserAccountNav } from "./UserAccount";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Skeleton } from "../functionalComponents/ui/skeleton";
+import { useHeaderUser } from "@/lib/providers/AuthProvider";
+import { api } from "@/trpc/react";
 import { cn } from "@/lib/utils/main";
 import {
   getMemberFromHeaders,
@@ -32,12 +36,22 @@ const navItems = [
  * Props:
  * - className (optional): Additional CSS classes to style the component.
  */
-export default async function NavBar({ className }: { className?: string }) {
-  const user = await getUserFromHeaders();
-  const member = await getMemberFromHeaders();
-  const pathName = window.location.href;
-  const tourCards = member && (await getMemberTourCards(member.id));
-  // const champions = member && (await getUserChampions(member.id));
+export default function NavBar({ className }: { className?: string }) {
+  const { user, member, isLoading: isAuthLoading } = useHeaderUser();
+  const pathName = usePathname();
+
+  const { data: tourCards, isLoading: isLoadingTourCards } =
+    api.tourCard.getByUserId.useQuery(
+      {
+        userId: member?.id ?? "",
+      },
+      {
+        enabled: !!member?.id,
+        retry: 3,
+        staleTime: 1000 * 60 * 5,
+        gcTime: 1000 * 60 * 10,
+      },
+    );
 
   return (
     <div
@@ -76,7 +90,17 @@ export default async function NavBar({ className }: { className?: string }) {
           </div>
         </div>
       ))}
-      {/* <UserAccountNav {...{ user, member, tourCards, champions }} /> */}
+      {isLoadingTourCards || isAuthLoading ? (
+        <Skeleton
+          className={`h-[1.5rem] w-[1.5rem] rounded-full lg:h-[2.5rem] lg:w-[2.5rem]`}
+        />
+      ) : (
+        <UserAccountNav
+          user={user}
+          member={member}
+          tourCards={tourCards ?? []}
+        />
+      )}
     </div>
   );
 }

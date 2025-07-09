@@ -34,6 +34,17 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
+        setAll: (cookiesToSet) => {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
       },
     },
   );
@@ -138,7 +149,11 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   });
 });
 
+// Constants for admin check
+const ADMIN_EMAIL = "chough14@gmail.com";
+
 export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
+  // Allow cron jobs to bypass auth
   if (ctx.isCronJob) {
     return next({
       ctx: {
@@ -147,9 +162,12 @@ export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
       },
     });
   }
-  if (!ctx.user?.role || ctx.user.role !== "admin") {
+  
+  // Check if user is authenticated and is admin based on email
+  if (!ctx.user || ctx.user.email !== ADMIN_EMAIL) {
     throw new Error("Unauthorized");
   }
+  
   return next({
     ctx: {
       ...ctx,

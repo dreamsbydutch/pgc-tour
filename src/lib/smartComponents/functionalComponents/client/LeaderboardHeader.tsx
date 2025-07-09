@@ -13,7 +13,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/lib/components/ui/popover";
+} from "@/lib/components/smartComponents/functionalComponents/ui/popover";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
@@ -25,15 +25,9 @@ import {
   DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/lib/components/ui/dropdown-menu";
-import LoadingSpinner from "@/lib/smartComponents/functionalComponents/loading/LoadingSpinner";
-import {
-  cn,
-  formatMoney,
-  formatNumber,
-  formatRank,
-  formatTournamentDateRange,
-} from "@/lib/utils/main";
+} from "@/lib/components/smartComponents/functionalComponents/ui/dropdown-menu";
+import LoadingSpinner from "@/lib/components/smartComponents/functionalComponents/loading/LoadingSpinner";
+import { cn, formatMoney, formatNumber, formatRank, formatTournamentDateRange } from "@/lib/utils/main";
 import { CoursePopover } from "../../client/CoursePopover";
 import type { Tournament, Tier, Course } from "@prisma/client";
 

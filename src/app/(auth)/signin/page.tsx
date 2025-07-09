@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 
-import { Button } from "@/lib/components/ui/button";
-import { Icons } from "../../../lib/components/Icons";
+import { Button } from "@/lib/components/smartComponents/functionalComponents/ui/button";
+import { Icons } from "../../../lib/components/smartComponents/functionalComponents/client/Icons";
 import { signInWithGoogle } from "./actions";
 import Link from "next/link";
 import { useUser } from "@/lib/hooks/hooks";
 
 export default function SignInPage() {
-  const { user, isLoading } = useUser();
+  const { user } = useUser();
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
   if (user) return null;
   return (
@@ -21,10 +21,10 @@ export default function SignInPage() {
         type="button"
         variant="secondary"
         onClick={() => signInWithGoogle({ setIsGoogleLoading })}
-        disabled={isGoogleLoading || isLoading}
+        disabled={isGoogleLoading}
         className="mx-auto my-6 h-[3.5rem] w-[15rem] border-2"
       >
-        {isGoogleLoading || isLoading ? (
+        {isGoogleLoading ? (
           <Icons.loaderCircle className="mr-2 size-4 animate-spin" />
         ) : (
           <Icons.google className="size-6" />

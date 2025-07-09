@@ -8,7 +8,13 @@ export async function getTournamentTeamData({
   tourCardId: string;
 }) {
   const team = await api.team.getByUserTournament({ tourCardId, tournamentId });
+  if (!team) {
+    return null;
+  }
+  
   const golfers = await api.golfer.getByTournament({ tournamentId });
-
-  return { ...team!, golfers: golfers.filter(g => team!.golferIds.includes(g.apiId)) }
+  return { 
+    ...team, 
+    golfers: golfers.filter(g => team.golferIds.includes(g.apiId)) 
+  };
 }

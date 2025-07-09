@@ -3,7 +3,7 @@
 import { cn, formatMoney, formatRank } from "@/lib/utils/main";
 import { Star } from "lucide-react";
 import { useState } from "react";
-import LoadingSpinner from "@/lib/smartComponents/functionalComponents/loading/LoadingSpinner";
+import LoadingSpinner from "@/lib/components/smartComponents/functionalComponents/loading/LoadingSpinner";
 import type { TourCard, Tour, Tier, Member } from "@prisma/client";
 import { StandingsTourCardInfo } from "../../StandingsDropdown";
 import LittleFucker from "@/lib/components/LittleFucker";
@@ -12,7 +12,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/lib/components/ui/popover";
+} from "@/lib/components/smartComponents/functionalComponents/ui/popover";
 
 // --- Utility Components ---
 const TableHeaderCell = ({
