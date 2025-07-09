@@ -1,7 +1,7 @@
 import {
   Skeleton,
   SVGSkeleton,
-} from "@/lib/components/functionalComponents/ui/skeleton";
+} from "@/lib/components/smartComponents/functionalComponents/ui/skeleton";
 
 /**
  * LeagueScheduleSkeleton

@@ -13,7 +13,7 @@
  *     - useToast(), toast(): Toast notification system
  */
 
-import { useSessionContext } from "@supabase/auth-helpers-react";
+import { useHeaderUser } from "../providers/AuthProvider";
 import { useSeasonalStore } from "../store/seasonalStore";
 import { api } from "@/trpc/react";
 import {
@@ -32,17 +32,13 @@ import { fetchDataGolf } from "../utils/main";
 // ===================== useUser =====================
 /**
  * useUser
- * Returns the current authenticated user (from Supabase), session, loading state,
- * and the seasonal member profile from the store.
- * @returns { user, session, isLoading, member }
+ * Returns the current authenticated user (from headers), and the seasonal member profile.
+ * @returns { user, member }
  */
 export function useUser() {
-  const { session, isLoading } = useSessionContext();
-  const member = useSeasonalStore((s) => s.member);
+  const { user, member } = useHeaderUser();
   return {
-    user: session?.user ?? null,
-    session,
-    isLoading,
+    user,
     member,
   };
 }

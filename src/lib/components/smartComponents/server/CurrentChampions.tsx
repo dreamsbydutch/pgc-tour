@@ -1,6 +1,6 @@
-import { ChampionSectionSkeleton } from "../../functionalComponents/loading/ChampionsPopupSkelton";
+import { ChampionSectionSkeleton } from "../functionalComponents/loading/ChampionsPopupSkelton";
 import { hasItems } from "@/lib/utils/main";
-import { ChampionsPopup } from "../../functionalComponents/client/ChampionsPopup";
+import { ChampionsPopup } from "../functionalComponents/client/ChampionsPopup";
 import { getRecentChampions } from "@/server/actions/champions";
 
 export default async function CurrentChampions() {

@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { HomePageList } from "@/lib/components/functionalComponents/client/HomePageList";
+import { HomePageList } from "@/lib/components/smartComponents/functionalComponents/client/HomePageList";
 import { cn } from "@/lib/utils/main";
-import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
+import { getMemberFromHeaders } from "@/lib/auth/utils";
 import { getCurrentStandings } from "@/server/actions/standings";
 
 /**

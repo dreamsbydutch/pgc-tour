@@ -1,4 +1,4 @@
-import { LeaderboardHeader } from "@/lib/components/functionalComponents/client/LeaderboardHeader";
+import { LeaderboardHeader } from "@/lib/components/smartComponents/functionalComponents/client/LeaderboardHeader";
 import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
 import { getCurrentSeason } from "@/server/actions/season";
 import { getTournamentInfo } from "@/server/actions/tournament";

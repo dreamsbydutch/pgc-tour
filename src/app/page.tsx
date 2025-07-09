@@ -1,22 +1,56 @@
 import Link from "next/link";
-import HomePageStandings from "@/lib/components/smartComponents/server/HomePageStandings";
-import HomePageLeaderboard from "@/lib/components/smartComponents/server/HomePageLeaderboard";
-import CurrentSchedule from "@/lib/components/smartComponents/server/CurrentSchedule";
-import CurrentChampions from "@/lib/components/smartComponents/server/CurrentChampions";
-import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
+// import HomePageStandings from "@/lib/components/smartComponents/server/HomePageStandings";
+// import HomePageLeaderboard from "@/lib/components/smartComponents/server/HomePageLeaderboard";
+// import CurrentSchedule from "@/lib/components/smartComponents/server/CurrentSchedule";
+// import CurrentChampions from "@/lib/components/smartComponents/server/CurrentChampions";
+// import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
+import { CreateTeamForm } from "@/lib/components/smartComponents/CreateTeamForm";
+import { getAuthData } from "@/lib/auth/utils";
+import SignInPage from "./(auth)/signin/page";
+// import { getCurrentTourCard } from "@/server/actions/tourCard";
+import { api } from "@/trpc/server";
+import { getNextTournament } from "@/server/actions/tournament";
 
 export default async function Home() {
+  const {member, isAuthenticated} = await getAuthData()
+
+  if (!isAuthenticated) return <SignInPage />;
+
+  const tourCard = await api.tourCard.getSelfCurrent()
+  const tournament = await getNextTournament()
+  const golfers = await api.golfer.getByTournament({tournamentId:tournament?.id??""});
+  const existingTeam = await api.team.getByUserTournament({tourCardId: tourCard?.id??"", tournamentId: tournament?.id??""});
+
+  const groups = golfers.reduce((acc, golfer) => {
+    if (!golfer.group) return acc;
+    const group = acc.find(g => g.key === "group"+golfer.group);
+    if (group) {
+      group.golfers.push(golfer);
+    } else {
+      acc.push({ key: "group"+golfer.group, golfers: [golfer] });
+    }
+    return acc;
+  }, [] as { key: string; golfers: typeof golfers }[]);
+  const initialGroups = Array.from({ length: 5 }, (_, i) => ({
+    golfers: groups.find(g => g.key === "group"+(i+1))?.golfers.map(g => g.id) || [],
+  }));
+
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-2">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      <CurrentChampions />
-      <HomePageLeaderboard />
-      <TournamentCountdownContainer />
-      <HomePageStandings />
+      {tourCard && tournament && <CreateTeamForm {...{tournament,
+  tourCard,
+  groups,
+  initialGroups,
+  existingTeam}} />}
+      {/* <CurrentChampions /> */}
+      {/* <HomePageLeaderboard /> */}
+      {/* <TournamentCountdownContainer /> */}
+      {/* <HomePageStandings /> */}
       {/* <TourCardForm /> */}
-      <CurrentSchedule />
+      {/* <CurrentSchedule /> */}
       <div id="footer" className="mt-12 flex flex-col justify-start">
         <Link href={"/privacy"} className="text-xs text-slate-400">
           Privacy Policy

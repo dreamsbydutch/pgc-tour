@@ -1,6 +1,6 @@
 import type { Tournament } from "@prisma/client";
-import PreTournamentPageRender from "../../functionalComponents/client/PreTournamentPageRender";
-import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
+import PreTournamentPageRender from "../functionalComponents/client/PreTournamentPageRender";
+import { getMemberFromHeaders } from "@/lib/auth/utils";
 import { getTournamentTeamData } from "@/server/actions/getTournamentTeamData";
 import TournamentCountdownContainer from "./TournamentCountdownContainer";
 import { getCurrentTourCard } from "@/server/actions/tourCard";

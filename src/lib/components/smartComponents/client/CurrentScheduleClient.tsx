@@ -1,6 +1,6 @@
 "use client";
-import { LeagueSchedule } from "@/lib/components/functionalComponents/client/LeagueSchedule";
-import { LeagueScheduleSkeleton } from "../../functionalComponents/loading/LeagueScheduleSkeleton";
+import { LeagueSchedule } from "@/lib/components/smartComponents/functionalComponents/client/LeagueSchedule";
+import { LeagueScheduleSkeleton } from "../functionalComponents/loading/LeagueScheduleSkeleton";
 import { useCurrentSchedule } from "@/lib/hooks/hooks";
 
 export default function CurrentSchedule() {

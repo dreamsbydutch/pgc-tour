@@ -1,4 +1,4 @@
-import { SVGSkeleton } from "@/lib/components/functionalComponents/ui/skeleton";
+import { SVGSkeleton } from "@/lib/components/smartComponents/functionalComponents/ui/skeleton";
 
 export function LeaderboardHeaderSkeleton() {
   return (

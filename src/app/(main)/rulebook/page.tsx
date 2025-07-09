@@ -3,7 +3,7 @@
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
 import { ruleList } from "./rules";
-import type { RuleCategoryType } from "@/lib/components/functionalComponents/client/RulebookComponents";
+import type { RuleCategoryType } from "@/lib/components/smartComponents/functionalComponents/client/RulebookComponents";
 import { cn } from "@/lib/utils/main";
 import CurrentSchedule from "@/lib/components/smartComponents/client/CurrentScheduleClient";
 import { TierTableContainer } from "@/lib/components/smartComponents/client/TierTableContainerClient";

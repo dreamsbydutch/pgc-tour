@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils/main";
-import { HomePageList } from "../../functionalComponents/client/HomePageList";
-import { HomePageListSkeleton } from "../../functionalComponents/loading/HomePageListSkeleton";
-import { getMemberFromHeaders } from "@/lib/supabase/auth-helpers";
+import { HomePageList } from "../functionalComponents/client/HomePageList";
+import { HomePageListSkeleton } from "../functionalComponents/loading/HomePageListSkeleton";
+import { getMemberFromHeaders } from "@/lib/auth/utils";
 import LeaderboardHeaderContainer from "./LeaderboardHeaderContainer";
 import { getLeaderboardData } from "@/server/actions/leaderboard";
 

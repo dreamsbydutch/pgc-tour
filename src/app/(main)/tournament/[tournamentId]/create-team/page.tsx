@@ -1,4 +1,4 @@
-import { CreateTeamForm } from "@/lib/components/CreateTeamForm";
+import { CreateTeamForm } from "@/lib/components/smartComponents/CreateTeamForm";
 import LeaderboardHeaderContainer from "@/lib/components/smartComponents/server/LeaderboardHeaderContainer";
 import { getGolfersByTournament } from "@/server/actions/golfers";
 import { getTeamByTournamentAndUser } from "@/server/actions/team";

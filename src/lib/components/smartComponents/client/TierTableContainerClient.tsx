@@ -4,8 +4,8 @@ import { useTiers } from "@/lib/store/seasonalStoreHooks";
 import {
   PayoutsTable,
   PointsTable,
-} from "../../functionalComponents/client/TierTables";
-import { TierTableSkeleton } from "../../functionalComponents/loading/TierTableSkeleton";
+} from "../functionalComponents/client/TierTables";
+import { TierTableSkeleton } from "../functionalComponents/loading/TierTableSkeleton";
 
 type TableType = "payouts" | "points";
 

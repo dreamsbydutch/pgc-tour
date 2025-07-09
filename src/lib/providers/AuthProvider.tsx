@@ -1,13 +1,9 @@
 "use client";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { createContext, useContext, type ReactNode } from "react";
-import { createClient } from "../supabase/client";
 import type { Member } from "@prisma/client";
 
-const supabase = createClient();
-
 // Your custom user type from headers
-interface HeaderUser {
+export interface HeaderUser {
   id: string;
   email: string;
   avatar?: string;
@@ -30,13 +26,11 @@ export function AuthProvider({
   member?: Member | null;
 }) {
   return (
-    <SessionContextProvider supabaseClient={supabase}>
-      <CustomAuthContext.Provider
-        value={{ user: initialUser ?? null, member: member ?? null }}
-      >
-        {children}
-      </CustomAuthContext.Provider>
-    </SessionContextProvider>
+    <CustomAuthContext.Provider
+      value={{ user: initialUser ?? null, member: member ?? null }}
+    >
+      {children}
+    </CustomAuthContext.Provider>
   );
 }
 

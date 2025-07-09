@@ -1,8 +1,8 @@
 import {
   PayoutsTable,
   PointsTable,
-} from "../../functionalComponents/client/TierTables";
-import { TierTableError } from "../../functionalComponents/error/TierTableError";
+} from "../functionalComponents/client/TierTables";
+import { TierTableError } from "../functionalComponents/error/TierTableError";
 import { getTierTableData } from "@/server/actions/getTierTableData";
 
 type TableType = "payouts" | "points";

@@ -1,5 +1,5 @@
-import { LeagueSchedule } from "@/lib/components/functionalComponents/client/LeagueSchedule";
-import { LeagueScheduleError } from "../../functionalComponents/error/LeagueScheduleError";
+import { LeagueSchedule } from "@/lib/components/smartComponents/functionalComponents/client/LeagueSchedule";
+import { LeagueScheduleError } from "../functionalComponents/error/LeagueScheduleError";
 import { getCurrentSchedule } from "@/server/actions/schedule";
 
 export default async function CurrentSchedule() {

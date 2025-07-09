@@ -6,21 +6,21 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/lib/components/functionalComponents/ui/dropdown-menu";
+} from "@/lib/components/smartComponents/functionalComponents/ui/dropdown-menu";
 import Image from "next/image";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import type { Member, TourCard } from "@prisma/client";
 import MemberUpdateForm from "./MemberUpdateForm";
-import { Button } from "../../functionalComponents/ui/button";
+import { Button } from "../functionalComponents/ui/button";
 import { usePWAInstall } from "../../../hooks/usePWAInstall";
 import {
   handleLogout,
   signInWithGoogle,
 } from "../../../../app/(auth)/signin/actions";
-import type { AuthUser } from "../../../supabase/auth-helpers";
+import type { HeaderUser } from "../../../auth";
 import { LogInIcon } from "lucide-react";
-import { Skeleton } from "../../functionalComponents/ui/skeleton";
+import { Skeleton } from "../functionalComponents/ui/skeleton";
 import LittleFucker from "../client/LittleFucker";
 import { formatMoney, formatNumber } from "@/lib/utils/main";
 
@@ -44,7 +44,7 @@ export function UserAccountNav({
   member,
   tourCards,
 }: {
-  user: AuthUser | null;
+  user: HeaderUser | null;
   member: Member | null;
   tourCards: TourCard[] | null;
 }) {
@@ -86,7 +86,7 @@ function UserAccountNavMenu({
   tourCards,
   setIsSigningOut,
 }: {
-  user: AuthUser;
+  user: HeaderUser;
   member: Member;
   tourCards: TourCard[];
   setIsSigningOut: Dispatch<SetStateAction<boolean>>;
@@ -125,7 +125,7 @@ function UserInfo({
   isEditing,
   setIsEditing,
 }: {
-  user: AuthUser;
+  user: HeaderUser;
   member: Member;
   tourCards: TourCard[];
   isEditing: boolean;
@@ -283,7 +283,7 @@ function UserAvatar({
   user,
   size,
 }: {
-  user: AuthUser;
+  user: HeaderUser;
   size?: "small" | "large";
 }) {
   if (!user.avatar) return null;

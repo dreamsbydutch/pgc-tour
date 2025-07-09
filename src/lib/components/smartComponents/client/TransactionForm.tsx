@@ -3,7 +3,7 @@
 import { api } from "@/trpc/react";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { FieldInfo } from "../../functionalComponents/ui/FieldInfo";
+import { FieldInfo } from "../functionalComponents/ui/FieldInfo";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -12,9 +12,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../functionalComponents/ui/table";
+} from "../functionalComponents/ui/table";
 import type { TransactionType } from "@prisma/client";
-import { Button } from "../../functionalComponents/ui/button";
+import { Button } from "../functionalComponents/ui/button";
 import { formatMoney } from "@/lib/utils/main";
 import { processPayment } from "@/server/actions/transactions";
 

@@ -1,5 +1,5 @@
-import { TournamentCountdownSkeleton } from "../../functionalComponents/loading/TournamentCountdownSkeleton";
-import { TournamentCountdown } from "../../functionalComponents/client/TournamentCountdown";
+import { TournamentCountdownSkeleton } from "../functionalComponents/loading/TournamentCountdownSkeleton";
+import { TournamentCountdown } from "../functionalComponents/client/TournamentCountdown";
 import type { Tournament } from "@prisma/client";
 import { getNextTournament } from "@/server/actions/tournament";
 

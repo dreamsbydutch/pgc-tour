@@ -3,7 +3,7 @@
 import {
   type ChampionTrophyTeam,
   TrophyIcon,
-} from "@/lib/components/functionalComponents/client/TrophyIcon";
+} from "@/lib/components/smartComponents/functionalComponents/client/TrophyIcon";
 import { useChampionTrophies } from "@/lib/hooks/hooks";
 import { isNonEmptyArray } from "@tanstack/react-form";
 

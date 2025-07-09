@@ -13,7 +13,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/lib/components/functionalComponents/ui/popover";
+} from "@/lib/components/smartComponents/functionalComponents/ui/popover";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
@@ -25,10 +25,10 @@ import {
   DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/lib/components/functionalComponents/ui/dropdown-menu";
-import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
+} from "@/lib/components/smartComponents/functionalComponents/ui/dropdown-menu";
+import LoadingSpinner from "@/lib/components/smartComponents/functionalComponents/loading/LoadingSpinner";
 import { cn, formatMoney, formatNumber, formatRank, formatTournamentDateRange } from "@/lib/utils/main";
-import { CoursePopover } from "../../smartComponents/client/CoursePopover";
+import { CoursePopover } from "../../client/CoursePopover";
 import type { Tournament, Tier, Course } from "@prisma/client";
 
 // Define a type for the grouped tournament dropdown items using Pick

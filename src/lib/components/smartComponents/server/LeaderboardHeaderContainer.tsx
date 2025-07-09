@@ -1,7 +1,7 @@
 "use server";
 
 import { getTournamentInfo } from "@/server/actions/tournament";
-import { LeaderboardHeader } from "../../functionalComponents/client/LeaderboardHeader";
+import { LeaderboardHeader } from "../functionalComponents/client/LeaderboardHeader";
 
 interface LeaderboardHeaderContainerProps {
   focusTourney: {
