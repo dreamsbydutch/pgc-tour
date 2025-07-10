@@ -8,6 +8,7 @@ import { useHeaderUser } from "@providers/AuthProvider";
 import { api } from "@trpcLocal/react";
 import { cn } from "@utils/main";
 import { Skeleton } from "@ui/index";
+import { useAuthData } from "src/lib/hooks/hooks";
 
 // Move navItems outside component to prevent recreation on every render
 const navItems = [
@@ -33,21 +34,8 @@ const navItems = [
  * - className (optional): Additional CSS classes to style the component.
  */
 export default function NavBar({ className }: { className?: string }) {
-  const { user, member, isLoading: isAuthLoading } = useHeaderUser();
   const pathName = usePathname();
-
-  const { data: tourCards, isLoading: isLoadingTourCards } =
-    api.tourCard.getByUserId.useQuery(
-      {
-        userId: member?.id ?? "",
-      },
-      {
-        enabled: !!member?.id,
-        retry: 3,
-        staleTime: 1000 * 60 * 5,
-        gcTime: 1000 * 60 * 10,
-      },
-    );
+  const { user, member, tourCards, isLoading } = useAuthData();
 
   return (
     <div
@@ -86,7 +74,7 @@ export default function NavBar({ className }: { className?: string }) {
           </div>
         </div>
       ))}
-      {isLoadingTourCards || isAuthLoading ? (
+      {isLoading ? (
         <Skeleton
           className={`h-[1.5rem] w-[1.5rem] rounded-full lg:h-[2.5rem] lg:w-[2.5rem]`}
         />

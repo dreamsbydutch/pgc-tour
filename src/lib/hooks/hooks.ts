@@ -388,3 +388,25 @@ export function useCurrentStandings() {
     error,
   };
 }
+
+export function useAuthData() {
+  const { user, member, isLoading: isAuthLoading } = useHeaderUser();
+
+  const { data: tourCards, isLoading: isLoadingTourCards } =
+    api.tourCard.getByUserId.useQuery(
+      { userId: member?.id ?? "" },
+      {
+        enabled: !!member?.id,
+        retry: 3,
+        staleTime: 1000 * 60 * 5,
+        gcTime: 1000 * 60 * 10,
+      }
+    );
+
+  return {
+    user,
+    member,
+    tourCards: tourCards ?? [],
+    isLoading: isAuthLoading || isLoadingTourCards,
+  };
+}
