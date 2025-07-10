@@ -638,8 +638,8 @@ export async function fetchDataGolf(
  * formatScore(-5.4) // '-5.4'
  */
 export function formatScore(score: number | null): string {
-  if (!score) return "-";
   if (score === 0) return "E";
+  if (!score) return "-";
   if (score > 0) return `+${score}`;
   return String(score);
 }
