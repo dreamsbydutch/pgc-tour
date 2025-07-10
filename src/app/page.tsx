@@ -1,6 +1,6 @@
 import Link from "next/link";
 import HomePageStandings from "@/lib/components/smartComponents/server/HomePageStandings";
-// import HomePageLeaderboard from "@/lib/components/smartComponents/server/HomePageLeaderboard";
+import HomePageLeaderboard from "@/lib/components/smartComponents/server/HomePageLeaderboard";
 import CurrentSchedule from "@/lib/components/smartComponents/server/CurrentSchedule";
 // import CurrentChampions from "@/lib/components/smartComponents/server/CurrentChampions";
 // import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
@@ -21,7 +21,7 @@ export default async function Home() {
       </h1>
       <TournamentCountdownContainer />
       {/* <CurrentChampions /> */}
-      {/* <HomePageLeaderboard /> */}
+      <HomePageLeaderboard />
       <HomePageStandings />
       {/* <TourCardForm /> */}
       <CurrentSchedule />
