@@ -1,10 +1,6 @@
 import type { Tournament } from "@prisma/client";
 import PreTournamentPageRender from "../functionalComponents/client/PreTournamentPageRender";
-import {
-  getMemberFromHeaders,
-  getMemberWithRelations,
-  getUserFromHeaders,
-} from "@/lib/auth/utils";
+import { getAuthData, getMemberFromHeaders } from "@/lib/auth/utils";
 import { getTournamentTeamData } from "@/server/actions/getTournamentTeamData";
 import TournamentCountdownContainer from "./TournamentCountdownContainer";
 import { getCurrentTourCard } from "@/server/actions/tourCard";
@@ -17,9 +13,8 @@ export default async function PreTournamentPage({
     "id" | "name" | "logoUrl" | "startDate" | "seasonId"
   >;
 }) {
-  const user = await getUserFromHeaders();
+  const { user, member } = await getAuthData();
   const memberData = await getMemberFromHeaders();
-  const member = await getMemberWithRelations();
   const tourCard = await getCurrentTourCard();
 
   // Only fetch team if tourCard exists
