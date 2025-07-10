@@ -241,7 +241,7 @@ export async function getCompleteLeaderboardData({
     // Fetch all tour cards for filtering/display purposes
     const tourCards = await db.tourCard.findMany({
       where: {
-        tourId: { in: tours.map((tour: any) => tour.id) },
+        tourId: { in: tours.map((tour) => tour.id) },
       },
       select: {
         id: true,
@@ -386,7 +386,7 @@ export async function getAuthenticatedLeaderboardData(
       userId: user?.id,
       variant: "regular",
     });
-  } catch (error) {
+  } catch (_error) {
     // If auth fails, return data without user context
     return getCompleteLeaderboardData({
       tournamentId,

@@ -597,7 +597,7 @@ function safeNumber(value: unknown, fallback = 0): number {
  */
 
 const DATAGOLF_BASE_URL = "https://feeds.datagolf.com/";
-const DATAGOLF_API_KEY = process.env.NEXT_PUBLIC_DATAGOLF_API_KEY;
+const DATAGOLF_API_KEY = process.env.EXTERNAL_DATA_API_KEY;
 
 /**
  * Fetches data from the DataGolf API.
@@ -612,7 +612,7 @@ export async function fetchDataGolf(
   params: Record<string, string | number | boolean | undefined> = {},
 ): Promise<unknown> {
   if (!DATAGOLF_API_KEY) {
-    throw new Error("Missing DataGolf API key (NEXT_PUBLIC_DATAGOLF_API_KEY)");
+    throw new Error("Missing DataGolf API key (EXTERNAL_DATA_API_KEY)");
   }
   const url = new URL(endpoint, DATAGOLF_BASE_URL);
   url.searchParams.set("key", DATAGOLF_API_KEY);

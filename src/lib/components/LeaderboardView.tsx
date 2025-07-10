@@ -628,6 +628,10 @@ const LeaderboardListing: React.FC<LeaderboardListingProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const handleToggle = useCallback(() => {
+    setIsOpen((prev) => !prev);
+  }, []);
+
   if (!team && !golfer) return null;
 
   const posChange = getPositionChange(team, golfer, type);
@@ -644,10 +648,6 @@ const LeaderboardListing: React.FC<LeaderboardListingProps> = ({
     userTourCard,
     member,
   );
-
-  const handleToggle = useCallback(() => {
-    setIsOpen((prev) => !prev);
-  }, []);
 
   return (
     <div

@@ -1,7 +1,7 @@
 import { getMemberFromHeaders } from "@/lib/auth";
 import LeaderboardView from "@/lib/components/LeaderboardView";
 import { LeaderboardHeader } from "@/lib/components/smartComponents/functionalComponents/client/LeaderboardHeader";
-import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
+// import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
 import { getCompleteLeaderboardData } from "@/server/actions/leaderboard-complete";
 import { getCurrentSeason } from "@/server/actions/season";
 import { getTournamentInfo } from "@/server/actions/tournament";
@@ -35,17 +35,14 @@ export default async function TournamentPage({
         focusTourney={focusTourney}
         inputTournaments={allTournaments}
       />
-      {focusTourney.startDate > new Date() &&
+      {/* {focusTourney.startDate > new Date() &&
         !leaderboardData.teams.find(
           (a) => a.tourCard?.id === leaderboardData.tourCard?.id,
-        ) && <PreTournamentPage tournament={focusTourney} />}
-      {focusTourney.startDate <= new Date() ||
-        (leaderboardData.teams.find(
-          (a) => a.tourCard?.id === leaderboardData.tourCard?.id,
-        ) &&
-          leaderboardData.teams.length > 0 && (
-            <LeaderboardView {...leaderboardData} />
-          ))}
+        ) && <PreTournamentPage tournament={focusTourney} />} */}
+      {
+        leaderboardData.teams.length > 0 && (
+          <LeaderboardView {...leaderboardData} />
+        )}
     </div>
   );
 }

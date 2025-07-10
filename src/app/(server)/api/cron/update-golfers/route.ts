@@ -1,5 +1,3 @@
-"use server";
-
 import { api } from "@/trpc/server";
 import type {
   DataGolfLiveTournament,
@@ -13,87 +11,137 @@ import { NextResponse } from "next/server";
 import { fetchDataGolf } from "@/lib/utils/main";
 
 export async function GET(request: Request) {
-  // Extract search parameters and origin from the request URL.
-  const { searchParams, origin } = new URL(request.url);
-  const next = searchParams.get("next") ?? "/";
+  // Add runtime config to force dynamic rendering
+  return Response.json(await handleCronJob(request));
+}
 
-  // Fetch external golf data.
-  const liveData = (await fetchDataGolf(
-    "preds/in-play",
-    {},
-  )) as DataGolfLiveTournament;
-  const fieldData = (await fetchDataGolf(
-    "field-updates",
-    {},
-  )) as DatagolfFieldInput;
-  const rankingsData = (await fetchDataGolf(
-    "preds/get-dg-rankings",
-    {},
-  )) as DatagolfRankingInput;
+// Make this function explicitly dynamic
+export const dynamic = 'force-dynamic';
 
-  // Get the current tournament; if none, redirect.
-  const tournament = (await api.tournament.getInfo()).current;
-  if (!tournament) return NextResponse.redirect(`${origin}/`);
+async function handleCronJob(request: Request) {
+  try {
+    console.log("Starting cron job: update-golfers");
+    
+    // Check for CRON secret if it's configured
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret) {
+      const providedSecret = request.headers.get("x-cron-secret");
+      if (providedSecret !== cronSecret) {
+        console.error("Invalid or missing CRON secret");
+        return { error: "Unauthorized", status: 401 };
+      }
+    }
+    
+    // Extract search parameters and origin from the request URL.
+    const { searchParams, origin } = new URL(request.url);
+    const next = searchParams.get("next") ?? "/";
 
-  // Retrieve golfers and teams associated with the tournament.
-  const golfers = await api.golfer.getByTournament({
-    tournamentId: tournament.id,
-  });
-  const teams = await api.team.getByTournament({ tournamentId: tournament.id });
-  const golferIDs = teams.map((team) => team.golferIds).flat();
+    // Fetch external golf data.
+    console.log("Fetching live data...");
+    const liveData = (await fetchDataGolf(
+      "preds/in-play",
+      {},
+    )) as DataGolfLiveTournament;
+    
+    console.log("Fetching field data...");
+    const fieldData = (await fetchDataGolf(
+      "field-updates",
+      {},
+    )) as DatagolfFieldInput;
+    
+    console.log("Fetching rankings data...");
+    const rankingsData = (await fetchDataGolf(
+      "preds/get-dg-rankings",
+      {},
+    )) as DatagolfRankingInput;
 
-  let liveGolfersCount = 0;
+    // Get the current tournament; if none, redirect.
+    console.log("Getting current tournament...");
+    const tournament = (await api.tournament.getInfo()).current;
+    if (!tournament) {
+      console.log("No current tournament found, redirecting");
+      return NextResponse.redirect(`${origin}/`);
+    }
 
-  // Create new golfer entries for golfers in the field that are not in our database.
-  await createMissingGolfers(
-    fieldData.field,
-    golfers,
-    rankingsData,
-    tournament,
-  );
+    console.log(`Found tournament: ${tournament.name} (ID: ${tournament.id})`);
 
-  // Update each existing golfer with live and field data.
-  await updateExistingGolfers(
-    golfers,
-    liveData,
-    fieldData,
-    tournament,
-    golferIDs,
-    teams,
-    (count) => {
-      liveGolfersCount += count;
-    },
-  );
+    // Retrieve golfers and teams associated with the tournament.
+    const golfers = await api.golfer.getByTournament({
+      tournamentId: tournament.id,    });
+    const teams = await api.team.getByTournament({ tournamentId: tournament.id });
+    const golferIDs = teams.map((team) => team.golferIds).flat();
 
-  // Update the tournament status.
-  await api.tournament.update({
-    id: tournament.id,
-    currentRound:
-      golfers.filter((obj) => !obj.roundOne).length > 0
-        ? 1
-        : golfers.filter((obj) => !obj.roundTwo).length > 0
-          ? 2
-          : golfers.filter(
-                (obj) =>
-                  !obj.roundThree &&
-                  obj.position !== "CUT" &&
-                  obj.position !== "WD" &&
-                  obj.position !== "DQ",
-              ).length > 0
-            ? 3
+    console.log(`Found ${golfers.length} golfers and ${teams.length} teams`);
+
+    let liveGolfersCount = 0;
+
+    // Create new golfer entries for golfers in the field that are not in our database.
+    console.log("Creating missing golfers...");
+    await createMissingGolfers(
+      fieldData.field,
+      golfers,
+      rankingsData,
+      tournament,
+    );
+
+    // Update each existing golfer with live and field data.
+    console.log("Updating existing golfers...");
+    await updateExistingGolfers(
+      golfers,
+      liveData,
+      fieldData,
+      tournament,
+      golferIDs,
+      teams,
+      (count) => {
+        liveGolfersCount += count;
+      },
+    );
+
+    // Update the tournament status.
+    console.log("Updating tournament status...");
+    await api.tournament.update({
+      id: tournament.id,
+      currentRound:
+        golfers.filter((obj) => !obj.roundOne).length > 0
+          ? 1
+          : golfers.filter((obj) => !obj.roundTwo).length > 0
+            ? 2
             : golfers.filter(
                   (obj) =>
-                    !obj.roundFour &&
+                    !obj.roundThree &&
                     obj.position !== "CUT" &&
                     obj.position !== "WD" &&
                     obj.position !== "DQ",
                 ).length > 0
-              ? 4
-              : 5,
-    livePlay: liveGolfersCount > 0,
-  });
+              ? 3
+              : golfers.filter(
+                    (obj) =>
+                      !obj.roundFour &&
+                      obj.position !== "CUT" &&
+                      obj.position !== "WD" &&
+                      obj.position !== "DQ",
+                  ).length > 0
+                ? 4
+                : 5,
+      livePlay: liveGolfersCount > 0,
+    });
 
-  return NextResponse.redirect(`${origin}${next}`);
+    console.log("Cron job completed successfully");
+    return { 
+      success: true, 
+      message: "Golfers updated successfully", 
+      redirect: `${origin}${next}`,
+      liveGolfersCount
+    };
+  } catch (error) {
+    console.error("Error in update-golfers cron job:", error);
+    return { 
+      error: "Internal server error", 
+      details: error instanceof Error ? error.message : String(error),
+      status: 500
+    };
+  }
 }
 
 /**
