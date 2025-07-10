@@ -35,13 +35,17 @@ export default async function TournamentPage({
         focusTourney={focusTourney}
         inputTournaments={allTournaments}
       />
-      {focusTourney.startDate > new Date() && (
-        <PreTournamentPage tournament={focusTourney} />
-      )}
-      {focusTourney.startDate <= new Date() &&
-        leaderboardData.teams.length > 0 && (
-          <LeaderboardView {...leaderboardData} />
-        )}
+      {focusTourney.startDate > new Date() &&
+        !leaderboardData.teams.find(
+          (a) => a.tourCard?.id === leaderboardData.tourCard?.id,
+        ) && <PreTournamentPage tournament={focusTourney} />}
+      {focusTourney.startDate <= new Date() ||
+        (leaderboardData.teams.find(
+          (a) => a.tourCard?.id === leaderboardData.tourCard?.id,
+        ) &&
+          leaderboardData.teams.length > 0 && (
+            <LeaderboardView {...leaderboardData} />
+          ))}
     </div>
   );
 }
