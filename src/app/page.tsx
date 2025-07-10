@@ -8,9 +8,14 @@ import { getAuthData } from "@/lib/auth/utils";
 import SignInPage from "./(auth)/signin/page";
 // import { getCurrentTourCard } from "@/server/actions/tourCard";
 import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
+import { useSeasonalStore } from "@/lib/store/seasonalStore";
+import { api } from "@/trpc/react";
 
 export default async function Home() {
-  const {isAuthenticated} = await getAuthData()
+  useSeasonalStore.getState().reset();
+  api.useUtils().invalidate();
+
+  const { isAuthenticated } = await getAuthData();
 
   if (!isAuthenticated) return <SignInPage />;
 
