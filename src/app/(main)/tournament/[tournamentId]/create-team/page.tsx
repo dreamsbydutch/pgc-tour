@@ -1,9 +1,9 @@
-import { CreateTeamForm } from "@/lib/components/smartComponents/CreateTeamForm";
-import LeaderboardHeaderContainer from "@/lib/components/smartComponents/server/LeaderboardHeaderContainer";
-import { getGolfersByTournament } from "@/server/actions/golfers";
-import { getTeamByTournamentAndUser } from "@/server/actions/team";
-import { getCurrentTourCard } from "@/server/actions/tourCard";
-import { getNextTournament } from "@/server/actions/tournament";
+import { CreateTeamForm } from "@components/smartComponents/CreateTeamForm";
+import LeaderboardHeaderContainer from "@components/smartComponents/server/LeaderboardHeaderContainer";
+import { getGolfersByTournament } from "@server/actions/golfers";
+import { getTeamByTournamentAndUser } from "@server/actions/team";
+import { getCurrentTourCard } from "@server/actions/tourCard";
+import { getNextTournament } from "@server/actions/tournament";
 import type { Golfer, Team } from "@prisma/client";
 
 // (should match your explicit form field types)

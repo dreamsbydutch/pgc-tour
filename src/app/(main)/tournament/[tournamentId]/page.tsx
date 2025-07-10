@@ -1,11 +1,11 @@
-import { LeaderboardHeader } from "@/lib/components/smartComponents/functionalComponents/client/LeaderboardHeader";
-import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
-import { getCurrentSeason } from "@/server/actions/season";
-import { getTeamsByTournament } from "@/server/actions/team";
-import { getTiersBySeason } from "@/server/actions/tier";
-import { getToursBySeason } from "@/server/actions/tour";
-import { getAllTourCards, getCurrentTourCard } from "@/server/actions/tourCard";
-import { getTournamentInfo } from "@/server/actions/tournament";
+import { LeaderboardHeader } from "@components/smartComponents/functionalComponents/client/LeaderboardHeader";
+import PreTournamentPage from "@components/smartComponents/server/PreTournament";
+import { getCurrentSeason } from "@server/actions/season";
+import { getTeamsByTournament } from "@server/actions/team";
+import { getTiersBySeason } from "@server/actions/tier";
+import { getToursBySeason } from "@server/actions/tour";
+import { getAllTourCards, getCurrentTourCard } from "@server/actions/tourCard";
+import { getTournamentInfo } from "@server/actions/tournament";
 import { redirect } from "next/navigation";
 
 export default async function TournamentPage({
@@ -14,7 +14,9 @@ export default async function TournamentPage({
   params: { tournamentId: string };
 }) {
   const currentSeason = await getCurrentSeason();
-  const { season: allTournaments } = await getTournamentInfo(currentSeason?.id??"");
+  const { season: allTournaments } = await getTournamentInfo(
+    currentSeason?.id ?? "",
+  );
   const focusTourney = allTournaments.find((t) => t.id === params.tournamentId);
 
   const golfers = await getGolfersByTournament(focusTourney?.id ?? "");

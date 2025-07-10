@@ -1,6 +1,8 @@
+"use server";
+
 import { headers } from "next/headers";
 import { cache } from "react";
-import { db } from "../../server/db";
+import { db } from "@server/db";
 import type { Member } from "@prisma/client";
 
 // Types
@@ -116,20 +118,22 @@ export async function getMemberId(): Promise<string | null> {
 /**
  * Get member with relations (cached)
  */
-export const getMemberWithRelations = cache(async (include: Record<string, unknown> = {}) => {
-  const user = await getUserFromHeaders();
-  if (!user) return null;
+export const getMemberWithRelations = cache(
+  async (include: Record<string, unknown> = {}) => {
+    const user = await getUserFromHeaders();
+    if (!user) return null;
 
-  try {
-    return await db.member.findUnique({
-      where: { email: user.email },
-      include,
-    });
-  } catch (error) {
-    console.error("Failed to fetch member with relations:", error);
-    return null;
-  }
-});
+    try {
+      return await db.member.findUnique({
+        where: { email: user.email },
+        include,
+      });
+    } catch (error) {
+      console.error("Failed to fetch member with relations:", error);
+      return null;
+    }
+  },
+);
 
 /**
  * Require authentication (throws if not authenticated)

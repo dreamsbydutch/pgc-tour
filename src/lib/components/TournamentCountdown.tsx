@@ -8,12 +8,10 @@ import Image from "next/image";
  *
  * Displays a live countdown timer to a tournament's start date.
  *
- * Props:
- * - tourney: {
- *     name: string; // Tournament name
- *     logoUrl: string | null; // Tournament logo URL (optional)
- *     startDate: Date; // Tournament start date/time
- *   }
+ * @param tourney - Tournament details for countdown display
+ *   - name: string - Tournament name
+ *   - logoUrl: string | null - Tournament logo URL (optional)
+ *   - startDate: string - Tournament start date/time (ISO string)
  *
  * Shows a skeleton loader while loading or if no tournament is provided.
  */
@@ -74,14 +72,14 @@ export function TournamentCountdown({
 
 /**
  * Pads a number to two digits with leading zero if needed
- * @param num Number to pad
+ * @param num - Number to pad
  * @returns Two-digit string
  */
-const twoDigits = (num: number) => String(num).padStart(2, "0");
+const twoDigits = (num: number): string => String(num).padStart(2, "0");
 
 /**
  * Calculates the time left until a given start date
- * @param startDateTime The target date/time
+ * @param startDateTime - The target date/time
  * @returns TimeLeftType object or null if time is up
  */
 const calculateTimeLeft = (startDateTime: Date): TimeLeftType => {

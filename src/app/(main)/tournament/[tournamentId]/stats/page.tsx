@@ -6,21 +6,16 @@ import Link from "next/link";
 import { useState, type Dispatch, type SetStateAction } from "react";
 
 import type { Team, Tour, TourCard, Tournament } from "@prisma/client";
-import {
-  Table,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@/lib/components/ui/table";
-import { cn, formatScore } from "@/lib/utils/main";
+import { Table, TableCell, TableHeader, TableRow } from "@components/ui/table";
+import { cn, formatScore } from "@utils/main";
 import {
   useAllTourCards,
   useMyTourCard,
   useTiers,
   useTournaments,
   useTours,
-} from "@/lib/store/seasonalStoreHooks";
-import { LeaderboardHeader } from "@/lib/smartComponents/functionalComponents/client/LeaderboardHeader";
+} from "@store/seasonalStoreHooks";
+import { LeaderboardHeader } from "@smartComponents/functionalComponents/client/LeaderboardHeader";
 
 export default function Page({ params }: { params: { tournamentId: string } }) {
   const tournamentData = useTournaments();

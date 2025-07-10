@@ -1,4 +1,4 @@
-import { api } from "@/trpc/server";
+import { api } from "@trpcLocal/server";
 
 /**
  * getToursBySeason

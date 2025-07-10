@@ -1,18 +1,18 @@
 "use client";
 
-import { cn, formatMoney, formatRank } from "@/lib/utils/main";
+import { cn, formatMoney, formatRank } from "@utils/main";
 import { Star } from "lucide-react";
 import { useState } from "react";
-import LoadingSpinner from "@/lib/components/smartComponents/functionalComponents/loading/LoadingSpinner";
+import LoadingSpinner from "@components/smartComponents/functionalComponents/loading/LoadingSpinner";
 import type { TourCard, Tour, Tier, Member } from "@prisma/client";
 import { StandingsTourCardInfo } from "../../StandingsDropdown";
-import LittleFucker from "@/lib/components/LittleFucker";
+import LittleFucker from "@components/LittleFucker";
 import Image from "next/image";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/lib/components/smartComponents/functionalComponents/ui/popover";
+} from "@components/smartComponents/functionalComponents/ui/popover";
 
 // --- Utility Components ---
 const TableHeaderCell = ({

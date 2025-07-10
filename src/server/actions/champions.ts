@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "../db";
+import { db } from "@server/db";
 import type { Team, Tournament, TourCard, Golfer, Tour } from "@prisma/client";
 
 export type RecentChampionTourCard = TourCard & {
@@ -63,7 +63,7 @@ export async function getRecentChampions(): Promise<RecentChampionsResult> {
   const champions: RecentChampionTourCard[] = tourCards.map((tc) => {
     const team = teams.find((t) => t.tourCardId === tc.id)!;
     const tour = tours.find((t) => t.id === tc.tourId)!;
-    const teamGolfers = (team.golferIds)
+    const teamGolfers = team.golferIds
       .map((id) => golfers.find((g) => g.apiId === id))
       .filter(Boolean) as Golfer[];
     return {

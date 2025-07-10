@@ -1,29 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import LittleFucker from "../../client/LittleFucker";
-import type { Tournament, TourCard, Tour, Golfer, Team } from "@prisma/client";
 import {
   capitalize,
   formatScore,
   hasItems,
   isNonEmptyString,
-} from "@/lib/utils/main";
-
-type ChampionData = Pick<TourCard, "id" | "memberId" | "displayName"> & {
-  tour: Pick<Tour, "id" | "name" | "logoUrl">;
-  team: Pick<Team, "id" | "score">;
-  golfers: Array<Pick<Golfer, "id" | "playerName" | "score" | "position">>;
-};
-
-type TournamentData = Pick<
-  Tournament,
-  "id" | "name" | "startDate" | "endDate" | "logoUrl"
->;
-
-interface ChampionsPopupProps {
-  tournament: TournamentData;
-  champs: ChampionData[];
-}
+} from "@utils/main";
+import { LittleFucker } from "@components/index";
 
 /**
  * ChampionsPopup Component
@@ -35,9 +18,30 @@ interface ChampionsPopupProps {
  *
  * Data is fetched from the global store and API when needed.
  */
-export function ChampionsPopup({ tournament, champs }: ChampionsPopupProps) {
-  if (!tournament) return null;
-  if (!hasItems(champs)) return null;
+export function ChampionsPopup({
+  champs,
+}: {
+  champs: {
+    id: number;
+    displayName: string;
+    score: number;
+    tournament: {
+      id: string;
+      name: string;
+      logoUrl: string | null;
+      startDate: Date;
+    };
+    tour: { id: string; name: string; logoUrl: string | null };
+    golfers: {
+      id: number;
+      position: string;
+      playerName: string;
+      score: number;
+    }[];
+  }[];
+}) {
+  const tournament = champs?.[0]?.tournament;
+  if (!hasItems(champs) || !tournament) return null;
   return (
     <div className="m-3 rounded-2xl bg-amber-100 bg-opacity-70 shadow-lg md:w-10/12 lg:w-7/12">
       <div className="mx-auto max-w-3xl p-2 text-center">
@@ -55,11 +59,7 @@ export function ChampionsPopup({ tournament, champs }: ChampionsPopupProps) {
         </h1>
         {/* Render each champion's info */}
         {champs.map((champ) => (
-          <ChampionSection
-            key={champ.id}
-            champion={champ}
-            tournament={tournament}
-          />
+          <ChampionSection key={champ.id} champion={champ} />
         ))}
       </div>
     </div>
@@ -68,10 +68,25 @@ export function ChampionsPopup({ tournament, champs }: ChampionsPopupProps) {
 
 function ChampionSection({
   champion,
-  tournament,
 }: {
-  champion: ChampionData;
-  tournament: TournamentData;
+  champion: {
+    id: number;
+    displayName: string;
+    score: number;
+    tournament: {
+      id: string;
+      name: string;
+      logoUrl: string | null;
+      startDate: Date;
+    };
+    tour: { id: string; name: string; logoUrl: string | null };
+    golfers: {
+      id: number;
+      position: string;
+      playerName: string;
+      score: number;
+    }[];
+  };
 }) {
   const tourLogoUrl = champion.tour.logoUrl;
   const tourName = champion.tour.name;
@@ -79,7 +94,7 @@ function ChampionSection({
 
   return (
     <Link
-      href={`/tournament?id=${tournament.id}&tour=${champion.tour.id}`}
+      href={`/tournament?id=${champion.tournament.id}&tour=${champion.tour.id}`}
       className="block transition-colors duration-200 hover:bg-amber-50"
     >
       <div className="mx-auto w-11/12 border-b border-slate-800" />
@@ -96,13 +111,12 @@ function ChampionSection({
           )}
           <div className="text-xl font-semibold">
             {capitalize(displayName)}
-            <LittleFucker
-              memberId={champion.id || ""}
-              seasonId={tournament.id}
-            />
+            {champion && (
+              <LittleFucker champions={[champion]} showSeasonText={false} />
+            )}
           </div>
           <div className="text-lg font-semibold">
-            {formatScore(champion.team.score)}
+            {formatScore(champion.score)}
           </div>
         </div>
         {/* Team golfers grid */}

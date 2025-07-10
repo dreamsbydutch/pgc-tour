@@ -18,7 +18,7 @@ src/lib/push/
 ### React Components
 
 ```typescript
-import { usePushNotifications } from "@/lib/push";
+import { usePushNotifications } from "@push";
 
 function NotificationButton({ memberId }) {
   const { isPushSubscribed, pushSupported, handleToggle } = usePushNotifications(memberId);
@@ -40,7 +40,7 @@ import {
   requestNotificationPermission,
   subscribeToPushNotifications,
   getCurrentSubscription,
-} from "@/lib/push";
+} from "@push";
 
 // Check permission and subscribe
 const hasPermission = await requestNotificationPermission();
@@ -56,7 +56,7 @@ const isSubscribed = currentSub !== null;
 ### Server-Side (Future Use)
 
 ```typescript
-import { TournamentNotifications, PushNotificationSender } from "@/lib/push";
+import { TournamentNotifications, PushNotificationSender } from "@push";
 
 // Create notification
 const notification =

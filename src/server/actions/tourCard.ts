@@ -1,10 +1,10 @@
 "use server";
 
-import { getMemberFromHeaders } from "@/lib/auth/utils";
-import { db } from "../db";
-import { getCurrentSeason } from "./season";
+import { getMemberFromHeaders } from "@auth/utils";
+import { db } from "@server/db";
 import type { TourCard } from "@prisma/client";
-import { api } from "@/trpc/server";
+import { api } from "@trpcLocal/server";
+import { getCurrentSeason } from "./season";
 
 /**
  * Gets the signed-in user's tour card for the current season
@@ -54,7 +54,11 @@ export async function getMemberTourCards(
 /**
  * Deletes a tour card by id
  */
-export async function deleteTourCard({ tourCard }: { tourCard: TourCard }): Promise<void> {
+export async function deleteTourCard({
+  tourCard,
+}: {
+  tourCard: TourCard;
+}): Promise<void> {
   await db.tourCard.delete({ where: { id: tourCard.id } });
 }
 
@@ -69,14 +73,14 @@ export async function createTourCard({
   seasonId: string;
   [key: string]: unknown;
 }): Promise<TourCard> {
-  const member = await getMemberFromHeaders()
+  const member = await getMemberFromHeaders();
   if (!member) {
     throw new Error("User must be authenticated to create a tour card");
   }
   return api.tourCard.create({
-      memberId:member.id,
-      tourId,
-      seasonId,
-      displayName: member.firstname?.[0]?.toUpperCase() + " "+member.lastname,
+    memberId: member.id,
+    tourId,
+    seasonId,
+    displayName: member.firstname?.[0]?.toUpperCase() + " " + member.lastname,
   });
 }

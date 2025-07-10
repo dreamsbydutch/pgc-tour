@@ -1,6 +1,6 @@
 // "use server";
 
-import { api } from "@/trpc/server";
+import { api } from "@trpcLocal/server";
 import type { Team, TourCard, Tournament } from "@prisma/client";
 import { NextResponse } from "next/server";
 
@@ -95,7 +95,10 @@ async function updateTourCards({
   await Promise.all(
     tourCards.map(async (card) => {
       const teams = allTeams.filter((team) => team.tourCardId === card.id);
-      const earnings = teams.reduce((sum, team) => sum + (team.earnings ?? 0), 0);
+      const earnings = teams.reduce(
+        (sum, team) => sum + (team.earnings ?? 0),
+        0,
+      );
       const points = teams.reduce((sum, team) => sum + (team.points ?? 0), 0);
       const win = teams.filter(
         (team) =>

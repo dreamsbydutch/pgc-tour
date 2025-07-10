@@ -1,6 +1,6 @@
 "use server";
 
-import { api } from "@/trpc/server";
+import { api } from "@trpcLocal/server";
 import type { Transactions } from "@prisma/client";
 
 /**

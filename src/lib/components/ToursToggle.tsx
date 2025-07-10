@@ -1,24 +1,51 @@
 "use client";
 
-import { cn } from "@/lib/utils/main";
+import { cn } from "@utils/main";
 import Image from "next/image";
 import { type Dispatch, type SetStateAction, useState } from "react";
 
+/**
+ * ToursToggleButton Component
+ *
+ * Renders a toggle button for a tour, allowing users to select the active tour.
+ * Applies a click animation and updates localStorage and parent state on click.
+ *
+ * @param tour - The tour object to represent in the toggle button
+ * @param tourToggle - The currently selected tour's ID
+ * @param setTourToggle - Function to update the selected tour's ID
+ */
 export function ToursToggleButton({
   tour,
   tourToggle,
   setTourToggle,
 }: {
+  /**
+   * The tour object to display in the toggle button
+   */
   tour: { id: string; logoUrl: string | null; shortForm: string };
+  /**
+   * The currently selected tour's ID
+   */
   tourToggle: string;
+  /**
+   * Function to update the selected tour's ID
+   */
   setTourToggle: Dispatch<SetStateAction<string>>;
 }) {
+  /**
+   * State to trigger the click animation effect
+   */
   const [effect, setEffect] = useState(false);
+
+  /**
+   * Handles button click: sets localStorage, updates state, and triggers animation
+   */
   const handleClick = () => {
     localStorage.setItem("activeTour", tour.id);
     setTourToggle(tour.id);
     setEffect(true);
   };
+
   return (
     <button
       onClick={handleClick}

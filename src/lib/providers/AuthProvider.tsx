@@ -1,6 +1,13 @@
 "use client";
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { createClient } from "@/lib/auth/client";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  type ReactNode,
+} from "react";
+import { createClient } from "@auth/client";
 import type { Member } from "@prisma/client";
 import type { User } from "@supabase/supabase-js";
 
@@ -36,48 +43,59 @@ export function AuthProvider({
   const supabase = createClient();
 
   // Fetch member data from API
-  const fetchMember = useCallback(async (userId: string): Promise<Member | null> => {
-    try {
-      const response = await fetch(`/api/auth/member?userId=${userId}`, {
-        cache: "no-store",
-      });
-      if (!response.ok) return null;
-      const data = await response.json() as { member: Member };
-      return data.member;
-    } catch {
-      return null;
-    }
-  }, []);
+  const fetchMember = useCallback(
+    async (userId: string): Promise<Member | null> => {
+      try {
+        const response = await fetch(`/api/auth/member?userId=${userId}`, {
+          cache: "no-store",
+        });
+        if (!response.ok) return null;
+        const data = (await response.json()) as { member: Member };
+        return data.member;
+      } catch {
+        return null;
+      }
+    },
+    [],
+  );
 
   // Convert Supabase user to HeaderUser
-  const convertUser = useCallback((supabaseUser: User | null): HeaderUser | null => {
-    if (!supabaseUser) return null;
-    return {
-      id: supabaseUser.id,
-      email: supabaseUser.email ?? "",
-      avatar: supabaseUser.user_metadata?.avatar_url as string ?? undefined,
-    };
-  }, []);
+  const convertUser = useCallback(
+    (supabaseUser: User | null): HeaderUser | null => {
+      if (!supabaseUser) return null;
+      return {
+        id: supabaseUser.id,
+        email: supabaseUser.email ?? "",
+        avatar: (supabaseUser.user_metadata?.avatar_url as string) ?? undefined,
+      };
+    },
+    [],
+  );
 
   // Update auth state
-  const updateAuthState = useCallback(async (supabaseUser: User | null) => {
-    setIsLoading(true);
-    
-    const headerUser = convertUser(supabaseUser);
-    setUser(headerUser);
+  const updateAuthState = useCallback(
+    async (supabaseUser: User | null) => {
+      setIsLoading(true);
 
-    let memberData: Member | null = null;
-    if (headerUser) {
-      memberData = await fetchMember(headerUser.id);
-    }
-    setMember(memberData);
-    
-    setIsLoading(false);
-  }, [convertUser, fetchMember]);
+      const headerUser = convertUser(supabaseUser);
+      setUser(headerUser);
+
+      let memberData: Member | null = null;
+      if (headerUser) {
+        memberData = await fetchMember(headerUser.id);
+      }
+      setMember(memberData);
+
+      setIsLoading(false);
+    },
+    [convertUser, fetchMember],
+  );
 
   // Refresh auth state manually
   const refreshAuth = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     await updateAuthState(session?.user ?? null);
   }, [supabase.auth, updateAuthState]);
 
@@ -86,24 +104,26 @@ export function AuthProvider({
     // Initial session check (only if we don't have initial data)
     if (!initialUser) {
       const initAuth = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         await updateAuthState(session?.user ?? null);
       };
       void initAuth();
     }
 
     // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setMember(null);
-          setIsLoading(false);
-        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          await updateAuthState(session?.user ?? null);
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+        setMember(null);
+        setIsLoading(false);
+      } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        await updateAuthState(session?.user ?? null);
       }
-    );
+    });
 
     return () => subscription.unsubscribe();
   }, [supabase.auth, updateAuthState, initialUser]);
@@ -116,11 +136,7 @@ export function AuthProvider({
     refreshAuth,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 // Hook to get user from auth context

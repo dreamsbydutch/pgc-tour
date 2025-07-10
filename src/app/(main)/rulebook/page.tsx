@@ -3,14 +3,12 @@
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
 import { ruleList } from "./rules";
-import type { RuleCategoryType } from "@/lib/components/smartComponents/functionalComponents/client/RulebookComponents";
-import { cn } from "@/lib/utils/main";
-import { useCurrentSchedule } from "@/lib/hooks/hooks";
-import { LeagueSchedule } from "@/lib/components/LeagueSchedule";
-import { TournamentWithRelations } from "@/server/actions/tournament";
-import { Tier } from "@prisma/client";
-import { useTiers } from "@/lib/store/seasonalStoreHooks";
-import { PayoutsTable, PointsTable } from "@/lib/components/TierTables";
+import { cn } from "@utils/main";
+import { LeagueSchedule } from "@components/LeagueSchedule";
+import { Course, Tier, Tournament } from "@prisma/client";
+import { useTiers } from "@store/seasonalStoreHooks";
+import { PayoutsTable, PointsTable } from "@components/TierTables";
+import { useCurrentSchedule } from "src/lib/hooks/hooks";
 
 /**
  * RulebookPage Component
@@ -20,7 +18,11 @@ import { PayoutsTable, PointsTable } from "@/lib/components/TierTables";
  * - Dynamically fetches data for the current season and tiers.
  */
 export default function RulebookPage() {
-  const schedule = useCurrentSchedule();
+  const schedule: {
+    tournaments: Array<Tournament & { course: Course; tier: Tier }>;
+    isLoading: boolean;
+    error: unknown;
+  } = useCurrentSchedule();
   const tiers = useTiers();
   return (
     <>
@@ -67,10 +69,43 @@ function RuleCategory({
   schedule,
   tiers,
 }: {
-  ruleData: RuleCategoryType;
+  ruleData: {
+    category: string;
+    rules: {
+      ruleText: string;
+      details?: string[];
+    }[];
+    picture?: {
+      url: string;
+      altText: string;
+    };
+  };
   i: number;
-  schedule?: TournamentWithRelations[] | null;
-  tiers?: Tier[] | null;
+  schedule?:
+    | {
+        id: string;
+        name: string;
+        logoUrl: string | null;
+        startDate: Date;
+        endDate: Date;
+        seasonId: string;
+        tier: {
+          name: string;
+        };
+        course: {
+          name: string;
+          location: string;
+        };
+      }[]
+    | null;
+  tiers?:
+    | {
+        id: string;
+        name: string;
+        payouts: number[];
+        points: number[];
+      }[]
+    | null;
 }) {
   const [showState, setShowState] = useState(false);
 

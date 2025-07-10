@@ -1,6 +1,6 @@
 // "use client";
 
-// import LoadingSpinner from "@/lib/components/functionalComponents/loading/LoadingSpinner";
+// import LoadingSpinner from "@components/functionalComponents/loading/LoadingSpinner";
 // import { api } from "@/trpc/react";
 // import { ArrowLeftIcon, Table } from "lucide-react";
 // import Link from "next/link";
@@ -13,7 +13,7 @@
 //   TableCell,
 //   TableHeader,
 //   TableRow,
-// } from "@/lib/components/functionalComponents/ui/table";
+// } from "@components/functionalComponents/ui/table";
 
 // export default function Page({ params }: { params: { tournamentId: string } }) {
 //   const tournaments = useMainStore((state) => state.seasonTournaments);

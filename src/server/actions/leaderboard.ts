@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "../db";
+import { db } from "@server/db";
 import type { Tournament, Tour, Team, Golfer, TourCard } from "@prisma/client";
 
 export type LeaderboardTeam = Team & { golfers: Golfer[]; tourCard: TourCard };

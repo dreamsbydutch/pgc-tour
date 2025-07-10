@@ -25,7 +25,7 @@ export {
   AuthProvider,
   useHeaderUser,
   type HeaderUser,
-} from "../providers/AuthProvider";
+} from "@providers/AuthProvider";
 
 // Session-based auth hook (for client components)
 export { useUser } from "../hooks/hooks";

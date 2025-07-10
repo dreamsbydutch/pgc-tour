@@ -1,5 +1,5 @@
+import { LoadingSpinner } from "@ui/index";
 import { Suspense } from "react";
-import LoadingSpinner from "../../../lib/components/smartComponents/functionalComponents/loading/LoadingSpinner";
 
 export const metadata = {
   title: "Sign In",

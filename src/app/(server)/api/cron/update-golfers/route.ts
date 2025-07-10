@@ -1,16 +1,16 @@
 "use server";
 
-import { api } from "@/trpc/server";
+import { api } from "@trpcLocal/server";
 import type {
   DataGolfLiveTournament,
   DatagolfFieldGolfer,
   DatagolfFieldInput,
   DatagolfLiveGolfer,
   DatagolfRankingInput,
-} from "@/lib/types/datagolf_types";
+} from "@types/datagolf";
 import type { Course, Golfer, Team, Tournament } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { fetchDataGolf } from "@/lib/utils/main";
+import { fetchDataGolf } from "@utils/main";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL.

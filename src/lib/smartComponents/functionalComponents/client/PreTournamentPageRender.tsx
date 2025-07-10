@@ -8,9 +8,9 @@ import type {
   Tournament,
 } from "@prisma/client";
 import { Button } from "../../../components/ui/button";
-import LoadingSpinner from "../loading/LoadingSpinner";
+import LoadingSpinner from "../../../components/ui/loaders/LoadingSpinner";
 import { useState } from "react";
-import { cn, formatMoney, formatRank } from "@/lib/utils/main";
+import { cn, formatMoney, formatRank } from "@utils/main";
 import { useRouter } from "next/navigation";
 
 interface PreTournamentPageProps {

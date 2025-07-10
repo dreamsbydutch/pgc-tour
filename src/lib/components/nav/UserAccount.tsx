@@ -1,27 +1,24 @@
 "use client";
 
+import { useState, type Dispatch, type SetStateAction } from "react";
+import Image from "next/image";
+import { LogInIcon } from "lucide-react";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/lib/components/smartComponents/functionalComponents/ui/dropdown-menu";
-import Image from "next/image";
-import { useState, type Dispatch, type SetStateAction } from "react";
+  Button,
+  Skeleton,
+} from "@ui/index";
+import { useInstallPWA, LittleFucker } from "@components/index";
 import { useRouter } from "next/navigation";
+import { formatMoney, formatNumber } from "@utils/main";
+import { handleLogout, signInWithGoogle } from "@app/(auth)/signin/actions";
+
 import MemberUpdateForm from "./MemberUpdateForm";
-import { Button } from "../functionalComponents/ui/button";
-import { usePWAInstall } from "../../../hooks/usePWAInstall";
-import {
-  handleLogout,
-  signInWithGoogle,
-} from "../../../../app/(auth)/signin/actions";
-import type { HeaderUser } from "../../../auth";
-import { LogInIcon } from "lucide-react";
-import { Skeleton } from "../functionalComponents/ui/skeleton";
-import LittleFucker from "../client/LittleFucker";
-import { formatMoney, formatNumber } from "@/lib/utils/main";
 
 // Move handleSignIn outside component to prevent recreation
 const handleSignInAction = (
@@ -44,9 +41,31 @@ export function UserAccountNav({
   tourCards,
   champions,
 }: {
-  user: HeaderUser | null;
-  member: Member | null;
-  tourCards: TourCard[] | null;
+  user: { avatar?: string | undefined } | null;
+  member: {
+    id: string;
+    email: string;
+    firstname: string | null;
+    lastname: string | null;
+    role: string;
+  } | null;
+  tourCards: {
+    appearances: number;
+    win: number;
+    topTen: number;
+    points: number;
+    earnings: number;
+  }[];
+  champions?:
+    | {
+        id: number;
+        tournament: {
+          name: string;
+          logoUrl: string | null;
+          startDate: Date;
+        };
+      }[]
+    | null;
 }) {
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false); // State for Google sign-in loading
   const [isSigningOut, setIsSigningOut] = useState<boolean>(false); // State for sign-out process
@@ -88,9 +107,31 @@ function UserAccountNavMenu({
   champions,
   setIsSigningOut,
 }: {
-  user: HeaderUser;
-  member: Member;
-  tourCards: TourCard[];
+  user: { avatar?: string | undefined } | null;
+  member: {
+    id: string;
+    email: string;
+    firstname: string | null;
+    lastname: string | null;
+    role: string;
+  } | null;
+  tourCards: {
+    appearances: number;
+    win: number;
+    topTen: number;
+    points: number;
+    earnings: number;
+  }[];
+  champions?:
+    | {
+        id: number;
+        tournament: {
+          name: string;
+          logoUrl: string | null;
+          startDate: Date;
+        };
+      }[]
+    | null;
   setIsSigningOut: Dispatch<SetStateAction<boolean>>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -136,9 +177,31 @@ function UserInfo({
   isEditing,
   setIsEditing,
 }: {
-  user: HeaderUser;
-  member: Member;
-  tourCards: TourCard[];
+  user: { avatar?: string | undefined } | null;
+  member: {
+    id: string;
+    email: string;
+    firstname: string | null;
+    lastname: string | null;
+    role: string;
+  };
+  tourCards: {
+    appearances: number;
+    win: number;
+    topTen: number;
+    points: number;
+    earnings: number;
+  }[];
+  champions?:
+    | {
+        id: number;
+        tournament: {
+          name: string;
+          logoUrl: string | null;
+          startDate: Date;
+        };
+      }[]
+    | null;
   isEditing: boolean;
   setIsEditing: Dispatch<SetStateAction<boolean>>;
 }) {
@@ -207,7 +270,7 @@ function AdminButton() {
   );
 }
 function InstallAppButton() {
-  const { isInstallable, isInstalled, handleInstall } = usePWAInstall();
+  const { isInstallable, isInstalled, installApp } = useInstallPWA();
   if (!isInstallable || isInstalled) return null;
   return (
     <>
@@ -216,7 +279,7 @@ function InstallAppButton() {
         <Button
           variant="secondary"
           size="sm"
-          onClick={handleInstall}
+          onClick={installApp}
           className="w-full"
         >
           Install App
@@ -296,7 +359,7 @@ function UserAvatar({
   user,
   size,
 }: {
-  user: HeaderUser;
+  user: { avatar?: string | undefined } | null;
   size?: "small" | "large";
 }) {
   if (!user || !user.avatar)

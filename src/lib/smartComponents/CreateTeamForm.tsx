@@ -9,7 +9,7 @@ import { api } from "@/trpc/react";
 import { z } from "zod";
 import { cn } from "../../utils/main";
 import { Button } from "./functionalComponents/ui/button";
-import LoadingSpinner from "./functionalComponents/loading/LoadingSpinner";
+import LoadingSpinner from "../components/ui/loaders/LoadingSpinner";
 
 const golferSchema = z.object({
   groups: z

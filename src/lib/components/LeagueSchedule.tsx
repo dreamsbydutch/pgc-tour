@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { capitalize, cn, getTournamentTimeline } from "@/lib/utils/main";
+import { capitalize, cn, getTournamentTimeline } from "@utils/main";
 import {
   Table,
   TableBody,
@@ -7,8 +7,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
-import { Skeleton, SVGSkeleton } from "@/lib/components/ui/skeleton";
+  Skeleton,
+  SVGSkeleton,
+} from "@ui/index";
 
 /**
  * LeagueSchedule Component
@@ -17,28 +18,34 @@ import { Skeleton, SVGSkeleton } from "@/lib/components/ui/skeleton";
  * Highlights the current tournament and visually separates playoffs and new seasons.
  *
  * @param tournaments - Array of tournament objects to display in the schedule
+ *   - id: string
+ *   - name: string
+ *   - logoUrl: string | null
+ *   - startDate: string (ISO date string)
+ *   - endDate: string (ISO date string)
+ *   - seasonId: string
+ *   - tier: { name: string }
+ *   - course: { name: string; location: string }
  */
 export function LeagueSchedule({
   tournaments,
 }: {
+  /**
+   * Array of tournament objects to display
+   */
   tournaments: {
     id: string;
     name: string;
     logoUrl: string | null;
-    startDate: string;
-    endDate: string;
+    startDate: Date;
+    endDate: Date;
     seasonId: string;
     tier: { name: string };
     course: { name: string; location: string };
   }[];
 }) {
-  const parsedTournaments = tournaments.map((t) => ({
-    ...t,
-    startDate: new Date(t.startDate),
-    endDate: new Date(t.endDate),
-  }));
   // Get timeline info (all, current, past, etc.)
-  const timeline = getTournamentTimeline(parsedTournaments);
+  const timeline = getTournamentTimeline(tournaments);
   const sortedTournaments = timeline.all;
   // Index of the current tournament in the sorted list
   const currentTournamentIndex = timeline.current
@@ -197,7 +204,7 @@ export function LeagueSchedule({
  *
  * @param rows - Number of skeleton rows to display (default: 16)
  */
-export function LeagueScheduleSkeleton({ rows = 16 }: { rows?: number }) {
+function LeagueScheduleSkeleton({ rows = 16 }: { rows?: number }) {
   return (
     <div className="-lg m-1 animate-pulse border border-slate-300 bg-gray-50 shadow-lg">
       <div className="my-3 flex items-center justify-center gap-3">

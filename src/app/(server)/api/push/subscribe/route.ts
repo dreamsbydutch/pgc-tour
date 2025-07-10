@@ -3,7 +3,7 @@
  * Saves push subscription data to the database linked to a member ID
  */
 import { type NextRequest, NextResponse } from "next/server";
-import { db } from "@/server/db";
+import { db } from "@server/db";
 
 type SubscriptionKeys = {
   p256dh: string;

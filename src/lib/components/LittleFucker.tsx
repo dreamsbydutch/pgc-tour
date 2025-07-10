@@ -1,10 +1,10 @@
 import Image from "next/image";
-import { cn, isDate } from "@/lib/utils/main";
+import { cn, isDate } from "@utils/main";
 
 /**
  * LittleFucker Component
  *
- * Displays a row of trophy icons for champion teams, each with an tournament logo and optional season/year text.
+ * Displays a row of trophy icons for champion teams, each with a tournament logo and optional season/year text.
  *
  * @param champions - Array of champion objects, each with an id and tournament details
  * @param showSeasonText - Whether to display the tournament year below the trophy icon
@@ -13,6 +13,9 @@ export default function LittleFucker({
   champions,
   showSeasonText,
 }: {
+  /**
+   * Array of champion objects, each with an id and tournament details
+   */
   champions:
     | {
         id: number;
@@ -23,6 +26,9 @@ export default function LittleFucker({
         };
       }[]
     | null;
+  /**
+   * Whether to display the tournament year below the trophy icon
+   */
   showSeasonText: boolean;
 }) {
   if (!champions || champions.length === 0) return null;
@@ -53,12 +59,21 @@ function TrophyIcon({
   team,
   showSeasonText,
 }: {
+  /**
+   * Tournament details (name, logoUrl, startDate)
+   */
   tournament: {
     name: string;
     logoUrl: string | null;
     startDate: Date;
   };
+  /**
+   * Team object (id)
+   */
   team: { id: number };
+  /**
+   * Whether to display the year below the icon
+   */
   showSeasonText: boolean;
 }) {
   // Special logo for TOUR Championship

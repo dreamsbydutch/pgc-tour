@@ -8,7 +8,7 @@ import { useState } from "react";
 import SuperJSON from "superjson";
 
 import { createQueryClient } from "./query-client";
-import type { AppRouter } from "@/server/api/root";
+import type { AppRouter } from "@server/api/root";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
 const getQueryClient = () => {
@@ -58,12 +58,12 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           fetch: (url, options) => {
             return fetch(url, {
               ...options,
-              credentials: 'include',
+              credentials: "include",
             });
           },
         }),
       ],
-    })
+    }),
   );
 
   return (

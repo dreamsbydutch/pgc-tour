@@ -9,8 +9,8 @@
 //   TableHead,
 //   TableHeader,
 //   TableRow,
-// } from "@/lib/components/functionalComponents/ui/table";
-// import { Button } from "@/lib/components/functionalComponents/ui/button";
+// } from "@components/functionalComponents/ui/table";
+// import { Button } from "@components/functionalComponents/ui/button";
 
 // interface GolferStats {
 //   id: string;

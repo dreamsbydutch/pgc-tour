@@ -1,7 +1,7 @@
 import type {
   DatagolfFieldInput,
   DataGolfLiveTournament,
-} from "@/lib/types/datagolf_types";
+} from "@types/datagolf";
 import {
   CreateGroupsButton,
   EmailListLinkButton,
@@ -10,8 +10,8 @@ import {
   UpdateTeamsButton,
 } from "../../lib/components/smartComponents/functionalComponents/client/CreateGroupsButton";
 import Link from "next/link";
-import { api } from "@/trpc/server";
-import { fetchDataGolf } from "@/lib/utils/main";
+import { api } from "@trpcLocal/server";
+import { fetchDataGolf } from "@utils/main";
 
 export default async function AdminDashboard() {
   const currentTourney = await api.tournament.getActive();

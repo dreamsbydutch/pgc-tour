@@ -1,6 +1,6 @@
 // API route for unsubscribing from push notifications
 import { type NextRequest, NextResponse } from "next/server";
-import { db } from "@/server/db";
+import { db } from "@server/db";
 
 type Subscription = {
   endpoint: string;

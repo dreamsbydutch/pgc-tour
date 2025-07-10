@@ -4,11 +4,11 @@ import Image from "next/image";
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { api } from "@/trpc/react";
-import { useSeasonalStore } from "@/lib/store/seasonalStore";
-import LoadingSpinner from "./functionalComponents/loading/LoadingSpinner";
+import { useSeasonalStore } from "@store/seasonalStore";
+import LoadingSpinner from "../components/ui/loaders/LoadingSpinner";
 import { Button } from "../components/ui/button";
 import type { Tour } from "@prisma/client";
-import { createTourCard } from "@/server/actions/tourCard";
+import { createTourCard } from "@server/actions/tourCard";
 
 export function TourCardForm() {
   const [isCreatingTourCard, setIsCreatingTourCard] = useState(false);

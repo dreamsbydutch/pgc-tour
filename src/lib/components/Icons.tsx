@@ -1,9 +1,28 @@
 import { LoaderCircle, LogIn, LogOut, type LucideProps } from "lucide-react";
 
+/**
+ * Icons object
+ *
+ * Provides a set of commonly used icon components for the application, including Lucide icons and a custom Google SVG icon.
+ *
+ * @property logIn - Lucide LogIn icon
+ * @property logOut - Lucide LogOut icon
+ * @property loaderCircle - Lucide LoaderCircle icon
+ * @property google - Custom Google logo SVG icon
+ */
 export const Icons = {
+  /** Lucide LogIn icon */
   logIn: LogIn,
+  /** Lucide LogOut icon */
   logOut: LogOut,
+  /** Lucide LoaderCircle icon */
   loaderCircle: LoaderCircle,
+  /**
+   * Custom Google logo SVG icon
+   *
+   * @param props - LucideProps for customizing the SVG icon
+   * @returns SVGElement representing the Google logo
+   */
   google: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"

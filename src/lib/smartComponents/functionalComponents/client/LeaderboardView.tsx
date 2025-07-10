@@ -22,7 +22,7 @@ import type {
 } from "@prisma/client";
 import React, { useState, useCallback } from "react";
 import Link from "next/link";
-import { ToursToggleButton } from "@/lib/components/smartComponents/functionalComponents/client/ToursToggle";
+import { ToursToggleButton } from "@components/smartComponents/functionalComponents/client/ToursToggle";
 import {
   US,
   SE,
@@ -62,7 +62,7 @@ import {
 import {
   Table,
   TableRow,
-} from "@/lib/components/smartComponents/functionalComponents/ui/table";
+} from "@components/smartComponents/functionalComponents/ui/table";
 
 // ================= TYPES =================
 export type LeaderboardVariant = "regular" | "historical" | "playoff";

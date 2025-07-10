@@ -2,9 +2,9 @@
 
 import { NextResponse } from "next/server";
 
-import { createServerSupabaseClient } from "@/lib/auth/server";
-import { api } from "@/trpc/server";
-import { formatName } from "@/lib/utils/main";
+import { createServerSupabaseClient } from "@auth/server";
+import { api } from "@trpcLocal/server";
+import { formatName } from "@utils/main";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
         } else if (!prismaUser?.firstname || !prismaUser?.lastname) {
           const fullName = formatName(
             `${prismaUser.firstname ?? ""} ${prismaUser.lastname ?? ""}`,
-            "full"
+            "full",
           );
           const splitName = fullName.split(" ");
           await api.member.update({

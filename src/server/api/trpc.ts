@@ -10,7 +10,7 @@ import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { db } from "@/server/db";
+import { db } from "@server/db";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
@@ -37,7 +37,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
         setAll: (cookiesToSet) => {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             // The `setAll` method was called from a Server Component.
@@ -162,12 +162,12 @@ export const adminProcedure = t.procedure.use(async ({ ctx, next }) => {
       },
     });
   }
-  
+
   // Check if user is authenticated and is admin based on email
   if (!ctx.user || ctx.user.email !== ADMIN_EMAIL) {
     throw new Error("Unauthorized");
   }
-  
+
   return next({
     ctx: {
       ...ctx,

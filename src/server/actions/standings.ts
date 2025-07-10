@@ -1,9 +1,16 @@
 "use server";
 
-import { db } from "../db";
+import { db } from "@server/db";
 import { getCurrentSeason } from "./season";
-import type { Team, TourCard, Member, Tournament, Tour, Tier } from "@prisma/client";
-import { getMemberFromHeaders } from "@/lib/auth/utils";
+import type {
+  Team,
+  TourCard,
+  Member,
+  Tournament,
+  Tour,
+  Tier,
+} from "@prisma/client";
+import { getMemberFromHeaders } from "@auth/utils";
 import { getCurrentTourCard } from "./tourCard";
 
 export type CurrentStandingsResult = {

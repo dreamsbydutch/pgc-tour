@@ -5,13 +5,24 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
-import { cn, formatMoney, formatNumber, formatRank } from "@/lib/utils/main";
-import { Skeleton } from "./ui/skeleton";
+  Skeleton,
+} from "@ui/index";
+import { cn, formatMoney, formatNumber, formatRank } from "@utils/main";
 
+/**
+ * PayoutsTable Component
+ *
+ * Displays a table of payout distributions for each tier.
+ * Adds a "Silver" tier if the Playoff tier has more than 75 payouts.
+ *
+ * @param tiers - Array of tier objects with payouts and points
+ */
 export function PayoutsTable({
   tiers,
 }: {
+  /**
+   * Array of tier objects to display
+   */
   tiers: {
     id: string;
     name: string;
@@ -19,6 +30,7 @@ export function PayoutsTable({
     points: number[];
   }[];
 }) {
+  // Define the order of tiers for display
   const tierOrder = ["Standard", "Elevated", "Major", "Playoff"];
   const sortedTiers = [...tiers].sort(
     (a, b) => tierOrder.indexOf(a.name) - tierOrder.indexOf(b.name),
@@ -95,9 +107,19 @@ export function PayoutsTable({
   );
 }
 
+/**
+ * PointsTable Component
+ *
+ * Displays a table of points distributions for each tier.
+ *
+ * @param tiers - Array of tier objects with payouts and points
+ */
 export function PointsTable({
   tiers,
 }: {
+  /**
+   * Array of tier objects to display
+   */
   tiers: {
     id: string;
     name: string;
@@ -105,6 +127,7 @@ export function PointsTable({
     points: number[];
   }[];
 }) {
+  // Define the order of tiers for display
   const tierOrder = ["Standard", "Elevated", "Major", "Playoff"];
   const sortedTiers = [...tiers].sort(
     (a, b) => tierOrder.indexOf(a.name) - tierOrder.indexOf(b.name),
@@ -158,6 +181,11 @@ export function PointsTable({
   );
 }
 
+/**
+ * TierTableSkeleton Component
+ *
+ * Displays a skeleton loading state mimicking the payouts/points table layout.
+ */
 function TierTableSkeleton() {
   // Mimic the table structure with skeletons
   const tierCount = 4;

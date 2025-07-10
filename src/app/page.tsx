@@ -1,16 +1,20 @@
 import Link from "next/link";
-import HomePageStandings from "@/lib/components/smartComponents/server/HomePageStandings";
-// import HomePageLeaderboard from "@/lib/components/smartComponents/server/HomePageLeaderboard";
-import CurrentSchedule from "@/lib/components/smartComponents/server/CurrentSchedule";
-// import CurrentChampions from "@/lib/components/smartComponents/server/CurrentChampions";
-// import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
-import { getAuthData } from "@/lib/auth/utils";
+// import HomePageStandings from "@components/smartComponents/server/HomePageStandings";
+// import HomePageLeaderboard from "@components/smartComponents/server/HomePageLeaderboard";
+// import CurrentSchedule from "src/lib/smartComponents/server/CurrentSchedule";
+// import CurrentChampions from "@components/smartComponents/server/CurrentChampions";
+// import TournamentCountdownContainer from "@components/smartComponents/server/TournamentCountdownContainer";
+import { getAuthData } from "@auth/utils";
 import SignInPage from "./(auth)/signin/page";
-// import { getCurrentTourCard } from "@/server/actions/tourCard";
-import TournamentCountdownContainer from "@/lib/components/smartComponents/server/TournamentCountdownContainer";
+import { LeagueSchedule, TournamentCountdown } from "@components/index";
+import { getNextTournament } from "@server/actions/tournament";
+import { getCurrentSchedule } from "@server/actions/schedule";
+// import { getCurrentTourCard } from "@server/actions/tourCard";
 
 export default async function Home() {
-  const {isAuthenticated} = await getAuthData()
+  const { isAuthenticated } = await getAuthData();
+  const tournament = await getNextTournament();
+  const schedule = await getCurrentSchedule();
 
   if (!isAuthenticated) return <SignInPage />;
 
@@ -19,10 +23,10 @@ export default async function Home() {
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      <TournamentCountdownContainer />
+      <TournamentCountdown tourney={tournament ?? undefined} />
       {/* <CurrentChampions /> */}
       {/* <HomePageLeaderboard /> */}
-      <HomePageStandings />
+      {/* <HomePageStandings /> */}
       {/* <TourCardForm /> */}
       <LeagueSchedule tournaments={schedule.tournaments} />
       <div id="footer" className="mt-12 flex flex-col justify-start">

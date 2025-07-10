@@ -33,8 +33,6 @@ import {
   formatScore,
   formatTournamentDateRange,
 } from "@utils/main";
-import { CoursePopover } from "../../client/CoursePopover";
-import type { Tournament, Tier, Course } from "@prisma/client";
 import { useCourseData } from "src/lib/hooks/hooks";
 
 export function LeaderboardHeader({
@@ -198,8 +196,20 @@ function HeaderDropdown({
   tournaments,
   isLoading = false,
 }: {
-  activeTourney?: Pick<Tournament, "id">;
-  tournaments: TournamentDropdownItem[];
+  activeTourney?: { id: string };
+  tournaments: {
+    id: string;
+    logoUrl: string | null;
+    name: string;
+    startDate: Date;
+    endDate: Date;
+    tier: {
+      name: string;
+    };
+    course: {
+      location: string;
+    };
+  }[];
   isLoading?: boolean;
 }) {
   const [tierEffect, setTierEffect] = useState(false);
@@ -209,8 +219,37 @@ function HeaderDropdown({
   );
 
   // Group tournaments by tier name
-  const groupByTier = (tournaments: TournamentDropdownItem[]) => {
-    const groups: Record<string, TournamentDropdownItem[]> = {};
+  const groupByTier = (
+    tournaments: {
+      id: string;
+      logoUrl: string | null;
+      name: string;
+      startDate: Date;
+      endDate: Date;
+      tier: {
+        name: string;
+      };
+      course: {
+        location: string;
+      };
+    }[],
+  ) => {
+    const groups: Record<
+      string,
+      {
+        id: string;
+        logoUrl: string | null;
+        name: string;
+        startDate: Date;
+        endDate: Date;
+        tier: {
+          name: string;
+        };
+        course: {
+          location: string;
+        };
+      }[]
+    > = {};
     tournaments.forEach((item) => {
       const tier = item.tier?.name || "Other";
       if (!groups[tier]) groups[tier] = [];

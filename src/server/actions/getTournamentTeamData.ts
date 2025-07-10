@@ -1,4 +1,4 @@
-import { api } from "@/trpc/server";
+import { api } from "@trpcLocal/server";
 
 export async function getTournamentTeamData({
   tournamentId,
@@ -11,10 +11,10 @@ export async function getTournamentTeamData({
   if (!team) {
     return null;
   }
-  
+
   const golfers = await api.golfer.getByTournament({ tournamentId });
-  return { 
-    ...team, 
-    golfers: golfers.filter(g => team.golferIds.includes(g.apiId)) 
+  return {
+    ...team,
+    golfers: golfers.filter((g) => team.golferIds.includes(g.apiId)),
   };
 }

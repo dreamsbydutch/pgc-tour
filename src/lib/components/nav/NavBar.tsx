@@ -1,17 +1,13 @@
+"use client";
+
 import { BookText, Home, List, Trophy } from "lucide-react";
-import { UserAccountNav } from "./UserAccount";
+import { UserAccountNav } from "@components/nav/UserAccount";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Skeleton } from "../functionalComponents/ui/skeleton";
-import { useHeaderUser } from "@/lib/providers/AuthProvider";
-import { api } from "@/trpc/react";
-import { cn } from "@/lib/utils/main";
-import {
-  getMemberFromHeaders,
-  getUserFromHeaders,
-} from "@/lib/supabase/auth-helpers";
-import { getMemberTourCards } from "@/server/actions/tourCard";
-import { getUserChampions } from "@/server/actions/team";
+import { useHeaderUser } from "@providers/AuthProvider";
+import { api } from "@trpcLocal/react";
+import { cn } from "@utils/main";
+import { Skeleton } from "@ui/index";
 
 // Move navItems outside component to prevent recreation on every render
 const navItems = [
@@ -114,7 +110,7 @@ export default function NavBar({ className }: { className?: string }) {
  * - href: The URL the navigation item links to.
  * - children: The content to display inside the navigation item (e.g., icon, label).
  */
-export function NavItem({
+function NavItem({
   href,
   isActive,
   children,

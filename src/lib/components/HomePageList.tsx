@@ -1,34 +1,24 @@
 "use client";
 
 import Image from "next/image";
-import LittleFucker from "../../client/LittleFucker";
-import type { Tour, Member } from "@prisma/client";
-import { cn } from "@/lib/utils/main";
+import { cn } from "@utils/main";
 
-// Only include the minimal required fields for each type
-type MinimalTour = Pick<Tour, "logoUrl" | "shortForm">;
-
-type MinimalTeam = {
+export function HomePageList({
+  tour,
+  teams,
+  self,
+}: {
+  tour: {logoUrl: string;
+    shortForm: string;};
+  teams: {
   id: number | string;
   memberId: string;
   position: string | null;
   displayName: string;
   mainStat: number | string | null;
   secondaryStat: number | string | null;
-};
-
-type MinimalSelf = Pick<Member, "id" | "friends"> | null | undefined;
-
-export function HomePageList({
-  tour,
-  teams,
-  seasonId,
-  self,
-}: {
-  tour: MinimalTour;
-  teams: MinimalTeam[] | null;
-  seasonId: string;
-  self: MinimalSelf;
+}[] | null;
+  self: {id:string, friends:string[]} | null;
 }) {
   return (
     <>
@@ -47,7 +37,6 @@ export function HomePageList({
           <SingleListing
             key={team.id}
             memberId={team.memberId}
-            seasonId={seasonId}
             position={team.position}
             displayName={team.displayName}
             mainStat={team.mainStat}
@@ -61,7 +50,6 @@ export function HomePageList({
 }
 
 function SingleListing({
-  seasonId,
   memberId,
   position,
   displayName,
@@ -69,13 +57,12 @@ function SingleListing({
   secondaryStat,
   self,
 }: {
-  seasonId: string;
   memberId: string;
   position: string | null;
   displayName: string;
   mainStat: number | string | null;
   secondaryStat: number | string | null;
-  self: MinimalSelf;
+  self: {id:string, friends:string[]} | null;
 }) {
   const isFriend = !!self?.friends?.includes(memberId);
   const isSelf = self?.id === memberId;
@@ -93,7 +80,7 @@ function SingleListing({
       </div>
       <div className="col-span-5 flex items-center justify-center place-self-center py-0.5 text-sm md:col-span-6">
         {displayName}
-        <LittleFucker memberId={memberId} seasonId={seasonId} />
+        {/* TODO: Add little fucker here */}
       </div>
       <div className="col-span-2 place-self-center py-0.5 text-sm">
         {mainStat}

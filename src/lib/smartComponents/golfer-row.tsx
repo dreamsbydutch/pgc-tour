@@ -2,8 +2,8 @@
 // import {
 //   TableCell,
 //   TableRow,
-// } from "@/lib/components/functionalComponents/ui/table";
-// import { cn } from "@/lib/utils/main";;
+// } from "@components/functionalComponents/ui/table";
+// import { cn } from "@utils/main";;
 // import { Tournament } from "@prisma/client";
 
 // interface GolferRowProps {

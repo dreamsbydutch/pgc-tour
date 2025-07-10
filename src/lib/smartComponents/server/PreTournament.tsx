@@ -1,8 +1,8 @@
 import type { Tournament } from "@prisma/client";
 import PreTournamentPageRender from "../functionalComponents/client/PreTournamentPageRender";
-import { getMemberFromHeaders } from "@/lib/auth/utils";
-import { getTournamentTeamData } from "@/server/actions/getTournamentTeamData";
-import { getCurrentTourCard } from "@/server/actions/tourCard";
+import { getMemberFromHeaders } from "@auth/utils";
+import { getTournamentTeamData } from "@server/actions/getTournamentTeamData";
+import { getCurrentTourCard } from "@server/actions/tourCard";
 import { TournamentCountdown } from "../../components/TournamentCountdown";
 
 export default async function PreTournamentPage({
@@ -17,7 +17,7 @@ export default async function PreTournamentPage({
     // Fetch member (user) from headers (server-side)
     const member = await getMemberFromHeaders();
     const tourCard = await getCurrentTourCard();
-    
+
     // Only fetch team if tourCard exists
     const team = tourCard
       ? await getTournamentTeamData({
@@ -41,7 +41,7 @@ export default async function PreTournamentPage({
     );
   } catch (error) {
     console.error("Error in PreTournamentPage:", error);
-    
+
     // Return a fallback UI if there's an error
     return (
       <>

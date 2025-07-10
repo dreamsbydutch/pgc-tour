@@ -13,9 +13,9 @@
  *     - useToast(), toast(): Toast notification system
  */
 
-import { useHeaderUser } from "../providers/AuthProvider";
-import { useSeasonalStore } from "../store/seasonalStore";
-import { api } from "@/trpc/react";
+import { useHeaderUser } from "@providers/AuthProvider";
+import { useSeasonalStore } from "@store/seasonalStore";
+import { api } from "@trpcLocal/react";
 import {
   useTournaments,
   useAllTourCards,
@@ -23,11 +23,11 @@ import {
   useSeason,
   useTours,
   useTiers,
-} from "../store/seasonalStoreHooks";
+} from "@store/seasonalStoreHooks";
 import { useMemo } from "react";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
-import type { DatagolfCourseInputData } from "@/lib/types/datagolf_types";
-import { fetchDataGolf } from "../utils/main";
+import { fetchDataGolf } from "@utils/main";
+import type { DatagolfCourseInputData } from "../types/datagolf";
 
 // ===================== useUser =====================
 /**
@@ -273,7 +273,10 @@ export function useCourseData(
   return useQuery<DatagolfCourseInputData, unknown>({
     queryKey: ["course-data"],
     queryFn: async () => {
-      const data = await fetchDataGolf("preds/live-hole-stats", {}) as DatagolfCourseInputData
+      const data = (await fetchDataGolf(
+        "preds/live-hole-stats",
+        {},
+      )) as DatagolfCourseInputData;
       return data;
     },
     enabled,

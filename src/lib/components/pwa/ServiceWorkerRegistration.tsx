@@ -2,6 +2,11 @@
 
 import { useEffect } from "react";
 
+/**
+ * SWMessageEvent interface
+ *
+ * Extends the standard MessageEvent to include optional type and url fields for service worker messages.
+ */
 interface SWMessageEvent extends MessageEvent {
   data: {
     type?: string;
@@ -10,6 +15,14 @@ interface SWMessageEvent extends MessageEvent {
   };
 }
 
+/**
+ * ServiceWorkerRegistration Component
+ *
+ * Registers the service worker, listens for updates and messages, requests persistent storage,
+ * and checks for background sync support. This component does not render any UI.
+ *
+ * Usage: Place this component at the root of your app (e.g., in _app.tsx or a layout) to enable PWA features.
+ */
 export default function ServiceWorkerRegistration() {
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -41,14 +54,17 @@ export default function ServiceWorkerRegistration() {
         });
 
       // Listen for service worker messages
-      navigator.serviceWorker.addEventListener("message", (event: SWMessageEvent) => {
-        console.log("Message from SW:", event.data);
+      navigator.serviceWorker.addEventListener(
+        "message",
+        (event: SWMessageEvent) => {
+          console.log("Message from SW:", event.data);
 
-        if (event.data && event.data.type === "CACHE_UPDATED") {
-          // Handle cache updates
-          console.log("Cache updated for:", event.data.url);
-        }
-      });
+          if (event.data && event.data.type === "CACHE_UPDATED") {
+            // Handle cache updates
+            console.log("Cache updated for:", event.data.url);
+          }
+        },
+      );
 
       // Request persistent storage
       if ("storage" in navigator && "persist" in navigator.storage) {
@@ -66,5 +82,6 @@ export default function ServiceWorkerRegistration() {
     }
   }, []);
 
-  return null; // This component doesn't render anything
+  // This component does not render any UI
+  return null;
 }

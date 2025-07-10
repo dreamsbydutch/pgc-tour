@@ -2,14 +2,37 @@
 
 import { useState, useEffect } from "react";
 
-// Type for the beforeinstallprompt event
+/**
+ * Type for the beforeinstallprompt event
+ *
+ * Extends the standard Event to include the prompt() method and userChoice promise.
+ */
 interface BeforeInstallPromptEvent extends Event {
+  /**
+   * Triggers the install prompt dialog
+   */
   prompt: () => Promise<void>;
+  /**
+   * Resolves with the user's choice after the prompt
+   */
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 }
 
+/**
+ * useInstallPWA hook
+ *
+ * Handles PWA installation logic, including listening for the install prompt,
+ * tracking installability, and providing an installApp function.
+ *
+ * @returns {
+ *   isInstallable: boolean; // Whether the app can be installed
+ *   isInstalled: boolean;   // Whether the app is already installed
+ *   installApp: () => Promise<boolean>; // Function to trigger the install prompt
+ * }
+ */
 export function useInstallPWA() {
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installPrompt, setInstallPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
@@ -49,6 +72,10 @@ export function useInstallPWA() {
     };
   }, []);
 
+  /**
+   * Triggers the PWA install prompt if available
+   * @returns Promise<boolean> - true if accepted, false otherwise
+   */
   const installApp = async () => {
     if (!installPrompt) return false;
 
@@ -80,6 +107,12 @@ export function useInstallPWA() {
   };
 }
 
+/**
+ * InstallPWAButton Component
+ *
+ * Renders a floating button that allows the user to install the PWA if available.
+ * Uses the useInstallPWA hook for logic.
+ */
 export default function InstallPWAButton() {
   const { isInstallable, isInstalled, installApp } = useInstallPWA();
 

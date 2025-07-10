@@ -1,14 +1,14 @@
-import "@/styles/globals.css";
+import "@styles/globals.css";
 import { type Metadata } from "next";
 import { Barlow_Condensed, Varela, Yellowtail } from "next/font/google";
 import Script from "next/script";
 import { AuthProvider } from "@providers/AuthProvider";
 import { TRPCReactProvider } from "@trpcLocal/react";
 import { LoadSeasonalData } from "@store/loadSeasonalData";
-import ServiceWorkerRegistration from "@components/smartComponents/pwa/ServiceWorkerRegistration";
 import { NavigationProvider } from "@providers/NavProvider";
-import { cn } from "@/lib/utils/main";
-import { getAuthData } from "@/lib/auth/utils";
+import { cn } from "@utils/main";
+import { getAuthData } from "@auth/utils";
+import ServiceWorkerRegistration from "@components/pwa/ServiceWorkerRegistration";
 
 const varela = Varela({
   weight: ["400"],

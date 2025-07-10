@@ -4,7 +4,7 @@ import { api } from "@/trpc/react";
 import type { Member, Team, TourCard, Tournament } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
-import LoadingSpinner from "./functionalComponents/loading/LoadingSpinner";
+import LoadingSpinner from "../components/ui/loaders/LoadingSpinner";
 import { cn, formatRank } from "../../utils/main";
 
 // Pure helper: filter non-playoff tournaments

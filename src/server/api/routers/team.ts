@@ -4,7 +4,7 @@ import {
   publicProcedure,
   createTRPCRouter,
   protectedProcedure,
-} from "@/server/api/trpc";
+} from "@server/api/trpc";
 
 export const teamRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {

@@ -1,4 +1,4 @@
-import { api } from "@/trpc/server";
+import { api } from "@trpcLocal/server";
 import {
   Table,
   TableBody,
@@ -6,7 +6,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../../lib/components/smartComponents/functionalComponents/ui/table";
+} from "@ui/index";
 
 export default async function AdminDashboard() {
   const currentTourney = (await api.tournament.getInfo()).next;

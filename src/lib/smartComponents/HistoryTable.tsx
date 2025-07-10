@@ -2,7 +2,7 @@
 
 // import { useState, useMemo } from "react";
 // import { api } from "@/trpc/react";
-// import { useUser } from "@/lib/hooks";
+// import { useUser } from "@hooks";
 // import {
 //   Table,
 //   TableBody,
@@ -10,9 +10,9 @@
 //   TableHead,
 //   TableHeader,
 //   TableRow,
-// } from "@/lib/components/functionalComponents/ui/table";
-// import { Button } from "@/lib/components/functionalComponents/ui/button";
-// import { formatMoney } from "@/lib/utils/domain/formatting";
+// } from "@components/functionalComponents/ui/table";
+// import { Button } from "@components/functionalComponents/ui/button";
+// import { formatMoney } from "@utils/domain/formatting";
 
 // // Add type definitions
 // type SortColumn = "earnings" | "wins" | "apps";

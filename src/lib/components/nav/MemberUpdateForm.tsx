@@ -4,15 +4,13 @@ import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { z } from "zod";
-import { FieldInfo } from "../functionalComponents/ui/FieldInfo";
-import { Button } from "../functionalComponents/ui/button";
+import { FieldInfo, Button } from "@ui/index";
 import { useRouter } from "next/navigation";
-import type { Member } from "@prisma/client";
 import { useSeasonalStore } from "@store/seasonalStore";
-import { api } from "@/trpc/react";
-import { getErrorMessage } from "@/lib/utils/main";
-import { updateMemberAction } from "@/server/actions/member";
-import { memberSchema } from "@/lib/utils/validators";
+import { api } from "@trpcLocal/react";
+import { getErrorMessage } from "@utils/main";
+import { updateMemberAction } from "@server/actions/member";
+import { memberSchema } from "@utils/validators";
 
 const emptyMember = {
   id: "",
@@ -29,8 +27,8 @@ export default function MemberUpdateForm({
   member: {
     id: string;
     email: string;
-    firstname: string;
-    lastname: string;
+    firstname: string | null;
+    lastname: string | null;
     role: string;
   };
   setIsEditing: Dispatch<SetStateAction<boolean>>;
