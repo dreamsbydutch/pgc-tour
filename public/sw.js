@@ -117,9 +117,9 @@ async function handleFetch(request) {
 
     // Strategy 5: Pages - Stale While Revalidate
     if (isPageRequest(url.pathname)) {
-      // For tournament pages, try network first with longer timeout
+      // For tournament pages, try network first with extended timeout
       if (url.pathname.includes("/tournament/")) {
-        return await networkFirstStrategy(request, DYNAMIC_CACHE_NAME, 15000); // 15s timeout
+        return await networkFirstStrategy(request, DYNAMIC_CACHE_NAME, 30000); // 30s timeout
       }
       return await staleWhileRevalidateStrategy(request, DYNAMIC_CACHE_NAME);
     }
@@ -129,9 +129,17 @@ async function handleFetch(request) {
   } catch (error) {
     console.error("[SW] Fetch failed:", error);
 
-    // Return offline fallback if available
+    // Never show offline fallback for document requests - let the app handle it
+    // The app has its own loading states and error handling
     if (request.destination === "document") {
-      return await getOfflineFallback();
+      const cache = await caches.open(DYNAMIC_CACHE_NAME);
+      const cachedResponse = await cache.match(request);
+      
+      // Return cached version if available, otherwise let the network error propagate
+      if (cachedResponse) {
+        console.log("[SW] Returning cached version instead of offline page");
+        return cachedResponse;
+      }
     }
 
     throw error;
@@ -159,11 +167,11 @@ async function cacheFirstStrategy(request, cacheName) {
 }
 
 // Network First Strategy - for API calls and live data
-async function networkFirstStrategy(request, cacheName, timeout = 10000) {
+async function networkFirstStrategy(request, cacheName, timeout = 30000) {
   const cache = await caches.open(cacheName);
 
   try {
-    // Try network first with timeout
+    // Try network first with extended timeout
     const networkResponse = await Promise.race([
       fetch(request),
       new Promise((_, reject) =>
@@ -187,6 +195,8 @@ async function networkFirstStrategy(request, cacheName, timeout = 10000) {
       return cachedResponse;
     }
 
+    // Don't throw error for API calls - let the app handle the failure
+    console.log("[SW] No cache available for:", request.url);
     throw error;
   }
 }
@@ -217,13 +227,13 @@ async function staleWhileRevalidateStrategy(request, cacheName) {
     return cachedResponse;
   }
 
-  // No cache, wait for network with timeout
+  // No cache, wait for network with extended timeout
   console.log("[SW] No cache, waiting for network:", request.url);
   try {
     const networkResponse = await Promise.race([
       fetchPromise,
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Network timeout")), 8000),
+        setTimeout(() => reject(new Error("Network timeout")), 20000), // Increased to 20s
       ),
     ]);
 
@@ -253,7 +263,8 @@ async function staleWhileRevalidateStrategy(request, cacheName) {
       }
     }
 
-    // Still no cache found, throw to trigger offline fallback
+    // Still no cache found - let the app handle this instead of showing offline page
+    console.log("[SW] No cached version found, letting app handle:", request.url);
     throw error;
   }
 }

@@ -24,10 +24,32 @@ export default async function TournamentPage({
   }
 
   // Fetch all leaderboard data using the new server action
-  const leaderboardData = await getCompleteLeaderboardData({
-    tournamentId: focusTourney.id,
-    userId: user?.id,
-  });
+  let leaderboardData;
+  try {
+    leaderboardData = await getCompleteLeaderboardData({
+      tournamentId: focusTourney.id,
+      userId: user?.id,
+    });
+  } catch (error) {
+    console.error("Failed to fetch leaderboard data:", error);
+    // Return a basic error page instead of crashing
+    return (
+      <div>
+        <LeaderboardHeader
+          focusTourney={focusTourney}
+          inputTournaments={allTournaments}
+        />
+        <div className="py-8 text-center">
+          <div className="text-lg text-red-600">
+            Unable to load tournament data
+          </div>
+          <div className="text-sm text-gray-500 mt-2">
+            Please try refreshing the page or check back later.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -39,10 +61,17 @@ export default async function TournamentPage({
         !leaderboardData.teams.find(
           (a) => a.tourCard?.id === leaderboardData.tourCard?.id,
         ) && <PreTournamentPage tournament={focusTourney} />} */}
-      {
-        leaderboardData.teams.length > 0 && (
-          <LeaderboardView {...leaderboardData} />
-        )}
+      <LeaderboardView {...leaderboardData} />
+      {leaderboardData.teams.length === 0 && leaderboardData.golfers.length === 0 && (
+        <div className="py-8 text-center">
+          <div className="text-lg text-gray-600">
+            No leaderboard data available yet.
+          </div>
+          <div className="text-sm text-gray-500 mt-2">
+            Tournament data will appear once scoring begins.
+          </div>
+        </div>
+      )}
     </div>
   );
 }
