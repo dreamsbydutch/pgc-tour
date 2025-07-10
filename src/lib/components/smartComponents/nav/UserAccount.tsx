@@ -139,7 +139,7 @@ function UserInfo({
           {member.firstname + " " + member.lastname}
         </div>
         <p className="w-[200px] truncate text-base text-slate-800">
-          {user.email}
+          {member.email}
         </p>
         {member && <LittleFucker memberId={member.id} />}
         <div className="flex w-[200px] flex-col text-sm text-slate-800">
