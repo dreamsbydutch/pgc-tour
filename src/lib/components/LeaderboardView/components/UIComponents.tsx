@@ -2,15 +2,8 @@
  * UI components for LeaderboardView
  */
 
-import React from "react";
+import { cn } from "@/lib/utils/main";
 import { MoveDownIcon, MoveHorizontalIcon, MoveUpIcon } from "lucide-react";
-import { cn, formatPercentage } from "@utils/main";
-import {
-  getCountryFlag,
-  isPlayerCut,
-  formatRounds,
-} from "../utils";
-import type { Golfer, Course } from "../types";
 
 // ================= POSITION CHANGE =================
 
