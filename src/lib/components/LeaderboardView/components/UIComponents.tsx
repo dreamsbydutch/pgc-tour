@@ -4,6 +4,12 @@
 
 import { cn } from "@/lib/utils/main";
 import { MoveDownIcon, MoveHorizontalIcon, MoveUpIcon } from "lucide-react";
+import {
+  formatPercentageDisplay,
+  formatRounds,
+  getCountryFlag,
+  isPlayerCut,
+} from "../utils";
 
 // ================= POSITION CHANGE =================
 
@@ -52,7 +58,21 @@ export const CountryFlagDisplay: React.FC<{
 
 // ================= GOLFER STATS =================
 
-export const GolferStatsGrid: React.FC<{ golfer: Golfer }> = ({ golfer }) => (
+export const GolferStatsGrid: React.FC<{
+  golfer: {
+    usage: number;
+    group: number;
+    makeCut: number;
+    topTen: number;
+    win: number;
+    worldRank: number | null;
+    rating: number | null;
+    roundOne: number | null;
+    roundTwo: number | null;
+    roundThree: number | null;
+    roundFour: number | null;
+  };
+}> = ({ golfer }) => (
   <>
     {/* Mobile layout */}
     <div className="col-span-6 text-sm font-bold sm:hidden">Rounds</div>

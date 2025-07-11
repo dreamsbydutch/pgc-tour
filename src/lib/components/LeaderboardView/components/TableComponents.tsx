@@ -15,14 +15,28 @@ import {
 } from "../../smartComponents/functionalComponents/ui/table";
 import { getSortedTeamGolfers, getGolferRowClass, isPlayerCut } from "../utils";
 import { CountryFlagDisplay, GolferStatsGrid } from "./UIComponents";
-import type { Team, Golfer, Course } from "../types";
 
 // ================= PGA DROPDOWN =================
 
-export const PGADropdown: React.FC<{ golfer: Golfer; userTeam?: Team }> = ({
-  golfer,
-  userTeam,
-}) => {
+export const PGADropdown: React.FC<{
+  golfer: {
+    apiId: number;
+    position: string;
+    country: string;
+    usage: number;
+    group: number;
+    makeCut: number;
+    topTen: number;
+    win: number;
+    worldRank: number | null;
+    rating: number | null;
+    roundOne: number | null;
+    roundTwo: number | null;
+    roundThree: number | null;
+    roundFour: number | null;
+  };
+  userTeam?: { golferIds: number[] };
+}> = ({ golfer, userTeam }) => {
   const isUserTeamGolfer = userTeam?.golferIds.includes(golfer.apiId);
   const isPlayerCutOrWithdrawn = isPlayerCut(golfer.position);
 
@@ -48,10 +62,17 @@ export const PGADropdown: React.FC<{ golfer: Golfer; userTeam?: Team }> = ({
 // ================= GOLFER SCORE CELL =================
 
 export const GolferScoreCell: React.FC<{
-  golfer: Golfer;
-  course?: Course | null;
-}> = ({ golfer, course }) => {
-  if (golfer.thru === 0 && course) {
+  golfer: {
+    thru: number;
+    today: number;
+    round?: number | null;
+    roundOneTeeTime?: string | null;
+    roundTwoTeeTime?: string | null;
+    roundThreeTeeTime?: string | null;
+    roundFourTeeTime?: string | null;
+  };
+}> = ({ golfer }) => {
+  if (golfer.thru === 0) {
     return (
       <td className="text-xs" colSpan={2}>
         {getGolferTeeTime(golfer)}
@@ -70,11 +91,42 @@ export const GolferScoreCell: React.FC<{
 // ================= TEAM GOLFERS TABLE =================
 
 export const TeamGolfersTable: React.FC<{
-  team: Team;
-  teamGolfers: Golfer[] | undefined;
-  course?: Course | null;
-}> = ({ team, teamGolfers, course }) => {
-  const sortedGolfers = getSortedTeamGolfers(team, teamGolfers);
+  team: { golferIds: number[]; round: number };
+  teamGolfers:
+    | {
+        id: number;
+        apiId: number;
+        position: string;
+        playerName: string;
+        today: number;
+        thru: number;
+        score: number;
+        group: number;
+        roundOne?: number | null;
+        roundTwo?: number | null;
+        roundThree?: number | null;
+        roundFour?: number | null;
+        makeCut?: number | null;
+        usage?: number | null;
+      }[]
+    | undefined;
+}> = ({ team, teamGolfers }) => {
+  const sortedGolfers = getSortedTeamGolfers(team, teamGolfers) as {
+    id: number;
+    apiId: number;
+    position: string;
+    playerName: string;
+    today: number;
+    thru: number;
+    score: number;
+    group: number;
+    roundOne?: number | null;
+    roundTwo?: number | null;
+    roundThree?: number | null;
+    roundFour?: number | null;
+    makeCut?: number;
+    usage?: number;
+  }[];
 
   return (
     <Table className="scrollbar-hidden mx-auto w-full max-w-3xl border border-gray-700 text-center font-varela">
@@ -102,7 +154,7 @@ export const TeamGolfersTable: React.FC<{
             {golfer.playerName}
           </td>
           <td className="px-1 text-sm">{formatScore(golfer.score)}</td>
-          <GolferScoreCell golfer={golfer} course={course} />
+          <GolferScoreCell golfer={golfer} />
           <td className="hidden border-l border-gray-300 text-xs md:table-cell">
             {golfer.roundOne ?? "-"}
           </td>

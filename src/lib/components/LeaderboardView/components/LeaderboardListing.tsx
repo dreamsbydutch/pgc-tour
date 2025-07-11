@@ -12,19 +12,43 @@ import {
 import { PositionChange } from "./UIComponents";
 import { ScoreDisplay } from "./ScoreDisplay";
 import { PGADropdown, TeamGolfersTable } from "./TableComponents";
-import type { LeaderboardListingProps } from "../types";
+import type {
+  LeaderboardTournament,
+  TournamentGolfer,
+  LeaderboardGolfer,
+  LeaderboardTeam,
+  LeaderboardTourCard,
+  LeaderboardMember,
+} from "../utils/types";
 
-export const LeaderboardListing: React.FC<LeaderboardListingProps> = ({
-  type,
-  tournament,
-  tournamentGolfers,
-  userTourCard,
-  golfer,
-  team,
-  tourCard,
-  course,
-  member,
-}) => {
+type LeaderboardListingProps =
+  | {
+      type: "PGC";
+      tournament: LeaderboardTournament;
+      tournamentGolfers: TournamentGolfer[];
+      userTourCard: { id: string };
+      team: LeaderboardTeam;
+      tourCard: LeaderboardTourCard;
+      member: LeaderboardMember;
+    }
+  | {
+      type: "PGA";
+      tournament: LeaderboardTournament;
+      tournamentGolfers: TournamentGolfer[];
+      userTourCard: { id: string };
+      golfer: LeaderboardGolfer;
+    };
+
+export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
+  props,
+) => {
+  const { type, tournament, tournamentGolfers, userTourCard } = props;
+
+  const team = type === "PGC" ? props.team : undefined;
+  const golfer = type === "PGA" ? props.golfer : undefined;
+  const tourCard = type === "PGC" ? props.tourCard : undefined;
+  const member = type === "PGC" ? props.member : undefined;
+
   const [isOpen, setIsOpen] = useState(false);
 
   const handleToggle = useCallback(() => {
@@ -70,7 +94,11 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = ({
             : formatScore((type === "PGA" ? golfer?.score : team?.score) ?? 0)}
         </div>
 
-        <ScoreDisplay type={type} team={team} golfer={golfer} course={course} />
+        {type === "PGA" ? (
+          <ScoreDisplay type="PGA" golfer={golfer!} />
+        ) : (
+          <ScoreDisplay type="PGC" team={team!} />
+        )}
       </div>
 
       {isOpen && (
@@ -78,11 +106,7 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = ({
           {type === "PGA" ? (
             <PGADropdown golfer={golfer!} userTeam={team} />
           ) : (
-            <TeamGolfersTable
-              team={team!}
-              teamGolfers={tournamentGolfers}
-              course={course}
-            />
+            <TeamGolfersTable team={team!} teamGolfers={tournamentGolfers} />
           )}
         </div>
       )}

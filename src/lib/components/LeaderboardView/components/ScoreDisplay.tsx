@@ -5,7 +5,6 @@
 import React from "react";
 import { formatScore, formatMoney, getGolferTeeTime } from "@utils/main";
 import { isPlayerCut } from "../utils";
-import type { Team, Golfer, Course } from "../types";
 
 // Simple cell component to reduce repetition
 const ScoreCell: React.FC<{
@@ -21,12 +20,51 @@ const ScoreCell: React.FC<{
   </div>
 );
 
-export const ScoreDisplay: React.FC<{
-  type: "PGC" | "PGA";
-  team?: Team;
-  golfer?: Golfer;
-  course?: Course | null;
-}> = ({ type, team, golfer, course }) => {
+type TeamData = {
+  position: string | null;
+  today: number;
+  thru: number;
+  round?: number | null;
+  roundOneTeeTime?: string | null;
+  roundTwoTeeTime?: string | null;
+  roundThreeTeeTime?: string | null;
+  roundFourTeeTime?: string | null;
+  points: number;
+  earnings: number;
+};
+
+type GolferData = {
+  position: string | null;
+  group: number;
+  rating: number | null;
+  today: number;
+  thru: number;
+  roundOne: number | null;
+  roundTwo: number | null;
+  roundThree: number | null;
+  roundFour: number | null;
+  endHole: number;
+  round?: number | null;
+  roundOneTeeTime?: string | null;
+  roundTwoTeeTime?: string | null;
+  roundThreeTeeTime?: string | null;
+  roundFourTeeTime?: string | null;
+};
+export const ScoreDisplay: React.FC<
+  | {
+      type: "PGC";
+      team: TeamData;
+    }
+  | {
+      type: "PGA";
+      golfer: GolferData;
+    }
+> = (props) => {
+  const { type } = props;
+
+  const team = type === "PGC" ? props.team : undefined;
+  const golfer = type === "PGA" ? props.golfer : undefined;
+
   const isPlayerCutOrWithdrawn =
     isPlayerCut(team?.position ?? null) ||
     isPlayerCut(golfer?.position ?? null);
@@ -37,10 +75,10 @@ export const ScoreDisplay: React.FC<{
       <>
         <ScoreCell value="-" />
         <ScoreCell value="-" />
-        <ScoreCell value="-" hidden />
-        <ScoreCell value="-" hidden />
-        <ScoreCell value="-" hidden />
-        <ScoreCell value="-" hidden />
+        <ScoreCell value={golfer?.roundOne} hidden />
+        <ScoreCell value={golfer?.roundTwo} hidden />
+        <ScoreCell value={golfer?.roundThree} hidden />
+        <ScoreCell value={golfer?.roundFour} hidden />
       </>
     );
   }
@@ -73,28 +111,28 @@ export const ScoreDisplay: React.FC<{
   }
 
   if (type === "PGA") {
-    return renderPGAScores(golfer, course);
+    return renderPGAScores(props.golfer);
   }
 
   if (type === "PGC") {
-    return renderPGCScores(team, course);
+    return renderPGCScores(props.team);
   }
 
   return renderFallbackScores(team);
 };
 
-const renderPGAScores = (golfer?: Golfer, course?: Course | null) => {
-  if (!golfer?.thru || golfer?.thru === 0) {
+const renderPGAScores = (golfer: GolferData) => {
+  if (!golfer.thru || golfer.thru === 0) {
     return (
       <>
         <div className="col-span-2 place-self-center font-varela text-xs">
-          {course && golfer ? getGolferTeeTime(golfer) : null}
-          {golfer?.endHole === 9 ? "*" : ""}
+          {getGolferTeeTime(golfer)}
+          {golfer.endHole === 9 ? "*" : ""}
         </div>
-        <ScoreCell value={golfer?.roundOne} hidden />
-        <ScoreCell value={golfer?.roundTwo} hidden />
-        <ScoreCell value={golfer?.roundThree} hidden />
-        <ScoreCell value={golfer?.roundFour} hidden />
+        <ScoreCell value={golfer.roundOne} hidden />
+        <ScoreCell value={golfer.roundTwo} hidden />
+        <ScoreCell value={golfer.roundThree} hidden />
+        <ScoreCell value={golfer.roundFour} hidden />
       </>
     );
   }
@@ -102,23 +140,23 @@ const renderPGAScores = (golfer?: Golfer, course?: Course | null) => {
   return (
     <>
       <ScoreCell
-        value={golfer?.today !== null ? formatScore(golfer?.today) : "-"}
+        value={golfer.today !== null ? formatScore(golfer.today) : "-"}
       />
-      <ScoreCell value={golfer?.thru === 18 ? "F" : golfer?.thru} />
-      <ScoreCell value={golfer?.roundOne} hidden />
-      <ScoreCell value={golfer?.roundTwo} hidden />
-      <ScoreCell value={golfer?.roundThree} hidden />
-      <ScoreCell value={golfer?.roundFour} hidden />
+      <ScoreCell value={golfer.thru === 18 ? "F" : golfer.thru} />
+      <ScoreCell value={golfer.roundOne} hidden />
+      <ScoreCell value={golfer.roundTwo} hidden />
+      <ScoreCell value={golfer.roundThree} hidden />
+      <ScoreCell value={golfer.roundFour} hidden />
     </>
   );
 };
 
-const renderPGCScores = (team?: Team, course?: Course | null) => {
-  if (!team?.thru || team?.thru === 0) {
+const renderPGCScores = (team: TeamData) => {
+  if (!team.thru || team.thru === 0) {
     return (
       <>
         <div className="col-span-2 place-self-center font-varela text-xs">
-          {course && team ? getGolferTeeTime(team) : null}
+          {getGolferTeeTime(team)}
         </div>
         <ScoreCell value="-" hidden />
         <ScoreCell value="-" hidden />
@@ -130,8 +168,8 @@ const renderPGCScores = (team?: Team, course?: Course | null) => {
 
   return (
     <>
-      <ScoreCell value={formatScore(team?.today)} />
-      <ScoreCell value={team?.thru === 18 ? "F" : team?.thru} />
+      <ScoreCell value={formatScore(team.today)} />
+      <ScoreCell value={team.thru === 18 ? "F" : team.thru} />
       <ScoreCell value="-" hidden />
       <ScoreCell value="-" hidden />
       <ScoreCell value="-" hidden />
@@ -140,7 +178,7 @@ const renderPGCScores = (team?: Team, course?: Course | null) => {
   );
 };
 
-const renderFallbackScores = (team?: Team) => {
+const renderFallbackScores = (team?: TeamData) => {
   const thruValue =
     team?.round === 5
       ? "-"

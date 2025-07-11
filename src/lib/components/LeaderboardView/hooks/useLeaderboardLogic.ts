@@ -3,11 +3,20 @@
  */
 
 import { useMemo } from "react";
-import { PLAYOFF_CONFIGS } from "./constants";
-import type { LeaderboardViewProps } from "./types";
+import { PLAYOFF_CONFIGS } from "../utils/constants";
 
-export const useLeaderboardLogic = (props: LeaderboardViewProps) => {
-  const { variant, tours = [], tourCards = [], inputTour = "" } = props;
+export const useLeaderboardLogic = (props: {
+  variant: "regular" | "playoff";
+  tours?: {
+    id: string;
+    name: string;
+    shortform: string;
+    logoUrl: string | null;
+  }[];
+  tourCards?: { playoff: number }[];
+  inputTourId?: string;
+}) => {
+  const { variant, tours = [], tourCards = [], inputTourId = "" } = props;
 
   const toggleTours = useMemo(() => {
     if (variant === "playoff") {
@@ -24,9 +33,9 @@ export const useLeaderboardLogic = (props: LeaderboardViewProps) => {
 
   const defaultToggle = useMemo(() => {
     if (variant === "playoff") return "gold";
-    if (inputTour) return inputTour;
+    if (inputTourId) return inputTourId;
     return toggleTours[0]?.id ?? "";
-  }, [variant, inputTour, toggleTours]);
+  }, [variant, inputTourId, toggleTours]);
 
   return { toggleTours, defaultToggle };
 };

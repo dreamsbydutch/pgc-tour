@@ -4,8 +4,7 @@
 
 import { type ReactElement } from "react";
 import { sortMultiple, filterItems } from "@utils/main";
-import { COUNTRY_FLAG_DATA, SCORE_PENALTIES } from "../constants";
-import type { Golfer, Team, TourCard, Member } from "../types";
+import { COUNTRY_FLAG_DATA, SCORE_PENALTIES } from "./constants";
 
 // ================= FORMATTING & DISPLAY =================
 
@@ -23,8 +22,8 @@ export const calculateScoreForSorting = (
 };
 
 export const getPositionChange = (
-  team: Team | undefined,
-  golfer: Golfer | undefined,
+  team: { pastPosition: string; position: string } | undefined,
+  golfer: { posChange: number } | undefined,
   type: "PGC" | "PGA",
 ): number => {
   if (type === "PGA") return golfer?.posChange ?? 0;
@@ -35,7 +34,12 @@ export const getPositionChange = (
 export const isPlayerCut = (position: string | null): boolean =>
   ["CUT", "WD", "DQ"].includes(position ?? "");
 
-export const formatRounds = (golfer: Golfer): string =>
+export const formatRounds = (golfer: {
+  roundOne: number | null;
+  roundTwo: number | null;
+  roundThree: number | null;
+  roundFour: number | null;
+}): string =>
   [golfer.roundOne, golfer.roundTwo, golfer.roundThree, golfer.roundFour]
     .filter(Boolean)
     .join(" / ");
@@ -45,7 +49,13 @@ export const formatPercentageDisplay = (value: number | null): string =>
 
 // ================= SORTING =================
 
-export const sortTeams = (teams: Team[]): Team[] =>
+export const sortTeams = (
+  teams: {
+    thru: number | null;
+    position: string | null;
+    score: number | null;
+  }[],
+) =>
   teams
     .sort((a, b) => (a.thru ?? 0) - (b.thru ?? 0))
     .sort(
@@ -54,7 +64,9 @@ export const sortTeams = (teams: Team[]): Team[] =>
         calculateScoreForSorting(b.position, b.score),
     );
 
-export const sortGolfers = (golfers: Golfer[]): Golfer[] =>
+export const sortGolfers = (
+  golfers: { id?: number; position: string; score: number }[],
+) =>
   golfers.sort(
     (a, b) =>
       calculateScoreForSorting(a.position, a.score) -
@@ -62,9 +74,16 @@ export const sortGolfers = (golfers: Golfer[]): Golfer[] =>
   );
 
 export const getSortedTeamGolfers = (
-  team: Team,
-  teamGolfers: Golfer[] = [],
-): Golfer[] =>
+  team: { golferIds: number[] },
+  teamGolfers: {
+    id: number;
+    apiId: number;
+    today: number;
+    thru: number;
+    score: number;
+    group: number;
+  }[] = [],
+) =>
   sortMultiple(
     filterItems(teamGolfers, { apiId: team.golferIds }),
     ["today", "thru", "score", "group"],
@@ -74,8 +93,8 @@ export const getSortedTeamGolfers = (
 // ================= STYLING =================
 
 export const getGolferRowClass = (
-  team: Team,
-  golfer: Golfer,
+  team: { round: number },
+  golfer: { position: string },
   i: number,
 ): string => {
   const classes = [];
@@ -90,11 +109,11 @@ export const getGolferRowClass = (
 
 export const getLeaderboardRowClass = (
   type: "PGC" | "PGA",
-  team: Team | undefined,
-  golfer: Golfer | undefined,
-  tourCard: TourCard | null | undefined,
-  userTourCard: TourCard | null | undefined,
-  member: Member | null | undefined,
+  team: { position: string; golferIds: number[] } | undefined,
+  golfer: { apiId: number; position: string } | undefined,
+  tourCard: { id: string; memberId: string } | null | undefined,
+  userTourCard: { id: string } | null | undefined,
+  member: { friends: string[] | null } | null | undefined,
 ): string => {
   const classes = [
     "col-span-10 grid grid-flow-row grid-cols-10 py-0.5 sm:grid-cols-16",
