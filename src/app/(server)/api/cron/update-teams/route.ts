@@ -108,8 +108,24 @@ function calculateTeamScoring(
   team: TeamWithScoring,
   tournament: TournamentWithCourse,
 ): Team {
-  const currentRound = tournament.currentRound ?? 1;
+  let currentRound = tournament.currentRound ?? 1;
   const par = tournament.course.par;
+
+  // Auto-detect current round based on golfer data if tournament round seems incorrect
+  if (team.golfers.length > 0) {
+    const maxGolferRound = Math.max(...team.golfers.map((g) => g.round ?? 1));
+    if (maxGolferRound > currentRound) {
+      console.log(
+        `Detected round mismatch: tournament says ${currentRound}, golfers say ${maxGolferRound}. Using golfer data.`,
+      );
+      currentRound = maxGolferRound;
+    }
+  }
+
+  // Debug tournament info
+  console.log(
+    `Tournament: ${tournament.name}, Detected Current Round: ${currentRound}, Par: ${par}, Live Play: ${tournament.livePlay}`,
+  );
 
   const updatedTeam: Team = {
     ...team,
@@ -145,7 +161,7 @@ function calculateTeamScoring(
 
   if (shouldBeCut) {
     // Team is cut - set current scores to null and position to CUT
-    updatedTeam.score = calculateTotalScore(roundScores, par); // Keep score from completed rounds
+    updatedTeam.score = calculateTotalScore(roundScores, null, par); // Keep score from completed rounds
     updatedTeam.today = null;
     updatedTeam.thru = null;
     updatedTeam.position = "CUT";
@@ -157,12 +173,21 @@ function calculateTeamScoring(
   }
 
   // Calculate overall score and today's score
-  const totalScore = calculateTotalScore(roundScores, par);
   const todayScore = calculateTodayScore(
-    roundScores,
+    team.golfers,
     currentRound,
     par,
     tournament.livePlay ?? false,
+  );
+  const totalScore = calculateTotalScore(roundScores, todayScore, par);
+
+  // Debug today's score calculation
+  console.log(
+    `Today scores from golfers:`,
+    team.golfers.map((g) => ({ id: g.apiId, today: g.today })),
+  );
+  console.log(
+    `Calculated today score: ${todayScore}, Total score: ${totalScore}`,
   );
 
   updatedTeam.score = roundToOneDecimal(totalScore);
@@ -195,6 +220,20 @@ function calculateRoundScores(
   console.log(
     `Calculating scores for ${golfers.length} golfers in round ${currentRound}`,
   );
+  console.log(
+    `Sample golfer data:`,
+    golfers.slice(0, 2).map((g) => ({
+      id: g.apiId,
+      roundOne: g.roundOne,
+      roundTwo: g.roundTwo,
+      roundThree: g.roundThree,
+      roundFour: g.roundFour,
+      today: g.today,
+      position: g.position,
+      round: g.round, // Which round the golfer is currently in
+      thru: g.thru, // Holes completed in current round
+    })),
+  );
 
   // Round 1: All 10 golfers (with WD/DQ penalty)
   if (currentRound >= 1) {
@@ -202,10 +241,13 @@ function calculateRoundScores(
       getGolferRoundScore(g, "roundOne", par),
     );
     const validScores = round1Scores.filter((score) => score !== null);
+    console.log(`Round 1 - Raw scores: ${JSON.stringify(round1Scores)}`);
+    console.log(`Round 1 - Valid scores: ${JSON.stringify(validScores)}`);
     if (validScores.length > 0) {
       scores.roundOne =
         validScores.reduce((sum, score) => sum + score!, 0) /
         validScores.length;
+      console.log(`Round 1 - Average stroke count: ${scores.roundOne}`);
     }
   }
 
@@ -215,10 +257,13 @@ function calculateRoundScores(
       getGolferRoundScore(g, "roundTwo", par),
     );
     const validScores = round2Scores.filter((score) => score !== null);
+    console.log(`Round 2 - Raw scores: ${JSON.stringify(round2Scores)}`);
+    console.log(`Round 2 - Valid scores: ${JSON.stringify(validScores)}`);
     if (validScores.length > 0) {
       scores.roundTwo =
         validScores.reduce((sum, score) => sum + score!, 0) /
         validScores.length;
+      console.log(`Round 2 - Average stroke count: ${scores.roundTwo}`);
     }
   }
 
@@ -274,6 +319,7 @@ function calculateRoundScores(
 
 /**
  * Gets a golfer's score for a specific round, applying WD/DQ penalties
+ * Returns stroke count (60s, 70s) for completed rounds
  */
 function getGolferRoundScore(
   golfer: Golfer,
@@ -282,15 +328,39 @@ function getGolferRoundScore(
 ): number | null {
   const score = golfer[roundKey] as number | null;
 
-  // If golfer has a score, return it
+  // If golfer has a score, return it as stroke count
   if (score !== null) {
     return score;
   }
 
-  // Check if golfer was WD or DQ - if so, apply +8 penalty
+  // Special case: if we're looking for a completed round but the individual round score is missing,
+  // we might be able to reconstruct it from the golfer's overall progression
+  const currentRound = golfer.round ?? 1;
+  const targetRound =
+    roundKey === "roundOne"
+      ? 1
+      : roundKey === "roundTwo"
+        ? 2
+        : roundKey === "roundThree"
+          ? 3
+          : 4;
+
+  // If we're looking for a round that should be completed (current round > target round)
+  // but the individual round score is missing, we have a data issue
+  if (currentRound > targetRound) {
+    console.log(
+      `Warning: Golfer ${golfer.apiId} is in round ${currentRound} but missing ${roundKey} score. This indicates a data ingestion issue.`,
+    );
+
+    // For now, we'll treat this as missing data and return null
+    // In a production system, you might want to reconstruct from overall score progression
+    return null;
+  }
+
+  // Check if golfer was WD or DQ - if so, apply +8 penalty as stroke count
   const position = golfer.position?.toUpperCase();
   if (position === "WD" || position === "DQ") {
-    return par + 8;
+    return par + 8; // This gives us a stroke count with +8 penalty
   }
 
   // If golfer is CUT, they don't get a penalty for missing rounds (they were cut)
@@ -343,10 +413,11 @@ function calculateAverageScore(
 }
 
 /**
- * Calculates the total score relative to par
+ * Calculates the total score relative to par (cumulative + today's score)
  */
 function calculateTotalScore(
   roundScores: Pick<Team, "roundOne" | "roundTwo" | "roundThree" | "roundFour">,
+  todaysScore: number | null,
   par: number,
 ): number | null {
   let total = 0;
@@ -369,46 +440,46 @@ function calculateTotalScore(
     roundsPlayed++;
   }
 
-  return roundsPlayed > 0 ? total : null;
+  // Add today's score if we have it
+  if (todaysScore !== null) {
+    total += todaysScore;
+  }
+
+  return roundsPlayed > 0 || todaysScore !== null ? total : null;
 }
 
 /**
- * Calculates today's score based on current round and live play status
+ * Calculates today's score based on golfers' current "today" field
  */
 function calculateTodayScore(
-  roundScores: Pick<Team, "roundOne" | "roundTwo" | "roundThree" | "roundFour">,
+  golfers: Golfer[],
   currentRound: number,
   par: number,
   isLivePlay: boolean = false,
 ): number | null {
-  if (!isLivePlay) {
-    // For non-live play, today's score is the most recent completed round relative to par
-    switch (currentRound) {
-      case 1:
-        return roundScores.roundOne ? roundScores.roundOne - par : null;
-      case 2:
-        return roundScores.roundTwo ? roundScores.roundTwo - par : null;
-      case 3:
-        return roundScores.roundThree ? roundScores.roundThree - par : null;
-      case 4:
-        return roundScores.roundFour ? roundScores.roundFour - par : null;
-      default:
-        return null;
-    }
-  }
+  if (currentRound <= 2) {
+    // Rounds 1-2: Use all 10 golfers
+    const todayScores = golfers
+      .map((g) => g.today)
+      .filter((score) => score !== null) as number[];
 
-  // For live play, today's score depends on the current round being played
-  switch (currentRound) {
-    case 1:
-      return roundScores.roundOne ? roundScores.roundOne - par : null;
-    case 2:
-      return roundScores.roundTwo ? roundScores.roundTwo - par : null;
-    case 3:
-      return roundScores.roundThree ? roundScores.roundThree - par : null;
-    case 4:
-      return roundScores.roundFour ? roundScores.roundFour - par : null;
-    default:
-      return null;
+    if (todayScores.length === 0) return null;
+
+    const average =
+      todayScores.reduce((sum, score) => sum + score, 0) / todayScores.length;
+    return average; // Today score is already relative to par
+  } else {
+    // Rounds 3-4: Use only active golfers
+    const activeGolfers = golfers.filter((g) => !isGolferCut(g));
+    const todayScores = activeGolfers
+      .map((g) => g.today)
+      .filter((score) => score !== null) as number[];
+
+    if (todayScores.length === 0) return null;
+
+    const average =
+      todayScores.reduce((sum, score) => sum + score, 0) / todayScores.length;
+    return average; // Today score is already relative to par
   }
 }
 

@@ -69,6 +69,7 @@ interface LeaderboardData {
     position: string | null;
     pastPosition: string | null;
     score: number | null;
+    today: number | null; // Added missing today field
     thru: number | null;
     round: number | null;
     points: number | null;
@@ -182,6 +183,7 @@ export async function getCompleteLeaderboardData({
         position: true,
         pastPosition: true,
         score: true,
+        today: true, // Added missing today field
         thru: true,
         round: true,
         points: true,
@@ -205,6 +207,7 @@ export async function getCompleteLeaderboardData({
       position: team.position,
       pastPosition: team.pastPosition,
       score: team.score,
+      today: team.today, // Added missing today field
       thru: team.thru,
       round: team.round,
       points: team.points,

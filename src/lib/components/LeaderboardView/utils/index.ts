@@ -1,0 +1,118 @@
+/**
+ * Utility functions for LeaderboardView
+ */
+
+import { type ReactElement } from "react";
+import { sortMultiple, filterItems } from "@utils/main";
+import { COUNTRY_FLAG_DATA, SCORE_PENALTIES } from "../constants";
+import type { Golfer, Team, TourCard, Member } from "../types";
+
+// ================= FORMATTING & DISPLAY =================
+
+export const getCountryFlag = (code: string | null): ReactElement | undefined =>
+  COUNTRY_FLAG_DATA.find((item) => item.key === code)?.image();
+
+export const calculateScoreForSorting = (
+  position: string | null,
+  score: number | null,
+): number => {
+  if (position === "DQ") return SCORE_PENALTIES.DQ + (score ?? 999);
+  if (position === "WD") return SCORE_PENALTIES.WD + (score ?? 999);
+  if (position === "CUT") return SCORE_PENALTIES.CUT + (score ?? 999);
+  return score ?? 999;
+};
+
+export const getPositionChange = (
+  team: Team | undefined,
+  golfer: Golfer | undefined,
+  type: "PGC" | "PGA",
+): number => {
+  if (type === "PGA") return golfer?.posChange ?? 0;
+  if (!team?.pastPosition || !team?.position) return 0;
+  return +team.pastPosition.replace("T", "") - +team.position.replace("T", "");
+};
+
+export const isPlayerCut = (position: string | null): boolean =>
+  ["CUT", "WD", "DQ"].includes(position ?? "");
+
+export const formatRounds = (golfer: Golfer): string =>
+  [golfer.roundOne, golfer.roundTwo, golfer.roundThree, golfer.roundFour]
+    .filter(Boolean)
+    .join(" / ");
+
+export const formatPercentageDisplay = (value: number | null): string =>
+  value ? `${Math.round(value * 1000) / 10}%` : "-";
+
+// ================= SORTING =================
+
+export const sortTeams = (teams: Team[]): Team[] =>
+  teams
+    .sort((a, b) => (a.thru ?? 0) - (b.thru ?? 0))
+    .sort(
+      (a, b) =>
+        calculateScoreForSorting(a.position, a.score) -
+        calculateScoreForSorting(b.position, b.score),
+    );
+
+export const sortGolfers = (golfers: Golfer[]): Golfer[] =>
+  golfers.sort(
+    (a, b) =>
+      calculateScoreForSorting(a.position, a.score) -
+      calculateScoreForSorting(b.position, b.score),
+  );
+
+export const getSortedTeamGolfers = (
+  team: Team,
+  teamGolfers: Golfer[] = [],
+): Golfer[] =>
+  sortMultiple(
+    filterItems(teamGolfers, { apiId: team.golferIds }),
+    ["today", "thru", "score", "group"],
+    ["asc", "asc", "asc", "asc"],
+  );
+
+// ================= STYLING =================
+
+export const getGolferRowClass = (
+  team: Team,
+  golfer: Golfer,
+  i: number,
+): string => {
+  const classes = [];
+
+  if ((team.round ?? 0) >= 3 && i === 4)
+    classes.push("border-b border-gray-700");
+  if (i === 9) classes.push("border-b border-gray-700");
+  if (isPlayerCut(golfer.position)) classes.push("text-gray-400");
+
+  return classes.join(" ");
+};
+
+export const getLeaderboardRowClass = (
+  type: "PGC" | "PGA",
+  team: Team | undefined,
+  golfer: Golfer | undefined,
+  tourCard: TourCard | null | undefined,
+  userTourCard: TourCard | null | undefined,
+  member: Member | null | undefined,
+): string => {
+  const classes = [
+    "col-span-10 grid grid-flow-row grid-cols-10 py-0.5 sm:grid-cols-16",
+  ];
+
+  if (type === "PGC") {
+    if (tourCard?.id === userTourCard?.id)
+      classes.push("bg-slate-200 font-semibold");
+    if (member?.friends?.includes(tourCard?.memberId ?? ""))
+      classes.push("bg-slate-100");
+    if (team?.position === "CUT") classes.push("text-gray-400");
+  }
+
+  if (type === "PGA") {
+    if (team?.golferIds?.includes(golfer?.apiId ?? 0))
+      classes.push("bg-slate-100");
+    if (isPlayerCut(golfer?.position ?? null)) classes.push("text-gray-400");
+  }
+
+  return classes.join(" ");
+};
