@@ -192,6 +192,14 @@ export const teamRouter = createTRPCRouter({
         topFive: z.number().optional(),
         topThree: z.number().optional(),
         win: z.number().optional(),
+        roundOne: z.number().optional(),
+        roundTwo: z.number().optional(),
+        roundThree: z.number().optional(),
+        roundFour: z.number().optional(),
+        roundOneTeeTime: z.string().optional(),
+        roundTwoTeeTime: z.string().optional(),
+        roundThreeTeeTime: z.string().optional(),
+        roundFourTeeTime: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
