@@ -50,7 +50,7 @@ export const getMemberFromHeaders = cache(async (): Promise<Member | null> => {
 
   try {
     return await db.member.findUnique({
-      where: { email: user.email },
+      where: { id: user.id },
     });
   } catch (error) {
     console.error("Failed to fetch member:", error);
@@ -108,14 +108,6 @@ export async function getUserEmail(): Promise<string | null> {
 }
 
 /**
- * Get member ID from database
- */
-export async function getMemberId(): Promise<string | null> {
-  const member = await getMemberFromHeaders();
-  return member?.id ?? null;
-}
-
-/**
  * Get member with relations (cached)
  */
 export const getMemberWithRelations = cache(
@@ -125,7 +117,7 @@ export const getMemberWithRelations = cache(
 
     try {
       return await db.member.findUnique({
-        where: { email: user.email },
+        where: { id: user.id },
         include,
       });
     } catch (error) {

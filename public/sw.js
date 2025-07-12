@@ -117,6 +117,10 @@ async function handleFetch(request) {
 
     // Strategy 5: Pages - Stale While Revalidate
     if (isPageRequest(url.pathname)) {
+      // For tournament pages, try network first with extended timeout
+      if (url.pathname.includes("/tournament/")) {
+        return await networkFirstStrategy(request, DYNAMIC_CACHE_NAME, 30000); // 30s timeout
+      }
       return await staleWhileRevalidateStrategy(request, DYNAMIC_CACHE_NAME);
     }
 
@@ -125,9 +129,17 @@ async function handleFetch(request) {
   } catch (error) {
     console.error("[SW] Fetch failed:", error);
 
-    // Return offline fallback if available
+    // Never show offline fallback for document requests - let the app handle it
+    // The app has its own loading states and error handling
     if (request.destination === "document") {
-      return await getOfflineFallback();
+      const cache = await caches.open(DYNAMIC_CACHE_NAME);
+      const cachedResponse = await cache.match(request);
+      
+      // Return cached version if available, otherwise let the network error propagate
+      if (cachedResponse) {
+        console.log("[SW] Returning cached version instead of offline page");
+        return cachedResponse;
+      }
     }
 
     throw error;
@@ -155,11 +167,11 @@ async function cacheFirstStrategy(request, cacheName) {
 }
 
 // Network First Strategy - for API calls and live data
-async function networkFirstStrategy(request, cacheName, timeout = 10000) {
+async function networkFirstStrategy(request, cacheName, timeout = 30000) {
   const cache = await caches.open(cacheName);
 
   try {
-    // Try network first with timeout
+    // Try network first with extended timeout
     const networkResponse = await Promise.race([
       fetch(request),
       new Promise((_, reject) =>
@@ -183,6 +195,8 @@ async function networkFirstStrategy(request, cacheName, timeout = 10000) {
       return cachedResponse;
     }
 
+    // Don't throw error for API calls - let the app handle the failure
+    console.log("[SW] No cache available for:", request.url);
     throw error;
   }
 }
@@ -196,25 +210,89 @@ async function staleWhileRevalidateStrategy(request, cacheName) {
     .then((networkResponse) => {
       if (networkResponse.ok) {
         cache.put(request, networkResponse.clone());
+        console.log("[SW] Updated cache from network:", request.url);
       }
       return networkResponse;
     })
     .catch((error) => {
-      console.log("[SW] Background update failed:", error);
+      console.log("[SW] Network update failed:", error);
+      return null; // Return null instead of throwing
     });
 
   // Return cached version immediately if available
   if (cachedResponse) {
-    console.log("[SW] Stale cache hit:", request.url);
-    // Update in background
+    console.log("[SW] Serving stale cache:", request.url);
+    // Update in background (don't await)
     fetchPromise;
     return cachedResponse;
   }
 
-  // No cache, wait for network
+  // No cache, wait for network with extended timeout
   console.log("[SW] No cache, waiting for network:", request.url);
-  return await fetchPromise;
+  try {
+    const networkResponse = await Promise.race([
+      fetchPromise,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Network timeout")), 20000), // Increased to 20s
+      ),
+    ]);
+
+    if (networkResponse && networkResponse.ok) {
+      return networkResponse;
+    }
+    throw new Error("Network response not ok");
+  } catch (error) {
+    console.log(
+      "[SW] Network failed, checking for any cached version:",
+      request.url,
+    );
+
+    // Try to find any cached version of this page (even if URL params differ)
+    const allCacheKeys = await cache.keys();
+    const url = new URL(request.url);
+
+    // Look for cached versions of the same path
+    for (const cachedRequest of allCacheKeys) {
+      const cachedUrl = new URL(cachedRequest.url);
+      if (cachedUrl.pathname === url.pathname) {
+        const response = await cache.match(cachedRequest);
+        if (response) {
+          console.log("[SW] Found similar cached page:", cachedRequest.url);
+          return response;
+        }
+      }
+    }
+
+    // Still no cache found - let the app handle this instead of showing offline page
+    console.log("[SW] No cached version found, letting app handle:", request.url);
+    throw error;
+  }
 }
+
+// Message handling for cache invalidation
+self.addEventListener("message", (event) => {
+  console.log("[SW] Message received:", event.data);
+
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+
+  if (event.data && event.data.type === "FORCE_UPDATE") {
+    console.log("[SW] Forcing cache update for pages");
+    // Clear page cache to force fresh requests
+    caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+      cache.keys().then((requests) => {
+        requests.forEach((request) => {
+          const url = new URL(request.url);
+          if (isPageRequest(url.pathname)) {
+            console.log("[SW] Clearing cached page:", request.url);
+            cache.delete(request);
+          }
+        });
+      });
+    });
+  }
+});
 
 // Helper functions to determine request types
 function isStaticAsset(pathname) {
@@ -253,7 +331,25 @@ function isMedia(request) {
 }
 
 function isPageRequest(pathname) {
-  return !pathname.includes(".") && !pathname.startsWith("/api/");
+  // Don't cache API routes, static files, etc.
+  if (
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next/") ||
+    pathname.includes(".")
+  ) {
+    return false;
+  }
+
+  // Cache actual page routes
+  return (
+    pathname.startsWith("/standings") ||
+    pathname.startsWith("/tournament") ||
+    pathname === "/" ||
+    pathname.startsWith("/player") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/rulebook") ||
+    pathname.startsWith("/signin")
+  );
 }
 
 // Offline fallback page

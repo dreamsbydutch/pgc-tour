@@ -12,7 +12,6 @@ export {
   isAdmin,
   getUserId,
   getUserEmail,
-  getMemberId,
   getMemberWithRelations,
   requireAuth,
   requireAdmin,

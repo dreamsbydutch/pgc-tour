@@ -1,6 +1,6 @@
 "use server";
 
-import { getMemberFromHeaders } from "@auth/utils";
+import { getAuthData, getMemberFromHeaders } from "@auth/utils";
 import { db } from "@server/db";
 import type { TourCard } from "@prisma/client";
 import { api } from "@trpcLocal/server";
@@ -10,7 +10,7 @@ import { getCurrentSeason } from "./season";
  * Gets the signed-in user's tour card for the current season
  */
 export async function getCurrentTourCard(): Promise<TourCard | null> {
-  const member = await getMemberFromHeaders();
+  const { member } = await getAuthData();
   if (!member) return null;
   const season = await getCurrentSeason();
   if (!season) return null;
