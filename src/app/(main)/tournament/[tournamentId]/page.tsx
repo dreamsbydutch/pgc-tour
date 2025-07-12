@@ -1,5 +1,5 @@
 import { getMemberFromHeaders } from "@/lib/auth";
-import LeaderboardView from "@/lib/components/LeaderboardView";
+import { LeaderboardContainer } from "@/lib/components/LeaderboardView";
 import { LeaderboardHeader } from "@/lib/components/smartComponents/functionalComponents/client/LeaderboardHeader";
 // import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
 import { getCompleteLeaderboardData } from "@/server/actions/leaderboard-complete";
@@ -43,7 +43,7 @@ export default async function TournamentPage({
           <div className="text-lg text-red-600">
             Unable to load tournament data
           </div>
-          <div className="text-sm text-gray-500 mt-2">
+          <div className="mt-2 text-sm text-gray-500">
             Please try refreshing the page or check back later.
           </div>
         </div>
@@ -61,17 +61,22 @@ export default async function TournamentPage({
         !leaderboardData.teams.find(
           (a) => a.tourCard?.id === leaderboardData.tourCard?.id,
         ) && <PreTournamentPage tournament={focusTourney} />} */}
-      <LeaderboardView {...leaderboardData} />
-      {leaderboardData.teams.length === 0 && leaderboardData.golfers.length === 0 && (
-        <div className="py-8 text-center">
-          <div className="text-lg text-gray-600">
-            No leaderboard data available yet.
+      <LeaderboardContainer
+        tournamentId={leaderboardData.tournament.id}
+        userId={user?.id}
+        variant="regular"
+      />
+      {leaderboardData.teams.length === 0 &&
+        leaderboardData.golfers.length === 0 && (
+          <div className="py-8 text-center">
+            <div className="text-lg text-gray-600">
+              No leaderboard data available yet.
+            </div>
+            <div className="mt-2 text-sm text-gray-500">
+              Tournament data will appear once scoring begins.
+            </div>
           </div>
-          <div className="text-sm text-gray-500 mt-2">
-            Tournament data will appear once scoring begins.
-          </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

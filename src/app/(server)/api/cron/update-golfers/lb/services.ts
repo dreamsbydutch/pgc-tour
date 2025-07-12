@@ -107,7 +107,6 @@ export async function updateAllGolfers(
         if (isGolferLive(liveGolfer)) {
           liveGolfersCount++;
         }
-
         await applyGolferUpdate(golfer.id, updateData);
       } catch (error) {
         console.error(`Error updating golfer ${golfer.playerName}:`, error);
@@ -253,24 +252,18 @@ function setCurrentTournamentData(
   }
 
   // Holes completed and today's score
-  if (
-    liveGolfer.thru !== undefined &&
-    !["WD", "DQ", "CUT"].includes(liveGolfer.current_pos)
-  ) {
-    updateData.thru = liveGolfer.thru;
-  }
-
-  if (
-    liveGolfer.today !== undefined &&
-    !["WD", "DQ", "CUT"].includes(liveGolfer.current_pos)
-  ) {
-    updateData.today = liveGolfer.today;
-  } else if (["WD", "DQ"].includes(liveGolfer.current_pos)) {
-    updateData.today = 8; // +8 penalty
-    updateData.thru = 18;
-  } else if (liveGolfer.current_pos === "CUT") {
+  if (liveGolfer.current_pos === "CUT") {
+    // CUT golfers have no today score or holes completed
     updateData.today = null;
     updateData.thru = null;
+  } else if (["WD", "DQ"].includes(liveGolfer.current_pos)) {
+    // WD/DQ golfers get penalty scores
+    updateData.today = 8; // +8 penalty
+    updateData.thru = 18;
+  } else if (!["WD", "DQ", "CUT"].includes(liveGolfer.current_pos)) {
+    // Active golfers get their live scores
+    updateData.thru = liveGolfer.thru ?? null;
+    updateData.today = liveGolfer.today ?? null;
   }
 
   // Additional fields
@@ -350,7 +343,7 @@ function calculatePreviousRoundPosition(
  * Calculate total score up to a specific round
  */
 function calculateScoreUpToRound(golfer: Golfer, round: number): number | null {
-  const scores: (number | null)[] = [];
+  const scores = [];
 
   if (round >= 1) scores.push(golfer.roundOne);
   if (round >= 2) scores.push(golfer.roundTwo);
@@ -358,7 +351,7 @@ function calculateScoreUpToRound(golfer: Golfer, round: number): number | null {
   if (round >= 4) scores.push(golfer.roundFour);
 
   // If any required rounds are missing, return null
-  const validScores = scores.filter((score) => score !== null) as number[];
+  const validScores = scores.filter((score) => score !== null);
   if (validScores.length !== round) {
     return null;
   }
@@ -377,8 +370,8 @@ async function applyGolferUpdate(
     makeCut: updateData.makeCut ?? undefined,
     topTen: updateData.topTen ?? undefined,
     win: updateData.win ?? undefined,
-    today: updateData.today ?? undefined,
-    thru: updateData.thru ?? undefined,
+    today: updateData.today ?? null,
+    thru: updateData.thru ?? null,
     round: updateData.round ?? undefined,
     earnings: updateData.earnings ?? undefined,
     usage: updateData.usage ?? undefined,

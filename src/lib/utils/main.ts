@@ -96,7 +96,10 @@ export function sortMultiple<T>(
   });
 }
 
-export function filterItems<T>(items: T[], filters: Record<string, unknown>): T[] {
+export function filterItems<T>(
+  items: T[],
+  filters: Record<string, unknown>,
+): T[] {
   return items.filter((item) =>
     Object.entries(filters).every(([key, value]) => {
       if (value == null) return true;
@@ -117,7 +120,10 @@ export function filterItems<T>(items: T[], filters: Record<string, unknown>): T[
           return false;
         if ("start" in value && "end" in value) {
           const d = new Date(itemValue as string | number | Date);
-          return d >= (value as { start: Date }).start && d <= (value as { end: Date }).end;
+          return (
+            d >= (value as { start: Date }).start &&
+            d <= (value as { end: Date }).end
+          );
         }
       }
       if (typeof value === "boolean") return Boolean(itemValue) === value;
@@ -684,11 +690,20 @@ export function capitalize(str: string): string {
  * getPath({ a: { b: { c: 42 } } }, 'a.b.c') // 42
  * getPath({ a: { b: 1 } }, 'a.b.c') // undefined
  */
-export function getPath<T = unknown, R = unknown>(obj: T, path: string): R | undefined {
+export function getPath<T = unknown, R = unknown>(
+  obj: T,
+  path: string,
+): R | undefined {
   if (!obj || typeof path !== "string" || !path) return undefined;
   return path
     .split(".")
-    .reduce<unknown>((acc, key) => (acc && key in (acc as object) ? (acc as Record<string, unknown>)[key] : undefined), obj) as R | undefined;
+    .reduce<unknown>(
+      (acc, key) =>
+        acc && key in (acc as object)
+          ? (acc as Record<string, unknown>)[key]
+          : undefined,
+      obj,
+    ) as R | undefined;
 }
 
 /**
@@ -717,9 +732,37 @@ export function getGolferTeeTime(golfer: {
     "roundFourTeeTime",
   ];
   const key = roundMap[golfer.round];
-  return key && golfer[key as keyof typeof golfer]
-    ? String(golfer[key as keyof typeof golfer])
-    : undefined;
+  const teeTime =
+    key && golfer[key as keyof typeof golfer]
+      ? String(golfer[key as keyof typeof golfer])
+      : undefined;
+  if (!teeTime) return undefined;
+  // Try to parse and format just the time part
+  const date = new Date(teeTime);
+  if (!isNaN(date.getTime())) {
+    return date.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    });
+  }
+  // Fallback: try to extract time from string (e.g., "2025-07-12 15:35")
+  const timeRegex = /(\d{1,2}):(\d{2})/;
+  const match = timeRegex.exec(teeTime);
+  if (match) {
+    const hour = Number(match[1]);
+    const minute = match[2];
+    let period = "AM";
+    let displayHour = hour;
+    if (hour === 0) {
+      displayHour = 12;
+    } else if (hour >= 12) {
+      period = "PM";
+      if (hour > 12) displayHour = hour - 12;
+    }
+    return `${displayHour}:${minute} ${period}`;
+  }
+  return teeTime;
 }
 
 /**

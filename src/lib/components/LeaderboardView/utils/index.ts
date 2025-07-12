@@ -22,8 +22,8 @@ export const calculateScoreForSorting = (
 };
 
 export const getPositionChange = (
-  team: { pastPosition: string; position: string } | undefined,
-  golfer: { posChange: number } | undefined,
+  team: { pastPosition: string | null; position: string | null } | undefined,
+  golfer: { posChange: number | null } | undefined,
   type: "PGC" | "PGA",
 ): number => {
   if (type === "PGA") return golfer?.posChange ?? 0;
@@ -78,10 +78,10 @@ export const getSortedTeamGolfers = (
   teamGolfers: {
     id: number;
     apiId: number;
-    today: number;
-    thru: number;
-    score: number;
-    group: number;
+    today: number | null;
+    thru: number | null;
+    score: number | null;
+    group: number | null;
   }[] = [],
 ) =>
   sortMultiple(
@@ -93,8 +93,8 @@ export const getSortedTeamGolfers = (
 // ================= STYLING =================
 
 export const getGolferRowClass = (
-  team: { round: number },
-  golfer: { position: string },
+  team: { round: number | null },
+  golfer: { position: string | null },
   i: number,
 ): string => {
   const classes = [];
@@ -109,8 +109,8 @@ export const getGolferRowClass = (
 
 export const getLeaderboardRowClass = (
   type: "PGC" | "PGA",
-  team: { position: string; golferIds: number[] } | undefined,
-  golfer: { apiId: number; position: string } | undefined,
+  team: { position: string | null; golferIds: number[] } | undefined,
+  golfer: { apiId: number; position: string | null } | undefined,
   tourCard: { id: string; memberId: string } | null | undefined,
   userTourCard: { id: string } | null | undefined,
   member: { friends: string[] | null } | null | undefined,

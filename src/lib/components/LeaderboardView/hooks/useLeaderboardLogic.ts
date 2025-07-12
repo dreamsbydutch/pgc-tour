@@ -4,16 +4,12 @@
 
 import { useMemo } from "react";
 import { PLAYOFF_CONFIGS } from "../utils/constants";
+import type { LeaderboardTour, LeaderboardTourCard } from "../types";
 
 export const useLeaderboardLogic = (props: {
   variant: "regular" | "playoff";
-  tours?: {
-    id: string;
-    name: string;
-    shortform: string;
-    logoUrl: string | null;
-  }[];
-  tourCards?: { playoff: number }[];
+  tours?: LeaderboardTour[];
+  tourCards?: LeaderboardTourCard[];
   inputTourId?: string;
 }) => {
   const { variant, tours = [], tourCards = [], inputTourId = "" } = props;
@@ -21,7 +17,7 @@ export const useLeaderboardLogic = (props: {
   const toggleTours = useMemo(() => {
     if (variant === "playoff") {
       const maxPlayoff = Math.max(
-        ...(tourCards?.map((card) => card.playoff) ?? []),
+        ...(tourCards?.map((card) => card.playoff ?? 0) ?? []),
       );
       return maxPlayoff > 1
         ? [PLAYOFF_CONFIGS.gold, PLAYOFF_CONFIGS.silver, PLAYOFF_CONFIGS.pga]

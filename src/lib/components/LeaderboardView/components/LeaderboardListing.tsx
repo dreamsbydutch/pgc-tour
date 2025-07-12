@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * LeaderboardListing component - Individual row in the leaderboard
  */
@@ -5,27 +7,23 @@
 import React, { useState, useCallback } from "react";
 import { formatScore } from "@utils/main";
 import {
-  getPositionChange,
-  isPlayerCut,
   getLeaderboardRowClass,
 } from "../utils";
-import { PositionChange } from "./UIComponents";
 import { ScoreDisplay } from "./ScoreDisplay";
 import { PGADropdown, TeamGolfersTable } from "./TableComponents";
 import type {
   LeaderboardTournament,
-  TournamentGolfer,
   LeaderboardGolfer,
   LeaderboardTeam,
   LeaderboardTourCard,
   LeaderboardMember,
-} from "../utils/types";
+} from "../types";
 
 type LeaderboardListingProps =
   | {
       type: "PGC";
       tournament: LeaderboardTournament;
-      tournamentGolfers: TournamentGolfer[];
+      tournamentGolfers: LeaderboardGolfer[];
       userTourCard: { id: string };
       team: LeaderboardTeam;
       tourCard: LeaderboardTourCard;
@@ -34,7 +32,7 @@ type LeaderboardListingProps =
   | {
       type: "PGA";
       tournament: LeaderboardTournament;
-      tournamentGolfers: TournamentGolfer[];
+      tournamentGolfers: LeaderboardGolfer[];
       userTourCard: { id: string };
       golfer: LeaderboardGolfer;
     };
@@ -42,7 +40,7 @@ type LeaderboardListingProps =
 export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
   props,
 ) => {
-  const { type, tournament, tournamentGolfers, userTourCard } = props;
+  const { type, tournamentGolfers, userTourCard } = props;
 
   const team = type === "PGC" ? props.team : undefined;
   const golfer = type === "PGA" ? props.golfer : undefined;
@@ -57,11 +55,11 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
 
   if (!team && !golfer) return null;
 
-  const posChange = getPositionChange(team, golfer, type);
-  const shouldShowPositionChange =
-    (tournament?.currentRound ?? 0) > 1 &&
-    !isPlayerCut(team?.position ?? null) &&
-    !isPlayerCut(golfer?.position ?? null);
+  // const posChange = getPositionChange(team, golfer, type);
+  // const shouldShowPositionChange =
+  //   (tournament?.currentRound ?? 0) > 1 &&
+  //   !isPlayerCut(team?.position ?? null) &&
+  //   !isPlayerCut(golfer?.position ?? null);
 
   const rowClass = getLeaderboardRowClass(
     type,
@@ -81,7 +79,7 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
       <div className={rowClass}>
         <div className="col-span-2 flex place-self-center font-varela text-base sm:col-span-3">
           {type === "PGA" ? golfer?.position : team?.position}
-          {shouldShowPositionChange && <PositionChange posChange={posChange} />}
+          {/* {shouldShowPositionChange && <PositionChange posChange={posChange} />} */}
         </div>
 
         <div className="col-span-4 place-self-center font-varela text-lg">

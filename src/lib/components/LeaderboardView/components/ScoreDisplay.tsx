@@ -5,6 +5,7 @@
 import React from "react";
 import { formatScore, formatMoney, getGolferTeeTime } from "@utils/main";
 import { isPlayerCut } from "../utils";
+import type { LeaderboardTeam, LeaderboardGolfer } from "../types";
 
 // Simple cell component to reduce repetition
 const ScoreCell: React.FC<{
@@ -20,108 +21,66 @@ const ScoreCell: React.FC<{
   </div>
 );
 
-type TeamData = {
-  position: string | null;
-  today: number;
-  thru: number;
-  round?: number | null;
-  roundOneTeeTime?: string | null;
-  roundTwoTeeTime?: string | null;
-  roundThreeTeeTime?: string | null;
-  roundFourTeeTime?: string | null;
-  points: number;
-  earnings: number;
-};
-
-type GolferData = {
-  position: string | null;
-  group: number;
-  rating: number | null;
-  today: number;
-  thru: number;
-  roundOne: number | null;
-  roundTwo: number | null;
-  roundThree: number | null;
-  roundFour: number | null;
-  endHole: number;
-  round?: number | null;
-  roundOneTeeTime?: string | null;
-  roundTwoTeeTime?: string | null;
-  roundThreeTeeTime?: string | null;
-  roundFourTeeTime?: string | null;
-};
 export const ScoreDisplay: React.FC<
-  | {
-      type: "PGC";
-      team: TeamData;
-    }
-  | {
-      type: "PGA";
-      golfer: GolferData;
-    }
+  | { type: "PGC"; team: LeaderboardTeam }
+  | { type: "PGA"; golfer: LeaderboardGolfer }
 > = (props) => {
   const { type } = props;
+  const listItem = type === "PGA" ? props.golfer : props.team;
 
-  const team = type === "PGC" ? props.team : undefined;
-  const golfer = type === "PGA" ? props.golfer : undefined;
+  const isPlayerCutOrWithdrawn = isPlayerCut(listItem.position ?? null);
+  const isTournamentOver = listItem.round === 5;
 
-  const isPlayerCutOrWithdrawn =
-    isPlayerCut(team?.position ?? null) ||
-    isPlayerCut(golfer?.position ?? null);
-  const isTournamentOver = team?.round === 5 || golfer?.round === 5;
-
+  // Cut/Withdrawn players
   if (isPlayerCutOrWithdrawn) {
     return (
       <>
         <ScoreCell value="-" />
         <ScoreCell value="-" />
-        <ScoreCell value={golfer?.roundOne} hidden />
-        <ScoreCell value={golfer?.roundTwo} hidden />
-        <ScoreCell value={golfer?.roundThree} hidden />
-        <ScoreCell value={golfer?.roundFour} hidden />
+        <ScoreCell value={listItem.roundOne} hidden />
+        <ScoreCell value={listItem.roundTwo} hidden />
+        <ScoreCell value={listItem.roundThree} hidden />
+        <ScoreCell value={listItem.roundFour} hidden />
       </>
     );
   }
 
+  // Tournament finished
   if (isTournamentOver) {
-    const firstCellValue =
+    const firstValue =
       type === "PGA"
-        ? golfer?.group === 0
+        ? props.golfer?.group === 0
           ? "-"
-          : golfer?.group
-        : team?.points === 0
+          : props.golfer?.group
+        : props.team?.points === 0
           ? "-"
-          : team?.points;
+          : props.team?.points;
 
-    const secondCellValue =
+    const secondValue =
       type === "PGA"
-        ? golfer?.rating
-        : formatMoney(+(team?.earnings ?? 0), true);
+        ? props.golfer?.rating
+        : formatMoney(+(props.team?.earnings ?? 0), true);
 
     return (
       <>
-        <ScoreCell value={firstCellValue} />
-        <ScoreCell value={secondCellValue} className="whitespace-nowrap" />
-        <ScoreCell value={type === "PGA" ? golfer?.roundOne : "-"} hidden />
-        <ScoreCell value={type === "PGA" ? golfer?.roundTwo : "-"} hidden />
-        <ScoreCell value={type === "PGA" ? golfer?.roundThree : "-"} hidden />
-        <ScoreCell value={type === "PGA" ? golfer?.roundFour : "-"} hidden />
+        <ScoreCell value={firstValue} />
+        <ScoreCell value={secondValue} className="whitespace-nowrap" />
+        <ScoreCell value={listItem.roundOne} hidden />
+        <ScoreCell value={listItem.roundTwo} hidden />
+        <ScoreCell value={listItem.roundThree} hidden />
+        <ScoreCell value={listItem.roundFour} hidden />
       </>
     );
   }
 
+  // Active tournament
   if (type === "PGA") {
     return renderPGAScores(props.golfer);
   }
-
-  if (type === "PGC") {
-    return renderPGCScores(props.team);
-  }
-
-  return renderFallbackScores(team);
+  return renderPGCScores(props.team);
 };
 
-const renderPGAScores = (golfer: GolferData) => {
+const renderPGAScores = (golfer: LeaderboardGolfer) => {
   if (!golfer.thru || golfer.thru === 0) {
     return (
       <>
@@ -151,17 +110,17 @@ const renderPGAScores = (golfer: GolferData) => {
   );
 };
 
-const renderPGCScores = (team: TeamData) => {
+const renderPGCScores = (team: LeaderboardTeam) => {
   if (!team.thru || team.thru === 0) {
     return (
       <>
         <div className="col-span-2 place-self-center font-varela text-xs">
           {getGolferTeeTime(team)}
         </div>
-        <ScoreCell value="-" hidden />
-        <ScoreCell value="-" hidden />
-        <ScoreCell value="-" hidden />
-        <ScoreCell value="-" hidden />
+        <ScoreCell value={team.roundOne} hidden />
+        <ScoreCell value={team.roundTwo} hidden />
+        <ScoreCell value={team.roundThree} hidden />
+        <ScoreCell value={team.roundFour} hidden />
       </>
     );
   }
@@ -170,33 +129,10 @@ const renderPGCScores = (team: TeamData) => {
     <>
       <ScoreCell value={formatScore(team.today)} />
       <ScoreCell value={team.thru === 18 ? "F" : team.thru} />
-      <ScoreCell value="-" hidden />
-      <ScoreCell value="-" hidden />
-      <ScoreCell value="-" hidden />
-      <ScoreCell value="-" hidden />
-    </>
-  );
-};
-
-const renderFallbackScores = (team?: TeamData) => {
-  const thruValue =
-    team?.round === 5
-      ? "-"
-      : team?.round === 4
-        ? "F"
-        : team?.thru === 18
-          ? "F"
-          : team?.thru;
-
-  return (
-    <>
-      <div className="col-span-2 place-self-center font-varela text-xs">
-        {thruValue}
-      </div>
-      <ScoreCell value="-" hidden />
-      <ScoreCell value="-" hidden />
-      <ScoreCell value="-" hidden />
-      <ScoreCell value="-" hidden />
+      <ScoreCell value={team.roundOne} hidden />
+      <ScoreCell value={team.roundTwo} hidden />
+      <ScoreCell value={team.roundThree} hidden />
+      <ScoreCell value={team.roundFour} hidden />
     </>
   );
 };

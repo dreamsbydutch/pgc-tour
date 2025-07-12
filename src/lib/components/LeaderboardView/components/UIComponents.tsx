@@ -10,6 +10,7 @@ import {
   getCountryFlag,
   isPlayerCut,
 } from "../utils";
+import type { LeaderboardGolfer } from "../types";
 
 // ================= POSITION CHANGE =================
 
@@ -59,19 +60,7 @@ export const CountryFlagDisplay: React.FC<{
 // ================= GOLFER STATS =================
 
 export const GolferStatsGrid: React.FC<{
-  golfer: {
-    usage: number;
-    group: number;
-    makeCut: number;
-    topTen: number;
-    win: number;
-    worldRank: number | null;
-    rating: number | null;
-    roundOne: number | null;
-    roundTwo: number | null;
-    roundThree: number | null;
-    roundFour: number | null;
-  };
+  golfer: LeaderboardGolfer;
 }> = ({ golfer }) => (
   <>
     {/* Mobile layout */}

@@ -97,7 +97,6 @@ export default async function CreateTeamPage({
   }
 
   if (!tourCard) return null;
-  console.log(existingTeam);
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 font-varela">
       {/* Back button to parent tournament page */}

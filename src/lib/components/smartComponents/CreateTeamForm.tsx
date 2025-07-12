@@ -86,7 +86,6 @@ export function CreateTeamForm({
   const onError = () => {
     setFormError("You must pick exactly 2 golfers from each group.");
   };
-  console.log("Existing Team: ", existingTeam);
   return (
     <div className="mx-auto max-w-4xl rounded-lg bg-white px-2 shadow-md">
       <h2 className="mb-2 text-center text-2xl font-bold">

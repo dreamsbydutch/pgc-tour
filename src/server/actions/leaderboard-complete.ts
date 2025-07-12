@@ -1,11 +1,10 @@
 "use server";
 
 import { db } from "@/server/db";
-import type { LeaderboardVariant } from "@/lib/components/LeaderboardView";
 
 // Explicit type definitions matching LeaderboardView requirements
 interface LeaderboardData {
-  variant: LeaderboardVariant;
+  variant: "regular" | "historical" | "playoff";
   tournament: {
     id: string;
     name: string;
@@ -95,7 +94,7 @@ interface LeaderboardData {
 interface GetLeaderboardDataParams {
   tournamentId: string;
   userId?: string;
-  variant?: LeaderboardVariant;
+  variant?: "playoff" | "historical" | "regular";
   inputTour?: string;
 }
 

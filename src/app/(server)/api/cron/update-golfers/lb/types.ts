@@ -2,7 +2,7 @@
  * Types and interfaces for the golfer update cron job
  */
 
-import type { Course, Golfer, Team, Tournament } from "@prisma/client";
+import type { Course, Tournament } from "@prisma/client";
 import type {
   DataGolfLiveTournament,
   DatagolfFieldInput,

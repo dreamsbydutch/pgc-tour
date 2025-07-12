@@ -15,26 +15,12 @@ import {
 } from "../../smartComponents/functionalComponents/ui/table";
 import { getSortedTeamGolfers, getGolferRowClass, isPlayerCut } from "../utils";
 import { CountryFlagDisplay, GolferStatsGrid } from "./UIComponents";
+import type { LeaderboardGolfer, LeaderboardTeam } from "../types";
 
 // ================= PGA DROPDOWN =================
 
 export const PGADropdown: React.FC<{
-  golfer: {
-    apiId: number;
-    position: string;
-    country: string;
-    usage: number;
-    group: number;
-    makeCut: number;
-    topTen: number;
-    win: number;
-    worldRank: number | null;
-    rating: number | null;
-    roundOne: number | null;
-    roundTwo: number | null;
-    roundThree: number | null;
-    roundFour: number | null;
-  };
+  golfer: LeaderboardGolfer;
   userTeam?: { golferIds: number[] };
 }> = ({ golfer, userTeam }) => {
   const isUserTeamGolfer = userTeam?.golferIds.includes(golfer.apiId);
@@ -62,15 +48,7 @@ export const PGADropdown: React.FC<{
 // ================= GOLFER SCORE CELL =================
 
 export const GolferScoreCell: React.FC<{
-  golfer: {
-    thru: number;
-    today: number;
-    round?: number | null;
-    roundOneTeeTime?: string | null;
-    roundTwoTeeTime?: string | null;
-    roundThreeTeeTime?: string | null;
-    roundFourTeeTime?: string | null;
-  };
+  golfer: LeaderboardGolfer;
 }> = ({ golfer }) => {
   if (golfer.thru === 0) {
     return (
@@ -91,42 +69,13 @@ export const GolferScoreCell: React.FC<{
 // ================= TEAM GOLFERS TABLE =================
 
 export const TeamGolfersTable: React.FC<{
-  team: { golferIds: number[]; round: number };
-  teamGolfers:
-    | {
-        id: number;
-        apiId: number;
-        position: string;
-        playerName: string;
-        today: number;
-        thru: number;
-        score: number;
-        group: number;
-        roundOne?: number | null;
-        roundTwo?: number | null;
-        roundThree?: number | null;
-        roundFour?: number | null;
-        makeCut?: number | null;
-        usage?: number | null;
-      }[]
-    | undefined;
+  team: LeaderboardTeam;
+  teamGolfers: LeaderboardGolfer[] | undefined;
 }> = ({ team, teamGolfers }) => {
-  const sortedGolfers = getSortedTeamGolfers(team, teamGolfers) as {
-    id: number;
-    apiId: number;
-    position: string;
-    playerName: string;
-    today: number;
-    thru: number;
-    score: number;
-    group: number;
-    roundOne?: number | null;
-    roundTwo?: number | null;
-    roundThree?: number | null;
-    roundFour?: number | null;
-    makeCut?: number;
-    usage?: number;
-  }[];
+  const sortedGolfers = getSortedTeamGolfers(
+    team,
+    teamGolfers,
+  ) as LeaderboardGolfer[];
 
   return (
     <Table className="scrollbar-hidden mx-auto w-full max-w-3xl border border-gray-700 text-center font-varela">
@@ -170,10 +119,10 @@ export const TeamGolfersTable: React.FC<{
           <td className="hidden border-l border-gray-300 text-xs xs:table-cell">
             {golfer.makeCut === 0
               ? "-"
-              : formatPercentage(golfer.makeCut, false)}
+              : formatPercentage((golfer.makeCut??0)*100, false)}
           </td>
           <td className="hidden border-gray-300 text-xs xs:table-cell">
-            {formatPercentage(golfer.usage, false)}
+            {formatPercentage((golfer.usage??0)*100, false)}
           </td>
           <td className="border-gray-300 text-xs">{golfer.group}</td>
         </TableRow>
