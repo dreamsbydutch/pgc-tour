@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 
-import { signInWithGoogle } from "./actions";
+import { signInWithGoogle } from "@app/(auth)/signin/actions";
 import Link from "next/link";
-import { Button } from "@ui/index";
-import { Icons } from "@components/index";
-import { useUser } from "@auth/index";
+import { Button } from "@pgc-ui";
+import { Icons } from "@pgc-components";
+import { useUser } from "@pgc-auth";
 
 export default function SignInPage() {
   const { user } = useUser();

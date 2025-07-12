@@ -1,7 +1,7 @@
 "use server";
 
 import type { Season } from "@prisma/client";
-import { db } from "@server/db";
+import { db } from "@pgc-server";
 
 /**
  * Gets the current season (by year, e.g., the current year)

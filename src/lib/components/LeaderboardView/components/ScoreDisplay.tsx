@@ -3,7 +3,7 @@
  */
 
 import React from "react";
-import { formatScore, formatMoney, getGolferTeeTime } from "@utils/main";
+import { formatScore, formatMoney, getGolferTeeTime } from "@pgc-utils";
 import { isPlayerCut } from "../utils";
 import type { LeaderboardTeam, LeaderboardGolfer } from "../types";
 

@@ -2,7 +2,7 @@
  * Main orchestration service for team updates
  */
 
-import { api } from "@trpcLocal/server";
+import { api } from "@pgc-trpcServer";
 import type { Team, Golfer } from "@prisma/client";
 import type { TeamWithGolfers, TournamentWithCourse } from "./types";
 import { calculateTeamScoring } from "./team-scoring";

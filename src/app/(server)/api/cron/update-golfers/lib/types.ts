@@ -7,7 +7,7 @@ import type {
   DataGolfLiveTournament,
   DatagolfFieldInput,
   DatagolfRankingInput,
-} from "@/lib/types/datagolf_types";
+} from "@pgc-types";
 
 // Core types
 export type TournamentWithCourse = Tournament & { course: Course };

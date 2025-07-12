@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useSeasonalStore } from "@store/seasonalStore";
-import { api } from "@trpcLocal/react";
+import { useSeasonalStore } from "./seasonalStore";
+import { api } from "@pgc-trpcClient";
 
 /**
  * Loads and initializes all seasonal data into the store on first page load or when data is stale.

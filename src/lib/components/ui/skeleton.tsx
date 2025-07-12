@@ -1,4 +1,4 @@
-import { cn } from "@utils/main";
+import { cn } from "@pgc-utils";
 
 function Skeleton({
   className,

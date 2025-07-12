@@ -1,24 +1,25 @@
 "use client";
 
 import Image from "next/image";
-import { cn } from "@utils/main";
+import { cn } from "@pgc-utils";
 
 export function HomePageList({
   tour,
   teams,
   self,
 }: {
-  tour: {logoUrl: string;
-    shortForm: string;};
-  teams: {
-  id: number | string;
-  memberId: string;
-  position: string | null;
-  displayName: string;
-  mainStat: number | string | null;
-  secondaryStat: number | string | null;
-}[] | null;
-  self: {id:string, friends:string[]} | null;
+  tour: { logoUrl: string | null; shortForm: string };
+  teams:
+    | {
+        id: number | string;
+        memberId: string;
+        position: string | null;
+        displayName: string;
+        mainStat: number | string | null;
+        secondaryStat: number | string | null;
+      }[]
+    | null;
+  self: { id: string; friends: string[] } | null;
 }) {
   return (
     <>
@@ -62,7 +63,7 @@ function SingleListing({
   displayName: string;
   mainStat: number | string | null;
   secondaryStat: number | string | null;
-  self: {id:string, friends:string[]} | null;
+  self: { id: string; friends: string[] } | null;
 }) {
   const isFriend = !!self?.friends?.includes(memberId);
   const isSelf = self?.id === memberId;

@@ -10,8 +10,8 @@ import { useLeaderboardLogic } from "../hooks/useLeaderboardLogic";
 import { useSearchParams } from "next/navigation";
 import { PGCLeaderboard } from "./PGCLeaderboard";
 import { PGALeaderboard } from "./PGALeaderboard";
-import { ToursToggleButton } from "../../smartComponents/functionalComponents/client/ToursToggle";
 import { LeaderboardHeaderRow } from "./UIComponents";
+import { ToursToggleButton } from "@pgc-components";
 
 interface LeaderboardContainerProps {
   tournamentId: string;

@@ -4,7 +4,7 @@ import {
   publicProcedure,
   createTRPCRouter,
   protectedProcedure,
-} from "@server/api/trpc";
+} from "@pgc-server";
 
 export const pushSubscriptionRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {

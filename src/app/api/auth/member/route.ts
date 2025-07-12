@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { db } from "@server/db";
+import { db } from "@pgc-server";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -17,6 +17,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ member });
   } catch (error) {
     console.error("Failed to fetch member:", error);
-    return NextResponse.json({ error: "Failed to fetch member" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch member" },
+      { status: 500 },
+    );
   }
 }

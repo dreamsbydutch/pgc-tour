@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { cache } from "react";
-import { db } from "@server/db";
+import { db } from "@pgc-server";
 import type { Member } from "@prisma/client";
 
 // Types

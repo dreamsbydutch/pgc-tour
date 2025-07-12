@@ -1,21 +1,21 @@
 "use client";
 
-import { api } from "@/trpc/react";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { useState, type Dispatch, type SetStateAction } from "react";
 
 import type { Team, Tour, TourCard, Tournament } from "@prisma/client";
-import { Table, TableCell, TableHeader, TableRow } from "@components/ui/table";
-import { cn, formatScore } from "@utils/main";
+import { Table, TableCell, TableHeader, TableRow } from "@pgc-ui";
+import { cn, formatScore } from "@pgc-utils";
 import {
   useAllTourCards,
   useMyTourCard,
   useTiers,
   useTournaments,
   useTours,
-} from "@store/seasonalStoreHooks";
-import { LeaderboardHeader } from "@smartComponents/functionalComponents/client/LeaderboardHeader";
+} from "@pgc-store";
+import { LeaderboardHeader } from "@pgc-components";
+import { api } from "@pgc-trpcClient";
 
 export default function Page({ params }: { params: { tournamentId: string } }) {
   const tournamentData = useTournaments();
@@ -27,7 +27,7 @@ export default function Page({ params }: { params: { tournamentId: string } }) {
 
   return (
     <div className="flex w-full flex-col">
-      {tournament && tournamentData ? (
+      {tournament && tournamentTier && tournamentData ? (
         <LeaderboardHeader
           focusTourney={{ ...tournament, tier: tournamentTier }}
           inputTournaments={tournamentData.map((t) => ({

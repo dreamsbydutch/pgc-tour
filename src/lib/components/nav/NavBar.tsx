@@ -1,14 +1,12 @@
 "use client";
 
 import { BookText, Home, List, Trophy } from "lucide-react";
-import { UserAccountNav } from "@components/nav/UserAccount";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useHeaderUser } from "@providers/AuthProvider";
-import { api } from "@trpcLocal/react";
-import { cn } from "@utils/main";
-import { Skeleton } from "@ui/index";
+import { cn } from "@pgc-utils";
+import { Skeleton } from "@pgc-ui";
 import { useAuthData } from "src/lib/hooks/hooks";
+import { UserAccountNav } from "./UserAccount";
 
 // Move navItems outside component to prevent recreation on every render
 const navItems = [

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "@utils/main";
+import { cn } from "@pgc-utils";
 
 const Table = React.forwardRef<
   HTMLTableElement,

@@ -1,4 +1,4 @@
-import { api } from "@trpcLocal/server";
+import { api } from "@pgc-trpcServer";
 
 /**
  * Returns all golfers for a given tournamentId.

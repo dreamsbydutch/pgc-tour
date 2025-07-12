@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { cn } from "@utils/main";
+import { cn } from "@pgc-utils";
 import { HomePageList } from "../../components/HomePageList";
 import { HomePageListSkeleton } from "../functionalComponents/loading/HomePageListSkeleton";
-import { getMemberFromHeaders } from "@auth/utils";
+import { getMemberFromHeaders } from "@pgc-auth";
 import LeaderboardHeaderContainer from "./LeaderboardHeaderContainer";
 
 export default async function HomePageLeaderboard({
@@ -69,7 +69,7 @@ export default async function HomePageLeaderboard({
                   tour={tour}
                   teams={tourTeams}
                   self={self}
-                  champions={champions}
+                  // champions={champions}
                 />
               ) : (
                 <HomePageListSkeleton />

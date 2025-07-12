@@ -2,7 +2,7 @@
  * UI components for LeaderboardView
  */
 
-import { cn } from "@/lib/utils/main";
+import { cn } from "@pgc-utils";
 import { MoveDownIcon, MoveHorizontalIcon, MoveUpIcon } from "lucide-react";
 import {
   formatPercentageDisplay,

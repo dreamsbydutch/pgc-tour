@@ -1,4 +1,4 @@
-import { api } from "@trpcLocal/server";
+import { api } from "@pgc-trpcServer";
 
 export async function getTournamentTeamData({
   tournamentId,

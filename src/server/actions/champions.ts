@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@server/db";
+import { db } from "@pgc-server";
 import type { Team, Tournament, TourCard, Golfer, Tour } from "@prisma/client";
 
 export type RecentChampionTourCard = TourCard & {

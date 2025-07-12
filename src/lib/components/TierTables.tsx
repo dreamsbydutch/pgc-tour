@@ -6,8 +6,8 @@ import {
   TableHeader,
   TableRow,
   Skeleton,
-} from "@ui/index";
-import { cn, formatMoney, formatNumber, formatRank } from "@utils/main";
+} from "@pgc-ui";
+import { cn, formatMoney, formatNumber, formatRank } from "@pgc-utils";
 
 /**
  * PayoutsTable Component

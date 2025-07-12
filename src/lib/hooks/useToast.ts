@@ -14,7 +14,7 @@
  */
 
 import { useEffect, useState } from "react";
-import type { ToastActionElement, ToastProps } from "@ui/index";
+import type { ToastActionElement, ToastProps } from "@pgc-ui";
 
 /**
  * Toast notification object, as stored in state.

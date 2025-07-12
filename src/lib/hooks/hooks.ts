@@ -13,20 +13,19 @@
  *     - useToast(), toast(): Toast notification system
  */
 
-import { useHeaderUser } from "@providers/AuthProvider";
-import { useSeasonalStore } from "@store/seasonalStore";
-import { api } from "@trpcLocal/react";
-import {
+import { useHeaderUser } from "@pgc-providers";
+import { api } from "@pgc-trpcClient";
+import {useSeasonalStore,
   useTournaments,
   useAllTourCards,
   useMember,
   useSeason,
   useTours,
   useTiers,
-} from "@store/seasonalStoreHooks";
+} from "@pgc-store";
 import { useMemo } from "react";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
-import { fetchDataGolf } from "@utils/main";
+import { fetchDataGolf } from "@pgc-utils";
 import type { DatagolfCourseInputData } from "../types/datagolf";
 
 // ===================== useUser =====================
@@ -400,7 +399,7 @@ export function useAuthData() {
         retry: 3,
         staleTime: 1000 * 60 * 5,
         gcTime: 1000 * 60 * 10,
-      }
+      },
     );
 
   return {

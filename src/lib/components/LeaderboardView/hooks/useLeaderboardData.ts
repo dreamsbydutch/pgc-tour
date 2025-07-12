@@ -6,8 +6,8 @@
  */
 
 import { useMemo } from "react";
-import { api } from "@/trpc/react";
 import type { LeaderboardViewProps } from "../types";
+import { api } from "@pgc-trpcClient";
 
 export interface LeaderboardDataParams {
   tournamentId: string;

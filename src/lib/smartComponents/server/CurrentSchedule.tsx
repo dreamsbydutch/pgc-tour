@@ -1,13 +1,8 @@
-import { LeagueSchedule } from "@components/smartComponents/functionalComponents/client/LeagueSchedule";
-import { LeagueScheduleError } from "../functionalComponents/error/LeagueScheduleError";
-import { getCurrentSchedule } from "@server/actions/schedule";
+import { LeagueSchedule } from "@pgc-components";
+import { getCurrentSchedule } from "@pgc-serverActions";
 
 export default async function CurrentSchedule() {
-  try {
-    const { tournaments } = await getCurrentSchedule();
-    if (!tournaments.length) return null;
-    return <LeagueSchedule tournaments={tournaments} />;
-  } catch (error) {
-    return <LeagueScheduleError error={error} />;
-  }
+  const { tournaments } = await getCurrentSchedule();
+  if (!tournaments.length) return null;
+  return <LeagueSchedule tournaments={tournaments} />;
 }

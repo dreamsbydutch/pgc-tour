@@ -10,7 +10,7 @@
  * - Development: http://localhost:3000/api/cron/update-golfers
  */
 
-import { handleGolferUpdateCron } from "@/app/(server)/api/cron/update-golfers/lb";
+import { handleGolferUpdateCron } from "./lib";
 
 export async function GET(request: Request) {
   return Response.json(await handleGolferUpdateCron(request));

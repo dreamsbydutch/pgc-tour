@@ -1,9 +1,9 @@
 "use server";
 
-import { getAuthData, getMemberFromHeaders } from "@auth/utils";
-import { db } from "@server/db";
+import { getAuthData, getMemberFromHeaders } from "@pgc-auth";
+import { db } from "@pgc-server";
 import type { TourCard } from "@prisma/client";
-import { api } from "@trpcLocal/server";
+import { api } from "@pgc-trpcServer";
 import { getCurrentSeason } from "./season";
 
 /**

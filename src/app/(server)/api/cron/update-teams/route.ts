@@ -12,14 +12,9 @@
 
 "use server";
 
-import { api } from "@trpcLocal/server";
+import { api } from "@pgc-trpcServer";
 import { NextResponse } from "next/server";
 import { updateAllTeams } from "./lib";
-
-type TournamentWithCourse = Tournament & { course: Course };
-type TeamWithScoring = Team & {
-  golfers: Golfer[];
-};
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);

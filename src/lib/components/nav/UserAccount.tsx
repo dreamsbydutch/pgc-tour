@@ -12,10 +12,10 @@ import {
   DropdownMenuTrigger,
   Button,
   Skeleton,
-} from "@ui/index";
-import { useInstallPWA, LittleFucker } from "@components/index";
+} from "@pgc-ui";
+import { useInstallPWA, LittleFucker } from "@pgc-components";
 import { useRouter } from "next/navigation";
-import { formatMoney, formatNumber } from "@utils/main";
+import { formatMoney, formatNumber } from "@pgc-utils";
 import { handleLogout, signInWithGoogle } from "@app/(auth)/signin/actions";
 
 import MemberUpdateForm from "./MemberUpdateForm";

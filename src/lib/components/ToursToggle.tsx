@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@utils/main";
+import { cn } from "@pgc-utils";
 import Image from "next/image";
 import { type Dispatch, type SetStateAction, useState } from "react";
 

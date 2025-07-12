@@ -1,13 +1,13 @@
 "use server";
 
-import { api } from "@trpcLocal/server";
+import { api } from "@pgc-trpcServer";
 import type {
   DatagolfFieldGolfer,
   DatagolfFieldInput,
   DatagolfRankingInput,
-} from "@types/datagolf";
+} from "@pgc-types";
 import { NextResponse } from "next/server";
-import { fetchDataGolf } from "@utils/main";
+import { fetchDataGolf } from "@pgc-utils";
 // import fs from "fs";
 
 export async function GET(request: Request) {

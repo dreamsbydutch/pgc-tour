@@ -8,11 +8,8 @@ import {
   formatScore,
   formatPercentage,
   getGolferTeeTime,
-} from "@utils/main";
-import {
-  Table,
-  TableRow,
-} from "../../smartComponents/functionalComponents/ui/table";
+} from "@pgc-utils";
+import { Table, TableRow } from "@pgc-ui";
 import { getSortedTeamGolfers, getGolferRowClass, isPlayerCut } from "../utils";
 import { CountryFlagDisplay, GolferStatsGrid } from "./UIComponents";
 import type { LeaderboardGolfer, LeaderboardTeam } from "../types";
@@ -119,10 +116,10 @@ export const TeamGolfersTable: React.FC<{
           <td className="hidden border-l border-gray-300 text-xs xs:table-cell">
             {golfer.makeCut === 0
               ? "-"
-              : formatPercentage((golfer.makeCut??0)*100, false)}
+              : formatPercentage((golfer.makeCut ?? 0) * 100, false)}
           </td>
           <td className="hidden border-gray-300 text-xs xs:table-cell">
-            {formatPercentage((golfer.usage??0)*100, false)}
+            {formatPercentage((golfer.usage ?? 0) * 100, false)}
           </td>
           <td className="border-gray-300 text-xs">{golfer.group}</td>
         </TableRow>

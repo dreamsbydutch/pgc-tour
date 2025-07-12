@@ -24,7 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   LoadingSpinner,
-} from "@ui/index";
+} from "@pgc-ui";
 import {
   cn,
   formatMoney,
@@ -32,7 +32,7 @@ import {
   formatRank,
   formatScore,
   formatTournamentDateRange,
-} from "@utils/main";
+} from "@pgc-utils";
 import { useCourseData } from "src/lib/hooks/hooks";
 
 export function LeaderboardHeader({
@@ -45,7 +45,7 @@ export function LeaderboardHeader({
     name: string;
     startDate: Date;
     endDate: Date;
-    currentRound: number;
+    currentRound: number | null;
     course: {
       name: string;
       location: string;

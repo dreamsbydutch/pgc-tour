@@ -4,11 +4,10 @@ import Link from "next/link";
 // import CurrentSchedule from "src/lib/smartComponents/server/CurrentSchedule";
 // import CurrentChampions from "@components/smartComponents/server/CurrentChampions";
 // import TournamentCountdownContainer from "@components/smartComponents/server/TournamentCountdownContainer";
-import { getAuthData } from "@auth/utils";
-import SignInPage from "./(auth)/signin/page";
-import { LeagueSchedule, TournamentCountdown } from "@components/index";
-import { getNextTournament } from "@server/actions/tournament";
-import { getCurrentSchedule } from "@server/actions/schedule";
+import { getAuthData } from "@pgc-auth";
+import SignInPage from "@app/(auth)/signin/page";
+import { LeagueSchedule, TournamentCountdown } from "@pgc-components";
+import { getNextTournament, getCurrentSchedule } from "@pgc-serverActions";
 // import { getCurrentTourCard } from "@server/actions/tourCard";
 
 export default async function Home() {

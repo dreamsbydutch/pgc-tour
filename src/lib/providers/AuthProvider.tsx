@@ -7,9 +7,9 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { createClient } from "@auth/client";
 import type { Member } from "@prisma/client";
 import type { User } from "@supabase/supabase-js";
+import { createClient } from "@pgc-auth";
 
 // Your custom user type from headers
 export interface HeaderUser {

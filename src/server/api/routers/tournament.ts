@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { publicProcedure, createTRPCRouter } from "@server/api/trpc";
+import { publicProcedure, createTRPCRouter } from "@pgc-server";
 
 // Helper function to transform tournament data with proper date types
 const transformTournamentDates = <T extends { startDate: Date; endDate: Date }>(
@@ -31,6 +31,22 @@ export const tournamentRouter = createTRPCRouter({
 
     return transformTournamentArrayDates(tournaments);
   }),
+  getById: publicProcedure
+    .input(z.object({ tournamentId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const tournament = await ctx.db.tournament.findUnique({
+        where: { id: input.tournamentId },
+        include: {
+          course: true,
+        },
+      });
+
+      if (!tournament) {
+        throw new Error("Tournament not found");
+      }
+
+      return transformTournamentDates(tournament);
+    }),
 
   getBySeason: publicProcedure
     .input(z.object({ seasonId: z.string() }))

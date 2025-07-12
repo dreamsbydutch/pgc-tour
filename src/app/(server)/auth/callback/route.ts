@@ -2,9 +2,9 @@
 
 import { NextResponse } from "next/server";
 
-import { createServerSupabaseClient } from "@auth/server";
-import { api } from "@trpcLocal/server";
-import { formatName } from "@utils/main";
+import { createServerSupabaseClient } from "@pgc-authServer";
+import { api } from "@pgc-trpcServer";
+import { formatName } from "@pgc-utils";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL

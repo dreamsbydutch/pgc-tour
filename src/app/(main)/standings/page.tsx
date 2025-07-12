@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import {
-  StandingsHeader,
-  StandingsListing,
-} from "@components/smartComponents/functionalComponents/client/StandingsPage";
 import type { Tier, Tour, TourCard } from "@prisma/client";
 import { useSearchParams } from "next/navigation";
 import { useCurrentStandings } from "src/lib/hooks/hooks";
-import { ToursToggleButton } from "@components/index";
+import { ToursToggleButton } from "@pgc-components";
+import {
+  StandingsHeader,
+  StandingsListing,
+} from "src/lib/smartComponents/functionalComponents/client/StandingsPage";
 
 export default function Page() {
   const searchParams = useSearchParams();

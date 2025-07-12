@@ -1,16 +1,19 @@
-import { createCallerFactory, createTRPCRouter } from "@server/api/trpc";
-import { teamRouter } from "./routers/team";
-import { courseRouter } from "./routers/course";
-import { seasonRouter } from "./routers/season";
-import { tierRouter } from "./routers/tier";
-import { tourRouter } from "./routers/tour";
-import { tourCardRouter } from "./routers/tour_card";
-import { tournamentRouter } from "./routers/tournament";
-import { memberRouter } from "./routers/member";
-import { transactionRouter } from "./routers/transaction";
-import { golferRouter } from "./routers/golfer";
-import { storeRouter } from "./routers/store";
-import { pushSubscriptionRouter } from "./routers/pushSubscription";
+import {
+  createCallerFactory,
+  createTRPCRouter,
+  teamRouter,
+  courseRouter,
+  seasonRouter,
+  tierRouter,
+  tourRouter,
+  tourCardRouter,
+  tournamentRouter,
+  memberRouter,
+  transactionRouter,
+  golferRouter,
+  storeRouter,
+  pushSubscriptionRouter,
+} from "@pgc-server";
 
 /**
  * This is the primary router for your server.

@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/server/db";
+import { db } from "@pgc-server";
 
 // Explicit type definitions matching LeaderboardView requirements
 interface LeaderboardData {
@@ -377,7 +377,7 @@ export async function getAuthenticatedLeaderboardData(
 ): Promise<LeaderboardData> {
   // This would need to be integrated with your auth system
   try {
-    const { createServerSupabaseClient } = await import("@/lib/auth/server");
+    const { createServerSupabaseClient } = await import("@pgc-authServer");
     const supabase = await createServerSupabaseClient();
     const {
       data: { user },

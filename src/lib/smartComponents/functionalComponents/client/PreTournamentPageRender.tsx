@@ -10,7 +10,7 @@ import type {
 import { Button } from "../../../components/ui/button";
 import LoadingSpinner from "../../../components/ui/loaders/LoadingSpinner";
 import { useState } from "react";
-import { cn, formatMoney, formatRank } from "@utils/main";
+import { cn, formatMoney, formatRank } from "@pgc-utils";
 import { useRouter } from "next/navigation";
 
 interface PreTournamentPageProps {

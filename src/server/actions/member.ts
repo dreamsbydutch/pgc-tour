@@ -1,6 +1,6 @@
 "use server";
 
-import { api } from "@trpcLocal/server";
+import { api } from "@pgc-trpcServer";
 
 /**
  * Update member information

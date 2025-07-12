@@ -2,13 +2,12 @@
 
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
-import { ruleList } from "./rules";
-import { cn } from "@utils/main";
-import { LeagueSchedule } from "@components/LeagueSchedule";
+import { ruleList } from "@app/(main)/rulebook/rules";
+import { cn } from "@pgc-utils";
+import { LeagueSchedule ,PayoutsTable, PointsTable} from "@pgc-components";
 import { Course, Tier, Tournament } from "@prisma/client";
-import { useTiers } from "@store/seasonalStoreHooks";
-import { PayoutsTable, PointsTable } from "@components/TierTables";
-import { useCurrentSchedule } from "src/lib/hooks/hooks";
+import { useTiers } from "@pgc-store";
+import { useCurrentSchedule } from "@pgc-hooks";
 
 /**
  * RulebookPage Component

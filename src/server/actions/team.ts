@@ -1,4 +1,4 @@
-import { api } from "@trpcLocal/server";
+import { api } from "@pgc-trpcServer";
 
 /**
  * Returns all teams for a single user at a given tournamentId.

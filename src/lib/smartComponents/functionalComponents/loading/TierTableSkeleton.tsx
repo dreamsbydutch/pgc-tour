@@ -1,4 +1,4 @@
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@pgc-ui";
 
 export function TierTableSkeleton() {
   // Mimic the table structure with skeletons

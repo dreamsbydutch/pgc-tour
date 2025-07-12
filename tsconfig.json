@@ -27,18 +27,22 @@
     "baseUrl": ".",
     "paths": {
       "@app/*": ["./src/app/*"],
-      "@auth/*": ["./src/lib/auth/*"],
-      "@components/*": ["./src/lib/components/*"],
-      "@providers/*": ["./src/lib/providers/*"],
-      "@push/*": ["./src/lib/push/*"],
-      "@store/*": ["./src/lib/store/*"],
-      "@types/*": ["./src/lib/types/*"],
-      "@utils/*": ["./src/lib/utils/*"],
-      "@ui/*": ["./src/lib/components/ui/*"],
       "@public/*": ["./public/*"],
-      "@server/*": ["./src/server/*"],
-      "@styles/*": ["./src/styles/*"],
-      "@trpcLocal/*": ["./src/trpc/*"]
+      "@pgc-auth": ["./src/lib/auth/index"],
+      "@pgc-authServer": ["./src/lib/auth/server"],
+      "@pgc-serverActions": ["./src/server/actions/index"],
+      "@pgc-hooks": ["./src/lib/hooks/index"],
+      "@pgc-components": ["./src/lib/components/index"],
+      "@pgc-providers": ["./src/lib/providers/index"],
+      "@pgc-push": ["./src/lib/push/index"],
+      "@pgc-store": ["./src/lib/store/index"],
+      "@pgc-types": ["./src/lib/types/index"],
+      "@pgc-utils": ["./src/lib/utils/index"],
+      "@pgc-ui": ["./src/lib/components/ui/index"],
+      "@pgc-server": ["./src/server/index"],
+      "@pgc-styles": ["./src/styles/index"],
+      "@pgc-trpcClient": ["./src/trpc/react"],
+      "@pgc-trpcServer": ["./src/trpc/server"]
     }
   },
   "include": [

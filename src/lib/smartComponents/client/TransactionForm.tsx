@@ -1,9 +1,8 @@
 "use client";
 
-import { api } from "@/trpc/react";
+import { api } from "@pgc-trpcClient";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { FieldInfo } from "../functionalComponents/ui/FieldInfo";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -12,11 +11,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../functionalComponents/ui/table";
+  Button,
+  FieldInfo,
+} from "@pgc-ui";
 import type { TransactionType } from "@prisma/client";
-import { Button } from "../functionalComponents/ui/button";
-import { formatMoney } from "@utils/main";
-import { processPayment } from "@server/actions/transactions";
+import { formatMoney } from "@pgc-utils";
+import { processPayment } from "@pgc-serverActions";
 
 const paymentSchema = z.object({
   userId: z.string().min(1, "Please select a member"),

@@ -1,7 +1,7 @@
 import {
   getCurrentTournament,
   getNextTournament,
-} from "@server/actions/tournament";
+} from "@pgc-serverActions";
 import { redirect } from "next/navigation";
 
 export default async function TournamentIndexPage() {

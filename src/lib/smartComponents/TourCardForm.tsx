@@ -3,12 +3,12 @@
 import Image from "next/image";
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { api } from "@/trpc/react";
-import { useSeasonalStore } from "@store/seasonalStore";
-import LoadingSpinner from "../components/ui/loaders/LoadingSpinner";
-import { Button } from "../components/ui/button";
 import type { Tour } from "@prisma/client";
-import { createTourCard } from "@server/actions/tourCard";
+
+import { api } from "@pgc-trpcClient";
+import { useSeasonalStore } from "@pgc-store";
+import { LoadingSpinner, Button } from "@pgc-ui";
+import { createTourCard } from "@pgc-serverActions";
 
 export function TourCardForm() {
   const [isCreatingTourCard, setIsCreatingTourCard] = useState(false);

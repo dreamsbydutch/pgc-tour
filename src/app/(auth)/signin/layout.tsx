@@ -1,4 +1,4 @@
-import { LoadingSpinner } from "@ui/index";
+import { LoadingSpinner } from "@pgc-ui";
 import { Suspense } from "react";
 
 export const metadata = {

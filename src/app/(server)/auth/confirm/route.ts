@@ -2,7 +2,7 @@ import { type EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest } from "next/server";
 
 import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@auth/server";
+import { createServerSupabaseClient } from "@pgc-authServer";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

@@ -10,7 +10,7 @@
  *     data.focusTourney, data.course, data.tier, data.groupedTournaments, etc.
  */
 
-import { api } from "@trpcLocal/server";
+import { api } from "@pgc-trpcServer";
 import type { Tournament, Course } from "@prisma/client";
 
 /**

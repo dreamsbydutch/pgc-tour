@@ -4,13 +4,12 @@ import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { z } from "zod";
-import { FieldInfo, Button } from "@ui/index";
+import { FieldInfo, Button } from "@pgc-ui";
 import { useRouter } from "next/navigation";
-import { useSeasonalStore } from "@store/seasonalStore";
-import { api } from "@trpcLocal/react";
-import { getErrorMessage } from "@utils/main";
-import { updateMemberAction } from "@server/actions/member";
-import { memberSchema } from "@utils/validators";
+import { useSeasonalStore } from "@pgc-store";
+import { api } from "@pgc-trpcClient";
+import { getErrorMessage, memberSchema } from "@pgc-utils";
+import { updateMemberAction } from "src/server/actions/member";
 
 const emptyMember = {
   id: "",

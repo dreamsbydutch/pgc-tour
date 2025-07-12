@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { cn, isDate } from "@utils/main";
+import { cn, isDate } from "@pgc-utils";
 
 /**
  * LittleFucker Component

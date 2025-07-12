@@ -1,18 +1,17 @@
 "use client";
 
-import { cn, formatMoney, formatRank } from "@utils/main";
+import { cn, formatMoney, formatRank } from "@pgc-utils";
 import { Star } from "lucide-react";
 import { useState } from "react";
-import LoadingSpinner from "@components/smartComponents/functionalComponents/loading/LoadingSpinner";
 import type { TourCard, Tour, Tier, Member } from "@prisma/client";
 import { StandingsTourCardInfo } from "../../StandingsDropdown";
-import LittleFucker from "@components/LittleFucker";
 import Image from "next/image";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@components/smartComponents/functionalComponents/ui/popover";
+  LoadingSpinner,
+} from "@pgc-ui";
 
 // --- Utility Components ---
 const TableHeaderCell = ({
@@ -150,12 +149,6 @@ function RegularStandingsListing({
         </div>
         <div className="col-span-5 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
           {tourCard.displayName}
-          {tourCard.win > 0 && (
-            <LittleFucker
-              memberId={tourCard.memberId}
-              seasonId={tourCard.seasonId}
-            />
-          )}
         </div>
         <div className="col-span-2 place-self-center font-varela text-sm xs:text-base sm:text-lg">
           {tourCard.points}
@@ -246,12 +239,6 @@ function PlayoffStandingsListing({
         </div>
         <div className="col-span-5 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
           {tourCard.displayName}
-          {tourCard.win > 0 && (
-            <LittleFucker
-              memberId={tourCard.memberId}
-              seasonId={tourCard.seasonId}
-            />
-          )}
         </div>
         <div className="col-span-2 place-self-center font-varela text-sm xs:text-base sm:text-lg">
           {tourCard.points}

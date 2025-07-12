@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@server/db";
+import { db } from "@pgc-server";
 
 export type ScheduleTournament = {
   name: string;
@@ -18,8 +18,6 @@ export type ScheduleTournament = {
     payouts: number[];
     points: number[];
     seasonId: string;
-    createdAt: string;
-    updatedAt: string;
   };
   course: {
     name: string;
@@ -30,13 +28,9 @@ export type ScheduleTournament = {
     front: number;
     back: number;
     timeZoneOffset: number;
-    createdAt: string;
-    updatedAt: string;
   };
-  startDate: string;
-  endDate: string;
-  createdAt: string;
-  updatedAt: string;
+  startDate: Date;
+  endDate: Date;
 };
 
 export type CurrentScheduleResult = {
@@ -45,8 +39,6 @@ export type CurrentScheduleResult = {
     number: number;
     id: string;
     year: number;
-    createdAt: string;
-    updatedAt: string;
   } | null;
 };
 
@@ -68,27 +60,9 @@ export async function getCurrentSchedule(): Promise<CurrentScheduleResult> {
   });
 
   // Only include tournaments with a tier and course
-  const tournamentsWithDetails = tournaments
-    .filter((t) => !!t.tier && !!t.course)
-    .map((t) => {
-      return {
-        ...t,
-        startDate: t.startDate.toISOString(),
-        endDate: t.endDate.toISOString(),
-        createdAt: t.createdAt.toISOString(),
-        updatedAt: t.updatedAt.toISOString(),
-        tier: {
-          ...t.tier,
-          createdAt: t.tier.createdAt.toISOString(),
-          updatedAt: t.tier.updatedAt.toISOString(),
-        },
-        course: {
-          ...t.course,
-          createdAt: t.course.createdAt.toISOString(),
-          updatedAt: t.course.updatedAt.toISOString(),
-        },
-      };
-    });
+  const tournamentsWithDetails = tournaments.filter(
+    (t) => !!t.tier && !!t.course,
+  );
 
   return {
     tournaments: tournamentsWithDetails,
@@ -96,8 +70,6 @@ export async function getCurrentSchedule(): Promise<CurrentScheduleResult> {
       number: season.number,
       id: season.id,
       year: season.year,
-      createdAt: season.createdAt.toISOString(),
-      updatedAt: season.updatedAt.toISOString(),
     },
   };
 }

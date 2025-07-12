@@ -5,10 +5,10 @@ import type { Golfer, TourCard, Tournament } from "@prisma/client";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { api } from "@/trpc/react";
+import { api } from "@pgc-trpcClient";
 import { z } from "zod";
-import { cn } from "../../utils/main";
-import { Button } from "./functionalComponents/ui/button";
+import { cn } from "@pgc-utils";
+import { Button } from "@pgc-ui";
 import LoadingSpinner from "../components/ui/loaders/LoadingSpinner";
 
 const golferSchema = z.object({

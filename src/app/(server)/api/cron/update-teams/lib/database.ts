@@ -2,7 +2,7 @@
  * Database operations for team updates
  */
 
-import { api } from "@trpcLocal/server";
+import { api } from "@pgc-trpcServer";
 import type { Team } from "@prisma/client";
 
 /**

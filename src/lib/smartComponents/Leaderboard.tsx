@@ -57,7 +57,7 @@ import {
   formatScore,
   getGolferTeeTime,
   sortMultiple,
-} from "@utils/main";
+} from "@pgc-utils";
 import { Table, TableRow } from "../components/ui/table";
 import { ToursToggleButton } from "../components/ToursToggle";
 
@@ -512,7 +512,7 @@ const LeaderboardListing: React.FC<LeaderboardListingProps> = ({
       : team?.pastPosition && team?.position
         ? +team.pastPosition.replace("T", "") - +team.position.replace("T", "")
         : 0;
-  if (!team && !golfer) return null
+  if (!team && !golfer) return null;
   const rowClass = cn(
     "col-span-10 grid grid-flow-row grid-cols-10 py-0.5 sm:grid-cols-16",
     type === "PGC" &&

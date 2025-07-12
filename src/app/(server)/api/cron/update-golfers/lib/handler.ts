@@ -3,7 +3,7 @@
  * Clean, focused orchestration with minimal logging
  */
 
-import { api } from "@/trpc/server";
+import { api } from "@pgc-trpcServer";
 import type { CronJobResult } from "./types";
 import {
   fetchExternalData,

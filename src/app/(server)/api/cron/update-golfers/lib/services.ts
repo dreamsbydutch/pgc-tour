@@ -3,21 +3,22 @@
  * Consolidated business logic with clear separation of concerns
  */
 
-import { api } from "@/trpc/server";
-import { fetchDataGolf } from "@/lib/utils/main";
+import { api } from "@pgc-trpcServer";
+import { fetchDataGolf } from "@pgc-utils";
 import type { Golfer, Team } from "@prisma/client";
-import type {
-  DataGolfLiveTournament,
-  DatagolfFieldGolfer,
-  DatagolfFieldInput,
-  DatagolfLiveGolfer,
-  DatagolfRankingInput,
-} from "@/lib/types/datagolf_types";
+
 import type {
   TournamentWithCourse,
   ExternalAPIData,
   UpdateResult,
 } from "./types";
+import {
+  DatagolfFieldGolfer,
+  DatagolfFieldInput,
+  DatagolfLiveGolfer,
+  DataGolfLiveTournament,
+  DatagolfRankingInput,
+} from "@pgc-types";
 
 // ================= DATA FETCHING =================
 

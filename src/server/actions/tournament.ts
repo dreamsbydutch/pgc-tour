@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@server/db";
+import { db } from "@pgc-server";
 import type { Course, Tier, Tournament } from "@prisma/client";
 export type TournamentWithRelations = Tournament & {
   course: Course;
@@ -89,9 +89,12 @@ export async function getTournamentInfo(seasonId: string) {
 }
 
 // Helper to ensure startDate and endDate are Date objects
-function normalizeTournamentDates<T extends { startDate: string | number | Date; endDate: string | number | Date }>(
-  tournament: T | null,
-): T | null {
+function normalizeTournamentDates<
+  T extends {
+    startDate: string | number | Date;
+    endDate: string | number | Date;
+  },
+>(tournament: T | null): T | null {
   if (!tournament) return null;
   return {
     ...tournament,
@@ -106,8 +109,11 @@ function normalizeTournamentDates<T extends { startDate: string | number | Date;
   };
 }
 
-function normalizeTournamentArray<T extends { startDate: string | number | Date; endDate: string | number | Date }>(
-  tournaments: T[],
-): T[] {
+function normalizeTournamentArray<
+  T extends {
+    startDate: string | number | Date;
+    endDate: string | number | Date;
+  },
+>(tournaments: T[]): T[] {
   return tournaments.map((t) => normalizeTournamentDates(t)!);
 }

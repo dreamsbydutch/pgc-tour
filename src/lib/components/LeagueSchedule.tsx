@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { capitalize, cn, getTournamentTimeline } from "@utils/main";
+import { capitalize, cn, getTournamentTimeline } from "@pgc-utils";
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableRow,
   Skeleton,
   SVGSkeleton,
-} from "@ui/index";
+} from "@pgc-ui";
 
 /**
  * LeagueSchedule Component

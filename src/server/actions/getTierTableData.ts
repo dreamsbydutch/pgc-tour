@@ -8,7 +8,7 @@
  *     const { tiers, error } = await getTierTableData();
  */
 
-import { api } from "@trpcLocal/server";
+import { api } from "@pgc-trpcServer";
 import type { Tier } from "@prisma/client";
 
 /**

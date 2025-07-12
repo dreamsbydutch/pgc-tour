@@ -3,7 +3,7 @@
  */
 
 import { type ReactElement } from "react";
-import { sortMultiple, filterItems } from "@utils/main";
+import { sortMultiple, filterItems } from "@pgc-utils";
 import { COUNTRY_FLAG_DATA, SCORE_PENALTIES } from "./constants";
 
 // ================= FORMATTING & DISPLAY =================

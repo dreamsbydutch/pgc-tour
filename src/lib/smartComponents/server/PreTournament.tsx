@@ -1,9 +1,8 @@
 import type { Tournament } from "@prisma/client";
 import PreTournamentPageRender from "../functionalComponents/client/PreTournamentPageRender";
-import { getMemberFromHeaders } from "@auth/utils";
-import { getTournamentTeamData } from "@server/actions/getTournamentTeamData";
-import { getCurrentTourCard } from "@server/actions/tourCard";
-import { TournamentCountdown } from "../../components/TournamentCountdown";
+import { getAuthData } from "@pgc-auth";
+import { getCurrentTourCard, getTournamentTeamData } from "@pgc-serverActions";
+import { TournamentCountdown } from "@pgc-components";
 
 export default async function PreTournamentPage({
   tournament,
@@ -13,18 +12,9 @@ export default async function PreTournamentPage({
     "id" | "name" | "logoUrl" | "startDate" | "seasonId"
   >;
 }) {
-  try {
-    // Fetch member (user) from headers (server-side)
-    const member = await getMemberFromHeaders();
-    const tourCard = await getCurrentTourCard();
-
-    // Only fetch team if tourCard exists
-    const team = tourCard
-      ? await getTournamentTeamData({
-          tournamentId: tournament.id,
-          tourCardId: tourCard.id,
-        })
-      : null;
+  // Fetch member (user) from headers (server-side)
+  const { user, member } = await getAuthData();
+  const tourCard = await getCurrentTourCard();
 
   // Only fetch team if tourCard exists
   const team = tourCard
@@ -37,7 +27,7 @@ export default async function PreTournamentPage({
   if (!user) {
     return (
       <>
-        <TournamentCountdownContainer inputTourney={tournament} />
+        <TournamentCountdown tourney={tournament} />
         <PreTournamentPageRender
           tournament={tournament}
           member={member}
@@ -47,33 +37,10 @@ export default async function PreTournamentPage({
         />
       </>
     );
-  } catch (error) {
-    console.error("Error in PreTournamentPage:", error);
-
-    // Return a fallback UI if there's an error
-    return (
-      <>
-        <TournamentCountdownContainer inputTourney={tournament} />
-        <PreTournamentPageRender
-          tournament={tournament}
-          member={null}
-          tourCard={null}
-          existingTeam={null}
-          teamGolfers={[]}
-        />
-      </>
-    );
   }
   if (!member) {
-    if (!memberData) {
-      return (
-        <div className="text-center">Member not found for - {user.email}</div>
-      );
-    }
     return (
-      <div className="text-center">
-        Member error - {memberData.email} / {user.email}
-      </div>
+      <div className="text-center">Member not found for - {user.email}</div>
     );
   }
   if (!tourCard) {
@@ -86,7 +53,7 @@ export default async function PreTournamentPage({
   }
   return (
     <>
-      <TournamentCountdownContainer inputTourney={tournament} />
+      <TournamentCountdown tourney={tournament} />
       <PreTournamentPageRender
         tournament={tournament}
         member={member}

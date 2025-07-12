@@ -7,7 +7,7 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from "@ui/index";
+} from "@pgc-ui";
 import { useToast } from "src/lib/hooks/useToast";
 
 export function Toaster() {

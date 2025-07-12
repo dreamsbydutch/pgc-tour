@@ -1,11 +1,9 @@
-import { getMemberFromHeaders } from "@/lib/auth";
-import { LeaderboardContainer } from "@/lib/components/LeaderboardView";
-import { LeaderboardHeader } from "@/lib/components/smartComponents/functionalComponents/client/LeaderboardHeader";
 // import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
-import { getCompleteLeaderboardData } from "@/server/actions/leaderboard-complete";
-import { getCurrentSeason } from "@/server/actions/season";
-import { getTournamentInfo } from "@/server/actions/tournament";
+import { getMemberFromHeaders } from "@pgc-auth";
+import { LeaderboardHeader } from "@pgc-components";
+import { getCompleteLeaderboardData, getCurrentSeason, getTournamentInfo } from "@pgc-serverActions";
 import { redirect } from "next/navigation";
+import { LeaderboardContainer } from "src/lib/components/LeaderboardView";
 
 export default async function TournamentPage({
   params,

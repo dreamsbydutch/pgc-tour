@@ -5,8 +5,8 @@ import {
   formatScore,
   hasItems,
   isNonEmptyString,
-} from "@utils/main";
-import { LittleFucker } from "@components/index";
+} from "@pgc-utils";
+import { LittleFucker } from "@pgc-components";
 
 /**
  * ChampionsPopup Component

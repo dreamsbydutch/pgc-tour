@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@components/smartComponents/functionalComponents/ui/button";
 import Image from "next/image";
 import type { Tour, TourCard } from "@prisma/client";
 import { useState, useCallback } from "react";
@@ -12,10 +11,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@components/smartComponents/functionalComponents/ui/dialog";
-import { api } from "@trpcLocal/react";
-import LoadingSpinner from "@components/smartComponents/functionalComponents/loading/LoadingSpinner";
-import { deleteTourCard } from "@server/actions/tourCard";
+  LoadingSpinner,
+  Button,
+} from "@pgc-ui";
+import { api } from "@pgc-trpcClient";
+import { deleteTourCard } from "@pgc-serverActions";
 
 export function TourCardOutput({
   name,

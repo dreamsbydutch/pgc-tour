@@ -5,10 +5,8 @@
  */
 
 import React, { useState, useCallback } from "react";
-import { formatScore } from "@utils/main";
-import {
-  getLeaderboardRowClass,
-} from "../utils";
+import { formatScore } from "@pgc-utils";
+import { getLeaderboardRowClass } from "../utils";
 import { ScoreDisplay } from "./ScoreDisplay";
 import { PGADropdown, TeamGolfersTable } from "./TableComponents";
 import type {

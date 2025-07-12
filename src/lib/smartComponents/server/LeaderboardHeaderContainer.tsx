@@ -1,6 +1,6 @@
 "use server";
 
-import { getTournamentInfo } from "@server/actions/tournament";
+import { getTournamentInfo } from "@pgc-serverActions";
 import { LeaderboardHeader } from "../../components/LeaderboardHeader";
 
 interface LeaderboardHeaderContainerProps {

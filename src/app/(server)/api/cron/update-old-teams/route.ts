@@ -1,6 +1,6 @@
 // "use server";
 
-import { api } from "@trpcLocal/server";
+import { api } from "@pgc-trpcServer";
 import type { Team, TourCard, Tournament } from "@prisma/client";
 import { NextResponse } from "next/server";
 

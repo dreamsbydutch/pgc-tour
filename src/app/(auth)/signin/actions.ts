@@ -1,6 +1,6 @@
-import { createClient } from "@auth/client";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import type { Dispatch, SetStateAction } from "react";
+import { createClient } from "@pgc-auth";
 import { toast } from "src/lib/hooks/useToast";
 
 export async function signInWithGoogle({
