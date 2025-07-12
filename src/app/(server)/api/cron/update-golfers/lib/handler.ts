@@ -1,16 +1,13 @@
 /**
- * Main handler for the golfer update cron job
- * Clean, focused orchestration with minimal logging
+import { db } from "@/server/db";
+import { updateAllGolfersOptimized } from "./golfer-service";
+import type { CronJobResult } from "./types";Main handler for the golfer update cron job
+ * Uses optimized service for maximum efficiency and minimal database calls
  */
 
-import { api } from "@/trpc/server";
+import { db } from "@/server/db";
 import type { CronJobResult } from "./types";
-import {
-  fetchExternalData,
-  createMissingGolfers,
-  updateAllGolfers,
-  updateTournamentStatus,
-} from "./services";
+import { updateAllGolfersOptimized } from "./service";
 
 export async function handleGolferUpdateCron(
   request: Request,
@@ -28,11 +25,18 @@ export async function handleGolferUpdateCron(
     const { searchParams, origin } = new URL(request.url);
     const next = searchParams.get("next") ?? "/";
 
-    // Fetch external data
-    const { liveData, fieldData, rankingsData } = await fetchExternalData();
+    // Get current tournament directly from database
+    const tournament = await db.tournament.findFirst({
+      where: {
+        startDate: { lte: new Date() },
+        endDate: { gte: new Date() },
+      },
+      include: {
+        course: true,
+      },
+      orderBy: { startDate: "desc" },
+    });
 
-    // Get current tournament
-    const tournament = (await api.tournament.getInfo()).current;
     if (!tournament) {
       return {
         success: false,
@@ -42,40 +46,25 @@ export async function handleGolferUpdateCron(
       };
     }
 
-    // Get existing golfers and teams
-    const [golfers, teams] = await Promise.all([
-      api.golfer.getByTournament({ tournamentId: tournament.id }),
-      api.team.getByTournament({ tournamentId: tournament.id }),
-    ]);
-
-    // Create missing golfers
-    await createMissingGolfers(
-      fieldData.field,
-      golfers,
-      rankingsData,
-      tournament,
+    console.log(
+      `🏌️ Processing golfer updates for tournament: ${tournament.name}`,
     );
 
-    // Update existing golfers
-    const { liveGolfersCount } = await updateAllGolfers(
-      golfers,
-      liveData,
-      fieldData,
-      tournament,
-      teams,
-    );
+    // Use optimized service for maximum efficiency
+    const result = await updateAllGolfersOptimized(tournament);
 
-    // Update tournament status
-    await updateTournamentStatus(tournament, golfers, liveGolfersCount);
+    console.log(
+      `✅ Golfer update completed: ${result.golfersUpdated} updated, ${result.golfersCreated} created, ${result.fieldsUpdated} fields changed, ${result.databaseCalls} database calls`,
+    );
 
     return {
       success: true,
       message: "Golfers updated successfully",
       redirect: `${origin}${next}`,
       stats: {
-        totalGolfers: golfers.length,
-        liveGolfersCount,
-        eventName: liveData.info.event_name,
+        totalGolfers: result.golfersUpdated + result.golfersCreated,
+        liveGolfersCount: result.liveGolfersCount,
+        eventName: "Current Tournament", // We don't need to fetch this separately
         tournamentName: tournament.name,
       },
     };

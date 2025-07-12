@@ -620,16 +620,49 @@ export async function fetchDataGolf(
   if (!DATAGOLF_API_KEY) {
     throw new Error("Missing DataGolf API key (EXTERNAL_DATA_API_KEY)");
   }
+
   const url = new URL(endpoint, DATAGOLF_BASE_URL);
   url.searchParams.set("key", DATAGOLF_API_KEY);
+
+  // Add cache-busting timestamp
+  url.searchParams.set("_t", Date.now().toString());
+
   for (const [k, v] of Object.entries(params)) {
     url.searchParams.set(k, String(v));
   }
-  const res = await fetch(url.toString());
+
+  console.log(`🌐 Fetching DataGolf API: ${endpoint}`, {
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    url: url.toString().replace(DATAGOLF_API_KEY, "[REDACTED]"),
+  });
+
+  const res = await fetch(url.toString(), {
+    headers: {
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+      "User-Agent": "PGC-Tour-App/1.0",
+    },
+  });
+
   if (!res.ok) {
+    console.error(`❌ DataGolf API error: ${res.status} ${res.statusText}`, {
+      endpoint,
+      status: res.status,
+      statusText: res.statusText,
+      headers: Object.fromEntries(res.headers.entries()),
+    });
     throw new Error(`DataGolf API error: ${res.status} ${res.statusText}`);
   }
-  return res.json();
+
+  const data = await res.json();
+  console.log(`✅ DataGolf API success: ${endpoint}`, {
+    timestamp: new Date().toISOString(),
+    dataSize: JSON.stringify(data).length,
+  });
+
+  return data;
 }
 
 /**
@@ -827,4 +860,81 @@ export function getErrorMessage(error: unknown): string {
   } catch {
     return "Unserializable error";
   }
+}
+
+/**
+ * Batches async operations to avoid rate limits
+ * @param items Array of items to process
+ * @param batchSize Number of items to process in each batch
+ * @param processor Function to process each item
+ * @param delayMs Delay between batches in milliseconds
+ * @returns Promise that resolves when all batches are processed
+ * @example
+ * await batchProcess(golfers, 10, async (golfer) => {
+ *   await updateGolfer(golfer);
+ * }, 100);
+ */
+export async function batchProcess<T>(
+  items: T[],
+  batchSize: number,
+  processor: (item: T) => Promise<void>,
+  delayMs = 50,
+): Promise<void> {
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+
+    console.log(
+      `🔄 Processing batch ${
+        Math.floor(i / batchSize) + 1
+      }/${Math.ceil(items.length / batchSize)} (${batch.length} items)`,
+    );
+
+    await Promise.all(batch.map(processor));
+
+    // Small delay between batches to avoid rate limits
+    if (i + batchSize < items.length) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+}
+
+/**
+ * Batches async operations and returns results
+ * @param items Array of items to process
+ * @param batchSize Number of items to process in each batch
+ * @param processor Function to process each item and return a result
+ * @param delayMs Delay between batches in milliseconds
+ * @returns Promise that resolves with array of results
+ * @example
+ * const results = await batchProcessWithResults(golfers, 10, async (golfer) => {
+ *   return await fetchGolferData(golfer);
+ * }, 100);
+ */
+export async function batchProcessWithResults<T, R>(
+  items: T[],
+  batchSize: number,
+  processor: (item: T) => Promise<R>,
+  delayMs = 50,
+): Promise<R[]> {
+  const results: R[] = [];
+
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+
+    console.log(
+      `🔄 Processing batch ${
+        Math.floor(i / batchSize) + 1
+      }/${Math.ceil(items.length / batchSize)} (${batch.length} items)`,
+    );
+
+    const batchResults = await Promise.all(batch.map(processor));
+    results.push(...batchResults);
+
+    // Small delay between batches to avoid rate limits
+    if (i + batchSize < items.length) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  return results;
 }

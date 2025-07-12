@@ -1,12 +1,29 @@
 /**
- * Export all lib functions for easy importing
+ * TEAM UPDATE LIBRARY - BARREL EXPORTS
+ * ====================================
+ *
+ * Consolidated exports for all team update functionality:
+ * - Service functions for team scoring and updates
+ * - Handler for processing HTTP requests
+ * - TypeScript types for type safety
+ * - Constants and utilities
  */
 
-export * from "./types";
-export * from "./team-update-service";
-export * from "./team-scoring";
-export * from "./scoring";
-export * from "./positions";
-export * from "./tee-times";
-export * from "./database";
-export * from "./utils";
+// Main service functions
+export { updateAllTeamsOptimized, updateAllTeamsLegacy } from "./service";
+
+// Request handler
+export { handleTeamUpdate } from "./handler";
+
+// Types
+export type {
+  TeamUpdateResult,
+  TournamentWithCourse,
+  TeamWithGolfers,
+  GolferSubset,
+  RoundKey,
+  TeeTimeKey,
+} from "./types";
+
+// Constants
+export { PENALTY_STROKES, MIN_GOLFERS_FOR_CUT } from "./types";

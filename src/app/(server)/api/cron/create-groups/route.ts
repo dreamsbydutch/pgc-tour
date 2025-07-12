@@ -1,107 +1,121 @@
-"use server";
-
-import { api } from "@/trpc/server";
+import { createTRPCContext } from "@/server/api/trpc";
+import { createCaller } from "@/server/api/root";
+import { headers } from "next/headers";
 import type {
   DatagolfFieldGolfer,
   DatagolfFieldInput,
   DatagolfRankingInput,
 } from "@/lib/types/datagolf_types";
 import { NextResponse } from "next/server";
-import { fetchDataGolf } from "@/lib/utils/main";
+import { fetchDataGolf, batchProcess } from "@/lib/utils/main";
 // import fs from "fs";
 
 export async function GET(request: Request) {
   // Extract search parameters and origin from the request URL
   const { origin } = new URL(request.url);
 
-  // Get the authorization code and the 'next' redirect path
-  // const next = searchParams.get("next") ?? "/";
+  try {
+    // Create a TRPC context with cron job authorization
+    const requestHeaders = new Headers(headers());
+    requestHeaders.set("x-cron-secret", process.env.CRON_SECRET ?? "");
+    requestHeaders.set("x-trpc-source", "cron");
 
-  const rankingsData = (await fetchDataGolf(
-    "preds/get-dg-rankings",
-    {},
-  )) as DatagolfRankingInput;
-  const fieldData = (await fetchDataGolf(
-    "field-updates",
-    {},
-  )) as DatagolfFieldInput;
-
-  const currentTourney = (await api.tournament.getInfo()).next;
-  const golfers = await api.golfer.getByTournament({
-    tournamentId: currentTourney?.id ?? "",
-  });
-  if (
-    !currentTourney ||
-    // currentTourney?.name === fieldData.event_name ||
-    golfers.length > 0
-  ) {
-    return NextResponse.redirect(`${origin}/`);
-  }
-
-  const groups: DatagolfFieldGolfer[][] = [[], [], [], [], []];
-
-  fieldData.field = fieldData.field
-    .filter((golfer) => golfer.dg_id !== 18417)
-    .map((golfer) => {
-      golfer.ranking_data = rankingsData.rankings.find(
-        (obj) => obj.dg_id === golfer.dg_id,
-      );
-      return golfer;
-    })
-    .sort(
-      (a, b) =>
-        (b.ranking_data?.dg_skill_estimate ?? -50) -
-        (a.ranking_data?.dg_skill_estimate ?? -50),
-    )
-    .map((golfer, i) => {
-      const remainingGolfers = fieldData.field.length - i;
-      if (
-        groups[0] &&
-        groups[0].length < fieldData.field.length * 0.1 &&
-        groups[0].length < 10
-      ) {
-        groups[0].push(golfer);
-      } else if (
-        groups[1] &&
-        groups[1].length < fieldData.field.length * 0.175 &&
-        groups[1].length < 16
-      ) {
-        groups[1].push(golfer);
-      } else if (
-        groups[2] &&
-        groups[2].length < fieldData.field.length * 0.225 &&
-        groups[2].length < 22
-      ) {
-        groups[2].push(golfer);
-      } else if (
-        groups[3] &&
-        groups[3].length < fieldData.field.length * 0.25 &&
-        groups[3].length < 30
-      ) {
-        groups[3].push(golfer);
-      } else {
-        if (
-          (groups[3] &&
-            groups[4] &&
-            remainingGolfers <= groups[3].length + groups[4].length * 0.5) ||
-          remainingGolfers === 1
-        ) {
-          groups[4]?.push(golfer);
-        } else {
-          if (i % 2) {
-            groups[3]?.push(golfer);
-          } else {
-            groups[4]?.push(golfer);
-          }
-        }
-      }
-      return golfer;
+    const ctx = await createTRPCContext({
+      headers: requestHeaders,
     });
 
-  await Promise.all(
-    groups.map(async (group, i) => {
-      await Promise.all(
-        group.map(async (golfer) => {
+    const api = createCaller(ctx);
+
+    const rankingsData = (await fetchDataGolf(
+      "preds/get-dg-rankings",
+      {},
+    )) as DatagolfRankingInput;
+    const fieldData = (await fetchDataGolf(
+      "field-updates",
+      {},
+    )) as DatagolfFieldInput;
+
+    const currentTourney = (await api.tournament.getInfo()).next;
+    const golfers = await api.golfer.getByTournament({
+      tournamentId: currentTourney?.id ?? "",
+    });
+    if (
+      !currentTourney ||
+      // currentTourney?.name === fieldData.event_name ||
+      golfers.length > 0
+    ) {
+      return NextResponse.redirect(`${origin}/`);
+    }
+
+    const groups: DatagolfFieldGolfer[][] = [[], [], [], [], []];
+
+    fieldData.field = fieldData.field
+      .filter((golfer) => golfer.dg_id !== 18417)
+      .map((golfer) => {
+        golfer.ranking_data = rankingsData.rankings.find(
+          (obj) => obj.dg_id === golfer.dg_id,
+        );
+        return golfer;
+      })
+      .sort(
+        (a, b) =>
+          (b.ranking_data?.dg_skill_estimate ?? -50) -
+          (a.ranking_data?.dg_skill_estimate ?? -50),
+      )
+      .map((golfer, i) => {
+        const remainingGolfers = fieldData.field.length - i;
+        if (
+          groups[0] &&
+          groups[0].length < fieldData.field.length * 0.1 &&
+          groups[0].length < 10
+        ) {
+          groups[0].push(golfer);
+        } else if (
+          groups[1] &&
+          groups[1].length < fieldData.field.length * 0.175 &&
+          groups[1].length < 16
+        ) {
+          groups[1].push(golfer);
+        } else if (
+          groups[2] &&
+          groups[2].length < fieldData.field.length * 0.225 &&
+          groups[2].length < 22
+        ) {
+          groups[2].push(golfer);
+        } else if (
+          groups[3] &&
+          groups[3].length < fieldData.field.length * 0.25 &&
+          groups[3].length < 30
+        ) {
+          groups[3].push(golfer);
+        } else {
+          if (
+            (groups[3] &&
+              groups[4] &&
+              remainingGolfers <= groups[3].length + groups[4].length * 0.5) ||
+            remainingGolfers === 1
+          ) {
+            groups[4]?.push(golfer);
+          } else {
+            if (i % 2) {
+              groups[3]?.push(golfer);
+            } else {
+              groups[4]?.push(golfer);
+            }
+          }
+        }
+        return golfer;
+      });
+
+    // Create golfers in batches to avoid rate limits
+    for (let i = 0; i < groups.length; i++) {
+      const group = groups[i];
+      if (!group || group.length === 0) continue;
+
+      await batchProcess(
+        group,
+        5,
+        async (golfer) => {
           const name = golfer.player_name.split(", ");
           if (currentTourney && currentTourney.id) {
             await api.golfer.create({
@@ -117,12 +131,23 @@ export async function GET(request: Request) {
               tournamentId: currentTourney.id,
             });
           }
-        }),
+        },
+        100,
       );
-    }),
-  );
+    }
 
-  return NextResponse.redirect(`${origin}/cron/update-golfers`);
+    return NextResponse.redirect(`${origin}/cron/update-golfers`);
+  } catch (error) {
+    console.error("Error creating groups:", error);
+    return NextResponse.json(
+      { error: "Failed to create groups" },
+      { status: 500 },
+    );
+  }
 }
+
+// Force dynamic rendering and disable caching
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 // http://localhost:3000/cron/create-groups
 // https://www.pgctour.ca/cron/create-groups
