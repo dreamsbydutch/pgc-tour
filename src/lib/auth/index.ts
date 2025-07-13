@@ -20,7 +20,7 @@ export {
 } from "./utils";
 
 // Client-side auth provider and hooks
-export { AuthProvider, useHeaderUser, type HeaderUser } from "@pgc-providers";
+export { AuthProvider, useHeaderUser, type HeaderUser } from "./AuthProvider"
 
 // Session-based auth hook (for client components)
 export { useUser } from "../hooks/hooks";

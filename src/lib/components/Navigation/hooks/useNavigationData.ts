@@ -3,9 +3,9 @@
  * Optimized to fetch auth data only once and cache it properly
  */
 
-import { useHeaderUser } from "@pgc-providers";
 import { api } from "@pgc-trpcClient";
 import type { NavigationData } from "../types";
+import { useHeaderUser } from "@pgc-auth";
 
 /**
  * Custom hook for navigation data

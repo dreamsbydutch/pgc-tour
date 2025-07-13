@@ -14,6 +14,8 @@ export interface NavigationMember {
   firstname: string | null;
   lastname: string | null;
   role: string;
+  account: number;
+  friends: string[];
 }
 
 export interface NavigationTourCard {
