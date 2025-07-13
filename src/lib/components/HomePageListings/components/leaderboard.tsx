@@ -9,7 +9,6 @@ import {
 } from "../utils";
 import type { HomePageListingsLeaderboardProps } from "../utils/types";
 import { LeaderboardHeader } from "@pgc-components";
-import { LeaderboardHeaderSkeleton } from "src/lib/smartComponents/functionalComponents/loading/LeaderboardHeaderSkeleton";
 
 export default function HomePageLeaderboard({
   tours,
@@ -18,6 +17,7 @@ export default function HomePageLeaderboard({
   self,
   champions,
 }: HomePageListingsLeaderboardProps) {
+  if (!currentTournament) return null;
   return (
     <div className="rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
       {currentTournament && allTournaments?.length > 0 ? (
@@ -25,9 +25,7 @@ export default function HomePageLeaderboard({
           focusTourney={currentTournament}
           inputTournaments={allTournaments}
         />
-      ) : (
-        <LeaderboardHeaderSkeleton />
-      )}
+      ) : null}
 
       <div className="grid grid-cols-2 font-varela">
         {tours.map((tour, i) => {

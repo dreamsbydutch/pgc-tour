@@ -51,6 +51,10 @@ export interface TeamUpdateData {
   pastPosition?: string | null;
   roundOneTeeTime?: string | null;
   roundTwoTeeTime?: string | null;
+  roundThreeTeeTime?: string | null;
+  roundFourTeeTime?: string | null;
+  points?: number | null;
+  earnings?: number | null;
 }
 
 // Service result

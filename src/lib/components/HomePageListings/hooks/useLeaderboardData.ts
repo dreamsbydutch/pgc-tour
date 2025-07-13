@@ -10,9 +10,7 @@ import { useMember, useTournaments, useTours } from "@pgc-store";
 import type {
   HomePageListingsLeaderboardProps,
   HomePageListingsLeaderboardTeam,
-  HomePageListingsLeaderboardTour,
   TeamFromTournamentAPI,
-  TourFromStore,
 } from "../utils/types";
 
 /**
@@ -26,7 +24,7 @@ export const useLeaderboardData = () => {
   // Fetch current active tournament
   const currentTournament = tournaments?.find(
     (t) =>
-      t.livePlay || ((t.currentRound ?? 0) > 1 && (t.currentRound ?? 0) === 5),
+      t.livePlay || ((t.currentRound ?? 0) > 1 && (t.currentRound ?? 0) < 5),
   );
 
   // Fetch teams for the current tournament
@@ -86,17 +84,6 @@ export const useLeaderboardData = () => {
         }
       });
     }
-
-    // Transform tours data to match expected type
-    const transformedTours: HomePageListingsLeaderboardTour[] = tours.map(
-      (tour: TourFromStore) => ({
-        id: tour.id,
-        seasonId: currentTournament?.seasonId ?? "default-season", // Use fallback if no current tournament
-        logoUrl: tour.logoUrl,
-        shortForm: tour.shortForm,
-        teams: tourMap.get(tour.id) || [],
-      }),
-    );
 
     data = {
       tours: tours.map((t) => {

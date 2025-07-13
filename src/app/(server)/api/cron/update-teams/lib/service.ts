@@ -102,6 +102,10 @@ export async function updateAllTeamsOptimized(
     pastPosition: team.pastPosition,
     roundOneTeeTime: team.roundOneTeeTime,
     roundTwoTeeTime: team.roundTwoTeeTime,
+    roundThreeTeeTime: team.roundThreeTeeTime,
+    roundFourTeeTime: team.roundFourTeeTime,
+    points: team.points,
+    earnings: team.earnings,
   }));
 
   // Batch update teams
@@ -418,11 +422,8 @@ function calculateTeamPositions(
 
     const tourCard = tourCards.find((tc) => tc.id === team.tourCardId);
 
-    // Calculate current position
-    team.position = calculateCurrentPosition(team, teams, tourCard, tourCards);
-
-    // Calculate past position (position after previous round)
-    team.pastPosition = calculatePastPosition(
+    // Calculate all position-related data in one comprehensive function
+    const positionData = calculateTeamPositionData(
       team,
       teams,
       tourCard,
@@ -430,63 +431,94 @@ function calculateTeamPositions(
       tournament,
     );
 
+    // Apply all calculated values
+    team.position = positionData.position;
+    team.pastPosition = positionData.pastPosition;
+    team.points = positionData.points;
+    team.earnings = positionData.earnings;
+
     return team;
   });
 }
 
 /**
- * Calculate current position for a team
+ * Calculate comprehensive position data for a team including position, pastPosition, points, and earnings
  */
-function calculateCurrentPosition(
-  team: Team & TeamCalculation,
-  allTeams: (Team & TeamCalculation)[],
-  tourCard: (TourCard & { member: Member; tour: Tour }) | undefined,
-  tourCards: (TourCard & { member: Member; tour: Tour })[],
-): string {
-  const activeTeams = getActiveTeams(allTeams);
-  const teamsInSameTour = getTeamsInSameTour(activeTeams, tourCard, tourCards);
-
-  const tiedTeams = teamsInSameTour.filter((t) => t.score === team.score);
-  const betterTeams = teamsInSameTour.filter(
-    (t) => (t.score ?? 999) < (team.score ?? 999),
-  );
-
-  return formatPosition(betterTeams.length + 1, tiedTeams.length > 1);
-}
-
-/**
- * Calculate past position for a team (position after previous round)
- */
-function calculatePastPosition(
+function calculateTeamPositionData(
   team: Team & TeamCalculation,
   allTeams: (Team & TeamCalculation)[],
   tourCard: (TourCard & { member: Member; tour: Tour }) | undefined,
   tourCards: (TourCard & { member: Member; tour: Tour })[],
   tournament: TournamentWithRelations,
-): string {
-  const pastScore = calculatePastScore(team, tournament);
+): {
+  position: string;
+  pastPosition: string;
+  points: number;
+  earnings: number;
+} {
+  // Get teams in same tour for calculations
+  const activeTeams = getActiveTeams(allTeams);
+  const teamsInSameTour = getTeamsInSameTour(activeTeams, tourCard, tourCards);
 
-  // For past position calculation, use different team filtering logic based on round
+  // Calculate current position
+  const currentTiedTeams = teamsInSameTour.filter(
+    (t) => t.score === team.score,
+  );
+  const currentBetterTeams = teamsInSameTour.filter(
+    (t) => (t.score ?? 999) < (team.score ?? 999),
+  );
+  const position = formatPosition(
+    currentBetterTeams.length + 1,
+    currentTiedTeams.length > 1,
+  );
+
+  // Calculate past position
+  const pastScore = calculatePastScore(team, tournament);
   const teamsForPastCalculation =
     team.round > 3 ? getActiveTeams(allTeams) : allTeams;
-
-  const teamsInSameTour = getTeamsInSameTour(
+  const pastTeamsInSameTour = getTeamsInSameTour(
     teamsForPastCalculation,
     tourCard,
     tourCards,
   );
 
-  const tiedPastTeams = teamsInSameTour.filter((t) => {
+  const tiedPastTeams = pastTeamsInSameTour.filter((t) => {
     const tPastScore = calculatePastScore(t, tournament);
     return tPastScore === pastScore;
   });
 
-  const betterPastTeams = teamsInSameTour.filter((t) => {
+  const betterPastTeams = pastTeamsInSameTour.filter((t) => {
     const tPastScore = calculatePastScore(t, tournament);
     return (tPastScore ?? 999) < (pastScore ?? 999);
   });
 
-  return formatPosition(betterPastTeams.length + 1, tiedPastTeams.length > 1);
+  const pastPosition = formatPosition(
+    betterPastTeams.length + 1,
+    tiedPastTeams.length > 1,
+  );
+
+  // Calculate points and earnings using the same tier-based logic
+  const tiedTeams = currentTiedTeams.length;
+  const betterTeams = currentBetterTeams.length;
+  const tierPayouts = tournament.tier.payouts;
+  const tierPoints = tournament.tier.points;
+
+  const points =
+    tierPoints
+      .slice(betterTeams, betterTeams + tiedTeams)
+      .reduce((sum, point) => sum + point, 0) / tiedTeams;
+
+  const earnings =
+    tierPayouts
+      .slice(betterTeams, betterTeams + tiedTeams)
+      .reduce((sum, payout) => sum + payout, 0) / tiedTeams;
+
+  return {
+    position,
+    pastPosition,
+    points,
+    earnings,
+  };
 }
 
 /**
@@ -602,6 +634,10 @@ async function batchUpdateTeams(updateData: TeamUpdateData[]): Promise<number> {
           pastPosition: teamData.pastPosition,
           roundOneTeeTime: teamData.roundOneTeeTime,
           roundTwoTeeTime: teamData.roundTwoTeeTime,
+          roundThreeTeeTime: teamData.roundThreeTeeTime,
+          roundFourTeeTime: teamData.roundFourTeeTime,
+          points: teamData.points,
+          earnings: teamData.earnings,
         },
       });
       updated++;

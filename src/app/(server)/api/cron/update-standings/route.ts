@@ -1,101 +1,85 @@
-import { createCaller, createTRPCContext } from "@pgc-server";
-import { batchProcess } from "@pgc-utils";
-import { headers } from "next/headers";
-import { NextResponse } from "next/server";
-
 /**
- * Main function to update standings for all tour cards
+ * UPDATE STANDINGS CRON JOB
+ * ==========================
+ *
+ * Clean, focused cron job for updating tour card standings and positions.
+ * Business logic is centralized in the services module with clear separation of concerns.
+ *
+ * BUSINESS RULES:
+ * - Calculates statistics for each tour card (wins, top tens, earnings, etc.)
+ * - Only includes teams that have completed more than 4 rounds
+ * - Determines positions based on points earned
+ * - Handles tied positions with "T" prefix
+ *
+ * ENDPOINTS:
+ * - Production: https://www.pgctour.ca/api/cron/update-standings
+ * - Development: http://localhost:3000/api/cron/update-standings
  */
+
+import { NextResponse } from "next/server";
+import { handleUpdateStandingsCron } from "./lib/handler";
+
 export async function GET(request: Request) {
-  // Extract search parameters and origin from the request URL
-  const { origin } = new URL(request.url);
+  // Add comprehensive logging for debugging production issues
+  const startTime = Date.now();
+  const timestamp = new Date().toISOString();
+
+  console.log("🔄 Update standings cron job started:", {
+    timestamp,
+    environment: process.env.NODE_ENV,
+    hasCronSecret: !!process.env.CRON_SECRET,
+    userAgent: request.headers.get("user-agent"),
+    url: request.url,
+  });
 
   try {
-    // Create a TRPC context with cron job authorization
-    const requestHeaders = new Headers(headers());
-    requestHeaders.set("x-cron-secret", process.env.CRON_SECRET ?? "");
-    requestHeaders.set("x-trpc-source", "cron");
+    const result = await handleUpdateStandingsCron(request);
 
-    const ctx = await createTRPCContext({
-      headers: requestHeaders,
+    const duration = Date.now() - startTime;
+    console.log("✅ Update standings cron job completed:", {
+      timestamp: new Date().toISOString(),
+      duration: `${duration}ms`,
+      success: result.success,
+      message: result.message,
     });
 
-    const api = createCaller(ctx);
-
-    const season = await api.season.getCurrent();
-    const tourCards = await api.tourCard.getBySeason({
-      seasonId: season?.id ?? "",
+    // Return with cache-busting headers
+    return new Response(JSON.stringify(result), {
+      status: result.status ?? 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+        Pragma: "no-cache",
+        Expires: "0",
+        "X-Timestamp": timestamp,
+        "X-Duration": `${duration}ms`,
+      },
     });
-
-    if (tourCards) {
-      // First pass: calculate stats for each tour card
-      await batchProcess(
-        tourCards,
-        10,
-        async (tourCard) => {
-          let teams = await api.team.getByTourCard({ tourCardId: tourCard.id });
-          teams = teams.filter((obj) => (obj.round ?? 0) > 4);
-          tourCard.win = teams.filter(
-            (obj) => +(obj.position?.replace("T", "") ?? 0) === 1,
-          ).length;
-          tourCard.topTen = teams.filter(
-            (obj) => +(obj.position?.replace("T", "") ?? 0) <= 10,
-          ).length;
-          tourCard.madeCut = teams.filter(
-            (obj) => obj.position !== "CUT",
-          ).length;
-          tourCard.appearances = teams.length;
-          tourCard.earnings = teams.reduce(
-            (p, c) => (p += Math.round((c.earnings ?? 0) * 100) / 100),
-            0,
-          );
-          tourCard.points = teams.reduce(
-            (p, c) => (p += Math.round(c.points ?? 0)),
-            0,
-          );
-        },
-        100,
-      );
-
-      // Second pass: calculate positions and update in database
-      await batchProcess(
-        tourCards,
-        10,
-        async (tourCard) => {
-          tourCard.position =
-            (tourCards &&
-            tourCards.filter(
-              (a) =>
-                a.tourId === tourCard.tourId && a.points === tourCard.points,
-            ).length > 1
-              ? "T"
-              : "") +
-            (tourCards &&
-              tourCards.filter(
-                (a) =>
-                  a.tourId === tourCard.tourId &&
-                  (a.points ?? 0) > (tourCard.points ?? 0),
-              ).length + 1);
-          await api.tourCard.update({
-            id: tourCard.id,
-            position: tourCard.position,
-            points: tourCard.points ?? undefined,
-            earnings: tourCard.earnings,
-            win: tourCard.win,
-            topTen: tourCard.topTen,
-            madeCut: tourCard.madeCut,
-            appearances: tourCard.appearances,
-          });
-        },
-        50,
-      );
-    }
-    return NextResponse.redirect(`${origin}/`);
   } catch (error) {
-    console.error("Error updating standings:", error);
-    return NextResponse.json(
-      { error: "Failed to update standings" },
-      { status: 500 },
+    const duration = Date.now() - startTime;
+    console.error("❌ Update standings cron job failed:", {
+      timestamp: new Date().toISOString(),
+      duration: `${duration}ms`,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: "Failed to update standings",
+        error: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+          Pragma: "no-cache",
+          Expires: "0",
+          "X-Timestamp": timestamp,
+          "X-Duration": `${duration}ms`,
+        },
+      },
     );
   }
 }
