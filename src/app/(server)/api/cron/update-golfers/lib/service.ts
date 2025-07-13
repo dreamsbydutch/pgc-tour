@@ -64,6 +64,7 @@ export async function updateAllGolfersOptimized(
         roundThreeTeeTime: true,
         roundFourTeeTime: true,
         position: true,
+        posChange: true,
         score: true,
         thru: true,
         today: true,
