@@ -46,7 +46,11 @@ export async function updateAllTeamsOptimized(
   );
 
   // Calculate positions
-  const teamsWithPositions = calculateTeamPositions(calculatedTeams, tourCards);
+  const teamsWithPositions = calculateTeamPositions(
+    calculatedTeams,
+    tourCards,
+    tournament,
+  );
 
   // Prepare update data
   const updateData: TeamUpdateData[] = teamsWithPositions.map((team) => ({
@@ -95,6 +99,7 @@ export async function updateAllTeamsOptimized(
           ? Math.round(team.score * 10) / 10
           : team.score,
     position: team.position,
+    pastPosition: team.pastPosition,
     roundOneTeeTime: team.roundOneTeeTime,
     roundTwoTeeTime: team.roundTwoTeeTime,
   }));
@@ -181,7 +186,7 @@ function calculateTeamScore(
       result.roundTwoTeeTime = getEarliestTeeTime(
         teamGolfers,
         "roundTwoTeeTime",
-    );
+      );
       result.roundTwo = null;
       result.roundThree = null;
       result.roundFour = null;
@@ -403,34 +408,152 @@ function calculateTeamScore(
 function calculateTeamPositions(
   teams: (Team & TeamCalculation)[],
   tourCards: (TourCard & { member: Member; tour: Tour })[],
+  tournament: TournamentWithRelations,
 ): (Team & TeamCalculation)[] {
   return teams.map((team) => {
     // If team is already marked as CUT, keep that position
     if (team.position === "CUT") {
       return team;
     }
+
     const tourCard = tourCards.find((tc) => tc.id === team.tourCardId);
 
-    // Only calculate positions for teams that aren't cut
-    const activeTeams = teams.filter(
-      (t) =>
-        t.position !== "CUT" &&
-        tourCard?.tourId ===
-          tourCards.find((tc) => tc.id === t.tourCardId)?.tourId,
+    // Calculate current position
+    team.position = calculateCurrentPosition(team, teams, tourCard, tourCards);
+
+    // Calculate past position (position after previous round)
+    team.pastPosition = calculatePastPosition(
+      team,
+      teams,
+      tourCard,
+      tourCards,
+      tournament,
     );
-    const tiedTeams = activeTeams.filter(
-      (t) =>
-        t.score === team.score &&
-        tourCard?.tourId ===
-          tourCards.find((tc) => tc.id === t.tourCardId)?.tourId,
-    ).length;
-    const betterTeams = activeTeams.filter(
-      (t) => (t.score ?? 999) < (team.score ?? 999),
-    ).length;
-    team.position =
-      tiedTeams > 1 ? "T" + (betterTeams + 1) : (betterTeams + 1).toString();
+
     return team;
   });
+}
+
+/**
+ * Calculate current position for a team
+ */
+function calculateCurrentPosition(
+  team: Team & TeamCalculation,
+  allTeams: (Team & TeamCalculation)[],
+  tourCard: (TourCard & { member: Member; tour: Tour }) | undefined,
+  tourCards: (TourCard & { member: Member; tour: Tour })[],
+): string {
+  const activeTeams = getActiveTeams(allTeams);
+  const teamsInSameTour = getTeamsInSameTour(activeTeams, tourCard, tourCards);
+
+  const tiedTeams = teamsInSameTour.filter((t) => t.score === team.score);
+  const betterTeams = teamsInSameTour.filter(
+    (t) => (t.score ?? 999) < (team.score ?? 999),
+  );
+
+  return formatPosition(betterTeams.length + 1, tiedTeams.length > 1);
+}
+
+/**
+ * Calculate past position for a team (position after previous round)
+ */
+function calculatePastPosition(
+  team: Team & TeamCalculation,
+  allTeams: (Team & TeamCalculation)[],
+  tourCard: (TourCard & { member: Member; tour: Tour }) | undefined,
+  tourCards: (TourCard & { member: Member; tour: Tour })[],
+  tournament: TournamentWithRelations,
+): string {
+  const pastScore = calculatePastScore(team, tournament);
+
+  // For past position calculation, use different team filtering logic based on round
+  const teamsForPastCalculation =
+    team.round > 3 ? getActiveTeams(allTeams) : allTeams;
+
+  const teamsInSameTour = getTeamsInSameTour(
+    teamsForPastCalculation,
+    tourCard,
+    tourCards,
+  );
+
+  const tiedPastTeams = teamsInSameTour.filter((t) => {
+    const tPastScore = calculatePastScore(t, tournament);
+    return tPastScore === pastScore;
+  });
+
+  const betterPastTeams = teamsInSameTour.filter((t) => {
+    const tPastScore = calculatePastScore(t, tournament);
+    return (tPastScore ?? 999) < (pastScore ?? 999);
+  });
+
+  return formatPosition(betterPastTeams.length + 1, tiedPastTeams.length > 1);
+}
+
+/**
+ * Calculate a team's score at the end of the previous round
+ */
+function calculatePastScore(
+  team: Team & TeamCalculation,
+  tournament: TournamentWithRelations,
+): number | null {
+  // Round 1 or Round 2 not live: no past score
+  if (team.round === 1 || (team.round === 2 && !tournament.livePlay)) {
+    return 0;
+  }
+
+  // Round 2 live or Round 3 not live: past score is after round 1
+  if (
+    (team.round === 2 && tournament.livePlay) ||
+    (team.round === 3 && !tournament.livePlay)
+  ) {
+    return team.roundOne ?? 0;
+  }
+
+  // Round 3 live or Round 4 not live: past score is after round 2
+  if (
+    (team.round === 3 && tournament.livePlay) ||
+    (team.round === 4 && !tournament.livePlay)
+  ) {
+    return (team.roundOne ?? 0) + (team.roundTwo ?? 0);
+  }
+
+  // Round 4 live or Round 5+: past score is after round 3
+  if ((team.round === 4 && tournament.livePlay) || team.round > 4) {
+    return (team.roundOne ?? 0) + (team.roundTwo ?? 0) + (team.roundThree ?? 0);
+  }
+
+  // Default to current score
+  return team.score;
+}
+
+/**
+ * Get teams that are not cut, withdrawn, or disqualified
+ */
+function getActiveTeams(
+  teams: (Team & TeamCalculation)[],
+): (Team & TeamCalculation)[] {
+  return teams.filter((t) => !["CUT", "WD", "DQ"].includes(t.position));
+}
+
+/**
+ * Get teams that are in the same tour as the given team
+ */
+function getTeamsInSameTour(
+  teams: (Team & TeamCalculation)[],
+  tourCard: (TourCard & { member: Member; tour: Tour }) | undefined,
+  tourCards: (TourCard & { member: Member; tour: Tour })[],
+): (Team & TeamCalculation)[] {
+  return teams.filter((t) => {
+    const tTourCard = tourCards.find((tc) => tc.id === t.tourCardId);
+    return tourCard?.tourId === tTourCard?.tourId;
+  });
+}
+
+/**
+ * Format position string with tie indicator
+ */
+function formatPosition(position: number, isTied: boolean): string {
+  return isTied ? `T${position}` : position.toString();
 }
 
 /**
@@ -476,6 +599,7 @@ async function batchUpdateTeams(updateData: TeamUpdateData[]): Promise<number> {
           thru: teamData.thru,
           score: teamData.score,
           position: teamData.position,
+          pastPosition: teamData.pastPosition,
           roundOneTeeTime: teamData.roundOneTeeTime,
           roundTwoTeeTime: teamData.roundTwoTeeTime,
         },

@@ -40,12 +40,6 @@ import { LeaderboardContainer } from "@/lib/components/LeaderboardView";
 - Responsive design
 - Loading and error states
 - Real-time data updates
-  par: number;
-  } | null;
-  golfers: Golfer[];
-  teams: Team[];
-  tours: Tour[];
-  }
 
 ````
 

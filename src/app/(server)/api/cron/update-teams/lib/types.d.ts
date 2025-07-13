@@ -31,6 +31,7 @@ export interface TeamCalculation {
   thru?: number | null;
   score?: number | null;
   position?: string;
+  pastPosition?: string;
   roundOneTeeTime?: string;
   roundTwoTeeTime?: string;
 }
@@ -47,6 +48,7 @@ export interface TeamUpdateData {
   thru?: number | null;
   score?: number | null;
   position?: string | null;
+  pastPosition?: string | null;
   roundOneTeeTime?: string | null;
   roundTwoTeeTime?: string | null;
 }

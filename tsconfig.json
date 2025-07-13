@@ -33,6 +33,7 @@
       "@pgc-serverActions": ["./src/server/actions/index"],
       "@pgc-hooks": ["./src/lib/hooks/index"],
       "@pgc-components": ["./src/lib/components/index"],
+      "@pgc-components/*": ["./src/lib/components/*"],
       "@pgc-providers": ["./src/lib/providers/index"],
       "@pgc-push": ["./src/lib/push/index"],
       "@pgc-store": ["./src/lib/store/index"],

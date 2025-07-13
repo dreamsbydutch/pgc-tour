@@ -1,9 +1,9 @@
 // import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
 import { getMemberFromHeaders } from "@pgc-auth";
 import { LeaderboardHeader } from "@pgc-components";
+import { LeaderboardContainer } from "@pgc-components/LeaderboardView";
 import { getCompleteLeaderboardData, getCurrentSeason, getTournamentInfo } from "@pgc-serverActions";
 import { redirect } from "next/navigation";
-import { LeaderboardContainer } from "src/lib/components/LeaderboardView";
 
 export default async function TournamentPage({
   params,

@@ -2,8 +2,6 @@
 export { default as ServiceWorkerRegistration } from "./pwa/ServiceWorkerRegistration";
 export { default as InstallPWAButton, useInstallPWA } from "./pwa/InstallPWA";
 
-export { default as NavBar } from "./nav/NavBar";
-
 export {
   CreateGroupsButton,
   UpdateGolfersButton,
