@@ -18,7 +18,11 @@ import type {
   DatagolfLiveGolfer,
   DatagolfFieldGolfer,
 } from "@/lib/types/datagolf_types";
-import type { TournamentWithCourse } from "./types";
+import type {
+  TournamentWithCourse,
+  DatabaseGolfer,
+  GolferUpdateData,
+} from "./types";
 
 export interface UpdateResult {
   golfersUpdated: number;
@@ -51,6 +55,29 @@ export async function updateAllGolfersOptimized(
   const [existingGolfers, teams] = await Promise.all([
     db.golfer.findMany({
       where: { tournamentId: tournament.id },
+      select: {
+        id: true,
+        apiId: true,
+        usage: true,
+        roundOneTeeTime: true,
+        roundTwoTeeTime: true,
+        roundThreeTeeTime: true,
+        roundFourTeeTime: true,
+        position: true,
+        score: true,
+        thru: true,
+        today: true,
+        roundOne: true,
+        roundTwo: true,
+        roundThree: true,
+        roundFour: true,
+        makeCut: true,
+        topTen: true,
+        win: true,
+        country: true,
+        endHole: true,
+        round: true,
+      },
     }),
     db.team.findMany({
       where: { tournamentId: tournament.id },
@@ -181,7 +208,7 @@ async function createMissingGolfers(
  * Update existing golfers with live data
  */
 async function updateExistingGolfers(
-  golfers: Array<{ id: number; apiId: number; [key: string]: any }>,
+  golfers: DatabaseGolfer[],
   liveData: DataGolfLiveTournament,
   fieldData: DatagolfFieldInput,
   tournament: TournamentWithCourse,
@@ -247,14 +274,14 @@ async function updateExistingGolfers(
  * Build update data for a golfer
  */
 function buildUpdateData(
-  golfer: any,
+  golfer: DatabaseGolfer,
   liveGolfer: DatagolfLiveGolfer | undefined,
   fieldGolfer: DatagolfFieldGolfer | undefined,
-  tournament: TournamentWithCourse,
+  _tournament: TournamentWithCourse,
   golferIDs: number[],
   teamCount: number,
-): Record<string, any> {
-  const updateData: Record<string, any> = {};
+): GolferUpdateData {
+  const updateData: GolferUpdateData = {};
 
   // Calculate usage (percentage of teams using this golfer)
   const usage =
@@ -379,7 +406,7 @@ function buildUpdateData(
  */
 async function updateTournamentStatus(
   tournament: TournamentWithCourse,
-  golfers: Array<{ round?: number | null; position?: string | null }>,
+  golfers: Pick<DatabaseGolfer, "round" | "position">[],
   liveGolfersCount: number,
 ): Promise<boolean> {
   // Determine current round from active golfers

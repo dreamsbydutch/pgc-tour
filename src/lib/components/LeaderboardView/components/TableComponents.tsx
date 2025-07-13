@@ -119,10 +119,10 @@ export const TeamGolfersTable: React.FC<{
           <td className="hidden border-l border-gray-300 text-xs xs:table-cell">
             {golfer.makeCut === 0
               ? "-"
-              : formatPercentage((golfer.makeCut??0)*100, false)}
+              : formatPercentage((golfer.makeCut ?? 0) * 100, false)}
           </td>
           <td className="hidden border-gray-300 text-xs xs:table-cell">
-            {formatPercentage((golfer.usage??0)*100, false)}
+            {formatPercentage((golfer.usage ?? 0) * 100, false)}
           </td>
           <td className="border-gray-300 text-xs">{golfer.group}</td>
         </TableRow>

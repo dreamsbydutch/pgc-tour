@@ -22,7 +22,7 @@
  */
 
 import { handleCreateGroups } from "./lib";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
   return handleCreateGroups(request);

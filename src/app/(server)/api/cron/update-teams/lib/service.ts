@@ -444,7 +444,7 @@ function getEarliestTeeTime(
     teamGolfers
       .reduce((earliest: Date | null, g) => {
         if (!g[teeTimeField]) return earliest;
-        const teeTime = new Date(g[teeTimeField] as string);
+        const teeTime = new Date(g[teeTimeField]);
         return !earliest || teeTime < earliest ? teeTime : earliest;
       }, null)
       ?.toTimeString() ?? ""

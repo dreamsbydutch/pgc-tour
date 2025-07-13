@@ -19,7 +19,6 @@ import { createTRPCContext } from "@/server/api/trpc";
 import { createCaller } from "@/server/api/root";
 import { fetchDataGolf, batchProcess } from "@/lib/utils/main";
 import type {
-  DatagolfFieldGolfer,
   DatagolfFieldInput,
   DatagolfRankingInput,
 } from "@/lib/types/datagolf_types";
@@ -91,7 +90,9 @@ export async function createTournamentGroups(
 /**
  * Fetch tournament data from APIs
  */
-async function fetchTournamentData(api: any): Promise<GroupCreationContext> {
+async function fetchTournamentData(
+  api: ReturnType<typeof createCaller>,
+): Promise<GroupCreationContext> {
   const [rankingsData, fieldData, tournamentInfo] = await Promise.all([
     fetchDataGolf("preds/get-dg-rankings", {}) as Promise<DatagolfRankingInput>,
     fetchDataGolf("field-updates", {}) as Promise<DatagolfFieldInput>,
@@ -182,7 +183,7 @@ async function processGolfersIntoGroups(
  * Determine which group a golfer should be assigned to
  */
 function determineGroupIndex(
-  golfer: EnhancedGolfer,
+  _golfer: EnhancedGolfer,
   currentIndex: number,
   totalGolfers: number,
   groups: EnhancedGolfer[][],
@@ -243,7 +244,7 @@ function determineGroupIndex(
  * Create golfers in the database
  */
 async function createGolfersInDatabase(
-  api: any,
+  api: ReturnType<typeof createCaller>,
   groups: EnhancedGolfer[][],
   currentTourney: { id: string; name: string },
 ): Promise<{ totalProcessed: number }> {
