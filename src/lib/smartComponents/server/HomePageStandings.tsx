@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { cn } from "@pgc-utils";
-import { HomePageList } from "@pgc-components";
+import { HomePageList } from "@/lib/components/smartComponents/functionalComponents/client/HomePageList";
+import { cn, formatMoney } from "@/lib/utils/main";
+import { getMemberFromHeaders } from "@/lib/auth/utils";
+import { getCurrentStandings } from "@/server/actions/standings";
 
 /**
  * Displays the standings for the homepage, showing the top players for each tour.
@@ -59,7 +61,7 @@ export default function HomePageStandings({
           const tourTeams = tourCard?.slice(0, 15).map((team) => ({
             ...team,
             mainStat: team.points,
-            secondaryStat: team.earnings,
+            secondaryStat: formatMoney(team.earnings),
           }));
           return (
             <Link

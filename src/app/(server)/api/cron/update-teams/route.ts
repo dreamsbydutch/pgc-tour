@@ -1,44 +1,74 @@
 /**
- * TEAM SCORING UPDATE CRON JOB
- * ============================
+ * TEAM UPDATE CRON JOB
+ * =====================
  *
- * Updates team scores for the current tournament based on golfer performance.
+ * Clean, focused cron job for updating team scores and positions.
+ * Business logic is centralized in the services module with clear separation of concerns.
  *
- * BUSINESS RULES:
- * - Rounds 1-2: Use ALL golfers on the team for scoring
- * - Rounds 3-4: Use TOP 5 golfers based on individual round scores (if team has ≥5 golfers)
- * - Teams with <5 golfers in rounds 3-4 are marked as "CUT"
+ * ENDPOINTS:
+ * - Production: https://www.pgctour.ca/api/cron/update-teams
+ * - Development: http://localhost:3000/api/cron/update-teams
  */
 
-"use server";
-
-import { api } from "@pgc-trpcServer";
 import { NextResponse } from "next/server";
-import { updateAllTeams } from "./lib";
+import { handleTeamUpdateCron } from "./lib/handler";
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const next = searchParams.get("next") ?? "/";
+  // Add comprehensive logging for debugging production issues
+  const startTime = Date.now();
+  const timestamp = new Date().toISOString();
+
+  console.log("🔄 Team update cron job started:", {
+    timestamp,
+    environment: process.env.NODE_ENV,
+    hasCronSecret: !!process.env.CRON_SECRET,
+    userAgent: request.headers.get("user-agent"),
+    url: request.url,
+  });
 
   try {
-    const tournament = (await api.tournament.getInfo()).current;
-    if (!tournament) {
-      return NextResponse.redirect(`${origin}/`);
-    }
+    const result = await handleTeamUpdateCron(request);
 
-    const [golfers, teams] = await Promise.all([
-      api.golfer.getByTournament({ tournamentId: tournament.id }),
-      api.team.getByTournament({ tournamentId: tournament.id }),
-    ]);
+    const duration = Date.now() - startTime;
+    console.log("✅ Team update cron job completed:", {
+      timestamp: new Date().toISOString(),
+      duration: `${duration}ms`,
+      result: result ? "Success" : "Failed",
+    });
 
-    await updateAllTeams(teams, tournament, golfers);
-
-    return NextResponse.redirect(`${origin}${next}`);
+    // Return with cache-busting headers
+    return new Response(JSON.stringify(result), {
+      status: result.status ?? 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+        Pragma: "no-cache",
+        Expires: "0",
+        "X-Timestamp": timestamp,
+        "X-Duration": `${duration}ms`,
+      },
+    });
   } catch (error) {
-    console.error("Error updating teams:", error);
+    const duration = Date.now() - startTime;
+    console.error("❌ Team update cron job failed:", {
+      timestamp: new Date().toISOString(),
+      duration: `${duration}ms`,
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
     return NextResponse.json(
-      { error: "Failed to update teams" },
+      {
+        success: false,
+        message: "Internal server error",
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 },
     );
   }
 }
+
+// Force dynamic rendering and disable caching
+export const dynamic = "force-dynamic";
+export const revalidate = 0;

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { cn } from "@pgc-utils";
-import { HomePageList } from "../../components/HomePageList";
+import { cn, formatScore } from "@/lib/utils/main";
+import { HomePageList } from "../functionalComponents/client/HomePageList";
 import { HomePageListSkeleton } from "../functionalComponents/loading/HomePageListSkeleton";
 import { getMemberFromHeaders } from "@pgc-auth";
 import LeaderboardHeaderContainer from "./LeaderboardHeaderContainer";
@@ -44,15 +44,18 @@ export default async function HomePageLeaderboard({
 
       <div className="grid grid-cols-2 font-varela">
         {tours.map((tour, i) => {
-          const tourTeams = tour.teams.slice(0, 15).map((team) => ({
-            ...team,
-            id: team.id,
-            displayName: team.tourCard.displayName,
-            position: team.position,
-            memberId: team.tourCard.memberId,
-            mainStat: team.score,
-            secondaryStat: team.thru,
-          }));
+          const tourTeams = tour.teams
+            .sort((a, b) => (a.score ?? 999) - (b.score ?? 999))
+            .slice(0, 15)
+            .map((team) => ({
+              ...team,
+              id: team.id,
+              displayName: team.tourCard.displayName,
+              memberId: team.tourCard.memberId,
+              mainStat: formatScore(team.score),
+              secondaryStat:
+                team.thru === 0 ? "-" : team.thru === 18 ? "F" : team.thru,
+            }));
 
           return (
             <Link

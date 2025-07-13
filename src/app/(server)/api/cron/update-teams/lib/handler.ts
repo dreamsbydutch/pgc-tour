@@ -1,12 +1,12 @@
 /**
- * Simple handler for the golfer update cron job
+ * Handler for the team update cron job
  */
 
 import { db } from "@/server/db";
 import type { CronJobResult } from "./types";
-import { updateAllGolfersOptimized } from "./service";
+import { updateAllTeamsOptimized } from "./service";
 
-export async function handleGolferUpdateCron(
+export async function handleTeamUpdateCron(
   request: Request,
 ): Promise<CronJobResult> {
   try {
@@ -22,7 +22,7 @@ export async function handleGolferUpdateCron(
     const { searchParams, origin } = new URL(request.url);
     const next = searchParams.get("next") ?? "/";
 
-    // Get current tournament
+    // Get current tournament with all relations
     const tournament = await db.tournament.findFirst({
       where: {
         startDate: { lte: new Date() },
@@ -30,8 +30,21 @@ export async function handleGolferUpdateCron(
       },
       include: {
         course: true,
+        tier: true,
+        golfers: true,
+        teams: true,
+        tours: true,
       },
       orderBy: { startDate: "desc" },
+    });
+    const tourCards = await db.tourCard.findMany({
+      where: {
+        seasonId: tournament?.seasonId,
+      },
+      include: {
+        member: true,
+        tour: true,
+      },
     });
 
     if (!tournament) {
@@ -42,31 +55,40 @@ export async function handleGolferUpdateCron(
         status: 404,
       };
     }
+    if (!tourCards) {
+      return {
+        success: false,
+        message: "No current tourCards",
+        error: "No current tourCards",
+        status: 404,
+      };
+    }
 
     console.log(
-      `🏌️ Processing golfer updates for tournament: ${tournament.name}`,
+      `⚡ Processing team updates for tournament: ${tournament.name}`,
     );
 
-    // Update golfers
-    const result = await updateAllGolfersOptimized(tournament);
+    // Update teams
+    const result = await updateAllTeamsOptimized(tournament, tourCards);
 
     console.log(
-      `✅ Update completed: ${result.golfersUpdated} updated, ${result.golfersCreated} created, ${result.fieldsUpdated} fields changed`,
+      `✅ Team update completed: ${result.teamsUpdated} teams updated`,
     );
 
     return {
       success: true,
-      message: "Golfers updated successfully",
+      message: "Teams updated successfully",
       redirect: `${origin}${next}`,
       stats: {
-        totalGolfers: result.golfersUpdated + result.golfersCreated,
-        liveGolfersCount: result.liveGolfersCount,
-        eventName: "Current Tournament",
+        totalTeams: result.totalTeams,
+        teamsUpdated: result.teamsUpdated,
         tournamentName: tournament.name,
+        currentRound: tournament.currentRound ?? 1,
+        livePlay: tournament.livePlay ?? false,
       },
     };
   } catch (error) {
-    console.error("Error in golfer update cron job:", error);
+    console.error("Error in team update cron job:", error);
     return {
       success: false,
       message: "Internal server error",

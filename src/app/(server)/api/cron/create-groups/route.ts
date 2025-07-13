@@ -1,128 +1,37 @@
-"use server";
+/**
+ * CREATE GROUPS CRON JOB
+ * =======================
+ *
+ * Creates tournament groups by organizing golfers into skill-based tiers.
+ * This endpoint is triggered by cron jobs to set up tournaments.
+ *
+ * BUSINESS RULES:
+ * - Groups golfers by skill level using DataGolf rankings
+ * - Group 1: Top 10% (max 10 golfers) - Elite tier
+ * - Group 2: Next 17.5% (max 16 golfers) - Strong tier
+ * - Group 3: Next 22.5% (max 22 golfers) - Solid tier
+ * - Group 4: Next 25% (max 30 golfers) - Competitive tier
+ * - Group 5: Remaining golfers - Developmental tier
+ *
+ * FLOW:
+ * 1. Fetch golfer field and ranking data from DataGolf
+ * 2. Filter and sort golfers by skill estimate
+ * 3. Distribute golfers into groups based on percentages
+ * 4. Create golfer records in database with group assignments
+ * 5. Redirect to next cron job (update-golfers)
+ */
 
-import { api } from "@pgc-trpcServer";
-import type {
-  DatagolfFieldGolfer,
-  DatagolfFieldInput,
-  DatagolfRankingInput,
-} from "@pgc-types";
-import { NextResponse } from "next/server";
-import { fetchDataGolf } from "@pgc-utils";
-// import fs from "fs";
+import { handleCreateGroups } from "./lib";
+import type { NextRequest } from "next/server";
 
-export async function GET(request: Request) {
-  // Extract search parameters and origin from the request URL
-  const { origin } = new URL(request.url);
-
-  // Get the authorization code and the 'next' redirect path
-  // const next = searchParams.get("next") ?? "/";
-
-  const rankingsData = (await fetchDataGolf(
-    "preds/get-dg-rankings",
-    {},
-  )) as DatagolfRankingInput;
-  const fieldData = (await fetchDataGolf(
-    "field-updates",
-    {},
-  )) as DatagolfFieldInput;
-
-  const currentTourney = (await api.tournament.getInfo()).next;
-  const golfers = await api.golfer.getByTournament({
-    tournamentId: currentTourney?.id ?? "",
-  });
-  if (
-    !currentTourney ||
-    // currentTourney?.name === fieldData.event_name ||
-    golfers.length > 0
-  ) {
-    return NextResponse.redirect(`${origin}/`);
-  }
-
-  const groups: DatagolfFieldGolfer[][] = [[], [], [], [], []];
-
-  fieldData.field = fieldData.field
-    .filter((golfer) => golfer.dg_id !== 18417)
-    .map((golfer) => {
-      golfer.ranking_data = rankingsData.rankings.find(
-        (obj) => obj.dg_id === golfer.dg_id,
-      );
-      return golfer;
-    })
-    .sort(
-      (a, b) =>
-        (b.ranking_data?.dg_skill_estimate ?? -50) -
-        (a.ranking_data?.dg_skill_estimate ?? -50),
-    )
-    .map((golfer, i) => {
-      const remainingGolfers = fieldData.field.length - i;
-      if (
-        groups[0] &&
-        groups[0].length < fieldData.field.length * 0.1 &&
-        groups[0].length < 10
-      ) {
-        groups[0].push(golfer);
-      } else if (
-        groups[1] &&
-        groups[1].length < fieldData.field.length * 0.175 &&
-        groups[1].length < 16
-      ) {
-        groups[1].push(golfer);
-      } else if (
-        groups[2] &&
-        groups[2].length < fieldData.field.length * 0.225 &&
-        groups[2].length < 22
-      ) {
-        groups[2].push(golfer);
-      } else if (
-        groups[3] &&
-        groups[3].length < fieldData.field.length * 0.25 &&
-        groups[3].length < 30
-      ) {
-        groups[3].push(golfer);
-      } else {
-        if (
-          (groups[3] &&
-            groups[4] &&
-            remainingGolfers <= groups[3].length + groups[4].length * 0.5) ||
-          remainingGolfers === 1
-        ) {
-          groups[4]?.push(golfer);
-        } else {
-          if (i % 2) {
-            groups[3]?.push(golfer);
-          } else {
-            groups[4]?.push(golfer);
-          }
-        }
-      }
-      return golfer;
-    });
-
-  await Promise.all(
-    groups.map(async (group, i) => {
-      await Promise.all(
-        group.map(async (golfer) => {
-          const name = golfer.player_name.split(", ");
-          if (currentTourney && currentTourney.id) {
-            await api.golfer.create({
-              apiId: golfer.dg_id,
-              playerName: name[1] + " " + name[0],
-              group: i + 1,
-              worldRank: golfer.ranking_data?.owgr_rank ?? 501,
-              rating:
-                Math.round(
-                  ((golfer.ranking_data?.dg_skill_estimate ?? -1.875) + 2) /
-                    0.0004,
-                ) / 100,
-              tournamentId: currentTourney.id,
-            });
-          }
-        }),
-      );
-    }),
-  );
-
-  return NextResponse.redirect(`${origin}/cron/update-golfers`);
+export async function GET(request: NextRequest) {
+  return handleCreateGroups(request);
 }
-// http://localhost:3000/cron/create-groups
-// https://www.pgctour.ca/cron/create-groups
+
+// Force dynamic rendering and disable caching
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+// Endpoints:
+// http://localhost:3000/api/cron/create-groups
+// https://www.pgctour.ca/api/cron/create-groups

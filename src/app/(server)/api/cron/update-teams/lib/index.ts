@@ -1,12 +1,18 @@
 /**
- * Export all lib functions for easy importing
+ * Team Update Cron Job Module
+ * ============================
+ *
+ * Streamlined team update service that:
+ * - Fetches tournament data with teams and golfers
+ * - Calculates team scores based on current round and live play status
+ * - Updates team positions based on scores
+ * - Batch updates all teams in the database
  */
 
-export * from "./types";
-export * from "./team-update-service";
-export * from "./team-scoring";
-export * from "./scoring";
-export * from "./positions";
-export * from "./tee-times";
-export * from "./database";
-export * from "./utils";
+export { updateAllTeamsOptimized } from "./service";
+export { handleTeamUpdateCron } from "./handler";
+export type {
+  TournamentWithRelations,
+  CronJobResult,
+  UpdateResult,
+} from "./types";
