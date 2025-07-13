@@ -72,10 +72,20 @@ export const TeamGolfersTable: React.FC<{
   team: LeaderboardTeam;
   teamGolfers: LeaderboardGolfer[] | undefined;
 }> = ({ team, teamGolfers }) => {
-  const sortedGolfers = getSortedTeamGolfers(
-    team,
-    teamGolfers,
-  ) as LeaderboardGolfer[];
+  const sortedGolfers = [
+    ...(getSortedTeamGolfers(
+      team,
+      teamGolfers?.filter(
+        (g) => !["CUT", "WD", "DQ"].includes(g.position ?? ""),
+      ) ?? [],
+    ) as LeaderboardGolfer[]),
+    ...(getSortedTeamGolfers(
+      team,
+      teamGolfers?.filter((g) =>
+        ["CUT", "WD", "DQ"].includes(g.position ?? ""),
+      ) ?? [],
+    ) as LeaderboardGolfer[]),
+  ];
 
   return (
     <Table className="scrollbar-hidden mx-auto w-full max-w-3xl border border-gray-700 text-center font-varela">
