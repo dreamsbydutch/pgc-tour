@@ -1,29 +1,18 @@
 /**
- * TEAM UPDATE LIBRARY - BARREL EXPORTS
- * ====================================
+ * Team Update Cron Job Module
+ * ============================
  *
- * Consolidated exports for all team update functionality:
- * - Service functions for team scoring and updates
- * - Handler for processing HTTP requests
- * - TypeScript types for type safety
- * - Constants and utilities
+ * Streamlined team update service that:
+ * - Fetches tournament data with teams and golfers
+ * - Calculates team scores based on current round and live play status
+ * - Updates team positions based on scores
+ * - Batch updates all teams in the database
  */
 
-// Main service functions
-export { updateAllTeamsOptimized, updateAllTeamsLegacy } from "./service";
-
-// Request handler
-export { handleTeamUpdate } from "./handler";
-
-// Types
+export { updateAllTeamsOptimized } from "./service";
+export { handleTeamUpdateCron } from "./handler";
 export type {
-  TeamUpdateResult,
-  TournamentWithCourse,
-  TeamWithGolfers,
-  GolferSubset,
-  RoundKey,
-  TeeTimeKey,
+  TournamentWithRelations,
+  CronJobResult,
+  UpdateResult,
 } from "./types";
-
-// Constants
-export { PENALTY_STROKES, MIN_GOLFERS_FOR_CUT } from "./types";

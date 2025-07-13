@@ -1,8 +1,5 @@
 /**
-import { db } from "@/server/db";
-import { updateAllGolfersOptimized } from "./golfer-service";
-import type { CronJobResult } from "./types";Main handler for the golfer update cron job
- * Uses optimized service for maximum efficiency and minimal database calls
+ * Simple handler for the golfer update cron job
  */
 
 import { db } from "@/server/db";
@@ -25,7 +22,7 @@ export async function handleGolferUpdateCron(
     const { searchParams, origin } = new URL(request.url);
     const next = searchParams.get("next") ?? "/";
 
-    // Get current tournament directly from database
+    // Get current tournament
     const tournament = await db.tournament.findFirst({
       where: {
         startDate: { lte: new Date() },
@@ -50,11 +47,11 @@ export async function handleGolferUpdateCron(
       `🏌️ Processing golfer updates for tournament: ${tournament.name}`,
     );
 
-    // Use optimized service for maximum efficiency
+    // Update golfers
     const result = await updateAllGolfersOptimized(tournament);
 
     console.log(
-      `✅ Golfer update completed: ${result.golfersUpdated} updated, ${result.golfersCreated} created, ${result.fieldsUpdated} fields changed, ${result.databaseCalls} database calls`,
+      `✅ Update completed: ${result.golfersUpdated} updated, ${result.golfersCreated} created, ${result.fieldsUpdated} fields changed`,
     );
 
     return {
@@ -64,7 +61,7 @@ export async function handleGolferUpdateCron(
       stats: {
         totalGolfers: result.golfersUpdated + result.golfersCreated,
         liveGolfersCount: result.liveGolfersCount,
-        eventName: "Current Tournament", // We don't need to fetch this separately
+        eventName: "Current Tournament",
         tournamentName: tournament.name,
       },
     };

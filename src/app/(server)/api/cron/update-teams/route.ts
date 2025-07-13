@@ -1,71 +1,53 @@
 /**
- * TEAM SCORING UPDATE CRON JOB
- * ============================
+ * TEAM UPDATE CRON JOB
+ * =====================
  *
- * Updates team scores for the current tournament based on golfer performance.
+ * Clean, focused cron job for updating team scores and positions.
+ * Business logic is centralized in the services module with clear separation of concerns.
  *
- * BUSINESS RULES:
- * - Rounds 1-2: Use ALL golfers on the team for scoring
- * - Rounds 3-4: Use TOP 5 golfers based on individual round scores (if team has ≥5 golfers)
- * - Teams with <5 golfers in rounds 3-4 are marked as "CUT"
- *
- * EFFICIENCY OPTIMIZATIONS:
- * - Direct database access using Prisma instead of TRPC for batch operations
- * - Minimized API calls by batching all updates into single transactions
- * - Only updates changed fields to reduce database load
+ * ENDPOINTS:
+ * - Production: https://www.pgctour.ca/api/cron/update-teams
+ * - Development: http://localhost:3000/api/cron/update-teams
  */
 
-import { createTRPCContext } from "@/server/api/trpc";
-import { createCaller } from "@/server/api/root";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { updateAllTeamsOptimized } from "./lib";
+import { handleTeamUpdateCron } from "./lib/handler";
 
 export async function GET(request: Request) {
+  // Add comprehensive logging for debugging production issues
   const startTime = Date.now();
-  const { searchParams, origin } = new URL(request.url);
-  const next = searchParams.get("next") ?? "/";
+  const timestamp = new Date().toISOString();
 
   console.log("🔄 Team update cron job started:", {
-    timestamp: new Date().toISOString(),
+    timestamp,
     environment: process.env.NODE_ENV,
     hasCronSecret: !!process.env.CRON_SECRET,
     userAgent: request.headers.get("user-agent"),
+    url: request.url,
   });
 
   try {
-    // Create a TRPC context with cron job authorization
-    const requestHeaders = new Headers(headers());
-    requestHeaders.set("x-cron-secret", process.env.CRON_SECRET ?? "");
-    requestHeaders.set("x-trpc-source", "cron");
-
-    const ctx = await createTRPCContext({
-      headers: requestHeaders,
-    });
-
-    const api = createCaller(ctx);
-
-    const tournament = (await api.tournament.getInfo()).current;
-    if (!tournament) {
-      console.log("❌ No current tournament found");
-      return NextResponse.redirect(`${origin}/`);
-    }
-
-    // Use optimized update function that minimizes database calls
-    const result = await updateAllTeamsOptimized(tournament);
+    const result = await handleTeamUpdateCron(request);
 
     const duration = Date.now() - startTime;
     console.log("✅ Team update cron job completed:", {
       timestamp: new Date().toISOString(),
       duration: `${duration}ms`,
-      success: result.success,
-      teamsUpdated: result.teamsUpdated,
-      fieldsUpdated: result.fieldsUpdated,
-      databaseCalls: result.databaseCalls,
-      tournamentName: tournament.name,
+      result: result ? "Success" : "Failed",
     });
 
-    return NextResponse.redirect(`${origin}${next}`);
+    // Return with cache-busting headers
+    return new Response(JSON.stringify(result), {
+      status: result.status ?? 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+        Pragma: "no-cache",
+        Expires: "0",
+        "X-Timestamp": timestamp,
+        "X-Duration": `${duration}ms`,
+      },
+    });
   } catch (error) {
     const duration = Date.now() - startTime;
     console.error("❌ Team update cron job failed:", {
@@ -76,7 +58,12 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(
-      { error: "Failed to update teams" },
+      {
+        success: false,
+        message: "Internal server error",
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 },
     );
   }

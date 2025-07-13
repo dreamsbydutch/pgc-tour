@@ -656,7 +656,7 @@ export async function fetchDataGolf(
     throw new Error(`DataGolf API error: ${res.status} ${res.statusText}`);
   }
 
-  const data = await res.json();
+  const data = (await res.json()) as unknown;
   console.log(`✅ DataGolf API success: ${endpoint}`, {
     timestamp: new Date().toISOString(),
     dataSize: JSON.stringify(data).length,
@@ -895,6 +895,35 @@ export async function batchProcess<T>(
     if (i + batchSize < items.length) {
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
+  }
+}
+
+/**
+ * Batches async operations without delays (for use inside transactions)
+ * @param items Array of items to process
+ * @param batchSize Number of items to process in each batch
+ * @param processor Function to process each item
+ * @returns Promise that resolves when all batches are processed
+ * @example
+ * await batchProcessWithoutDelay(golfers, 10, async (golfer) => {
+ *   await updateGolfer(golfer);
+ * });
+ */
+export async function batchProcessWithoutDelay<T>(
+  items: T[],
+  batchSize: number,
+  processor: (item: T) => Promise<void>,
+): Promise<void> {
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+
+    console.log(
+      `🔄 Processing batch ${
+        Math.floor(i / batchSize) + 1
+      }/${Math.ceil(items.length / batchSize)} (${batch.length} items)`,
+    );
+
+    await Promise.all(batch.map(processor));
   }
 }
 

@@ -10,8 +10,8 @@
  * - Development: http://localhost:3000/api/cron/update-golfers
  */
 
-import { handleGolferUpdateCron } from "./lib";
 import { NextResponse } from "next/server";
+import { handleGolferUpdateCron } from "./lib/handler";
 
 export async function GET(request: Request) {
   // Add comprehensive logging for debugging production issues
