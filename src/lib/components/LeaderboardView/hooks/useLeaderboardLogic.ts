@@ -4,7 +4,7 @@
 
 import { useMemo } from "react";
 import { PLAYOFF_CONFIGS } from "../utils/constants";
-import type { LeaderboardTour, LeaderboardTourCard } from "../types";
+import type { LeaderboardTour, LeaderboardTourCard } from "../utils/types";
 
 export const useLeaderboardLogic = (props: {
   variant: "regular" | "playoff";

@@ -11,7 +11,7 @@ import type {
   LeaderboardTournament,
   LeaderboardTourCard,
   LeaderboardMember,
-} from "../types";
+} from "../utils/types";
 
 interface PGCLeaderboardProps {
   teams: TeamWithTourCard[];

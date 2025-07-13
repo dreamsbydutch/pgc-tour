@@ -1,8 +1,12 @@
 // import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
 import { getMemberFromHeaders } from "@pgc-auth";
 import { LeaderboardHeader } from "@pgc-components";
-import { LeaderboardContainer } from "@pgc-components/LeaderboardView";
-import { getCompleteLeaderboardData, getCurrentSeason, getTournamentInfo } from "@pgc-serverActions";
+import { LeaderboardView } from "@pgc-components/LeaderboardView";
+import {
+  getCompleteLeaderboardData,
+  getCurrentSeason,
+  getTournamentInfo,
+} from "@pgc-serverActions";
 import { redirect } from "next/navigation";
 
 export default async function TournamentPage({
@@ -59,7 +63,7 @@ export default async function TournamentPage({
         !leaderboardData.teams.find(
           (a) => a.tourCard?.id === leaderboardData.tourCard?.id,
         ) && <PreTournamentPage tournament={focusTourney} />} */}
-      <LeaderboardContainer
+      <LeaderboardView
         tournamentId={leaderboardData.tournament.id}
         userId={user?.id}
         variant="regular"

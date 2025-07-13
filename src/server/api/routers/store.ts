@@ -20,6 +20,7 @@ export const storeRouter = createTRPCRouter({
           where: { seasonId: input.seasonId },
           include: {
             course: true,
+            tier: true,
           },
           orderBy: { startDate: "asc" },
         }),

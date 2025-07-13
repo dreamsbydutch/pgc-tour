@@ -12,7 +12,7 @@ import {
 import { Table, TableRow } from "@pgc-ui";
 import { getSortedTeamGolfers, getGolferRowClass, isPlayerCut } from "../utils";
 import { CountryFlagDisplay, GolferStatsGrid } from "./UIComponents";
-import type { LeaderboardGolfer, LeaderboardTeam } from "../types";
+import type { LeaderboardGolfer, LeaderboardTeam } from "../utils/types";
 
 // ================= PGA DROPDOWN =================
 

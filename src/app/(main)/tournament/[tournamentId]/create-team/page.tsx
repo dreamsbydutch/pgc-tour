@@ -1,3 +1,4 @@
+import { LeaderboardHeader } from "@pgc-components";
 import {
   getGolfersByTournament,
   getTeamByTournamentAndUser,
@@ -5,8 +6,6 @@ import {
   getNextTournament,
 } from "@pgc-serverActions";
 import type { Golfer, Team } from "@prisma/client";
-import LeaderboardHeaderContainer from "src/lib/smartComponents/server/LeaderboardHeaderContainer";
-import { CreateTeamForm } from "src/lib/smartComponents/CreateTeamForm";
 
 // (should match your explicit form field types)
 type GolferFormFields = Pick<
@@ -100,7 +99,7 @@ export default async function CreateTeamPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 font-varela">
       {/* Back button to parent tournament page */}
-      <LeaderboardHeaderContainer focusTourney={tournament} />
+      <LeaderboardHeader focusTourney={tournament} />
       <BackButton />
       <CreateTeamForm
         {...{

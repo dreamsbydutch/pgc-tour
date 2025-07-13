@@ -4,7 +4,7 @@
  */
 
 import { useMemo } from "react";
-import type { NavigationData } from "../types";
+import type { NavigationData } from "../utils/types";
 import { useHeaderUser } from "@pgc-auth";
 import { api } from "@pgc-trpcClient";
 

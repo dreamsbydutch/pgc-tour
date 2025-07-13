@@ -5,10 +5,6 @@ import type { Tier, Tour, TourCard } from "@prisma/client";
 import { useSearchParams } from "next/navigation";
 import { useCurrentStandings } from "src/lib/hooks/hooks";
 import { ToursToggleButton } from "@pgc-components";
-import {
-  StandingsHeader,
-  StandingsListing,
-} from "src/lib/smartComponents/functionalComponents/client/StandingsPage";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -100,14 +96,9 @@ function TourStandings({
   if (!activeTour || !tourCards) return null;
 
   const tourData = { ...activeTour, tourCards };
-  console.log("Active Tour:", activeTour);
   const goldCutCards = getGoldCutCards(tourData);
   const silverCutCards = getSilverCutCards(tourData);
   const remainingCards = getRemainingCards(tourData);
-
-  console.log("Gold Cut Cards:", goldCutCards);
-  console.log("Silver Cut Cards:", silverCutCards);
-  console.log("Remaining Cards:", remainingCards);
 
   return (
     <div className="mx-auto px-1">

@@ -2,7 +2,15 @@
 
 import Image from "next/image";
 import { cn } from "@pgc-utils";
-import LittleFucker from "./LittleFucker";
+import LittleFucker from "../../LittleFucker";
+import { getUserHighlightStatus, filterChampionsForMember } from "../utils";
+import { UI_CONSTANTS } from "../utils/constants";
+import type {
+  HomePageListingsTour,
+  HomePageListingsTeam,
+  HomePageListingsUser,
+  HomePageListingsChampion,
+} from "../utils/types";
 
 export function HomePageList({
   tour,
@@ -10,28 +18,10 @@ export function HomePageList({
   self,
   champions,
 }: {
-  tour: { logoUrl: string | null; shortForm: string };
-  teams:
-    | {
-        id: number | string;
-        memberId: string;
-        position: string | null;
-        displayName: string;
-        mainStat: number | string | null;
-        secondaryStat: number | string | null;
-      }[]
-    | null;
-  self: { id: string; friends: string[] } | null;
-  champions?:
-    | {
-        id: number;
-        tournament: {
-          name: string;
-          logoUrl: string | null;
-          startDate: Date;
-        };
-      }[]
-    | null;
+  tour: HomePageListingsTour;
+  teams: HomePageListingsTeam[] | null;
+  self: HomePageListingsUser | null;
+  champions?: HomePageListingsChampion[] | null;
 }) {
   return (
     <>
@@ -40,8 +30,8 @@ export function HomePageList({
           alt="Tour Logo"
           src={tour.logoUrl ?? ""}
           className="mr-2 h-8 w-8"
-          width={128}
-          height={128}
+          width={UI_CONSTANTS.TOUR_LOGO_SIZE}
+          height={UI_CONSTANTS.TOUR_LOGO_SIZE}
         />
         {tour.shortForm} Tour
       </div>
@@ -55,7 +45,11 @@ export function HomePageList({
             mainStat={team.mainStat}
             secondaryStat={team.secondaryStat}
             self={self}
-            champions={champions}
+            champions={filterChampionsForMember(
+              champions,
+              team.memberId,
+              tour.seasonId,
+            )}
           />
         ))}
       </div>
@@ -77,20 +71,10 @@ function SingleListing({
   displayName: string;
   mainStat: number | string | null;
   secondaryStat: number | string | null;
-  self: { id: string; friends: string[] } | null;
-  champions?:
-    | {
-        id: number;
-        tournament: {
-          name: string;
-          logoUrl: string | null;
-          startDate: Date;
-        };
-      }[]
-    | null;
+  self: HomePageListingsUser | null;
+  champions?: HomePageListingsChampion[] | null;
 }) {
-  const isFriend = !!self?.friends?.includes(memberId);
-  const isSelf = self?.id === memberId;
+  const { isFriend, isSelf } = getUserHighlightStatus(memberId, self);
 
   return (
     <div

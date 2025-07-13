@@ -1,6 +1,5 @@
 // "use client";
 
-// import LoadingSpinner from "@components/functionalComponents/loading/LoadingSpinner";
 // import { api } from "@/trpc/react";
 // import { ArrowLeftIcon, Table } from "lucide-react";
 // import Link from "next/link";
@@ -9,11 +8,6 @@
 // import { LeaderboardHeaderSkeleton } from "../_components/skeletons/LeaderboardHeaderSkeleton";
 // import LeaderboardHeader from "../_components/header/LeaderboardHeader";
 // import type { Team, Tour, TourCard, Tournament } from "@prisma/client";
-// import {
-//   TableCell,
-//   TableHeader,
-//   TableRow,
-// } from "@components/functionalComponents/ui/table";
 
 // export default function Page({ params }: { params: { tournamentId: string } }) {
 //   const tournaments = useMainStore((state) => state.seasonTournaments);

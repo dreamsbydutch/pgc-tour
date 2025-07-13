@@ -12,7 +12,7 @@ import { NavItem } from "./NavItem";
 import { UserAccountNav } from "./UserAccountNav";
 import { useNavigationData } from "../hooks/useNavigationData";
 import { NAV_ITEMS, isNavItemActive } from "../utils";
-import type { NavigationContainerProps } from "../types";
+import type { NavigationContainerProps } from "../utils/types";
 
 export function NavigationContainer({ className }: NavigationContainerProps) {
   const pathname = usePathname();

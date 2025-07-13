@@ -11,7 +11,7 @@ import { Skeleton } from "@pgc-ui";
 import { UserAccountNavMenu } from "./UserAccountNavMenu";
 import { SignInButton } from "./SignInButton";
 import { formatUserDisplayName } from "../utils";
-import type { NavigationData } from "../types";
+import type { NavigationData } from "../utils/types";
 
 interface UserAccountNavProps {
   navigationData: NavigationData;
@@ -19,7 +19,8 @@ interface UserAccountNavProps {
 
 export function UserAccountNav({ navigationData }: UserAccountNavProps) {
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const { user, member, tourCards, champions, isLoading,tourCardLoading } = navigationData;
+  const { user, member, tourCards, champions, isLoading, tourCardLoading } =
+    navigationData;
 
   if (isLoading || isSigningOut) {
     return (

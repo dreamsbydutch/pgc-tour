@@ -3,7 +3,7 @@
  */
 
 import { BookText, Home, List, Trophy } from "lucide-react";
-import type { NavItem } from "../types";
+import type { NavItem } from "./types";
 
 /**
  * Navigation items configuration

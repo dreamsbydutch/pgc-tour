@@ -6,7 +6,7 @@
  */
 
 import { useMemo } from "react";
-import type { LeaderboardViewProps } from "../types";
+import type { LeaderboardViewProps } from "../utils/types";
 import { api } from "@pgc-trpcClient";
 
 export interface LeaderboardDataParams {

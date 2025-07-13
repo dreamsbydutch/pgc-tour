@@ -11,7 +11,7 @@ import { useSeasonalStore } from "@pgc-store";
 import { api } from "@pgc-trpcClient";
 import { getErrorMessage } from "@pgc-utils";
 import { memberSchema } from "@pgc-utils";
-import type { NavigationMember } from "../types";
+import type { NavigationMember } from "../utils/types";
 import type { Member } from "@prisma/client";
 
 const emptyMember = {

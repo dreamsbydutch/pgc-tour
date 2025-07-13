@@ -6,8 +6,8 @@
 
 "use client";
 
-import { NavigationContainer } from "./NavigationContainer";
-import type { NavigationProviderProps } from "../types";
+import { NavigationContainer } from "./components/NavigationContainer";
+import type { NavigationProviderProps } from "./utils/types";
 
 export function NavigationProvider({ children }: NavigationProviderProps) {
   return (

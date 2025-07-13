@@ -9,9 +9,7 @@
 //   TableCell,
 //   TableHead,
 //   TableHeader,
-//   TableRow,
-// } from "@components/functionalComponents/ui/table";
-// import { Button } from "@components/functionalComponents/ui/button";
+//   TableRow, Button } from "@pgc-ui";
 // import { formatMoney } from "@utils/domain/formatting";
 
 // // Add type definitions

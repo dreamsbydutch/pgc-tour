@@ -9,14 +9,13 @@ import type {
   LeaderboardGolfer,
   LeaderboardTournament,
   LeaderboardTourCard,
-} from "../types";
+} from "../utils/types";
 
 interface PGALeaderboardProps {
   golfers: LeaderboardGolfer[];
   tournament: LeaderboardTournament;
   tourCard?: LeaderboardTourCard | null;
 }
-
 
 export const PGALeaderboard: React.FC<PGALeaderboardProps> = ({
   golfers,

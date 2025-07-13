@@ -19,7 +19,7 @@ import type {
   LeaderboardTeam,
   LeaderboardTourCard,
   LeaderboardMember,
-} from "../types";
+} from "../utils/types";
 import { PositionChange } from "./UIComponents";
 
 type LeaderboardListingProps =

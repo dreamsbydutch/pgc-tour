@@ -23,7 +23,6 @@ export type LeaderboardTournament = {
   apiId: string | null;
   logoUrl: string | null;
   livePlay: boolean | null;
-  round: number | null;
   course: {
     id: string;
     name: string;

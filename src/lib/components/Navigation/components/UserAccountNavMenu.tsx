@@ -27,7 +27,7 @@ import type {
   NavigationMember,
   NavigationTourCard,
   NavigationChampion,
-} from "../types";
+} from "../utils/types";
 
 interface UserAccountNavMenuProps {
   user: NavigationUser;

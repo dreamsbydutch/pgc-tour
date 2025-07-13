@@ -1,14 +1,9 @@
 import Link from "next/link";
-// import HomePageStandings from "@components/smartComponents/server/HomePageStandings";
-// import HomePageLeaderboard from "@components/smartComponents/server/HomePageLeaderboard";
-// import CurrentSchedule from "src/lib/smartComponents/server/CurrentSchedule";
-// import CurrentChampions from "@components/smartComponents/server/CurrentChampions";
-// import TournamentCountdownContainer from "@components/smartComponents/server/TournamentCountdownContainer";
 import { getAuthData } from "@pgc-auth";
 import SignInPage from "@app/(auth)/signin/page";
 import { LeagueSchedule, TournamentCountdown } from "@pgc-components";
 import { getNextTournament, getCurrentSchedule } from "@pgc-serverActions";
-// import { getCurrentTourCard } from "@server/actions/tourCard";
+import { HomePageListingsContainer } from "@pgc-components/HomePageListings";
 
 export default async function Home() {
   const { isAuthenticated } = await getAuthData();
@@ -18,14 +13,14 @@ export default async function Home() {
   if (!isAuthenticated) return <SignInPage />;
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-2">
+    <div className="mx-auto flex max-w-4xl flex-col gap-6 sm:gap-10">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      <TournamentCountdown tourney={tournament ?? undefined} />
       {/* <CurrentChampions /> */}
-      {/* <HomePageLeaderboard /> */}
-      {/* <HomePageStandings /> */}
+      <HomePageListingsContainer activeView="leaderboard" />
+      <TournamentCountdown tourney={tournament ?? undefined} />
+      <HomePageListingsContainer activeView="standings" />
       {/* <TourCardForm /> */}
       <LeagueSchedule tournaments={schedule.tournaments} />
       <div id="footer" className="mt-12 flex flex-col justify-start">

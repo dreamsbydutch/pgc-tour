@@ -6,38 +6,6 @@
 
 import { useSeasonalStore } from "./seasonalStore";
 
-// ============= BASIC DATA HOOKS =============
-
-/**
- * Returns all core seasonal data objects from the store.
- * @returns An object containing season, member, tourCard, tournaments, allTourCards, tours, and tiers.
- */
-export const useSeasonalData = () =>
-  useSeasonalStore((state) => ({
-    season: state.season,
-    member: state.member,
-    tourCard: state.tourCard,
-    tournaments: state.tournaments,
-    allTourCards: state.allTourCards,
-    tours: state.tours,
-    tiers: state.tiers,
-    lastLoaded: state.lastLoaded,
-  }));
-
-// ============= MUTATION HOOKS =============
-
-/**
- * Returns all mutation functions for updating seasonal data.
- */
-export const useSeasonalMutations = () =>
-  useSeasonalStore((state) => ({
-    setSeasonalData: state.setSeasonalData,
-    setMember: state.setMember,
-    setTourCard: state.setTourCard,
-    setAllTourCards: state.setAllTourCards,
-    reset: state.reset,
-  }));
-
 // ============= INDIVIDUAL GETTERS =============
 
 export const useSeason = () => useSeasonalStore((state) => state.season);

@@ -12,9 +12,6 @@ export { useSeasonalStore } from "./seasonalStore";
 
 // ============= HOOKS =============
 
-// Core hooks
-export { useSeasonalData, useSeasonalMutations } from "./seasonalStoreHooks";
-
 // Basic selectors
 export {
   useSeason,

@@ -5,7 +5,7 @@
 import React from "react";
 import { formatScore, formatMoney, getGolferTeeTime } from "@pgc-utils";
 import { isPlayerCut } from "../utils";
-import type { LeaderboardTeam, LeaderboardGolfer } from "../types";
+import type { LeaderboardTeam, LeaderboardGolfer } from "../utils/types";
 
 // Simple cell component to reduce repetition
 const ScoreCell: React.FC<{

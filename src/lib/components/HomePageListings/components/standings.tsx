@@ -1,7 +1,14 @@
-import { HomePageList } from "@pgc-components";
-import { cn, formatMoney } from "@pgc-utils";
+import { HomePageList } from "./HomePageList";
+import { cn } from "@pgc-utils";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  transformTourCardsForStandings,
+  getTourLink,
+  getTourAriaLabel,
+} from "../utils";
+import { UI_CONSTANTS } from "../utils/constants";
+import type { HomePageListingsStandingsProps } from "../utils/types";
 
 /**
  * Displays the standings for the homepage, showing the top players for each tour.
@@ -12,37 +19,15 @@ export default function HomePageStandings({
   tourCards,
   self,
   champions,
-}: {
-  tours: { id: string; logoUrl: string | null; shortForm: string }[];
-  tourCards: {
-    id: string;
-    tourId: string;
-    points: number;
-    earnings: number;
-    position: string;
-    displayName: string;
-    memberId: string;
-  }[];
-  self: { id: string; friends: string[] };
-  champions?:
-    | {
-        id: number;
-        tournament: {
-          name: string;
-          logoUrl: string | null;
-          startDate: Date;
-        };
-      }[]
-    | null;
-}) {
+}: HomePageListingsStandingsProps) {
   return (
     <div className="rounded-lg border border-slate-300 bg-gray-50 shadow-lg">
       <div className="my-3 flex items-center justify-center gap-3">
         <Image
           src={"/logo512.png"}
           alt="PGC Logo"
-          width={512}
-          height={512}
+          width={UI_CONSTANTS.LOGO_SIZE}
+          height={UI_CONSTANTS.LOGO_SIZE}
           className="h-14 w-14"
         />
         <h2 className="pb-1 font-yellowtail text-5xl sm:text-6xl md:text-7xl">
@@ -52,15 +37,9 @@ export default function HomePageStandings({
 
       <div className="grid grid-cols-2 font-varela">
         {tours?.map((tour, i) => {
-          // Map tourTeams to include stat fields
-          const tourCard = tourCards
-            .filter((tc) => tc.tourId === tour.id)
-            .sort((a, b) => b.points - a.points);
-          const tourTeams = tourCard?.slice(0, 15).map((team) => ({
-            ...team,
-            mainStat: team.points,
-            secondaryStat: formatMoney(team.earnings),
-          }));
+          // Use the utility function to transform tour cards
+          const tourTeams = transformTourCardsForStandings(tourCards, tour.id);
+
           return (
             <Link
               key={tour.id}
@@ -68,8 +47,8 @@ export default function HomePageStandings({
                 "flex flex-col",
                 i === 0 && "border-r border-slate-800",
               )}
-              href={`/standings?tour=${tour.id}`}
-              aria-label={`View standings for ${tour.shortForm} Tour`}
+              href={getTourLink("standings", tour.id)}
+              aria-label={getTourAriaLabel("standings", tour.shortForm)}
             >
               <HomePageList
                 tour={tour}

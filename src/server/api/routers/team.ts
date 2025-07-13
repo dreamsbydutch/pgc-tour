@@ -95,6 +95,7 @@ export const teamRouter = createTRPCRouter({
   getChampionsByUser: publicProcedure
     .input(z.object({ memberId: z.string() }))
     .query(async ({ ctx, input }) => {
+      if (!input.memberId) return null;
       return ctx.db.team.findMany({
         where: {
           tourCard: { memberId: input.memberId },
@@ -114,7 +115,7 @@ export const teamRouter = createTRPCRouter({
       return ctx.db.team.findMany({
         where: {
           tournamentId: input.tournamentId,
-          position: "1",
+          OR: [{ position: "1" }, { position: "T1" }],
         },
         include: {
           tournament: true,
@@ -125,6 +126,20 @@ export const teamRouter = createTRPCRouter({
         orderBy: { score: "asc" },
       });
     }),
+  getAllChampions: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.team.findMany({
+      where: {
+        OR: [{ position: "1" }, { position: "T1" }],
+      },
+      include: {
+        tournament: true,
+        tourCard: {
+          select: { memberId: true },
+        },
+      },
+      orderBy: { score: "asc" },
+    });
+  }),
   createOrUpdate: publicProcedure
     .input(
       z.object({
@@ -134,7 +149,6 @@ export const teamRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      console.log(input);
       // Try to find an existing team for this tourCard and tournament
       const existing = await ctx.db.team.findFirst({
         where: {
@@ -142,7 +156,6 @@ export const teamRouter = createTRPCRouter({
           tournamentId: input.tournamentId,
         },
       });
-      console.log("Existing team:", existing);
       if (existing) {
         // Update the existing team
         return ctx.db.team.update({

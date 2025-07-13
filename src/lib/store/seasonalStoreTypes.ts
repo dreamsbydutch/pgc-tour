@@ -18,7 +18,7 @@ import type {
 /**
  * Tournament with included course object.
  */
-export type TournamentWithCourse = Tournament & { course: Course };
+export type TournamentWithCourseAndTier = Tournament & { course: Course,tier:Tier };
 
 /**
  * Store shape for all seasonal golf data.
@@ -33,7 +33,7 @@ export interface SeasonalData {
   /** All tour cards for the current season (can be refreshed if friends change) */
   allTourCards: TourCard[] | null;
   /** All tournaments for the season, each with its course (static for the session) */
-  tournaments: TournamentWithCourse[] | null;
+  tournaments: TournamentWithCourseAndTier[] | null;
   /** All tiers for the season (static for the session) */
   tiers: Tier[] | null;
   /** All tours for the season (static for the session) */
@@ -77,7 +77,7 @@ export type SeasonSelector = Season | null;
 export type MemberSelector = Member | null;
 export type TourCardSelector = TourCard | null;
 export type AllTourCardsSelector = TourCard[] | null;
-export type TournamentsSelector = TournamentWithCourse[] | null;
+export type TournamentsSelector = TournamentWithCourseAndTier[] | null;
 export type TiersSelector = Tier[] | null;
 export type ToursSelector = Tour[] | null;
 export type LastLoadedSelector = number | null;

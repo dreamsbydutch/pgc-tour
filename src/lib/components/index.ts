@@ -10,7 +10,7 @@ export {
   HistoryButton,
 } from "./AdminButtons";
 export { ChampionsPopup } from "./ChampionsPopup";
-export { HomePageList } from "./HomePageList";
+
 export { Icons } from "./Icons";
 export { LeaderboardHeader } from "./LeaderboardHeader";
 export { LeagueSchedule } from "./LeagueSchedule";

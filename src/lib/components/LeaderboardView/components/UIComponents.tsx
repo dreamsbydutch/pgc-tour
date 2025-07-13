@@ -10,7 +10,7 @@ import {
   getCountryFlag,
   isPlayerCut,
 } from "../utils";
-import type { LeaderboardGolfer } from "../types";
+import type { LeaderboardGolfer } from "../utils/types";
 
 // ================= POSITION CHANGE =================
 
