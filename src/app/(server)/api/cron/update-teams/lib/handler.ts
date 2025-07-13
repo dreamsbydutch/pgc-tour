@@ -2,7 +2,7 @@
  * Handler for the team update cron job
  */
 
-import { db } from "@/server/db";
+import { db } from "@pgc-server";
 import type { CronJobResult } from "./types";
 import { updateAllTeamsOptimized } from "./service";
 

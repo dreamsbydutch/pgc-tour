@@ -9,15 +9,15 @@
  * 4. Updates tournament status
  */
 
-import { db } from "@/server/db";
-import { fetchDataGolf, batchProcess } from "@/lib/utils/main";
+import { db } from "@pgc-server";
+import { fetchDataGolf, batchProcess } from "@pgc-utils";
 import type {
   DataGolfLiveTournament,
   DatagolfFieldInput,
   DatagolfRankingInput,
   DatagolfLiveGolfer,
   DatagolfFieldGolfer,
-} from "@/lib/types/datagolf_types";
+} from "@pgc-types";
 import type {
   TournamentWithCourse,
   DatabaseGolfer,

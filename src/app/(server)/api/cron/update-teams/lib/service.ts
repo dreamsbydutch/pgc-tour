@@ -9,8 +9,8 @@
  * 4. Batch updates all teams in the database
  */
 
-import { db } from "@/server/db";
-import { batchProcess } from "@/lib/utils/main";
+import { db } from "@pgc-server";
+import { batchProcess } from "@pgc-utils";
 import type {
   TournamentWithRelations,
   TeamCalculation,

@@ -19,6 +19,7 @@ export {
   filterItems,
   searchItems,
   batchUpdateItems,
+  batchProcess,
   hasItems,
 } from "./main";
 

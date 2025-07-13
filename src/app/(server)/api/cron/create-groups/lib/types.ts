@@ -9,7 +9,7 @@ import type {
   DatagolfFieldGolfer,
   DatagolfFieldInput,
   DatagolfRankingInput,
-} from "@/lib/types/datagolf_types";
+} from "@pgc-types";
 
 // Core types for group creation
 export type GroupCreationResult = {
