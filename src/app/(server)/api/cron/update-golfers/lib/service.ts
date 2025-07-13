@@ -406,7 +406,10 @@ function buildUpdateData(
  */
 async function updateTournamentStatus(
   tournament: TournamentWithCourse,
-  golfers: Pick<DatabaseGolfer, "round" | "position">[],
+  golfers: Pick<
+    DatabaseGolfer,
+    "round" | "position" | "roundOneTeeTime" | "roundFourTeeTime"
+  >[],
   liveGolfersCount: number,
 ): Promise<boolean> {
   // Determine current round from active golfers
@@ -420,17 +423,24 @@ async function updateTournamentStatus(
       : 1;
 
   const livePlay = liveGolfersCount > 0;
+  const startTime = golfers.reduce((earliest: Date | null, g) => {
+    if (!g.roundOneTeeTime) return earliest;
+    const teeTime = new Date(g.roundOneTeeTime);
+    return !earliest || teeTime < earliest ? teeTime : earliest;
+  }, null);
 
   // Only update if values have changed
   if (
     tournament.currentRound !== currentRound ||
-    tournament.livePlay !== livePlay
+    tournament.livePlay !== livePlay ||
+    tournament.startDate?.getTime() !== startTime?.getTime()
   ) {
     await db.tournament.update({
       where: { id: tournament.id },
       data: {
         currentRound,
         livePlay,
+        startDate: startTime ?? undefined,
       },
     });
     console.log(

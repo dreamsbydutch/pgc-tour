@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { HomePageList } from "@/lib/components/smartComponents/functionalComponents/client/HomePageList";
-import { cn } from "@/lib/utils/main";
+import { cn, formatMoney } from "@/lib/utils/main";
 import { getMemberFromHeaders } from "@/lib/auth/utils";
 import { getCurrentStandings } from "@/server/actions/standings";
 
@@ -37,7 +37,7 @@ export default async function HomePageStandings() {
           const tourTeams = tourCard?.slice(0, 15).map((team) => ({
             ...team,
             mainStat: team.points,
-            secondaryStat: team.earnings,
+            secondaryStat: formatMoney(team.earnings),
           }));
           return (
             <Link
