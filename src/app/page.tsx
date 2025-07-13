@@ -3,7 +3,7 @@ import { getAuthData } from "@pgc-auth";
 import SignInPage from "@app/(auth)/signin/page";
 import { LeagueSchedule, TournamentCountdown } from "@pgc-components";
 import { getNextTournament, getCurrentSchedule } from "@pgc-serverActions";
-import { HomePageListingsContainer } from "@pgc-components/HomePageListings";
+import { HomePageListingsContainer } from "@pgc-components";
 
 export default async function Home() {
   const { isAuthenticated } = await getAuthData();

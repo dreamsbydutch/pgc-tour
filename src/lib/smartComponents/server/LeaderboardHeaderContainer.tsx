@@ -1,7 +1,7 @@
 "use server";
 
 import { getTournamentInfo } from "@pgc-serverActions";
-import { LeaderboardHeader } from "../../components/LeaderboardHeader";
+import { LeaderboardHeader } from "../../components/functional/LeaderboardHeader";
 
 interface LeaderboardHeaderContainerProps {
   focusTourney: {

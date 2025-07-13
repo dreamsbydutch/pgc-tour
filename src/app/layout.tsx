@@ -7,7 +7,7 @@ import { AuthProvider, getAuthData } from "@pgc-auth";
 import { TRPCReactProvider } from "@pgc-trpcClient";
 import { ServiceWorkerRegistration } from "@pgc-components";
 import { LoadSeasonalData } from "@pgc-store";
-import { NavigationProvider } from "@pgc-components/Navigation";
+import { NavigationProvider } from "@pgc-components";
 
 const varela = Varela({
   weight: ["400"],

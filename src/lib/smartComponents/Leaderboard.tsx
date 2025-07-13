@@ -59,7 +59,7 @@ import {
   sortMultiple,
 } from "@pgc-utils";
 import { Table, TableRow } from "../components/ui/table";
-import { ToursToggleButton } from "../components/ToursToggle";
+import { ToursToggleButton } from "../components/functional/ToursToggle";
 
 // ================= TYPES =================
 export type LeaderboardVariant = "regular" | "historical" | "playoff";

@@ -8,7 +8,7 @@ import {
   getTourAriaLabel,
 } from "../utils";
 import type { HomePageListingsLeaderboardProps } from "../utils/types";
-import { LeaderboardHeader } from "@pgc-components/LeaderboardHeader";
+import { LeaderboardHeader } from "@pgc-components";
 import { LeaderboardHeaderSkeleton } from "src/lib/smartComponents/functionalComponents/loading/LeaderboardHeaderSkeleton";
 
 export default function HomePageLeaderboard({

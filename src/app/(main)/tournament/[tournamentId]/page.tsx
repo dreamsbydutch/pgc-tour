@@ -1,7 +1,7 @@
 // import PreTournamentPage from "@/lib/components/smartComponents/server/PreTournament";
 import { getMemberFromHeaders } from "@pgc-auth";
 import { LeaderboardHeader } from "@pgc-components";
-import { LeaderboardView } from "@pgc-components/LeaderboardView";
+import { LeaderboardView } from "@pgc-components";
 import {
   getCompleteLeaderboardData,
   getCurrentSeason,
