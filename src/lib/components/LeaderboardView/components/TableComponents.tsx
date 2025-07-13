@@ -29,7 +29,7 @@ export const PGADropdown: React.FC<{
   return (
     <div
       className={cn(
-        "col-span-10 mb-2 rounded-lg border-b border-l border-r border-slate-300 p-2 pt-1 shadow-lg",
+        "col-span-10 mb-2 rounded-lg p-2 pt-1",
         isUserTeamGolfer && "bg-slate-100",
         isPlayerCutOrWithdrawn && "text-gray-400",
       )}
@@ -50,6 +50,18 @@ export const PGADropdown: React.FC<{
 export const GolferScoreCell: React.FC<{
   golfer: LeaderboardGolfer;
 }> = ({ golfer }) => {
+  if (
+    golfer.position === "CUT" ||
+    golfer.position === "WD" ||
+    golfer.position === "DQ"
+  ) {
+    return (
+      <>
+        <td className="text-xs">-</td>
+        <td className="text-xs">-</td>
+      </>
+    );
+  }
   if (golfer.thru === 0) {
     return (
       <td className="text-xs" colSpan={2}>
