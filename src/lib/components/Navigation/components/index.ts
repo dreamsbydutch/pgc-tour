@@ -8,4 +8,4 @@ export { NavItem } from "./NavItem";
 export { UserAccountNav } from "./UserAccountNav";
 export { UserAccountNavMenu } from "./UserAccountNavMenu";
 export { SignInButton } from "./SignInButton";
-export { default as MemberUpdateForm } from "./MemberUpdateForm";
+export { MemberUpdateForm } from "./MemberUpdateForm";

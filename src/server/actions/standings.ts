@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@pgc-server";
+import { db } from "../db";
 import { getCurrentSeason } from "./season";
 import type {
   Team,

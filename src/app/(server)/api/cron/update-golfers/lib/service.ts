@@ -239,6 +239,7 @@ async function updateExistingGolfers(
       // Build update data
       const updateData = buildUpdateData(
         golfer,
+        golfers,
         liveGolfer,
         fieldGolfer,
         tournament,
@@ -275,9 +276,10 @@ async function updateExistingGolfers(
  */
 function buildUpdateData(
   golfer: DatabaseGolfer,
+  golfers: DatabaseGolfer[],
   liveGolfer: DatagolfLiveGolfer | undefined,
   fieldGolfer: DatagolfFieldGolfer | undefined,
-  _tournament: TournamentWithCourse,
+  tournament: TournamentWithCourse,
   golferIDs: number[],
   teamCount: number,
 ): GolferUpdateData {
@@ -394,6 +396,16 @@ function buildUpdateData(
     currentRound = 2; // Stay at round 2 if cut
   }
 
+  const pastScore = calculatePastScore(golfer, tournament);
+  const pastBetterGolfers = golfers.filter(
+    (g) =>
+      !["CUT", "WD", "DQ", ""].includes(g.position ?? "") &&
+      (calculatePastScore(g, tournament) ?? 999) < (pastScore ?? 999),
+  );
+  const pastPosition = pastBetterGolfers.length + 1;
+  updateData.posChange =
+    pastPosition - +(liveGolfer.current_pos.replace("T", "") ?? pastPosition);
+
   if (currentRound !== golfer.round) {
     updateData.round = currentRound;
   }
@@ -450,4 +462,40 @@ async function updateTournamentStatus(
   }
 
   return false;
+}
+
+function calculatePastScore(
+  golfer: DatabaseGolfer,
+  tournament: TournamentWithCourse,
+): number | null {
+  // Round 1 or Round 2 not live: no past score
+  if (golfer.round === 1 || (golfer.round === 2 && !tournament.livePlay)) {
+    return 0;
+  }
+
+  // Round 2 live or Round 3 not live: past score is after round 1
+  if (
+    (golfer.round === 2 && tournament.livePlay) ||
+    (golfer.round === 3 && !tournament.livePlay)
+  ) {
+    return golfer.roundOne ?? 0;
+  }
+
+  // Round 3 live or Round 4 not live: past score is after round 2
+  if (
+    (golfer.round === 3 && tournament.livePlay) ||
+    (golfer.round === 4 && !tournament.livePlay)
+  ) {
+    return (golfer.roundOne ?? 0) + (golfer.roundTwo ?? 0);
+  }
+
+  // Round 4 live or Round 5+: past score is after round 3
+  if ((golfer.round === 4 && tournament.livePlay) || (golfer.round ?? 0) > 4) {
+    return (
+      (golfer.roundOne ?? 0) + (golfer.roundTwo ?? 0) + (golfer.roundThree ?? 0)
+    );
+  }
+
+  // Default to current score
+  return golfer.score;
 }

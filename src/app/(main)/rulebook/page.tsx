@@ -4,8 +4,8 @@ import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
 import { ruleList } from "@app/(main)/rulebook/rules";
 import { cn } from "@pgc-utils";
-import { LeagueSchedule ,PayoutsTable, PointsTable} from "@pgc-components";
-import { Course, Tier, Tournament } from "@prisma/client";
+import { LeagueSchedule, PayoutsTable, PointsTable } from "@pgc-components";
+import type { Course, Tier, Tournament } from "@prisma/client";
 import { useTiers } from "@pgc-store";
 import { useCurrentSchedule } from "@pgc-hooks";
 

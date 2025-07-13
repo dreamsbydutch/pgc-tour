@@ -11,7 +11,7 @@ import { cn, isDate } from "@pgc-utils";
  */
 export default function LittleFucker({
   champions,
-  showSeasonText,
+  showSeasonText = false,
 }: {
   /**
    * Array of champion objects, each with an id and tournament details
@@ -29,7 +29,7 @@ export default function LittleFucker({
   /**
    * Whether to display the tournament year below the trophy icon
    */
-  showSeasonText: boolean;
+  showSeasonText?: boolean;
 }) {
   if (!champions || champions.length === 0) return null;
   return (

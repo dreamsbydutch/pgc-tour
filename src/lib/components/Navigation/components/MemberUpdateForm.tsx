@@ -7,13 +7,12 @@ import { z } from "zod";
 import { FieldInfo } from "../../ui/FieldInfo";
 import { Button } from "../../ui/button";
 import { useRouter } from "next/navigation";
-import type { Member } from "@prisma/client";
 import { useSeasonalStore } from "@pgc-store";
 import { api } from "@pgc-trpcClient";
 import { getErrorMessage } from "@pgc-utils";
-import { updateMemberAction } from "@pgc-serverActions";
 import { memberSchema } from "@pgc-utils";
 import type { NavigationMember } from "../types";
+import type { Member } from "@prisma/client";
 
 const emptyMember = {
   id: "",
@@ -25,7 +24,7 @@ const emptyMember = {
   friends: [],
 };
 
-export default function MemberUpdateForm({
+export function MemberUpdateForm({
   member,
   setIsEditing,
 }: {
@@ -35,21 +34,36 @@ export default function MemberUpdateForm({
   const router = useRouter();
   const utils = api.useUtils();
   const allMembers = api.member.getAll.useQuery().data;
-  const updateMember = useSeasonalStore((state: any) => state.setMember);
+  const updateMember = useSeasonalStore((state) => state.setMember);
+
+  // tRPC mutation for updating member
+  const updateMemberMutation = api.member.update.useMutation({
+    onSuccess: (updatedMember) => {
+      updateMember(updatedMember);
+      void utils.member.invalidate();
+      router.refresh();
+      setIsEditing(false);
+    },
+    onError: (error) => {
+      handleError(error, "Failed to update member");
+    },
+  });
 
   // Form setup
   const form = useForm({
     defaultValues: member ?? emptyMember,
     onSubmit: async ({ value }) => {
       try {
-        const result = await updateMemberAction(value);
-        if (result.success && result.data) {
-          updateMember(result.data);
-          await utils.member.invalidate();
-          router.refresh();
-        } else {
-          handleError(result.error, "Failed to update member");
-        }
+        // Convert null values to undefined for tRPC mutation
+        const sanitizedValue = {
+          ...value,
+          firstname: value.firstname ?? undefined,
+          lastname: value.lastname ?? undefined,
+          role: value.role ?? undefined,
+          account: value.account ?? undefined,
+          friends: value.friends ?? undefined,
+        };
+        await updateMemberMutation.mutateAsync(sanitizedValue);
       } catch (error) {
         handleError(error, "Failed to update member");
       }
@@ -69,7 +83,7 @@ export default function MemberUpdateForm({
 
   // Handler for member select change
   const handleMemberSelectChange = (id: string) => {
-    const selected = allMembers?.find((m: any) => m.id === id);
+    const selected = allMembers?.find((m: Member) => m.id === id);
     form.setFieldValue("email", selected?.email ?? "");
     form.setFieldValue("firstname", selected?.firstname ?? "");
     form.setFieldValue("lastname", selected?.lastname ?? "");
@@ -99,7 +113,7 @@ export default function MemberUpdateForm({
                     onChange={(e) => handleMemberSelectChange(e.target.value)}
                   >
                     <option value="">-- Select a Member --</option>
-                    {allMembers?.map((member: any) => (
+                    {allMembers?.map((member: Member) => (
                       <option key={member.id} value={member.id}>
                         {member.firstname} {member.lastname}
                       </option>

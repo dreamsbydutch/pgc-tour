@@ -47,6 +47,7 @@ export interface NavigationData {
   tourCards: NavigationTourCard[];
   champions?: NavigationChampion[] | null;
   isLoading: boolean;
+  tourCardLoading?: boolean; // Optional for loading state of tour cards
 }
 
 export interface NavigationProviderProps {

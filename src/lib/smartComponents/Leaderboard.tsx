@@ -20,7 +20,7 @@ import type {
   TourCard,
   Tournament,
 } from "@prisma/client";
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import {
   US,
@@ -175,7 +175,7 @@ function useLeaderboardLogic(props: LeaderboardViewProps) {
     logoUrl: string | null;
     shortForm: string;
   }[] = [];
-  let playoffKey = "gold";
+  const playoffKey = "gold";
   if (variant === "playoff") {
     const goldPlayoff = {
       id: "gold",

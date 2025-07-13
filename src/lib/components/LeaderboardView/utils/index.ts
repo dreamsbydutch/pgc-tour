@@ -116,7 +116,7 @@ export const getLeaderboardRowClass = (
   member: { friends: string[] | null } | null | undefined,
 ): string => {
   const classes = [
-    "col-span-10 grid grid-flow-row grid-cols-10 py-0.5 sm:grid-cols-16",
+    "col-span-10 grid grid-flow-row grid-cols-10 py-0.5 sm:grid-cols-33",
   ];
 
   if (type === "PGC") {

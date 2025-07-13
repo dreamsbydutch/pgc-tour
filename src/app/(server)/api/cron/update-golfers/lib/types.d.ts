@@ -18,6 +18,7 @@ export type DatabaseGolfer = Pick<
   | "roundThreeTeeTime"
   | "roundFourTeeTime"
   | "position"
+  | "posChange"
   | "score"
   | "thru"
   | "today"

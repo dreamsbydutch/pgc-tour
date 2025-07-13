@@ -13,7 +13,6 @@
  *     - useToast(), toast(): Toast notification system
  */
 
-import { useHeaderUser } from "@pgc-providers";
 import { api } from "@pgc-trpcClient";
 import {useSeasonalStore,
   useTournaments,
@@ -27,6 +26,7 @@ import { useMemo } from "react";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { fetchDataGolf } from "@pgc-utils";
 import type { DatagolfCourseInputData } from "../types/datagolf";
+import { useHeaderUser } from "@pgc-auth";
 
 // ===================== useUser =====================
 /**

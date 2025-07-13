@@ -26,6 +26,7 @@ const config = {
         "18": "repeat(18, minmax(0, 1fr))",
         "19": "repeat(19, minmax(0, 1fr))",
         "20": "repeat(20, minmax(0, 1fr))",
+        "33": "repeat(33, minmax(0, 1fr))",
       },
       gridColumn: {
         "span-13": "span 13 / span 13",

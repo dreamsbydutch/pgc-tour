@@ -1,4 +1,4 @@
-import { db } from "@pgc-server";
+import { db } from "../db";
 
 /**
  * getTiersBySeason

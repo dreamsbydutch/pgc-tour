@@ -53,7 +53,7 @@ export function LeaderboardHeader({
       front: number;
       back: number;
     };
-    tier: { name: string; points: number[]; payouts: number[] };
+    tier: { name: string; points: number[]; payouts: number[] }
   };
   inputTournaments: {
     id: string;

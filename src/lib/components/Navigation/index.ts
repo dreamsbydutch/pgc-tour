@@ -14,6 +14,7 @@ export { NavItem } from "./components/NavItem";
 export { UserAccountNav } from "./components/UserAccountNav";
 export { UserAccountNavMenu } from "./components/UserAccountNavMenu";
 export { SignInButton } from "./components/SignInButton";
+export { MemberUpdateForm } from "./components/MemberUpdateForm";
 
 // Hooks
 export { useNavigationData } from "./hooks/useNavigationData";

@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@pgc-server";
+import { db } from "../db";
 
 // Explicit type definitions matching LeaderboardView requirements
 interface LeaderboardData {

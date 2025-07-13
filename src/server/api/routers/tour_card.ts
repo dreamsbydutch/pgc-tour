@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-import {
-  publicProcedure,
-  createTRPCRouter,
-  protectedProcedure,
-} from "@pgc-server";
+import { publicProcedure, createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const tourCardRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {

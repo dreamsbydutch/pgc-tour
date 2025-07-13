@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { publicProcedure, createTRPCRouter } from "@pgc-server";
+import { publicProcedure, createTRPCRouter } from "../trpc";
 
 // Helper function to transform tournament data with proper date types
 const transformTournamentDates = <T extends { startDate: Date; endDate: Date }>(

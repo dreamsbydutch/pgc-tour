@@ -28,9 +28,10 @@ Navigation/
 
 ### 🚀 **Optimized Data Fetching**
 
-- Supabase auth is called only once initially, not continuously
-- Proper caching with `staleTime` and `gcTime`
-- Disabled unnecessary refetch triggers
+- Uses existing `AuthProvider` context instead of creating new API calls
+- Leverages seasonal store data for tour cards (already cached)
+- No additional Supabase calls on navigation renders
+- Minimal API calls with aggressive caching strategies
 
 ### 🏗️ **Separation of Concerns**
 
@@ -157,8 +158,9 @@ Optimized hook for fetching navigation-related data.
   user: NavigationUser | null;
   member: NavigationMember | null;
   tourCards: NavigationTourCard[];
-  champions?: NavigationChampion[] | null;
+  champions: NavigationChampion[];
   isLoading: boolean;
+  tourCardLoading: boolean;
 }
 ```
 
@@ -168,8 +170,9 @@ See `types.ts` for comprehensive type definitions.
 
 ## Performance Optimizations
 
-1. **Auth Caching**: User data cached for 5-10 minutes
-2. **Disabled Refetch**: Prevents unnecessary API calls
-3. **Conditional Queries**: Only fetch when user is authenticated
-4. **Memoized Constants**: Nav items defined outside components
-5. **Optimized Re-renders**: Proper React patterns
+1. **Conditional Fetching**: API calls only made when user is authenticated and loaded
+2. **Aggressive Caching**: 5-10 minute stale times prevent unnecessary refetches
+3. **Disabled Refetch Triggers**: Prevents refetching on window focus and mount
+4. **Memoized Champions**: Champions calculation memoized to prevent recalculation
+5. **Optimized Loading States**: Smart loading logic prevents unnecessary loading indicators
+6. **Type-Safe Constants**: Tournament lists and priorities defined as constants

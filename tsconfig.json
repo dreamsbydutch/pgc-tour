@@ -41,7 +41,7 @@
       "@pgc-utils": ["./src/lib/utils/index"],
       "@pgc-ui": ["./src/lib/components/ui/index"],
       "@pgc-server": ["./src/server/index"],
-      "@pgc-styles": ["./src/styles/index"],
+      "@pgc-styles": ["./src/styles/globals.css"],
       "@pgc-trpcClient": ["./src/trpc/react"],
       "@pgc-trpcServer": ["./src/trpc/server"]
     }

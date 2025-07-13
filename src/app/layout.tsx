@@ -1,4 +1,4 @@
-import "@styles/globals.css";
+import "@pgc-styles";
 import { type Metadata } from "next";
 import { Barlow_Condensed, Varela, Yellowtail } from "next/font/google";
 import Script from "next/script";

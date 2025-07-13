@@ -21,7 +21,7 @@ import {
 import { useInstallPWA, LittleFucker } from "@pgc-components";
 import { formatMoney, formatNumber } from "@pgc-utils";
 import { handleLogout } from "@app/(auth)/signin/actions";
-import MemberUpdateForm from "./MemberUpdateForm";
+import { MemberUpdateForm } from "./MemberUpdateForm";
 import type {
   NavigationUser,
   NavigationMember,
@@ -35,6 +35,7 @@ interface UserAccountNavMenuProps {
   tourCards: NavigationTourCard[];
   champions?: NavigationChampion[] | null;
   setIsSigningOut: Dispatch<SetStateAction<boolean>>;
+  tourCardLoading?: boolean; // Optional for loading state of tour cards
 }
 
 export function UserAccountNavMenu({
@@ -43,6 +44,7 @@ export function UserAccountNavMenu({
   tourCards,
   champions,
   setIsSigningOut,
+  tourCardLoading,
 }: UserAccountNavMenuProps) {
   const [isEditing, setIsEditing] = useState(false);
 
@@ -61,6 +63,7 @@ export function UserAccountNavMenu({
             champions={champions}
             isEditing={isEditing}
             setIsEditing={setIsEditing}
+            tourCardLoading={tourCardLoading}
           />
           {member.role === "admin" && <AdminButton />}
           <InstallAppButton />
@@ -78,6 +81,7 @@ function UserInfo({
   champions,
   isEditing,
   setIsEditing,
+  tourCardLoading,
 }: {
   user: NavigationUser;
   member: NavigationMember;
@@ -85,6 +89,7 @@ function UserInfo({
   champions?: NavigationChampion[] | null;
   isEditing: boolean;
   setIsEditing: Dispatch<SetStateAction<boolean>>;
+  tourCardLoading?: boolean; // Optional for loading state of tour cards
 }) {
   return (
     <div className="flex items-center justify-start gap-2 p-2">
@@ -97,17 +102,19 @@ function UserInfo({
           {member.email}
         </p>
         {champions && <LittleFucker champions={champions} showSeasonText />}
-        <div className="flex w-[200px] flex-col text-sm text-slate-800">
-          <p>
-            {`${tourCards.length} seasons - ${tourCards.reduce((p, c) => (p += c.appearances ?? 0), 0)} tournaments`}
-          </p>
-          <p>
-            {`${formatNumber(tourCards.reduce((p, c) => (p += c.win ?? 0), 0))} wins - ${formatNumber(tourCards.reduce((p, c) => (p += c.topTen ?? 0), 0))} top tens`}
-          </p>
-          <p>
-            {`${formatNumber(tourCards.reduce((p, c) => (p += c.points ?? 0), 0))} pts - ${formatMoney(tourCards.reduce((p, c) => (p += c.earnings ?? 0), 0))}`}
-          </p>
-        </div>
+        {!tourCardLoading && (
+          <div className="flex w-[200px] flex-col text-sm text-slate-800">
+            <p>
+              {`${tourCards.length} seasons - ${tourCards.reduce((p, c) => (p += c.appearances ?? 0), 0)} tournaments`}
+            </p>
+            <p>
+              {`${formatNumber(tourCards.reduce((p, c) => (p += c.win ?? 0), 0))} wins - ${formatNumber(tourCards.reduce((p, c) => (p += c.topTen ?? 0), 0))} top tens`}
+            </p>
+            <p>
+              {`${formatNumber(tourCards.reduce((p, c) => (p += c.points ?? 0), 0))} pts - ${formatMoney(tourCards.reduce((p, c) => (p += c.earnings ?? 0), 0))}`}
+            </p>
+          </div>
+        )}
 
         {!isEditing ? (
           <Button

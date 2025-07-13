@@ -6,7 +6,11 @@
 
 import React, { useState, useCallback } from "react";
 import { formatScore } from "@pgc-utils";
-import { getLeaderboardRowClass } from "../utils";
+import {
+  getLeaderboardRowClass,
+  getPositionChange,
+  isPlayerCut,
+} from "../utils";
 import { ScoreDisplay } from "./ScoreDisplay";
 import { PGADropdown, TeamGolfersTable } from "./TableComponents";
 import type {
@@ -16,6 +20,7 @@ import type {
   LeaderboardTourCard,
   LeaderboardMember,
 } from "../types";
+import { PositionChange } from "./UIComponents";
 
 type LeaderboardListingProps =
   | {
@@ -38,7 +43,7 @@ type LeaderboardListingProps =
 export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
   props,
 ) => {
-  const { type, tournamentGolfers, userTourCard } = props;
+  const { type, tournamentGolfers, userTourCard, tournament } = props;
 
   const team = type === "PGC" ? props.team : undefined;
   const golfer = type === "PGA" ? props.golfer : undefined;
@@ -53,11 +58,11 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
 
   if (!team && !golfer) return null;
 
-  // const posChange = getPositionChange(team, golfer, type);
-  // const shouldShowPositionChange =
-  //   (tournament?.currentRound ?? 0) > 1 &&
-  //   !isPlayerCut(team?.position ?? null) &&
-  //   !isPlayerCut(golfer?.position ?? null);
+  const posChange = getPositionChange(team, golfer, type);
+  const shouldShowPositionChange =
+    (props.tournament?.currentRound ?? 0) > 1 &&
+    !isPlayerCut(team?.position ?? null) &&
+    !isPlayerCut(golfer?.position ?? null);
 
   const rowClass = getLeaderboardRowClass(
     type,
@@ -75,25 +80,33 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
       className="mx-auto my-0.5 grid max-w-4xl cursor-pointer grid-flow-row grid-cols-10 rounded-md text-center"
     >
       <div className={rowClass}>
-        <div className="col-span-2 flex place-self-center font-varela text-base sm:col-span-3">
+        <div className="col-span-2 flex place-self-center font-varela text-base sm:col-span-5">
           {type === "PGA" ? golfer?.position : team?.position}
-          {/* {shouldShowPositionChange && <PositionChange posChange={posChange} />} */}
+          {shouldShowPositionChange && <PositionChange posChange={posChange} />}
         </div>
 
-        <div className="col-span-4 place-self-center font-varela text-lg">
+        <div className="col-span-4 place-self-center font-varela text-lg sm:col-span-10">
           {type === "PGA" ? golfer?.playerName : tourCard?.displayName}
         </div>
 
-        <div className="col-span-2 place-self-center font-varela text-base">
+        <div className="col-span-2 place-self-center font-varela text-base sm:col-span-5">
           {type !== "PGA" && team?.position === "CUT"
             ? "-"
             : formatScore((type === "PGA" ? golfer?.score : team?.score) ?? 0)}
         </div>
 
         {type === "PGA" ? (
-          <ScoreDisplay type="PGA" golfer={golfer!} />
+          <ScoreDisplay
+            type="PGA"
+            golfer={golfer!}
+            tournamentComplete={(tournament.round ?? 0) > 4}
+          />
         ) : (
-          <ScoreDisplay type="PGC" team={team!} />
+          <ScoreDisplay
+            type="PGC"
+            team={team!}
+            tournamentComplete={(tournament.round ?? 0) > 4}
+          />
         )}
       </div>
 

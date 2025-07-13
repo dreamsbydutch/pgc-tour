@@ -27,13 +27,18 @@ export default function Page({ params }: { params: { tournamentId: string } }) {
 
   return (
     <div className="flex w-full flex-col">
-      {tournament && tournamentTier && tournamentData ? (
+      {tournament && tournamentTier && tournamentData && tiers ? (
         <LeaderboardHeader
           focusTourney={{ ...tournament, tier: tournamentTier }}
-          inputTournaments={tournamentData.map((t) => ({
-            ...t,
-            tier: tiers?.find((tier) => tier.id === t.tierId)!,
-          }))}
+          inputTournaments={tournamentData
+            .map((t) => ({
+              ...t,
+              tier: tiers.find((tier) => tier.id === t.tierId),
+            }))
+            .filter(
+              (t): t is typeof t & { tier: NonNullable<typeof t.tier> } =>
+                !!t.tier,
+            )}
         />
       ) : (
         <></>

@@ -112,32 +112,33 @@ export const LeaderboardHeaderRow: React.FC<{
   tournamentOver: boolean;
   activeTour: string;
 }> = ({ tournamentOver, activeTour }) => (
-  <div className="mx-auto grid max-w-4xl grid-flow-row grid-cols-10 text-center sm:grid-cols-16">
-    <div className="col-span-2 place-self-center font-varela text-sm font-bold sm:col-span-3">
+  <div className="sm:grid-cols-33 mx-auto grid max-w-4xl grid-flow-row grid-cols-10 text-center">
+    <div className="col-span-2 place-self-center font-varela text-sm font-bold sm:col-span-5">
       Rank
     </div>
-    <div className="col-span-4 place-self-center font-varela text-base font-bold">
+    <div className="col-span-4 place-self-center font-varela text-base font-bold sm:col-span-10">
       Name
     </div>
-    <div className="col-span-2 place-self-center font-varela text-sm font-bold">
+    <div className="col-span-2 place-self-center font-varela text-sm font-bold sm:col-span-5">
       Score
     </div>
-    <div className="col-span-1 place-self-center font-varela text-2xs">
+    <div className="col-span-1 place-self-center font-varela text-2xs sm:col-span-2">
       {tournamentOver ? (activeTour === "PGA" ? "Group" : "Points") : "Today"}
     </div>
-    <div className="col-span-1 place-self-center font-varela text-2xs">
+    <div className="col-span-1 place-self-center font-varela text-2xs sm:col-span-2">
       {tournamentOver ? (activeTour === "PGA" ? "Rating" : "Earnings") : "Thru"}
     </div>
-    <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:flex">
+    <div className="col-span-1 hidden sm:flex"></div>
+    <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:col-span-2 sm:flex">
       R1
     </div>
-    <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:flex">
+    <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:col-span-2 sm:flex">
       R2
     </div>
-    <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:flex">
+    <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:col-span-2 sm:flex">
       R3
     </div>
-    <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:flex">
+    <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:col-span-2 sm:flex">
       R4
     </div>
   </div>

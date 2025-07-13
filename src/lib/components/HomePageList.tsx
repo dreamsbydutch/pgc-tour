@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import { cn } from "@pgc-utils";
+import LittleFucker from "./LittleFucker";
 
 export function HomePageList({
   tour,
   teams,
   self,
+  champions,
 }: {
   tour: { logoUrl: string | null; shortForm: string };
   teams:
@@ -20,6 +22,16 @@ export function HomePageList({
       }[]
     | null;
   self: { id: string; friends: string[] } | null;
+  champions?:
+    | {
+        id: number;
+        tournament: {
+          name: string;
+          logoUrl: string | null;
+          startDate: Date;
+        };
+      }[]
+    | null;
 }) {
   return (
     <>
@@ -43,6 +55,7 @@ export function HomePageList({
             mainStat={team.mainStat}
             secondaryStat={team.secondaryStat}
             self={self}
+            champions={champions}
           />
         ))}
       </div>
@@ -57,6 +70,7 @@ function SingleListing({
   mainStat,
   secondaryStat,
   self,
+  champions,
 }: {
   memberId: string;
   position: string | null;
@@ -64,6 +78,16 @@ function SingleListing({
   mainStat: number | string | null;
   secondaryStat: number | string | null;
   self: { id: string; friends: string[] } | null;
+  champions?:
+    | {
+        id: number;
+        tournament: {
+          name: string;
+          logoUrl: string | null;
+          startDate: Date;
+        };
+      }[]
+    | null;
 }) {
   const isFriend = !!self?.friends?.includes(memberId);
   const isSelf = self?.id === memberId;
@@ -81,7 +105,7 @@ function SingleListing({
       </div>
       <div className="col-span-5 flex items-center justify-center place-self-center py-0.5 text-sm md:col-span-6">
         {displayName}
-        {/* TODO: Add little fucker here */}
+        {champions && <LittleFucker champions={champions} />}
       </div>
       <div className="col-span-2 place-self-center py-0.5 text-sm">
         {mainStat}

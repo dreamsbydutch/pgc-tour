@@ -15,21 +15,20 @@ const ScoreCell: React.FC<{
   hidden?: boolean;
 }> = ({ value, colSpan = 1, className = "", hidden = false }) => (
   <div
-    className={`col-span-${colSpan} place-self-center font-varela text-sm ${className} ${hidden ? "hidden sm:flex" : ""}`}
+    className={`col-span-${colSpan} place-self-center font-varela text-sm sm:col-span-2 ${className} ${hidden ? "hidden sm:flex" : ""}`}
   >
     {value ?? "-"}
   </div>
 );
 
 export const ScoreDisplay: React.FC<
-  | { type: "PGC"; team: LeaderboardTeam }
-  | { type: "PGA"; golfer: LeaderboardGolfer }
+  | { type: "PGC"; team: LeaderboardTeam; tournamentComplete: boolean }
+  | { type: "PGA"; golfer: LeaderboardGolfer; tournamentComplete: boolean }
 > = (props) => {
-  const { type } = props;
+  const { type, tournamentComplete } = props;
   const listItem = type === "PGA" ? props.golfer : props.team;
 
   const isPlayerCutOrWithdrawn = isPlayerCut(listItem.position ?? null);
-  const isTournamentOver = listItem.round === 5;
 
   // Cut/Withdrawn players
   if (isPlayerCutOrWithdrawn) {
@@ -37,6 +36,7 @@ export const ScoreDisplay: React.FC<
       <>
         <ScoreCell value="-" />
         <ScoreCell value="-" />
+        <div className="col-span-1 hidden sm:flex"></div>
         <ScoreCell value={listItem.roundOne} hidden />
         <ScoreCell value={listItem.roundTwo} hidden />
         <ScoreCell value={listItem.roundThree} hidden />
@@ -46,7 +46,7 @@ export const ScoreDisplay: React.FC<
   }
 
   // Tournament finished
-  if (isTournamentOver) {
+  if (tournamentComplete) {
     const firstValue =
       type === "PGA"
         ? props.golfer?.group === 0
@@ -65,6 +65,8 @@ export const ScoreDisplay: React.FC<
       <>
         <ScoreCell value={firstValue} />
         <ScoreCell value={secondValue} className="whitespace-nowrap" />
+
+        <div className="col-span-1 hidden sm:flex"></div>
         <ScoreCell value={listItem.roundOne} hidden />
         <ScoreCell value={listItem.roundTwo} hidden />
         <ScoreCell value={listItem.roundThree} hidden />
@@ -88,6 +90,8 @@ const renderPGAScores = (golfer: LeaderboardGolfer) => {
           {getGolferTeeTime(golfer)}
           {golfer.endHole === 9 ? "*" : ""}
         </div>
+
+        <div className="col-span-1 hidden sm:flex"></div>
         <ScoreCell value={golfer.roundOne} hidden />
         <ScoreCell value={golfer.roundTwo} hidden />
         <ScoreCell value={golfer.roundThree} hidden />
@@ -102,6 +106,8 @@ const renderPGAScores = (golfer: LeaderboardGolfer) => {
         value={golfer.today !== null ? formatScore(golfer.today) : "-"}
       />
       <ScoreCell value={golfer.thru === 18 ? "F" : golfer.thru} />
+
+      <div className="col-span-1 hidden sm:flex"></div>
       <ScoreCell value={golfer.roundOne} hidden />
       <ScoreCell value={golfer.roundTwo} hidden />
       <ScoreCell value={golfer.roundThree} hidden />
@@ -117,6 +123,8 @@ const renderPGCScores = (team: LeaderboardTeam) => {
         <div className="col-span-2 place-self-center font-varela text-xs">
           {getGolferTeeTime(team)}
         </div>
+
+        <div className="col-span-1 hidden sm:flex"></div>
         <ScoreCell value={team.roundOne} hidden />
         <ScoreCell value={team.roundTwo} hidden />
         <ScoreCell value={team.roundThree} hidden />
@@ -129,6 +137,8 @@ const renderPGCScores = (team: LeaderboardTeam) => {
     <>
       <ScoreCell value={formatScore(team.today)} />
       <ScoreCell value={team.thru === 18 ? "F" : team.thru} />
+
+      <div className="col-span-1 hidden sm:flex"></div>
       <ScoreCell value={team.roundOne} hidden />
       <ScoreCell value={team.roundTwo} hidden />
       <ScoreCell value={team.roundThree} hidden />

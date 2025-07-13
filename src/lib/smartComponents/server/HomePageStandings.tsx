@@ -1,9 +1,7 @@
+import { HomePageList } from "@pgc-components";
+import { cn, formatMoney } from "@pgc-utils";
 import Image from "next/image";
 import Link from "next/link";
-import { HomePageList } from "@/lib/components/smartComponents/functionalComponents/client/HomePageList";
-import { cn, formatMoney } from "@/lib/utils/main";
-import { getMemberFromHeaders } from "@/lib/auth/utils";
-import { getCurrentStandings } from "@/server/actions/standings";
 
 /**
  * Displays the standings for the homepage, showing the top players for each tour.
@@ -77,7 +75,7 @@ export default function HomePageStandings({
                 tour={tour}
                 teams={tourTeams}
                 self={self}
-                // champions={champions}
+                champions={champions}
               />
             </Link>
           );

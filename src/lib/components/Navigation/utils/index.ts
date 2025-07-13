@@ -30,5 +30,5 @@ export function formatUserDisplayName(
   lastname: string | null,
 ): string {
   if (!firstname && !lastname) return "User";
-  return `${firstname || ""} ${lastname || ""}`.trim();
+  return `${firstname ?? ""} ${lastname ?? ""}`.trim();
 }

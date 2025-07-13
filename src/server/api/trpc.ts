@@ -10,7 +10,7 @@ import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { db } from "@pgc-server";
+import { db } from "../db";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 

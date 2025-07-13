@@ -19,7 +19,7 @@ interface UserAccountNavProps {
 
 export function UserAccountNav({ navigationData }: UserAccountNavProps) {
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const { user, member, tourCards, champions, isLoading } = navigationData;
+  const { user, member, tourCards, champions, isLoading,tourCardLoading } = navigationData;
 
   if (isLoading || isSigningOut) {
     return (
@@ -36,6 +36,7 @@ export function UserAccountNav({ navigationData }: UserAccountNavProps) {
           tourCards={tourCards}
           champions={champions}
           setIsSigningOut={setIsSigningOut}
+          tourCardLoading={tourCardLoading}
         />
         <span className="hidden font-barlow text-2xl font-semibold lg:inline-block">
           {formatUserDisplayName(member.firstname, member.lastname)}
