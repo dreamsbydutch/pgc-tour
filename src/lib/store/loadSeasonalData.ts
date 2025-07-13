@@ -16,9 +16,21 @@ export function LoadSeasonalData() {
   const setTourCard = useSeasonalStore((s) => s.setTourCard);
   const setAllTourCards = useSeasonalStore((s) => s.setAllTourCards);
   const lastLoaded = useSeasonalStore((s) => s.lastLoaded);
-  const isDataStale =
-    lastLoaded === null || Date.now() - lastLoaded > 24 * 60 * 60 * 1000;
-  const getDataAge = lastLoaded ? Date.now() - lastLoaded : 0;
+
+  // Check if different data types are stale
+  const isStaticDataStale =
+    !lastLoaded?.staticData ||
+    Date.now() - lastLoaded.staticData > 5 * 24 * 60 * 60 * 1000;
+  const isTourCardDataStale =
+    !lastLoaded?.tourCard ||
+    Date.now() - lastLoaded.tourCard > 24 * 60 * 60 * 1000; // 5 minutes
+  const isAllTourCardsDataStale =
+    !lastLoaded?.allTourCards ||
+    Date.now() - lastLoaded.allTourCards > 24 * 60 * 60 * 1000; // 5 minutes
+
+  const getDataAge = lastLoaded?.staticData
+    ? Date.now() - lastLoaded.staticData
+    : 0;
 
   const seasonQuery = api.season.getCurrent.useQuery();
   const memberQuery = api.member.getSelf.useQuery();
@@ -34,20 +46,67 @@ export function LoadSeasonalData() {
     },
   );
 
+  // Check server-side timestamp for tourCard updates
+  const lastTourCardsUpdateQuery = api.store.getLastTourCardsUpdate.useQuery(
+    { seasonId: seasonQuery.data?.id ?? "" },
+    {
+      enabled: !!seasonQuery.data?.id,
+      retry: 3,
+      retryDelay: 1000,
+      staleTime: 30 * 1000, // 30 seconds - check server timestamp more frequently
+      gcTime: 2 * 60 * 1000, // 2 minutes
+    },
+  );
+
+  // Check if tourCard data is stale based on server timestamp
+  const isServerTourCardDataStale = (() => {
+    if (!lastTourCardsUpdateQuery.data?.lastUpdated) return false;
+    if (!lastLoaded?.tourCard) return true;
+
+    const serverTimestamp = new Date(
+      lastTourCardsUpdateQuery.data.lastUpdated,
+    ).getTime();
+    const localTimestamp = lastLoaded.tourCard;
+
+    return serverTimestamp > localTimestamp;
+  })();
+
+  // Check if allTourCards data is stale based on server timestamp
+  const isServerAllTourCardsDataStale = (() => {
+    if (!lastTourCardsUpdateQuery.data?.lastUpdated) return false;
+    if (!lastLoaded?.allTourCards) return true;
+
+    const serverTimestamp = new Date(
+      lastTourCardsUpdateQuery.data.lastUpdated,
+    ).getTime();
+    const localTimestamp = lastLoaded.allTourCards;
+
+    return serverTimestamp > localTimestamp;
+  })();
+
+  // Combine server-side and time-based staleness checks
+  const finalIsTourCardDataStale =
+    isTourCardDataStale || isServerTourCardDataStale;
+  const finalIsAllTourCardsDataStale =
+    isAllTourCardsDataStale || isServerAllTourCardsDataStale;
+
   const allLoaded =
     !seasonQuery.isLoading &&
     !memberQuery.isLoading &&
     !tourCardQuery.isLoading &&
-    !storeDataQuery.isLoading;
+    !storeDataQuery.isLoading &&
+    !lastTourCardsUpdateQuery.isLoading;
 
   const hasErrors =
     seasonQuery.isError ||
     memberQuery.isError ||
     tourCardQuery.isError ||
-    storeDataQuery.isError;
+    storeDataQuery.isError ||
+    lastTourCardsUpdateQuery.isError;
 
   useEffect(() => {
-    if (allLoaded && !hasErrors && isDataStale && storeDataQuery.data) {
+    // Load static data if it's stale
+    if (allLoaded && !hasErrors && isStaticDataStale && storeDataQuery.data) {
       // Normalize tournament date fields to Date objects
       const normalizedTournaments = storeDataQuery.data.tournaments.map(
         (t) => ({
@@ -62,17 +121,37 @@ export function LoadSeasonalData() {
         tiers: storeDataQuery.data.tiers,
         tours: storeDataQuery.data.tours,
       });
-      setMember(memberQuery.data!);
-      setTourCard(tourCardQuery.data!);
+      if (process.env.NODE_ENV === "development") {
+        console.log("✅ Static seasonal data loaded successfully");
+      }
+    }
+
+    // Load member data if needed
+    if (memberQuery.data) {
+      setMember(memberQuery.data);
+    }
+
+    // Load tour card data if it's stale
+    if (tourCardQuery.data && finalIsTourCardDataStale) {
+      setTourCard(tourCardQuery.data);
+      if (process.env.NODE_ENV === "development") {
+        console.log("✅ Tour card data loaded successfully");
+      }
+    }
+
+    // Load all tour cards data if it's stale
+    if (storeDataQuery.data?.allTourCards && finalIsAllTourCardsDataStale) {
       setAllTourCards(storeDataQuery.data.allTourCards);
       if (process.env.NODE_ENV === "development") {
-        console.log("✅ Seasonal data loaded successfully");
+        console.log("✅ All tour cards data loaded successfully");
       }
     }
   }, [
     allLoaded,
     hasErrors,
-    isDataStale,
+    isStaticDataStale,
+    finalIsTourCardDataStale,
+    finalIsAllTourCardsDataStale,
     setSeasonalData,
     setMember,
     setTourCard,
@@ -95,6 +174,11 @@ export function LoadSeasonalData() {
         console.error("Tour card query error:", tourCardQuery.error);
       if (storeDataQuery.isError)
         console.error("Store data query error:", storeDataQuery.error);
+      if (lastTourCardsUpdateQuery.isError)
+        console.error(
+          "Last tour cards update query error:",
+          lastTourCardsUpdateQuery.error,
+        );
       console.groupEnd();
     }
   }, [
@@ -103,10 +187,12 @@ export function LoadSeasonalData() {
     memberQuery.error,
     tourCardQuery.error,
     storeDataQuery.error,
+    lastTourCardsUpdateQuery.error,
     seasonQuery.isError,
     memberQuery.isError,
     tourCardQuery.isError,
     storeDataQuery.isError,
+    lastTourCardsUpdateQuery.isError,
   ]);
 
   // Log data age in development

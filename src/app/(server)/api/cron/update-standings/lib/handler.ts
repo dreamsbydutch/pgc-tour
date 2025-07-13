@@ -36,7 +36,6 @@ export async function handleUpdateStandingsCron(
 
     // Execute the standings update
     const result = await updateStandingsOptimized(api);
-
     if (result.seasonProcessed) {
       return {
         success: true,

@@ -18,7 +18,10 @@ import type {
 /**
  * Tournament with included course object.
  */
-export type TournamentWithCourseAndTier = Tournament & { course: Course,tier:Tier };
+export type TournamentWithCourseAndTier = Tournament & {
+  course: Course;
+  tier: Tier;
+};
 
 /**
  * Store shape for all seasonal golf data.
@@ -39,7 +42,14 @@ export interface SeasonalData {
   /** All tours for the season (static for the session) */
   tours: Tour[] | null;
   /** Timestamp of last data load */
-  lastLoaded: number | null;
+  lastLoaded: {
+    /** General timestamp for static data (season, tournaments, tiers, tours) */
+    staticData: number | null;
+    /** Timestamp for when tourCard was last loaded */
+    tourCard: number | null;
+    /** Timestamp for when allTourCards were last loaded */
+    allTourCards: number | null;
+  } | null;
   /**
    * Set static seasonal data (season, tournaments, tiers, tours) on initial load.
    * @param data Object with static data to set
@@ -62,6 +72,18 @@ export interface SeasonalData {
    * @param tourCards New array of tour cards
    */
   setAllTourCards: (tourCards: TourCard[]) => void;
+  /**
+   * Invalidate only the user's tour card and force reload.
+   */
+  invalidateTourCard: () => void;
+  /**
+   * Invalidate only all tour cards and force reload.
+   */
+  invalidateAllTourCards: () => void;
+  /**
+   * Invalidate both tourCard and allTourCards and force reload.
+   */
+  invalidateAndRefetchTourCards: () => void;
   /**
    * Reset all seasonal data to null (e.g., on logout).
    */

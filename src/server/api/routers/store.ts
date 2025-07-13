@@ -51,4 +51,23 @@ export const storeRouter = createTRPCRouter({
         tiers, // Tier[]
       };
     }),
+
+  /**
+   * Get the most recent tourCard update timestamp
+   * This tells clients when tourCard data was last modified server-side
+   */
+  getLastTourCardsUpdate: publicProcedure
+    .input(z.object({ seasonId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Get the most recent updatedAt from all tour cards for this season
+      const mostRecentTourCard = await ctx.db.tourCard.findFirst({
+        where: { seasonId: input.seasonId },
+        orderBy: { updatedAt: "desc" },
+        select: { updatedAt: true },
+      });
+
+      return {
+        lastUpdated: mostRecentTourCard?.updatedAt || null,
+      };
+    }),
 });

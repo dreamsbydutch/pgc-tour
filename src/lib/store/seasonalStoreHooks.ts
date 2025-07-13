@@ -5,6 +5,7 @@
  */
 
 import { useSeasonalStore } from "./seasonalStore";
+import { api } from "@pgc-trpcClient";
 
 // ============= INDIVIDUAL GETTERS =============
 
@@ -83,3 +84,133 @@ export function useTournamentsByStatus() {
     past,
   };
 }
+
+// ============= ACTIONS =============
+
+/**
+ * Hook to invalidate only the user's tour card.
+ * Clears tour card cache and forces a reload from the server.
+ */
+export const useInvalidateTourCard = () =>
+  useSeasonalStore((state) => state.invalidateTourCard);
+
+/**
+ * Hook to invalidate only all tour cards.
+ * Clears all tour cards cache and forces a reload from the server.
+ */
+export const useInvalidateAllTourCards = () =>
+  useSeasonalStore((state) => state.invalidateAllTourCards);
+
+/**
+ * Hook to invalidate both tour card and all tour cards.
+ * Clears both tour card caches and forces a reload from the server.
+ */
+export const useInvalidateTourCards = () =>
+  useSeasonalStore((state) => state.invalidateAndRefetchTourCards);
+
+/**
+ * Hook to manually refresh tour card data.
+ * This will invalidate the tour card cache and refetch from the server.
+ * Useful for refresh buttons or when user wants to manually update data.
+ */
+export function useManualRefresh() {
+  const invalidateTourCards = useInvalidateTourCards();
+  const utils = api.useUtils();
+
+  const refreshTourCards = async () => {
+    // Invalidate the client cache
+    invalidateTourCards();
+
+    // Invalidate tRPC queries to force refetch
+    await utils.tourCard.getSelfCurrent.invalidate();
+    await utils.store.getSeasonalData.invalidate();
+    await utils.store.getLastTourCardsUpdate.invalidate();
+  };
+
+  return { refreshTourCards };
+}
+
+/**
+ * Hook to check if tour card data is stale based on server timestamp.
+ * Returns true if the server has newer data than what's cached locally.
+ */
+export function useIsTourCardDataStale() {
+  const lastLoaded = useLastLoaded();
+  const season = useSeason();
+
+  const lastTourCardsUpdateQuery = api.store.getLastTourCardsUpdate.useQuery(
+    { seasonId: season?.id ?? "" },
+    {
+      enabled: !!season?.id,
+      staleTime: 30 * 1000, // 30 seconds
+      gcTime: 2 * 60 * 1000, // 2 minutes
+    },
+  );
+
+  const isStale = (() => {
+    if (!lastTourCardsUpdateQuery.data?.lastUpdated) return false;
+    if (!lastLoaded?.tourCard && !lastLoaded?.allTourCards) return true;
+
+    const serverTimestamp = new Date(
+      lastTourCardsUpdateQuery.data.lastUpdated,
+    ).getTime();
+    const localTourCardTimestamp = lastLoaded?.tourCard ?? 0;
+    const localAllTourCardsTimestamp = lastLoaded?.allTourCards ?? 0;
+
+    return (
+      serverTimestamp > localTourCardTimestamp ||
+      serverTimestamp > localAllTourCardsTimestamp
+    );
+  })();
+
+  return {
+    isStale,
+    lastServerUpdate: lastTourCardsUpdateQuery.data?.lastUpdated,
+    isLoading: lastTourCardsUpdateQuery.isLoading,
+    error: lastTourCardsUpdateQuery.error,
+  };
+}
+
+/**
+ * Example usage of useInvalidateTourCards:
+ *
+ * ```tsx
+ * import { useInvalidateTourCards } from '@/lib/store/seasonalStoreHooks';
+ *
+ * function MyComponent() {
+ *   const invalidateTourCards = useInvalidateTourCards();
+ *
+ *   const handleRefresh = () => {
+ *     invalidateTourCards();
+ *   };
+ *
+ *   return <button onClick={handleRefresh}>Refresh Tour Cards</button>;
+ * }
+ * ```
+ *
+ * Example usage of useManualRefresh and useIsTourCardDataStale:
+ *
+ * ```tsx
+ * import { useManualRefresh, useIsTourCardDataStale } from '@/lib/store/seasonalStoreHooks';
+ *
+ * function RefreshButton() {
+ *   const { refreshTourCards } = useManualRefresh();
+ *   const { isStale, lastServerUpdate } = useIsTourCardDataStale();
+ *
+ *   const handleRefresh = async () => {
+ *     await refreshTourCards();
+ *   };
+ *
+ *   return (
+ *     <div>
+ *       <button onClick={handleRefresh}>
+ *         Refresh Tour Cards {isStale ? '(Update Available)' : ''}
+ *       </button>
+ *       {lastServerUpdate && (
+ *         <p>Last updated: {new Date(lastServerUpdate).toLocaleString()}</p>
+ *       )}
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
