@@ -1,36 +1,48 @@
 "use server";
 
 import { db } from "../db";
-import type { Team, Tournament, TourCard, Golfer, Tour } from "@prisma/client";
+import { ScheduleTournament } from "./schedule";
+import type { Tour } from "@prisma/client";
 
-export type RecentChampionTourCard = TourCard & {
-  team: Team;
-  golfers: Golfer[];
-  tour: Tour;
-};
-
-export type RecentChampionsResult = {
-  tournament: Tournament | null;
-  champions: RecentChampionTourCard[];
+export type ChampionData = {
+  id: number;
+  displayName: string;
+  score: number;
+  tournament: {
+    id: string;
+    name: string;
+    logoUrl: string | null;
+    startDate: Date;
+  };
+  tour: { id: string; name: string; logoUrl: string | null };
+  golfers: {
+    id: number;
+    position: string;
+    playerName: string;
+    score: number;
+  }[];
 };
 
 /**
- * Returns the champion tourCards (with team, tour, and golfers) of the most recent completed tournament
- * if it ended within the last 3 days.
+ * Returns the champion data of the most recent completed tournament
+ * if it ended within the last 3 days, formatted for ChampionsPopup component.
+ *
+ * @param recentTournament - The recent tournament to get champions for
+ * @param tours - Array of tours for the season to match tour cards against
+ * @returns Array of champion data formatted for ChampionsPopup component
  */
-export async function getRecentChampions(): Promise<RecentChampionsResult> {
+export async function getRecentChampions(
+  recentTournament: ScheduleTournament,
+  tours: Tour[],
+): Promise<ChampionData[]> {
   const now = new Date();
-  // Find the most recent completed tournament (ended before now)
-  const recentTournament = await db.tournament.findFirst({
-    where: { endDate: { lt: now } },
-    orderBy: { endDate: "desc" },
-  });
-  if (!recentTournament) return { tournament: null, champions: [] };
 
   // Only return if ended within last 3 days
-  const end = new Date(recentTournament.endDate);
-  const diff = (now.getTime() - end.getTime()) / (1000 * 60 * 60 * 24);
-  if (diff < 0 || diff > 3) return { tournament: null, champions: [] };
+  const diff =
+    (now.getTime() - recentTournament.endDate.getTime()) /
+    (1000 * 60 * 60 * 24);
+  console.log("Diff: ", diff);
+  if (diff < 0 || diff > 3) return [];
 
   // Get all champion teams (position "1" or "T1") for this tournament
   const teams = await db.team.findMany({
@@ -38,44 +50,60 @@ export async function getRecentChampions(): Promise<RecentChampionsResult> {
       tournamentId: recentTournament.id,
       OR: [{ position: "1" }, { position: "T1" }],
     },
+    include: {
+      tourCard: true,
+      tournament: true,
+    },
   });
 
-  // Get all tourCards for these teams
-  const tourCardIds = teams.map((t) => t.tourCardId).filter(Boolean);
-  const tourCards = tourCardIds.length
-    ? await db.tourCard.findMany({ where: { id: { in: tourCardIds } } })
-    : [];
+  console.log(":", teams);
 
-  // Get all golfers for all golferIds in champion teams (number[])
+  if (!teams.length) return [];
+
+  // Get all golfers for all golferIds in champion teams
   const allGolferApiIds = Array.from(
     new Set(teams.flatMap((t) => t.golferIds)),
   );
   const golfers = allGolferApiIds.length
-    ? await db.golfer.findMany({ where: { apiId: { in: allGolferApiIds } } })
+    ? await db.golfer.findMany({
+        where: {
+          apiId: { in: allGolferApiIds },
+          tournamentId: recentTournament.id,
+        },
+      })
     : [];
 
-  // Try to get the tourId from the tournament (adjust field name if needed)
-  const tours = await db.tour.findMany({
-    where: { seasonId: recentTournament.seasonId },
-  });
-
-  // Attach team, tour, and golfers to each champion tourCard
-  const champions: RecentChampionTourCard[] = tourCards.map((tc) => {
-    const team = teams.find((t) => t.tourCardId === tc.id)!;
-    const tour = tours.find((t) => t.id === tc.tourId)!;
+  // Build the champion data in the format expected by ChampionsPopup
+  const champions: ChampionData[] = teams.map((team) => {
+    const tour = tours.find((t) => t.id === team.tourCard.tourId);
     const teamGolfers = team.golferIds
-      .map((id) => golfers.find((g) => g.apiId === id))
-      .filter(Boolean) as Golfer[];
+      .map((golferId) => golfers.find((g) => g.apiId === golferId))
+      .filter(Boolean)
+      .map((golfer) => ({
+        id: golfer!.id,
+        position: golfer!.position || "CUT",
+        playerName: golfer!.playerName,
+        score: golfer!.score || 0,
+      }));
+
     return {
-      ...tc,
-      team,
+      id: team.id,
+      displayName: team.tourCard.displayName,
+      score: team.score || 0,
+      tournament: {
+        id: recentTournament.id,
+        name: recentTournament.name,
+        logoUrl: recentTournament.logoUrl,
+        startDate: recentTournament.startDate,
+      },
+      tour: {
+        id: tour?.id || "",
+        name: tour?.name || "",
+        logoUrl: tour?.logoUrl || null,
+      },
       golfers: teamGolfers,
-      tour,
     };
   });
 
-  return {
-    tournament: recentTournament,
-    champions,
-  };
+  return champions;
 }

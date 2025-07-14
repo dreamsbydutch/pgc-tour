@@ -8,8 +8,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@pgc-trpcClient";
 import { z } from "zod";
 import { cn } from "@pgc-utils";
-import { Button } from "@pgc-ui";
-import LoadingSpinner from "../components/ui/loaders/LoadingSpinner";
+import { Button, LoadingSpinner } from "@pgc-ui";
 
 const golferSchema = z.object({
   groups: z

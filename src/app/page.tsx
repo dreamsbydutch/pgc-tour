@@ -1,25 +1,41 @@
 import Link from "next/link";
 import { getAuthData } from "@pgc-auth";
 import SignInPage from "@app/(auth)/signin/page";
-import { LeagueSchedule, TournamentCountdown } from "@pgc-components";
-import { getNextTournament, getCurrentSchedule } from "@pgc-serverActions";
+import {
+  ChampionsPopup,
+  LeagueSchedule,
+  TournamentCountdown,
+} from "@pgc-components";
+import {
+  getCurrentSchedule,
+  getRecentChampions,
+  getToursBySeason,
+} from "@pgc-serverActions";
 import { HomePageListingsContainer } from "@pgc-components";
 
 export default async function Home() {
-  const { isAuthenticated } = await getAuthData();
-  const tournament = await getNextTournament();
   const schedule = await getCurrentSchedule();
-
-  if (!isAuthenticated) return <SignInPage />;
+  const tours = schedule.season?.id
+    ? await getToursBySeason(schedule.season.id)
+    : [];
+  const pastTournament = [...schedule.tournaments]
+    .sort((a, b) => b.endDate.getTime() - a.endDate.getTime())
+    .filter((t) => (t.currentRound ?? 0) > 4)[0];
+  const recentChamps = pastTournament
+    ? await getRecentChampions(pastTournament, tours)
+    : [];
+  const nextTournament = schedule.tournaments.find(
+    (t) => (t.currentRound ?? 0) <= 1 && !t.livePlay,
+  );
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 sm:gap-10">
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      {/* <CurrentChampions /> */}
+      <ChampionsPopup champs={recentChamps} />
       <HomePageListingsContainer activeView="leaderboard" />
-      <TournamentCountdown tourney={tournament ?? undefined} />
+      <TournamentCountdown tourney={nextTournament ?? undefined} />
       <HomePageListingsContainer activeView="standings" />
       {/* <TourCardForm /> */}
       <LeagueSchedule tournaments={schedule.tournaments} />
