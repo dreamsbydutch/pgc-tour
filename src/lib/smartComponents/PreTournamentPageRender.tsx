@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type {
   Golfer,
   Member,
@@ -7,11 +9,9 @@ import type {
   TourCard,
   Tournament,
 } from "@prisma/client";
-import { Button } from "../../../components/ui/button";
-import LoadingSpinner from "../../../components/ui/loaders/LoadingSpinner";
-import { useState } from "react";
+
 import { cn, formatMoney, formatRank } from "@pgc-utils";
-import { useRouter } from "next/navigation";
+import { Button, LoadingSpinner } from "@pgc-ui";
 
 interface PreTournamentPageProps {
   tournament: Pick<Tournament, "id" | "name" | "logoUrl" | "startDate">;
