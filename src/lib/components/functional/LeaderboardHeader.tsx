@@ -24,7 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   LoadingSpinner,
-} from "@pgc-ui";
+} from "src/lib/components/functional/ui";
 import {
   cn,
   formatMoney,
@@ -53,7 +53,7 @@ export function LeaderboardHeader({
       front: number;
       back: number;
     };
-    tier: { name: string; points: number[]; payouts: number[] }
+    tier: { name: string; points: number[]; payouts: number[] };
   };
   inputTournaments: {
     id: string;

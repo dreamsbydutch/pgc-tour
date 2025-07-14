@@ -99,13 +99,13 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
           <ScoreDisplay
             type="PGA"
             golfer={golfer!}
-            tournamentComplete={(tournament.round ?? 0) > 4}
+            tournamentComplete={(tournament.currentRound ?? 0) > 4}
           />
         ) : (
           <ScoreDisplay
             type="PGC"
             team={team!}
-            tournamentComplete={(tournament.round ?? 0) > 4}
+            tournamentComplete={(tournament.currentRound ?? 0) > 4}
           />
         )}
       </div>

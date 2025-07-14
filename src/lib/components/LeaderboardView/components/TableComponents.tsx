@@ -9,7 +9,7 @@ import {
   formatPercentage,
   getGolferTeeTime,
 } from "@pgc-utils";
-import { Table, TableRow } from "@pgc-ui";
+import { Table, TableRow } from "src/lib/components/functional/ui";
 import { getSortedTeamGolfers, getGolferRowClass, isPlayerCut } from "../utils";
 import { CountryFlagDisplay, GolferStatsGrid } from "./UIComponents";
 import type { LeaderboardGolfer, LeaderboardTeam } from "../utils/types";

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Button } from "@pgc-ui";
+import { Button } from "src/lib/components/functional/ui";
 import { useRouter } from "next/navigation";
-import { LoadingSpinner } from "@pgc-ui";
+import { LoadingSpinner } from "src/lib/components/functional/ui";
 
 // Generic button for navigation with loading/effect
 function NavActionButton({ label, to }: { label: string; to: string }) {

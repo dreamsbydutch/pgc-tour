@@ -13,10 +13,9 @@ import {
   TableRow,
   Button,
   FieldInfo,
-} from "@pgc-ui";
+} from "src/lib/components/functional/ui";
 import type { TransactionType } from "@prisma/client";
 import { formatMoney } from "@pgc-utils";
-import { processPayment } from "@pgc-serverActions";
 
 const paymentSchema = z.object({
   userId: z.string().min(1, "Please select a member"),
@@ -41,7 +40,7 @@ function buildDescription(
   return `${formatMoney(amount)} payment made by ${getMemberDisplayName(member)}`.trim();
 }
 
-export type MinimalMember = {
+type MinimalMember = {
   id: string;
   firstname?: string | null;
   lastname?: string | null;
@@ -53,25 +52,53 @@ interface PaymentFormProps {
   allMembers: MinimalMember[];
 }
 
-export default function PaymentForm({ allMembers }: PaymentFormProps) {
+export function PaymentForm({ allMembers }: PaymentFormProps) {
   const router = useRouter();
   const utils = api.useUtils();
+
+  // tRPC mutations
+  const createTransaction = api.transaction.create.useMutation();
+  const updateMember = api.member.update.useMutation();
 
   const form = useForm<PaymentFormValues>({
     defaultValues: { userId: "", amount: 0 },
     onSubmit: async ({ value }) => {
-      const member = allMembers?.find((obj) => obj.id === value.userId);
-      const description = buildDescription(value.amount, member);
-      await processPayment({
-        id: 0,
-        userId: value.userId,
-        seasonId: "cm4w910jz000gdx9k30u3ihpb",
-        description,
-        amount: value.amount,
-        transactionType: "Payment" as TransactionType,
-      });
-      await utils.member.invalidate();
-      router.refresh();
+      try {
+        const member = allMembers?.find((obj) => obj.id === value.userId);
+        if (!member) {
+          throw new Error("Member not found");
+        }
+
+        // Check if member has sufficient funds
+        if (member.account < value.amount) {
+          throw new Error("Insufficient funds");
+        }
+
+        const description = buildDescription(value.amount, member);
+
+        // Update member's account balance
+        await updateMember.mutateAsync({
+          id: member.id,
+          account: member.account - value.amount,
+        });
+
+        // Create transaction record
+        await createTransaction.mutateAsync({
+          userId: value.userId,
+          seasonId: "cm4w910jz000gdx9k30u3ihpb",
+          description,
+          amount: value.amount,
+          transactionType: "Payment" as TransactionType,
+        });
+
+        // Invalidate and refresh
+        await utils.member.invalidate();
+        await utils.transaction.invalidate();
+        router.refresh();
+      } catch (error) {
+        console.error("Error processing payment:", error);
+        // You might want to show an error message to the user here
+      }
     },
     validators: {
       onChange: (props: { value: PaymentFormValues }) => {

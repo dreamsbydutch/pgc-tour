@@ -9,7 +9,7 @@ import { cn, isDate } from "@pgc-utils";
  * @param champions - Array of champion objects, each with an id and tournament details
  * @param showSeasonText - Whether to display the tournament year below the trophy icon
  */
-export default function LittleFucker({
+export function LittleFucker({
   champions,
   showSeasonText = false,
 }: {
@@ -34,12 +34,22 @@ export default function LittleFucker({
   if (!champions || champions.length === 0) return null;
   return (
     <div className="flex flex-row">
-      {champions.map((team) => (
-        <TrophyIcon
-          key={team.id}
-          {...{ team, showSeasonText, tournament: team.tournament }}
-        />
-      ))}
+      {champions
+        .filter((c) =>
+          [
+            "TOUR Championship",
+            "The Masters",
+            "U.S. Open",
+            "The Open Championship",
+            "PGA Championship",
+          ].includes(c.tournament.name),
+        )
+        .map((team) => (
+          <TrophyIcon
+            key={team.id}
+            {...{ team, showSeasonText, tournament: team.tournament }}
+          />
+        ))}
     </div>
   );
 }

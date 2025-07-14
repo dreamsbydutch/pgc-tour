@@ -1,9 +1,10 @@
-import { LeaderboardHeader } from "@pgc-components";
+import { LeaderboardHeader, CreateTeamForm } from "@pgc-components";
 import {
   getGolfersByTournament,
   getTeamByTournamentAndUser,
   getCurrentTourCard,
   getNextTournament,
+  getSeasonTournament,
 } from "@pgc-serverActions";
 import type { Golfer, Team } from "@prisma/client";
 
@@ -45,6 +46,7 @@ export default async function CreateTeamPage({
   params: { tournamentId: string };
 }) {
   const tourCard = await getCurrentTourCard();
+  const allTournaments = await getSeasonTournament(tourCard?.seasonId ?? "");
   const tournament = await getNextTournament();
 
   // Ensure both tourCard and tournament are defined before proceeding
@@ -99,7 +101,10 @@ export default async function CreateTeamPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 font-varela">
       {/* Back button to parent tournament page */}
-      <LeaderboardHeader focusTourney={tournament} />
+      <LeaderboardHeader
+        focusTourney={tournament}
+        inputTournaments={allTournaments}
+      />
       <BackButton />
       <CreateTeamForm
         {...{

@@ -9,7 +9,7 @@ import {
   TableRow,
   Skeleton,
   SVGSkeleton,
-} from "@pgc-ui";
+} from "src/lib/components/functional/ui";
 
 /**
  * LeagueSchedule Component

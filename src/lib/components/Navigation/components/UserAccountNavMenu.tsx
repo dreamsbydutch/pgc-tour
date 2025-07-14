@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
   Button,
   Skeleton,
-} from "@pgc-ui";
+} from "src/lib/components/functional/ui";
 import { useInstallPWA, LittleFucker } from "@pgc-components";
 import { formatMoney, formatNumber } from "@pgc-utils";
 import { handleLogout } from "@app/(auth)/signin/actions";

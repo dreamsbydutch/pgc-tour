@@ -11,7 +11,7 @@ import {
   getRecentChampions,
   getToursBySeason,
 } from "@pgc-serverActions";
-import { HomePageListingsContainer } from "@pgc-components";
+import { HomePageListingsContainer } from "@pgc-components/HomePageListings";
 
 export default async function Home() {
   const schedule = await getCurrentSchedule();

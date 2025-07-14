@@ -1,4 +1,4 @@
-import { SVGSkeleton } from "@pgc-ui";
+import { SVGSkeleton } from "src/lib/components/functional/ui";
 
 export function LeaderboardHeaderSkeleton() {
   return (

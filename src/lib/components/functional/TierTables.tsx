@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
   Skeleton,
-} from "@pgc-ui";
+} from "src/lib/components/functional/ui";
 import { cn, formatMoney, formatNumber, formatRank } from "@pgc-utils";
 
 /**

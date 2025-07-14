@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { signInWithGoogle } from "@app/(auth)/signin/actions";
 import Link from "next/link";
-import { Button } from "@pgc-ui";
+import { Button } from "src/lib/components/functional/ui";
 import { Icons } from "@pgc-components";
 import { useUser } from "@pgc-auth";
 

@@ -7,7 +7,7 @@
 "use client";
 
 import { useState } from "react";
-import { Skeleton } from "@pgc-ui";
+import { Skeleton } from "src/lib/components/functional/ui";
 import { UserAccountNavMenu } from "./UserAccountNavMenu";
 import { SignInButton } from "./SignInButton";
 import { formatUserDisplayName } from "../utils";

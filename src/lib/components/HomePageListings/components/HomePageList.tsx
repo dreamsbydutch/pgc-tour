@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { cn } from "@pgc-utils";
-import LittleFucker from "../../functional/LittleFucker";
+import { LittleFucker } from "@pgc-components";
 import { getUserHighlightStatus, filterChampionsForMember } from "../utils";
 import { UI_CONSTANTS } from "../utils/constants";
 import type {

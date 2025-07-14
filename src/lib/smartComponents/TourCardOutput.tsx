@@ -13,7 +13,7 @@ import {
   DialogTrigger,
   LoadingSpinner,
   Button,
-} from "@pgc-ui";
+} from "src/lib/components/functional/ui";
 import { api } from "@pgc-trpcClient";
 import { deleteTourCard } from "@pgc-serverActions";
 

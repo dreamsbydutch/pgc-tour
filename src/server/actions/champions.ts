@@ -41,7 +41,6 @@ export async function getRecentChampions(
   const diff =
     (now.getTime() - recentTournament.endDate.getTime()) /
     (1000 * 60 * 60 * 24);
-  console.log("Diff: ", diff);
   if (diff < 0 || diff > 3) return [];
 
   // Get all champion teams (position "1" or "T1") for this tournament
@@ -55,8 +54,6 @@ export async function getRecentChampions(
       tournament: true,
     },
   });
-
-  console.log(":", teams);
 
   if (!teams.length) return [];
 

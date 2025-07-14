@@ -43,7 +43,7 @@ export function ChampionsPopup({
   const tournament = champs?.[0]?.tournament;
   if (!hasItems(champs) || !tournament) return null;
   return (
-    <div className="m-3 rounded-2xl bg-amber-100 bg-opacity-70 shadow-lg md:w-10/12 lg:w-7/12">
+    <div className="mx-auto my-3 rounded-2xl bg-amber-100 bg-opacity-70 shadow-lg md:w-10/12 lg:w-7/12">
       <div className="mx-auto max-w-3xl p-2 text-center">
         <h1 className="flex items-center justify-center px-3 py-2 font-varela text-2xl font-bold sm:text-3xl md:text-4xl">
           {isNonEmptyString(tournament.logoUrl) && (
@@ -109,7 +109,7 @@ function ChampionSection({
               height={128}
             />
           )}
-          <div className="text-xl font-semibold">
+          <div className="flex gap-2 text-xl font-semibold">
             {capitalize(displayName)}
             {champion && (
               <LittleFucker champions={[champion]} showSeasonText={false} />
@@ -120,22 +120,24 @@ function ChampionSection({
           </div>
         </div>
         {/* Team golfers grid */}
-        <div className="mx-4 my-1 grid grid-cols-2 items-center justify-center gap-x-4 gap-y-1">
+        <div className="mx-auto my-1 grid w-5/6 grid-cols-2 items-center justify-center gap-x-8 gap-y-1">
           {hasItems(champion.golfers) &&
-            champion.golfers.map((golfer) => (
-              <div
-                key={golfer.id}
-                className="grid grid-cols-8 items-center justify-center"
-              >
-                <div className="col-span-1 text-xs">{golfer.position}</div>
-                <div className="col-span-6 text-xs">{golfer.playerName}</div>
-                <div className="text-xs">
-                  {["CUT", "WD", "DQ"].includes(golfer.position ?? "")
-                    ? golfer.position
-                    : formatScore(golfer.score)}
+            champion.golfers
+              .sort((a, b) => a.score - b.score)
+              .map((golfer) => (
+                <div
+                  key={golfer.id}
+                  className="grid grid-cols-8 items-center justify-center"
+                >
+                  <div className="col-span-1 text-xs">{golfer.position}</div>
+                  <div className="col-span-6 text-xs">{golfer.playerName}</div>
+                  <div className="text-xs">
+                    {["CUT", "WD", "DQ"].includes(golfer.position ?? "")
+                      ? golfer.position
+                      : formatScore(golfer.score)}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
         </div>
       </div>
     </Link>

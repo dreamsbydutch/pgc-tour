@@ -7,7 +7,7 @@ import type { Tour } from "@prisma/client";
 
 import { api } from "@pgc-trpcClient";
 import { useSeasonalStore } from "@pgc-store";
-import { LoadingSpinner, Button } from "@pgc-ui";
+import { LoadingSpinner, Button } from "src/lib/components/functional/ui";
 import { createTourCard } from "@pgc-serverActions";
 
 export function TourCardForm() {

@@ -6,7 +6,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@pgc-ui";
+} from "src/lib/components/functional/ui";
 
 export default async function AdminDashboard() {
   const currentTourney = (await api.tournament.getInfo()).next;

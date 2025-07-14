@@ -5,7 +5,12 @@ import Link from "next/link";
 import { useState, type Dispatch, type SetStateAction } from "react";
 
 import type { Team, Tour, TourCard, Tournament } from "@prisma/client";
-import { Table, TableCell, TableHeader, TableRow } from "@pgc-ui";
+import {
+  Table,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from "src/lib/components/functional/ui";
 import { cn, formatScore } from "@pgc-utils";
 import {
   useAllTourCards,

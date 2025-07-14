@@ -58,7 +58,7 @@ import {
   getGolferTeeTime,
   sortMultiple,
 } from "@pgc-utils";
-import { Table, TableRow } from "../components/ui/table";
+import { Table, TableRow } from "../components/functional/ui/table";
 import { ToursToggleButton } from "../components/functional/ToursToggle";
 
 // ================= TYPES =================

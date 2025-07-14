@@ -8,7 +8,7 @@
 
 import { useState } from "react";
 import { LogInIcon } from "lucide-react";
-import { Button } from "@pgc-ui";
+import { Button } from "src/lib/components/functional/ui";
 import { signInWithGoogle } from "@app/(auth)/signin/actions";
 
 export function SignInButton() {

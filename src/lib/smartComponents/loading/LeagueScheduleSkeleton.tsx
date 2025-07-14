@@ -1,7 +1,4 @@
-import {
-  Skeleton,
-  SVGSkeleton,
-} from "@pgc-ui";
+import { Skeleton, SVGSkeleton } from "src/lib/components/functional/ui";
 
 /**
  * LeagueScheduleSkeleton

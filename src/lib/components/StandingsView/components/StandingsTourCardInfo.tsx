@@ -1,11 +1,9 @@
-"use client";
-
-import type { Member, Team, TourCard, Tournament } from "@prisma/client";
-import Image from "next/image";
 import Link from "next/link";
-import LoadingSpinner from "../components/ui/loaders/LoadingSpinner";
+import Image from "next/image";
 import { cn, formatRank } from "@pgc-utils";
 import { api } from "@pgc-trpcClient";
+import type { TourCard, Member, Tournament, Team } from "@prisma/client";
+import { LoadingSpinner } from "src/lib/components/functional/ui";
 
 // Pure helper: filter non-playoff tournaments
 const getNonPlayoffTournaments = (
