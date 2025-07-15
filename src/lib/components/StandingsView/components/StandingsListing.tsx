@@ -27,6 +27,7 @@ function RegularStandingsListing({
   const [isOpen, setIsOpen] = useState(false);
   const isCurrent = currentMember?.id === tourCard.memberId;
   const isFriend = currentMember?.friends?.includes(tourCard.memberId);
+
   return (
     <div
       key={tourCard.id}
@@ -56,7 +57,7 @@ function RegularStandingsListing({
       </div>
       {currentMember &&
         (isFriendChanging ? (
-          <LoadingSpinner className="h-3 w-3" />
+          <LoadingSpinner className="m-auto h-3 w-3" />
         ) : isFriend ? (
           <Star
             aria-disabled={isFriendChanging}

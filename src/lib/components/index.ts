@@ -1,6 +1,9 @@
 // Barrel export for all components in src/lib/components
 export { default as ServiceWorkerRegistration } from "./functional/pwa/ServiceWorkerRegistration";
-export { default as InstallPWAButton, useInstallPWA } from "./functional/pwa/InstallPWA";
+export {
+  default as InstallPWAButton,
+  useInstallPWA,
+} from "./functional/pwa/InstallPWA";
 
 export {
   CreateGroupsButton,
@@ -19,4 +22,3 @@ export { PayoutsTable, PointsTable } from "./functional/TierTables";
 export { TournamentCountdown } from "./functional/TournamentCountdown";
 export { ToursToggleButton } from "./functional/ToursToggle";
 export { PaymentForm } from "./functional/TransactionForm";
-

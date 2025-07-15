@@ -3,8 +3,12 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-import { useCurrentStandings } from "../../hooks/hooks";
-import { StandingsContent, StandingsHeader, ToursToggle } from "./components";
+import { useCurrentStandings, useFriendManagement } from "./hooks";
+import { StandingsHeader } from "./components/StandingsHeader";
+import { ToursToggle } from "./components/ToursToggle";
+import { StandingsContent } from "./components/StandingsContent";
+import { StandingsLoadingSkeleton } from "./components/StandingsLoadingSkeleton";
+import { StandingsError } from "./components/StandingsError";
 
 /**
  * StandingsView Component
@@ -13,8 +17,20 @@ import { StandingsContent, StandingsHeader, ToursToggle } from "./components";
  */
 export function StandingsView() {
   const searchParams = useSearchParams();
-  const { tours, tiers, tourCards, currentTourCard, isLoading, error } =
-    useCurrentStandings();
+  const {
+    tours,
+    tiers,
+    tourCards,
+    currentTourCard,
+    currentMember,
+    isLoading,
+    error,
+    refetch,
+  } = useCurrentStandings();
+
+  // Friend management hook
+  const { friendChangingIds, handleAddFriend, handleRemoveFriend } =
+    useFriendManagement(currentMember);
 
   const defaultTourId =
     searchParams.get("tour") ?? currentTourCard?.tourId ?? "";
@@ -23,23 +39,20 @@ export function StandingsView() {
     tours?.find((tour) => tour.id === standingsToggle) ?? tours?.[0];
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center py-8">
-        <div className="text-lg">Loading standings...</div>
-      </div>
-    );
+    return <StandingsLoadingSkeleton />;
   }
 
   if (error || !tours?.length) {
     return (
-      <div className="flex justify-center py-8">
-        <div className="text-lg text-red-600">Error loading standings</div>
-      </div>
+      <StandingsError
+        error={error?.message || "Error loading standings"}
+        onRetry={refetch}
+      />
     );
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full duration-500 animate-in fade-in">
       <StandingsHeader
         standingsToggle={standingsToggle}
         displayedTour={displayedTour}
@@ -57,6 +70,10 @@ export function StandingsView() {
         tiers={tiers}
         tourCards={tourCards}
         displayedTour={displayedTour}
+        currentMember={currentMember}
+        friendChangingIds={friendChangingIds}
+        onAddFriend={handleAddFriend}
+        onRemoveFriend={handleRemoveFriend}
       />
     </div>
   );

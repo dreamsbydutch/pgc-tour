@@ -10,6 +10,7 @@ import {
 import type { Member } from "@prisma/client";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@pgc-auth";
+import { api } from "@pgc-trpcClient";
 
 // Your custom user type from headers
 export interface HeaderUser {
@@ -40,23 +41,25 @@ export function AuthProvider({
   const [user, setUser] = useState<HeaderUser | null>(initialUser ?? null);
   const [member, setMember] = useState<Member | null>(initialMember ?? null);
   const [isLoading, setIsLoading] = useState(false);
+  const [lastUserId, setLastUserId] = useState<string | null>(null);
   const supabase = createClient();
 
-  // Fetch member data from API
+  // Get tRPC utils for member queries
+  const utils = api.useUtils();
+
+  // Fetch member data using tRPC
   const fetchMember = useCallback(
     async (userId: string): Promise<Member | null> => {
       try {
-        const response = await fetch(`/api/auth/member?userId=${userId}`, {
-          cache: "no-store",
-        });
-        if (!response.ok) return null;
-        const data = (await response.json()) as { member: Member };
-        return data.member;
-      } catch {
+        // Use tRPC to fetch member data
+        const memberData = await utils.member.getSelf.fetch();
+        return memberData;
+      } catch (error) {
+        console.warn(`Error fetching member for userId ${userId}:`, error);
         return null;
       }
     },
-    [],
+    [utils.member.getSelf],
   );
 
   // Convert Supabase user to HeaderUser
@@ -75,28 +78,45 @@ export function AuthProvider({
   // Update auth state
   const updateAuthState = useCallback(
     async (supabaseUser: User | null) => {
-      setIsLoading(true);
-
       const headerUser = convertUser(supabaseUser);
+      const currentUserId = headerUser?.id ?? null;
+
+      // Skip if we're already processing the same user
+      if (currentUserId === lastUserId && !isLoading) {
+        return;
+      }
+
+      setIsLoading(true);
+      setLastUserId(currentUserId);
       setUser(headerUser);
 
       let memberData: Member | null = null;
       if (headerUser) {
-        memberData = await fetchMember(headerUser.id);
+        try {
+          memberData = await fetchMember(headerUser.id);
+        } catch (error) {
+          console.error("Failed to fetch member data:", error);
+          memberData = null;
+        }
       }
       setMember(memberData);
 
       setIsLoading(false);
     },
-    [convertUser, fetchMember],
+    [convertUser, fetchMember, lastUserId, isLoading],
   );
 
   // Refresh auth state manually
   const refreshAuth = useCallback(async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    await updateAuthState(session?.user ?? null);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      await updateAuthState(session?.user ?? null);
+    } catch (error) {
+      console.error("Failed to refresh auth:", error);
+      setIsLoading(false);
+    }
   }, [supabase.auth, updateAuthState]);
 
   // Listen for auth changes
@@ -104,10 +124,15 @@ export function AuthProvider({
     // Initial session check (only if we don't have initial data)
     if (!initialUser) {
       const initAuth = async () => {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        await updateAuthState(session?.user ?? null);
+        try {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          await updateAuthState(session?.user ?? null);
+        } catch (error) {
+          console.error("Failed to initialize auth:", error);
+          setIsLoading(false);
+        }
       };
       void initAuth();
     }
@@ -116,12 +141,18 @@ export function AuthProvider({
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_OUT") {
-        setUser(null);
-        setMember(null);
+      try {
+        if (event === "SIGNED_OUT") {
+          setUser(null);
+          setMember(null);
+          setLastUserId(null);
+          setIsLoading(false);
+        } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          await updateAuthState(session?.user ?? null);
+        }
+      } catch (error) {
+        console.error("Error handling auth state change:", error);
         setIsLoading(false);
-      } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-        await updateAuthState(session?.user ?? null);
       }
     });
 

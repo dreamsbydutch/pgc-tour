@@ -33,7 +33,7 @@ export const HomePageListingsContainer: React.FC<
   } = useLeaderboardData();
 
   // Show loading state if data is still loading
-  if (standingsLoading || leaderboardLoading) {
+  if (standingsLoading && activeView === "standings") {
     return (
       <div className="w-full">
         <HomePageListSkeleton />
@@ -82,11 +82,7 @@ export const HomePageListingsContainer: React.FC<
               champions={leaderboardData.champions}
             />
           )}
-          {!leaderboardData && !leaderboardError && (
-            <div className="py-4 text-center text-gray-500">
-              No leaderboard data available
-            </div>
-          )}
+          {!leaderboardData && !leaderboardError && null}
         </>
       )}
     </>

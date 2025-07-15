@@ -1,4 +1,4 @@
-import type { TourCard, Tour } from "@prisma/client";
+import type { TourCard, Tour, Member } from "@prisma/client";
 import {
   getGoldCutCards,
   getSilverCutCards,
@@ -10,9 +10,20 @@ import { StandingsListing } from "./StandingsListing";
 export interface TourStandingsProps {
   activeTour: Tour | undefined;
   tourCards?: TourCard[];
+  currentMember?: Member | null;
+  friendChangingIds?: Set<string>;
+  onAddFriend?: (memberId: string) => Promise<void>;
+  onRemoveFriend?: (memberId: string) => Promise<void>;
 }
 
-export function TourStandings({ activeTour, tourCards }: TourStandingsProps) {
+export function TourStandings({
+  activeTour,
+  tourCards,
+  currentMember,
+  friendChangingIds,
+  onAddFriend,
+  onRemoveFriend,
+}: TourStandingsProps) {
   if (!activeTour || !tourCards) return null;
 
   const tourData = { ...activeTour, tourCards };
@@ -30,6 +41,10 @@ export function TourStandings({ activeTour, tourCards }: TourStandingsProps) {
           key={tourCard.id}
           variant="regular"
           tourCard={tourCard}
+          currentMember={currentMember}
+          isFriendChanging={friendChangingIds?.has(tourCard.memberId)}
+          onAddFriend={onAddFriend}
+          onRemoveFriend={onRemoveFriend}
         />
       ))}
 
@@ -43,6 +58,10 @@ export function TourStandings({ activeTour, tourCards }: TourStandingsProps) {
           key={tourCard.id}
           variant="regular"
           tourCard={tourCard}
+          currentMember={currentMember}
+          isFriendChanging={friendChangingIds?.has(tourCard.memberId)}
+          onAddFriend={onAddFriend}
+          onRemoveFriend={onRemoveFriend}
         />
       ))}
 
@@ -56,6 +75,10 @@ export function TourStandings({ activeTour, tourCards }: TourStandingsProps) {
           key={tourCard.id}
           variant="regular"
           tourCard={tourCard}
+          currentMember={currentMember}
+          isFriendChanging={friendChangingIds?.has(tourCard.memberId)}
+          onAddFriend={onAddFriend}
+          onRemoveFriend={onRemoveFriend}
         />
       ))}
     </div>

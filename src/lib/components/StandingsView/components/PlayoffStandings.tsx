@@ -1,4 +1,4 @@
-import type { TourCard, Tour, Tier } from "@prisma/client";
+import type { TourCard, Tour, Tier, Member } from "@prisma/client";
 import { parsePosition } from "../utils/standingsHelpers";
 import { StandingsTableHeader } from "./StandingsTableHeader";
 import { StandingsListing } from "./StandingsListing";
@@ -7,12 +7,20 @@ export interface PlayoffStandingsProps {
   tours: Tour[];
   tourCards?: TourCard[] | null;
   tiers: Tier[] | null;
+  currentMember?: Member | null;
+  friendChangingIds?: Set<string>;
+  onAddFriend?: (memberId: string) => Promise<void>;
+  onRemoveFriend?: (memberId: string) => Promise<void>;
 }
 
 export function PlayoffStandings({
   tours,
   tourCards,
   tiers,
+  currentMember,
+  friendChangingIds,
+  onAddFriend,
+  onRemoveFriend,
 }: PlayoffStandingsProps) {
   const goldTeams = tourCards
     ? tourCards.filter((card) => parsePosition(card.position) <= 15)
@@ -49,6 +57,10 @@ export function PlayoffStandings({
           teams={goldTeams}
           strokes={playoffTier?.points.slice(0, 30) ?? []}
           tour={tours.find((t) => t.id === tourCard.tourId)}
+          currentMember={currentMember}
+          isFriendChanging={friendChangingIds?.has(tourCard.memberId)}
+          onAddFriend={onAddFriend}
+          onRemoveFriend={onRemoveFriend}
         />
       ))}
 
@@ -73,6 +85,10 @@ export function PlayoffStandings({
           teams={silverTeams}
           strokes={playoffTier?.points.slice(0, 40) ?? []}
           tour={tours.find((t) => t.id === tourCard.tourId)}
+          currentMember={currentMember}
+          isFriendChanging={friendChangingIds?.has(tourCard.memberId)}
+          onAddFriend={onAddFriend}
+          onRemoveFriend={onRemoveFriend}
         />
       ))}
     </div>

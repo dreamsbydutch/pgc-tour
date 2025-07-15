@@ -2,6 +2,7 @@
 import { getMemberFromHeaders } from "@pgc-auth";
 import { LeaderboardHeader } from "@pgc-components";
 import { LeaderboardView } from "@pgc-components/LeaderboardView";
+import { PreTournamentPage } from "@pgc-components/PreTournament";
 import {
   getCompleteLeaderboardData,
   getCurrentSeason,
@@ -24,6 +25,10 @@ export default async function TournamentPage({
   if (!focusTourney) {
     redirect("/tournament");
   }
+
+  // Calculate if tournament is in the future once
+  const now = new Date();
+  const isPreTournament = focusTourney.startDate > now;
 
   // Fetch all leaderboard data using the new server action
   let leaderboardData;
@@ -59,15 +64,14 @@ export default async function TournamentPage({
         focusTourney={focusTourney}
         inputTournaments={allTournaments}
       />
-      {/* {focusTourney.startDate > new Date() &&
-        !leaderboardData.teams.find(
-          (a) => a.tourCard?.id === leaderboardData.tourCard?.id,
-        ) && <PreTournamentPage tournament={focusTourney} />} */}
-      <LeaderboardView
-        tournamentId={leaderboardData.tournament.id}
-        userId={user?.id}
-        variant="regular"
-      />
+      {isPreTournament && <PreTournamentPage tournament={focusTourney} />}
+      {!isPreTournament && (
+        <LeaderboardView
+          tournamentId={leaderboardData.tournament.id}
+          userId={user?.id}
+          variant="regular"
+        />
+      )}
       {leaderboardData.teams.length === 0 &&
         leaderboardData.golfers.length === 0 && (
           <div className="py-8 text-center">
