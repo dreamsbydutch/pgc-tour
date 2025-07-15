@@ -16,7 +16,6 @@
  * - Development: http://localhost:3000/api/cron/update-standings
  */
 
-import { NextResponse } from "next/server";
 import { handleUpdateStandingsCron } from "./lib/handler";
 
 export async function GET(request: Request) {

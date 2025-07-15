@@ -2,7 +2,7 @@
  * Types for the update standings cron job
  */
 
-import type { TourCard, Team, Tour, Season } from "@prisma/client";
+import type { TourCard, Tour, Season } from "@prisma/client";
 
 // Core types
 export type TourCardWithRelations = TourCard & {

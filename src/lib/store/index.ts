@@ -36,7 +36,7 @@ export {
 // ============= TYPES =============
 
 // Core types
-export type { TournamentWithCourse, SeasonalData } from "./seasonalStoreTypes";
+export type { TournamentWithCourseAndTier, SeasonalData } from "./seasonalStoreTypes";
 
 // Selector types
 export type {

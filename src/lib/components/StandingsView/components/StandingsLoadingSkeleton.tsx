@@ -1,4 +1,3 @@
-import { cn } from "@pgc-utils";
 import { LoadingSpinner } from "src/lib/components/functional/ui";
 
 // Simple loading card for PGC standings

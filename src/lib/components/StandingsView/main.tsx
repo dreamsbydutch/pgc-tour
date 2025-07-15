@@ -45,7 +45,7 @@ export function StandingsView() {
   if (error || !tours?.length) {
     return (
       <StandingsError
-        error={error?.message || "Error loading standings"}
+        error={error?.message ?? "Error loading standings"}
         onRetry={refetch}
       />
     );

@@ -10,7 +10,7 @@ export const MAX_TEAMS_DISPLAY = 15;
 /**
  * Default view type for HomePageListings
  */
-export const DEFAULT_VIEW_TYPE = "standings" as const;
+export const DEFAULT_VIEW_TYPE = "standings";
 
 /**
  * Major tournament names that qualify for championship badges

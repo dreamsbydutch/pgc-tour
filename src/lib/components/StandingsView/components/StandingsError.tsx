@@ -37,7 +37,7 @@ export function StandingsError({ error, onRetry }: StandingsErrorProps) {
           Oops! Something went wrong
         </h3>
         <p className="mb-6 font-varela text-gray-600">
-          {error ||
+          {error ??
             "We couldn't load the standings right now. Please try again."}
         </p>
       </div>

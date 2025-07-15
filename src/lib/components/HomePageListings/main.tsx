@@ -28,7 +28,6 @@ export const HomePageListingsContainer: React.FC<
   } = useStandingsData();
   const {
     data: leaderboardData,
-    isLoading: leaderboardLoading,
     error: leaderboardError,
   } = useLeaderboardData();
 

@@ -5,7 +5,7 @@
  * Simple hook that returns store data directly
  */
 
-import { useAllTourCards, useMember, useTourCard, useTours } from "@pgc-store";
+import { useAllTourCards, useMember,useTours } from "@pgc-store";
 import type { HomePageListingsStandingsProps } from "../utils/types";
 import { api } from "@pgc-trpcClient";
 
@@ -27,7 +27,7 @@ export const useStandingsData = () => {
 
   // Simple loading check
   const isLoading = !tours || !allTourCards || !member || championsLoading;
-  const error = championsError?.message || null;
+  const error = championsError?.message ?? null;
 
   // Simple data transformation - no memoization to avoid re-render issues
   let data: HomePageListingsStandingsProps | null = null;

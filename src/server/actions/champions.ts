@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "../db";
-import { ScheduleTournament } from "./schedule";
+import type { ScheduleTournament } from "./schedule";
 import type { Tour } from "@prisma/client";
 
 export type ChampionData = {
@@ -78,15 +78,15 @@ export async function getRecentChampions(
       .filter(Boolean)
       .map((golfer) => ({
         id: golfer!.id,
-        position: golfer!.position || "CUT",
+        position: golfer!.position ?? "CUT",
         playerName: golfer!.playerName,
-        score: golfer!.score || 0,
+        score: golfer!.score ?? 0,
       }));
 
     return {
       id: team.id,
       displayName: team.tourCard.displayName,
-      score: team.score || 0,
+      score: team.score ?? 0,
       tournament: {
         id: recentTournament.id,
         name: recentTournament.name,
@@ -94,9 +94,9 @@ export async function getRecentChampions(
         startDate: recentTournament.startDate,
       },
       tour: {
-        id: tour?.id || "",
-        name: tour?.name || "",
-        logoUrl: tour?.logoUrl || null,
+        id: tour?.id ?? "",
+        name: tour?.name ?? "",
+        logoUrl: tour?.logoUrl ?? null,
       },
       golfers: teamGolfers,
     };

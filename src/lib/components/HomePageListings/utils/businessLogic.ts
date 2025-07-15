@@ -5,6 +5,16 @@
 import { MAJOR_TOURNAMENTS } from "./constants";
 import type { HomePageListingsChampion } from "./types";
 
+// Type for major tournament names
+type MajorTournamentName = (typeof MAJOR_TOURNAMENTS)[number];
+
+/**
+ * Type guard to check if a tournament name is a major tournament
+ */
+function isMajorTournament(name: string): name is MajorTournamentName {
+  return MAJOR_TOURNAMENTS.includes(name as MajorTournamentName);
+}
+
 /**
  * Filter champions for a specific member in a specific season
  */
@@ -21,7 +31,7 @@ export function filterChampionsForMember(
     (champion) =>
       champion.tourCard.memberId === memberId &&
       champion.tournament.seasonId === seasonId &&
-      MAJOR_TOURNAMENTS.includes(champion.tournament.name as any),
+      isMajorTournament(champion.tournament.name),
   );
 }
 

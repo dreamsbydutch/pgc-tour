@@ -24,7 +24,7 @@ export const useLeaderboardData = () => {
   // Fetch current active tournament
   const currentTournament = tournaments?.find(
     (t) =>
-      t.livePlay || ((t.currentRound ?? 0) > 1 && (t.currentRound ?? 0) < 5),
+      t.livePlay ?? ((t.currentRound ?? 0) > 1 && (t.currentRound ?? 0) < 5),
   );
 
   // Fetch teams for the current tournament
@@ -51,7 +51,7 @@ export const useLeaderboardData = () => {
   const isLoading = championsLoading || teamsLoading || !tours || !member;
 
   // Combined error state
-  const error = championsError?.message || teamsError?.message || null;
+  const error = championsError?.message ?? teamsError?.message ?? null;
 
   // Build data object - simple transformation
   let data: HomePageListingsLeaderboardProps | null = null;
@@ -75,9 +75,9 @@ export const useLeaderboardData = () => {
               displayName: team.tourCard.displayName,
               memberId: team.tourCard.memberId,
             },
-            position: team.position || "CUT",
-            score: team.score || 0,
-            thru: team.thru || 0,
+            position: team.position ?? "CUT",
+            score: team.score ?? 0,
+            thru: team.thru ?? 0,
           };
 
           tourMap.get(tourId)!.push(leaderboardTeam);
@@ -87,10 +87,10 @@ export const useLeaderboardData = () => {
 
     data = {
       tours: tours.map((t) => {
-        return { ...t, teams: tourMap.get(t.id) || [] };
+        return { ...t, teams: tourMap.get(t.id) ?? [] };
       }),
       currentTournament,
-      allTournaments: tournaments || [],
+      allTournaments: tournaments ?? [],
       self: member,
       champions: champions,
     };

@@ -9,7 +9,7 @@
  * 4. Batch updates all tour cards in the database
  */
 
-import { createCaller } from "@pgc-server";
+import type { createCaller } from "@pgc-server";
 import { batchProcess } from "@pgc-utils";
 import type {
   TourCardWithRelations,

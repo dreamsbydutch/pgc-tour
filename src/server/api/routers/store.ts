@@ -67,7 +67,7 @@ export const storeRouter = createTRPCRouter({
       });
 
       return {
-        lastUpdated: mostRecentTourCard?.updatedAt || null,
+        lastUpdated: mostRecentTourCard?.updatedAt ?? null,
       };
     }),
 });

@@ -17,10 +17,6 @@ import { api } from "@pgc-trpcClient";
 import {useSeasonalStore,
   useTournaments,
   useAllTourCards,
-  useMember,
-  useSeason,
-  useTours,
-  useTiers,
 } from "@pgc-store";
 import { useMemo } from "react";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";

@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { getAuthData } from "@pgc-auth";
-import SignInPage from "@app/(auth)/signin/page";
 import {
   ChampionsPopup,
   LeagueSchedule,
@@ -20,7 +18,7 @@ export default async function Home() {
     : [];
   const pastTournament = [...schedule.tournaments]
     .sort((a, b) => b.endDate.getTime() - a.endDate.getTime())
-    .filter((t) => (t.currentRound ?? 0) > 4)[0];
+    .find((t) => (t.currentRound ?? 0) > 4);
   const recentChamps = pastTournament
     ? await getRecentChampions(pastTournament, tours)
     : [];

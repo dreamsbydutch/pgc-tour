@@ -20,9 +20,6 @@ export async function handleUpdateStandingsCron(
     //   }
     // }
 
-    const { searchParams, origin } = new URL(request.url);
-    const next = searchParams.get("next") ?? "/";
-
     // Create a TRPC context with cron job authorization
     const requestHeaders = new Headers(headers());
     requestHeaders.set("x-cron-secret", process.env.CRON_SECRET ?? "");

@@ -21,7 +21,7 @@ import type { SeasonalData } from "./seasonalStoreTypes";
 
 export const useSeasonalStore = create<SeasonalData>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       season: null,
       member: null,
       tourCard: null,
