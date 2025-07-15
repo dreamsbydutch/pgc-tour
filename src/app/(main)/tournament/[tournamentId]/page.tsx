@@ -79,7 +79,7 @@ export default async function TournamentPage({
               No leaderboard data available yet.
             </div>
             <div className="mt-2 text-sm text-gray-500">
-              Tournament data will appear once scoring begins.
+              Tournament data will appear once scoring begins
             </div>
           </div>
         )}
