@@ -22,3 +22,6 @@ export { PayoutsTable, PointsTable } from "./functional/TierTables";
 export { TournamentCountdown } from "./functional/TournamentCountdown";
 export { ToursToggleButton } from "./functional/ToursToggle";
 export { PaymentForm } from "./functional/TransactionForm";
+
+// Complex components
+export { StandingsView } from "./StandingsView";

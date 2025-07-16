@@ -3,41 +3,28 @@
 import { useState, useCallback } from "react";
 import { api } from "@pgc-trpcClient";
 import type { Member } from "@prisma/client";
+import type { FriendManagementState } from "../types";
 
-export interface FriendManagementHook {
-  friendChangingIds: Set<string>;
-  handleAddFriend: (memberId: string) => Promise<void>;
-  handleRemoveFriend: (memberId: string) => Promise<void>;
-  isUpdating: boolean;
+export interface UseFriendManagementResult {
+  state: FriendManagementState;
+  actions: {
+    addFriend: (memberId: string) => Promise<void>;
+    removeFriend: (memberId: string) => Promise<void>;
+  };
 }
 
+/**
+ * Hook for managing friend relationships
+ * Handles optimistic updates and loading states
+ */
 export function useFriendManagement(
   currentMember?: Member | null,
-): FriendManagementHook {
+): UseFriendManagementResult {
   const utils = api.useUtils();
   const [friendChangingIds, setFriendChangingIds] = useState<Set<string>>(
     new Set(),
   );
 
-  // Helper to add member to changing set
-  const addToChangingSet = useCallback((memberId: string) => {
-    setFriendChangingIds((prev) => {
-      const next = new Set(prev);
-      next.add(memberId);
-      return next;
-    });
-  }, []);
-
-  // Helper to remove member from changing set
-  const removeFromChangingSet = useCallback((memberId: string) => {
-    setFriendChangingIds((prev) => {
-      const next = new Set(prev);
-      next.delete(memberId);
-      return next;
-    });
-  }, []);
-
-  // Friend management mutations
   const updateMemberMutation = api.member.update.useMutation({
     onSuccess: () => {
       void utils.member.invalidate();
@@ -47,8 +34,19 @@ export function useFriendManagement(
     },
   });
 
-  // Friend management handlers
-  const handleAddFriend = useCallback(
+  const addToChangingSet = useCallback((memberId: string) => {
+    setFriendChangingIds((prev) => new Set([...prev, memberId]));
+  }, []);
+
+  const removeFromChangingSet = useCallback((memberId: string) => {
+    setFriendChangingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(memberId);
+      return next;
+    });
+  }, []);
+
+  const addFriend = useCallback(
     async (memberId: string) => {
       if (!currentMember || friendChangingIds.has(memberId)) return;
 
@@ -63,7 +61,6 @@ export function useFriendManagement(
       } catch (error) {
         console.error("Failed to add friend:", error);
       } finally {
-        // Always remove from changing set when done
         removeFromChangingSet(memberId);
       }
     },
@@ -76,7 +73,7 @@ export function useFriendManagement(
     ],
   );
 
-  const handleRemoveFriend = useCallback(
+  const removeFriend = useCallback(
     async (memberId: string) => {
       if (!currentMember || friendChangingIds.has(memberId)) return;
 
@@ -93,7 +90,6 @@ export function useFriendManagement(
       } catch (error) {
         console.error("Failed to remove friend:", error);
       } finally {
-        // Always remove from changing set when done
         removeFromChangingSet(memberId);
       }
     },
@@ -107,9 +103,13 @@ export function useFriendManagement(
   );
 
   return {
-    friendChangingIds,
-    handleAddFriend,
-    handleRemoveFriend,
-    isUpdating: updateMemberMutation.isPending,
+    state: {
+      friendChangingIds,
+      isUpdating: updateMemberMutation.isPending,
+    },
+    actions: {
+      addFriend,
+      removeFriend,
+    },
   };
 }

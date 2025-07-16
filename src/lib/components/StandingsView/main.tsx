@@ -1,52 +1,73 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
-import { useCurrentStandings, useFriendManagement } from "./hooks";
+import { useStandingsData } from "./hooks/useStandingsData";
+import { useFriendManagement } from "./hooks/useFriendManagement";
 import { StandingsHeader } from "./components/StandingsHeader";
 import { ToursToggle } from "./components/ToursToggle";
 import { StandingsContent } from "./components/StandingsContent";
 import { StandingsLoadingSkeleton } from "./components/StandingsLoadingSkeleton";
 import { StandingsError } from "./components/StandingsError";
+import type { StandingsViewProps } from "./types";
 
 /**
- * StandingsView Component
+ * Main StandingsView Component
  *
- * Main standings component - minimal orchestration only
+ * Orchestrates data fetching, state management, and renders the appropriate UI
+ * All business logic and data fetching happens at this level
  */
-export function StandingsView() {
+export function StandingsView({ initialTourId }: StandingsViewProps = {}) {
   const searchParams = useSearchParams();
-  const {
-    tours,
-    tiers,
-    tourCards,
-    currentTourCard,
-    currentMember,
-    isLoading,
-    error,
-    refetch,
-  } = useCurrentStandings();
 
-  // Friend management hook
-  const { friendChangingIds, handleAddFriend, handleRemoveFriend } =
-    useFriendManagement(currentMember);
+  // Data fetching
+  const { data, isLoading, error } = useStandingsData();
 
-  const defaultTourId =
-    searchParams.get("tour") ?? currentTourCard?.tourId ?? "";
+  // Friend management
+  const friendManagement = useFriendManagement(data?.currentMember);
+
+  // Tour selection state
+  const defaultTourId = useMemo(() => {
+    return (
+      initialTourId ??
+      searchParams.get("tour") ??
+      data?.currentTourCard?.tourId ??
+      data?.tours[0]?.id ??
+      ""
+    );
+  }, [initialTourId, searchParams, data?.currentTourCard?.tourId, data?.tours]);
+
   const [standingsToggle, setStandingsToggle] = useState<string>(defaultTourId);
-  const displayedTour =
-    tours?.find((tour) => tour.id === standingsToggle) ?? tours?.[0];
 
+  // Update standings toggle when default changes
+  if (
+    defaultTourId &&
+    standingsToggle !== defaultTourId &&
+    !searchParams.get("tour")
+  ) {
+    setStandingsToggle(defaultTourId);
+  }
+
+  // Find displayed tour
+  const displayedTour = useMemo(() => {
+    if (!data?.tours) return undefined;
+    return (
+      data.tours.find((tour) => tour.id === standingsToggle) ?? data.tours[0]
+    );
+  }, [data?.tours, standingsToggle]);
+
+  // Loading state
   if (isLoading) {
     return <StandingsLoadingSkeleton />;
   }
 
-  if (error || !tours?.length) {
+  // Error state
+  if (error || !data?.tours?.length) {
     return (
       <StandingsError
         error={error?.message ?? "Error loading standings"}
-        onRetry={refetch}
+        onRetry={() => window.location.reload()}
       />
     );
   }
@@ -59,21 +80,17 @@ export function StandingsView() {
       />
 
       <ToursToggle
-        tours={tours}
+        tours={data.tours}
         standingsToggle={standingsToggle}
         setStandingsToggle={setStandingsToggle}
       />
 
       <StandingsContent
         standingsToggle={standingsToggle}
-        tours={tours}
-        tiers={tiers}
-        tourCards={tourCards}
-        displayedTour={displayedTour}
-        currentMember={currentMember}
-        friendChangingIds={friendChangingIds}
-        onAddFriend={handleAddFriend}
-        onRemoveFriend={handleRemoveFriend}
+        data={data}
+        friendState={friendManagement.state}
+        onAddFriend={friendManagement.actions.addFriend}
+        onRemoveFriend={friendManagement.actions.removeFriend}
       />
     </div>
   );

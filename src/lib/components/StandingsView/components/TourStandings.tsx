@@ -1,48 +1,46 @@
-import type { TourCard, Tour, Member } from "@prisma/client";
-import {
-  getGoldCutCards,
-  getSilverCutCards,
-  getRemainingCards,
-} from "../utils/standingsHelpers";
+import { groupTourStandings } from "../utils/standingsHelpers";
 import { StandingsTableHeader } from "./StandingsTableHeader";
 import { StandingsListing } from "./StandingsListing";
+import type { TourStandingsProps } from "../types";
 
-export interface TourStandingsProps {
-  activeTour: Tour | undefined;
-  tourCards?: TourCard[];
-  currentMember?: Member | null;
-  friendChangingIds?: Set<string>;
-  onAddFriend?: (memberId: string) => Promise<void>;
-  onRemoveFriend?: (memberId: string) => Promise<void>;
-}
-
+/**
+ * TourStandings Component
+ *
+ * Displays standings for a specific tour with gold/silver cut lines
+ */
 export function TourStandings({
-  activeTour,
+  tour,
   tourCards,
   currentMember,
-  friendChangingIds,
+  friendState,
   onAddFriend,
   onRemoveFriend,
 }: TourStandingsProps) {
-  if (!activeTour || !tourCards) return null;
+  if (!tour || !tourCards?.length) {
+    return (
+      <div className="py-8 text-center text-gray-500">
+        No standings data available
+      </div>
+    );
+  }
 
-  const tourData = { ...activeTour, tourCards };
-  const goldCutCards = getGoldCutCards(tourData);
-  const silverCutCards = getSilverCutCards(tourData);
-  const remainingCards = getRemainingCards(tourData);
+  const { goldCutCards, silverCutCards, remainingCards } =
+    groupTourStandings(tourCards);
 
   return (
     <div className="mx-auto px-1">
       <StandingsTableHeader variant="regular" />
 
       {/* Gold Playoff Qualifiers */}
-      {goldCutCards.map((tourCard: TourCard & { points?: number }) => (
+      {goldCutCards.map((tourCard) => (
         <StandingsListing
           key={tourCard.id}
           variant="regular"
           tourCard={tourCard}
           currentMember={currentMember}
-          isFriendChanging={friendChangingIds?.has(tourCard.memberId)}
+          isFriendChanging={friendState.friendChangingIds.has(
+            tourCard.memberId,
+          )}
           onAddFriend={onAddFriend}
           onRemoveFriend={onRemoveFriend}
         />
@@ -53,13 +51,15 @@ export function TourStandings({
       </div>
 
       {/* Silver Playoff Qualifiers */}
-      {silverCutCards.map((tourCard: TourCard & { points?: number }) => (
+      {silverCutCards.map((tourCard) => (
         <StandingsListing
           key={tourCard.id}
           variant="regular"
           tourCard={tourCard}
           currentMember={currentMember}
-          isFriendChanging={friendChangingIds?.has(tourCard.memberId)}
+          isFriendChanging={friendState.friendChangingIds.has(
+            tourCard.memberId,
+          )}
           onAddFriend={onAddFriend}
           onRemoveFriend={onRemoveFriend}
         />
@@ -70,13 +70,15 @@ export function TourStandings({
       </div>
 
       {/* Remaining Players */}
-      {remainingCards.map((tourCard: TourCard & { points?: number }) => (
+      {remainingCards.map((tourCard) => (
         <StandingsListing
           key={tourCard.id}
           variant="regular"
           tourCard={tourCard}
           currentMember={currentMember}
-          isFriendChanging={friendChangingIds?.has(tourCard.memberId)}
+          isFriendChanging={friendState.friendChangingIds.has(
+            tourCard.memberId,
+          )}
           onAddFriend={onAddFriend}
           onRemoveFriend={onRemoveFriend}
         />

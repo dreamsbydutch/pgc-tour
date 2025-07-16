@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import Image from "next/image";
 import {
@@ -7,15 +9,16 @@ import {
   Star,
 } from "lucide-react";
 import { cn, formatMoney } from "@pgc-utils";
-import type { TourCard, Tour, Member } from "@prisma/client";
+import type { Tour, Member } from "@prisma/client";
 import { LoadingSpinner } from "src/lib/components/functional/ui";
 import { StandingsTourCardInfo } from "./StandingsTourCardInfo";
 import { LittleFucker } from "../../functional/LittleFucker";
 import { useChampionsByMemberId } from "src/lib/hooks/hooks";
+import type { ExtendedTourCard } from "../types";
 
 // --- Standings Listing ---
 interface RegularStandingsListingProps {
-  tourCard: TourCard;
+  tourCard: ExtendedTourCard;
   className?: string;
   currentMember?: Member | null;
   isFriendChanging?: boolean;
@@ -51,7 +54,7 @@ function RegularStandingsListing({
       >
         <div className="flex place-self-center font-varela text-sm sm:text-base">
           {tourCard.position}
-          <PositionChange posChange={tourCard.posChange} />
+          <PositionChange posChange={tourCard.posChange ?? 0} />
         </div>
         <div className="col-span-5 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
           {tourCard.displayName}
@@ -94,20 +97,16 @@ function RegularStandingsListing({
 }
 
 interface BumpedListingProps {
-  tourCard: TourCard;
+  tourCard: ExtendedTourCard;
   className?: string;
   currentMember?: Member | null;
   tour?: Tour;
-  onAddFriend?: (memberId: string) => void;
-  onRemoveFriend?: (memberId: string) => void;
 }
 function BumpedStandingsListing({
   tourCard,
   className,
   currentMember,
   tour,
-  onAddFriend,
-  onRemoveFriend,
 }: BumpedListingProps) {
   const [isOpen, setIsOpen] = useState(false);
   const isCurrent = currentMember?.id === tourCard.memberId;
@@ -129,7 +128,7 @@ function BumpedStandingsListing({
       >
         <div className="flex place-self-center font-varela text-sm sm:text-base">
           {tourCard.position}
-          <PositionChange posChange={tourCard.posChange} />
+          <PositionChange posChange={tourCard.posChange ?? 0} />
         </div>
         <div className="col-span-5 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
           {tourCard.displayName}
@@ -190,8 +189,8 @@ export const PositionChange: React.FC<{ posChange: number }> = ({
 
 // --- Playoff Standings Listing ---
 interface PlayoffStandingsListingProps {
-  tourCard: TourCard;
-  teams: TourCard[];
+  tourCard: ExtendedTourCard;
+  teams: ExtendedTourCard[];
   strokes: number[];
   className?: string;
   tour?: Tour;
@@ -243,7 +242,7 @@ function PlayoffStandingsListing({
       >
         <div className="flex place-self-center font-varela text-sm sm:text-base">
           {position}
-          <PositionChange posChange={tourCard.posChangePO} />
+          <PositionChange posChange={tourCard.posChangePO ?? 0} />
         </div>
         <div className="col-span-5 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
           {tourCard.displayName}{" "}
@@ -280,8 +279,8 @@ export type StandingsListingVariant = "regular" | "playoff" | "bumped";
 
 export interface StandingsListingProps {
   variant: StandingsListingVariant;
-  tourCard: TourCard;
-  teams?: TourCard[];
+  tourCard: ExtendedTourCard;
+  teams?: ExtendedTourCard[];
   strokes?: number[];
   className?: string;
   tour?: Tour;
@@ -302,11 +301,7 @@ export function StandingsListing(props: StandingsListingProps) {
     );
   }
   if (props.variant === "bumped") {
-    return (
-      <BumpedStandingsListing
-        {...props}
-      />
-    );
+    return <BumpedStandingsListing {...props} />;
   }
   // default to regular
   return <RegularStandingsListing {...props} />;

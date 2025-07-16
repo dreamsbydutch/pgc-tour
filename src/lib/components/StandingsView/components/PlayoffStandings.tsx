@@ -1,48 +1,37 @@
-import type { TourCard, Tour, Tier, Member } from "@prisma/client";
-import { parsePosition } from "../utils/standingsHelpers";
+import { groupPlayoffStandings } from "../utils/standingsHelpers";
 import { StandingsTableHeader } from "./StandingsTableHeader";
 import { StandingsListing } from "./StandingsListing";
+import type { PlayoffStandingsProps } from "../types";
 
-export interface PlayoffStandingsProps {
-  tours: Tour[];
-  tourCards?: TourCard[] | null;
-  tiers: Tier[] | null;
-  currentMember?: Member | null;
-  friendChangingIds?: Set<string>;
-  onAddFriend?: (memberId: string) => Promise<void>;
-  onRemoveFriend?: (memberId: string) => Promise<void>;
-}
-
+/**
+ * PlayoffStandings Component
+ *
+ * Displays playoff standings with gold, silver, and bumped sections
+ */
 export function PlayoffStandings({
   tours,
   tourCards,
   tiers,
   currentMember,
-  friendChangingIds,
+  friendState,
   onAddFriend,
   onRemoveFriend,
 }: PlayoffStandingsProps) {
-  const goldTeams = tourCards
-    ? tourCards.filter((card) => parsePosition(card.position) <= 15)
-    : [];
-  const silverTeams = tourCards
-    ? tourCards.filter(
-        (card) =>
-          parsePosition(card.position) <= 35 &&
-          parsePosition(card.position) > 15,
-      )
-    : [];
-  const bumpedTeams = tourCards
-    ? tourCards.filter(
-        (card) =>
-          parsePosition(card.position) > 35 &&
-          parsePosition(card.position) + card.posChange <= 35,
-      )
-    : [];
-  const playoffTier = tiers?.find((t) => t.name === "Playoff");
+  if (!tourCards?.length) {
+    return (
+      <div className="py-8 text-center text-gray-500">
+        No playoff standings data available
+      </div>
+    );
+  }
+
+  const { goldTeams, silverTeams, bumpedTeams } =
+    groupPlayoffStandings(tourCards);
+  const playoffTier = tiers.find((t) => t.name === "Playoff");
 
   return (
     <div className="mx-auto px-1">
+      {/* Gold Playoff Section */}
       <StandingsTableHeader
         variant="gold"
         tier={{
@@ -65,12 +54,15 @@ export function PlayoffStandings({
           strokes={playoffTier?.points.slice(0, 30) ?? []}
           tour={tours.find((t) => t.id === tourCard.tourId)}
           currentMember={currentMember}
-          isFriendChanging={friendChangingIds?.has(tourCard.memberId)}
+          isFriendChanging={friendState.friendChangingIds.has(
+            tourCard.memberId,
+          )}
           onAddFriend={onAddFriend}
           onRemoveFriend={onRemoveFriend}
         />
       ))}
 
+      {/* Silver Playoff Section */}
       <StandingsTableHeader
         variant="silver"
         tier={{
@@ -93,11 +85,15 @@ export function PlayoffStandings({
           strokes={playoffTier?.points.slice(0, 40) ?? []}
           tour={tours.find((t) => t.id === tourCard.tourId)}
           currentMember={currentMember}
-          isFriendChanging={friendChangingIds?.has(tourCard.memberId)}
+          isFriendChanging={friendState.friendChangingIds.has(
+            tourCard.memberId,
+          )}
           onAddFriend={onAddFriend}
           onRemoveFriend={onRemoveFriend}
         />
       ))}
+
+      {/* Bumped Section */}
       <StandingsTableHeader variant="bumped" />
 
       {bumpedTeams.map((tourCard) => (
@@ -109,7 +105,9 @@ export function PlayoffStandings({
           strokes={[]}
           tour={tours.find((t) => t.id === tourCard.tourId)}
           currentMember={currentMember}
-          isFriendChanging={friendChangingIds?.has(tourCard.memberId)}
+          isFriendChanging={friendState.friendChangingIds.has(
+            tourCard.memberId,
+          )}
           onAddFriend={onAddFriend}
           onRemoveFriend={onRemoveFriend}
         />
