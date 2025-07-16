@@ -65,11 +65,12 @@ export default async function TournamentPage({
         inputTournaments={allTournaments}
       />
       {isPreTournament && <PreTournamentPage tournament={focusTourney} />}
-      {!isPreTournament && (
+      {isPreTournament && (
         <LeaderboardView
           tournamentId={leaderboardData.tournament.id}
           userId={user?.id}
           variant="regular"
+          isPreTournament={isPreTournament}
         />
       )}
       {leaderboardData.teams.length === 0 &&

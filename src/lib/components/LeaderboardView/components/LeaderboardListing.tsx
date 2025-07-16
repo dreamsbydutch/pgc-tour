@@ -27,17 +27,19 @@ type LeaderboardListingProps =
       type: "PGC";
       tournament: LeaderboardTournament;
       tournamentGolfers: LeaderboardGolfer[];
-      userTourCard: { id: string };
+      userTourCard?: { id: string } | null;
       team: LeaderboardTeam;
       tourCard: LeaderboardTourCard;
-      member: LeaderboardMember;
+      member?: LeaderboardMember | null;
+      isPreTournament?: boolean;
     }
   | {
       type: "PGA";
       tournament: LeaderboardTournament;
       tournamentGolfers: LeaderboardGolfer[];
-      userTourCard: { id: string };
+      userTourCard?: { id: string } | null;
       golfer: LeaderboardGolfer;
+      isPreTournament?: boolean;
     };
 
 export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
@@ -84,17 +86,15 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
           {type === "PGA" ? golfer?.position : team?.position}
           {shouldShowPositionChange && <PositionChange posChange={posChange} />}
         </div>
-
         <div className="col-span-4 place-self-center font-varela text-lg sm:col-span-10">
           {type === "PGA" ? golfer?.playerName : tourCard?.displayName}
         </div>
-
         <div className="col-span-2 place-self-center font-varela text-base sm:col-span-5">
           {type !== "PGA" && team?.position === "CUT"
             ? "-"
             : formatScore((type === "PGA" ? golfer?.score : team?.score) ?? 0)}
         </div>
-
+        
         {type === "PGA" ? (
           <ScoreDisplay
             type="PGA"
@@ -108,9 +108,10 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
             tournamentComplete={(tournament.currentRound ?? 0) > 4}
           />
         )}
+        
       </div>
 
-      {isOpen && (
+      {isOpen && !props.isPreTournament && (
         <div className="col-span-10 mx-auto mb-2 w-full max-w-4xl rounded-md border border-gray-300 bg-white shadow-md">
           {type === "PGA" ? (
             <PGADropdown golfer={golfer!} userTeam={team} />

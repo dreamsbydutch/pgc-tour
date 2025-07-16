@@ -32,6 +32,13 @@ export function PlayoffStandings({
           parsePosition(card.position) > 15,
       )
     : [];
+  const bumpedTeams = tourCards
+    ? tourCards.filter(
+        (card) =>
+          parsePosition(card.position) > 35 &&
+          parsePosition(card.position) + card.posChange <= 35,
+      )
+    : [];
   const playoffTier = tiers?.find((t) => t.name === "Playoff");
 
   return (
@@ -84,6 +91,22 @@ export function PlayoffStandings({
           tourCard={tourCard}
           teams={silverTeams}
           strokes={playoffTier?.points.slice(0, 40) ?? []}
+          tour={tours.find((t) => t.id === tourCard.tourId)}
+          currentMember={currentMember}
+          isFriendChanging={friendChangingIds?.has(tourCard.memberId)}
+          onAddFriend={onAddFriend}
+          onRemoveFriend={onRemoveFriend}
+        />
+      ))}
+      <StandingsTableHeader variant="bumped" />
+
+      {bumpedTeams.map((tourCard) => (
+        <StandingsListing
+          variant="bumped"
+          key={tourCard.id}
+          tourCard={tourCard}
+          teams={bumpedTeams}
+          strokes={[]}
           tour={tours.find((t) => t.id === tourCard.tourId)}
           currentMember={currentMember}
           isFriendChanging={friendChangingIds?.has(tourCard.memberId)}

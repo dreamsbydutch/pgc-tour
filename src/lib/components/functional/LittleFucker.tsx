@@ -42,6 +42,8 @@ export function LittleFucker({
             "U.S. Open",
             "The Open Championship",
             "PGA Championship",
+            "Canadian Open",
+            "RBC Canadian Open",
           ].includes(c.tournament.name),
         )
         .map((team) => (

@@ -21,6 +21,7 @@ interface PGCLeaderboardProps {
   member?: LeaderboardMember | null;
   activeTour: string;
   variant: "regular" | "playoff";
+  isPreTournament?: boolean;
 }
 
 export const PGCLeaderboard: React.FC<PGCLeaderboardProps> = ({
@@ -31,6 +32,7 @@ export const PGCLeaderboard: React.FC<PGCLeaderboardProps> = ({
   member,
   activeTour,
   variant,
+  isPreTournament = false,
 }) => {
   const getFilteredTeams = () => {
     const sortedTeams = sortTeams(teams ?? []) as TeamWithTourCard[];
@@ -51,7 +53,7 @@ export const PGCLeaderboard: React.FC<PGCLeaderboardProps> = ({
   return (
     <>
       {filteredTeams.map((team) => {
-        if (!team.tourCard || !tourCard || !member) return null;
+        if (!team.tourCard) return null;
 
         return (
           <LeaderboardListing
@@ -63,6 +65,7 @@ export const PGCLeaderboard: React.FC<PGCLeaderboardProps> = ({
             userTourCard={tourCard}
             team={team}
             member={member}
+            isPreTournament={isPreTournament}
           />
         );
       })}

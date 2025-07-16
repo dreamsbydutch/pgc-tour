@@ -65,13 +65,37 @@ export const sortTeams = (
     );
 
 export const sortGolfers = (
-  golfers: { id?: number; position: string; score: number }[],
-) =>
-  golfers.sort(
+  golfers: {
+    id?: number;
+    position: string;
+    score: number;
+    group: number | null;
+  }[],
+) => {
+  // Separate cut and non-cut golfers
+  const nonCutGolfers = golfers.filter((g) => !isPlayerCut(g.position));
+  const cutGolfers = golfers.filter((g) => isPlayerCut(g.position));
+
+  // Sort non-cut golfers by score
+  nonCutGolfers.sort(
     (a, b) =>
       calculateScoreForSorting(a.position, a.score) -
       calculateScoreForSorting(b.position, b.score),
   );
+
+  // Sort cut golfers by group
+  cutGolfers
+    .sort(
+      (a, b) =>
+        calculateScoreForSorting(a.position, a.score) -
+        calculateScoreForSorting(b.position, b.score),
+    )
+    .sort((a, b) => (a.group ?? 999) - (b.group ?? 999))
+    .sort((a, b) => a.position.localeCompare(b.position));
+
+  // Concatenate non-cut golfers first, then cut golfers
+  return [...nonCutGolfers, ...cutGolfers];
+};
 
 export const getSortedTeamGolfers = (
   team: { golferIds: number[] },

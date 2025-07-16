@@ -126,7 +126,7 @@ export const LeaderboardHeaderRow: React.FC<{
       {tournamentOver ? (activeTour === "PGA" ? "Group" : "Points") : "Today"}
     </div>
     <div className="col-span-1 place-self-center font-varela text-2xs sm:col-span-2">
-      {tournamentOver ? (activeTour === "PGA" ? "Rating" : "Earnings") : "Thru"}
+      {tournamentOver ? (activeTour === "PGA" ? "Rating" : "$$") : "Thru"}
     </div>
     <div className="col-span-1 hidden sm:flex"></div>
     <div className="col-span-1 hidden place-self-center font-varela text-2xs sm:col-span-2 sm:flex">

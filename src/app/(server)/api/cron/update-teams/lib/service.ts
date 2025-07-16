@@ -158,10 +158,17 @@ function calculateTeamScore(
     } else {
       // Live round 1
       result.today =
-        teamGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 10;
-      result.thru = teamGolfers.reduce((sum, g) => sum + (g.thru ?? 0), 0) / 10;
+        Math.round(
+          (teamGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 10) * 10,
+        ) / 10;
+      result.thru =
+        Math.round(
+          (teamGolfers.reduce((sum, g) => sum + (g.thru ?? 0), 0) / 10) * 10,
+        ) / 10;
       result.score =
-        teamGolfers.reduce((sum, g) => sum + (g.score ?? 0), 0) / 10;
+        Math.round(
+          (teamGolfers.reduce((sum, g) => sum + (g.score ?? 0), 0) / 10) * 10,
+        ) / 10;
       result.roundOne = null;
       result.roundTwo = null;
       result.roundThree = null;
@@ -172,20 +179,30 @@ function calculateTeamScore(
   else if (tournament.currentRound === 2) {
     result.round = 2;
     result.roundOne =
-      teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10;
+      Math.round(
+        (teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10) * 10,
+      ) / 10;
 
     if (!tournament.livePlay) {
       // Post round 1
       result.today =
-        teamGolfers.reduce(
-          (sum, g) => sum + ((g.roundOne ?? 0) - tournament.course.par),
-          0,
+        Math.round(
+          (teamGolfers.reduce(
+            (sum, g) => sum + ((g.roundOne ?? 0) - tournament.course.par),
+            0,
+          ) /
+            10) *
+            10,
         ) / 10;
       result.thru = 18;
       result.score =
-        teamGolfers.reduce(
-          (sum, g) => sum + ((g.roundOne ?? 0) - tournament.course.par),
-          0,
+        Math.round(
+          (teamGolfers.reduce(
+            (sum, g) => sum + ((g.roundOne ?? 0) - tournament.course.par),
+            0,
+          ) /
+            10) *
+            10,
         ) / 10;
       result.roundTwoTeeTime = getEarliestTeeTime(
         teamGolfers,
@@ -197,15 +214,23 @@ function calculateTeamScore(
     } else {
       // Live round 2
       result.today =
-        teamGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 10;
-      result.thru = teamGolfers.reduce((sum, g) => sum + (g.thru ?? 0), 0) / 10;
+        Math.round(
+          (teamGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 10) * 10,
+        ) / 10;
+      result.thru =
+        Math.round(
+          (teamGolfers.reduce((sum, g) => sum + (g.thru ?? 0), 0) / 10) * 10,
+        ) / 10;
       result.score =
-        teamGolfers.reduce(
-          (sum, g) => sum + ((g.roundOne ?? 0) - tournament.course.par),
-          0,
-        ) /
-          10 +
-        teamGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 10;
+        Math.round(
+          (teamGolfers.reduce(
+            (sum, g) => sum + ((g.roundOne ?? 0) - tournament.course.par),
+            0,
+          ) /
+            10 +
+            teamGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 10) *
+            10,
+        ) / 10;
       result.roundTwo = null;
       result.roundThree = null;
       result.roundFour = null;
@@ -215,9 +240,13 @@ function calculateTeamScore(
   else if (tournament.currentRound === 3) {
     result.round = 3;
     result.roundOne =
-      teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10;
+      Math.round(
+        (teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10) * 10,
+      ) / 10;
     result.roundTwo =
-      teamGolfers.reduce((sum, g) => sum + (g.roundTwo ?? 0), 0) / 10;
+      Math.round(
+        (teamGolfers.reduce((sum, g) => sum + (g.roundTwo ?? 0), 0) / 10) * 10,
+      ) / 10;
 
     // Check if team has at least 5 active golfers after round 2
     const activeGolfers = teamGolfers.filter(
@@ -241,22 +270,29 @@ function calculateTeamScore(
     if (!tournament.livePlay) {
       // Post round 2
       result.today =
-        teamGolfers.reduce(
-          (sum, g) => sum + ((g.roundTwo ?? 0) - tournament.course.par),
-          0,
+        Math.round(
+          (teamGolfers.reduce(
+            (sum, g) => sum + ((g.roundTwo ?? 0) - tournament.course.par),
+            0,
+          ) /
+            10) *
+            10,
         ) / 10;
       result.thru = 18;
       result.score =
-        teamGolfers.reduce(
-          (sum, g) => sum + ((g.roundTwo ?? 0) - tournament.course.par),
-          0,
-        ) /
-          10 +
-        teamGolfers.reduce(
-          (sum, g) => sum + ((g.roundOne ?? 0) - tournament.course.par),
-          0,
-        ) /
-          10;
+        Math.round(
+          (teamGolfers.reduce(
+            (sum, g) => sum + ((g.roundTwo ?? 0) - tournament.course.par),
+            0,
+          ) /
+            10 +
+            teamGolfers.reduce(
+              (sum, g) => sum + ((g.roundOne ?? 0) - tournament.course.par),
+              0,
+            ) /
+              10) *
+            10,
+        ) / 10;
       result.roundThree = null;
       result.roundFour = null;
     } else {
@@ -266,21 +302,30 @@ function calculateTeamScore(
         .slice(0, 5);
 
       result.today =
-        topActiveGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 5;
+        Math.round(
+          (topActiveGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 5) *
+            10,
+        ) / 10;
       result.thru =
-        topActiveGolfers.reduce((sum, g) => sum + (g.thru ?? 0), 0) / 5;
+        Math.round(
+          (topActiveGolfers.reduce((sum, g) => sum + (g.thru ?? 0), 0) / 5) *
+            10,
+        ) / 10;
       result.score =
-        teamGolfers.reduce(
-          (sum, g) => sum + ((g.roundOne ?? 0) - tournament.course.par),
-          0,
-        ) /
-          10 +
-        teamGolfers.reduce(
-          (sum, g) => sum + ((g.roundTwo ?? 0) - tournament.course.par),
-          0,
-        ) /
-          10 +
-        topActiveGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 5;
+        Math.round(
+          (teamGolfers.reduce(
+            (sum, g) => sum + ((g.roundOne ?? 0) - tournament.course.par),
+            0,
+          ) /
+            10 +
+            teamGolfers.reduce(
+              (sum, g) => sum + ((g.roundTwo ?? 0) - tournament.course.par),
+              0,
+            ) /
+              10 +
+            topActiveGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 5) *
+            10,
+        ) / 10;
       result.roundThree = null;
       result.roundFour = null;
     }
@@ -289,9 +334,13 @@ function calculateTeamScore(
   else if (tournament.currentRound === 4) {
     result.round = 4;
     result.roundOne =
-      teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10;
+      Math.round(
+        (teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10) * 10,
+      ) / 10;
     result.roundTwo =
-      teamGolfers.reduce((sum, g) => sum + (g.roundTwo ?? 0), 0) / 10;
+      Math.round(
+        (teamGolfers.reduce((sum, g) => sum + (g.roundTwo ?? 0), 0) / 10) * 10,
+      ) / 10;
 
     const activeGolfers = teamGolfers.filter(
       (g) => !["CUT", "WD", "DQ"].includes(g.position ?? ""),
@@ -316,21 +365,33 @@ function calculateTeamScore(
       .slice(0, 5);
 
     result.roundThree =
-      topActiveGolfers.reduce((sum, g) => sum + (g.roundThree ?? 0), 0) / 5;
+      Math.round(
+        (topActiveGolfers.reduce((sum, g) => sum + (g.roundThree ?? 0), 0) /
+          5) *
+          10,
+      ) / 10;
 
     if (!tournament.livePlay) {
       // Post round 3
       result.today =
-        topActiveGolfers.reduce(
-          (sum, g) => sum + ((g.roundThree ?? 0) - tournament.course.par),
-          0,
-        ) / 5;
+        Math.round(
+          (topActiveGolfers.reduce(
+            (sum, g) => sum + ((g.roundThree ?? 0) - tournament.course.par),
+            0,
+          ) /
+            5) *
+            10,
+        ) / 10;
       result.thru = 18;
       result.score =
-        teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10 +
-        teamGolfers.reduce((sum, g) => sum + (g.roundTwo ?? 0), 0) / 10 +
-        topActiveGolfers.reduce((sum, g) => sum + (g.roundThree ?? 0), 0) / 5 -
-        tournament.course.par * 3;
+        Math.round(
+          (teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10 +
+            teamGolfers.reduce((sum, g) => sum + (g.roundTwo ?? 0), 0) / 10 +
+            topActiveGolfers.reduce((sum, g) => sum + (g.roundThree ?? 0), 0) /
+              5 -
+            tournament.course.par * 3) *
+            10,
+        ) / 10;
       result.roundFour = null;
     } else {
       // Live round 4
@@ -339,15 +400,25 @@ function calculateTeamScore(
         .slice(0, 5);
 
       result.today =
-        liveActiveGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 5;
+        Math.round(
+          (liveActiveGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 5) *
+            10,
+        ) / 10;
       result.thru =
-        liveActiveGolfers.reduce((sum, g) => sum + (g.thru ?? 0), 0) / 5;
+        Math.round(
+          (liveActiveGolfers.reduce((sum, g) => sum + (g.thru ?? 0), 0) / 5) *
+            10,
+        ) / 10;
       result.score =
-        teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10 +
-        teamGolfers.reduce((sum, g) => sum + (g.roundTwo ?? 0), 0) / 10 +
-        topActiveGolfers.reduce((sum, g) => sum + (g.roundThree ?? 0), 0) / 5 +
-        liveActiveGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 5 -
-        tournament.course.par * 3;
+        Math.round(
+          (teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10 +
+            teamGolfers.reduce((sum, g) => sum + (g.roundTwo ?? 0), 0) / 10 +
+            topActiveGolfers.reduce((sum, g) => sum + (g.roundThree ?? 0), 0) /
+              5 +
+            liveActiveGolfers.reduce((sum, g) => sum + (g.today ?? 0), 0) / 5 -
+            tournament.course.par * 3) *
+            10,
+        ) / 10;
       result.roundFour = null;
     }
   }
@@ -355,9 +426,13 @@ function calculateTeamScore(
   else if (tournament.currentRound === 5) {
     result.round = 5;
     result.roundOne =
-      teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10;
+      Math.round(
+        (teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10) * 10,
+      ) / 10;
     result.roundTwo =
-      teamGolfers.reduce((sum, g) => sum + (g.roundTwo ?? 0), 0) / 10;
+      Math.round(
+        (teamGolfers.reduce((sum, g) => sum + (g.roundTwo ?? 0), 0) / 10) * 10,
+      ) / 10;
 
     const activeGolfers = teamGolfers.filter(
       (g) => !["CUT", "WD", "DQ"].includes(g.position ?? ""),
@@ -386,21 +461,38 @@ function calculateTeamScore(
       .slice(0, 5);
 
     result.roundThree =
-      round3ActiveGolfers.reduce((sum, g) => sum + (g.roundThree ?? 0), 0) / 5;
+      Math.round(
+        (round3ActiveGolfers.reduce((sum, g) => sum + (g.roundThree ?? 0), 0) /
+          5) *
+          10,
+      ) / 10;
     result.roundFour =
-      round4ActiveGolfers.reduce((sum, g) => sum + (g.roundFour ?? 0), 0) / 5;
+      Math.round(
+        (round4ActiveGolfers.reduce((sum, g) => sum + (g.roundFour ?? 0), 0) /
+          5) *
+          10,
+      ) / 10;
     result.today =
-      round4ActiveGolfers.reduce(
-        (sum, g) => sum + ((g.roundFour ?? 0) - tournament.course.par),
-        0,
-      ) / 5;
+      Math.round(
+        (round4ActiveGolfers.reduce(
+          (sum, g) => sum + ((g.roundFour ?? 0) - tournament.course.par),
+          0,
+        ) /
+          5) *
+          10,
+      ) / 10;
     result.thru = 18;
     result.score =
-      teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10 +
-      teamGolfers.reduce((sum, g) => sum + (g.roundTwo ?? 0), 0) / 10 +
-      round3ActiveGolfers.reduce((sum, g) => sum + (g.roundThree ?? 0), 0) / 5 +
-      round4ActiveGolfers.reduce((sum, g) => sum + (g.roundFour ?? 0), 0) / 5 -
-      tournament.course.par * 4;
+      Math.round(
+        (teamGolfers.reduce((sum, g) => sum + (g.roundOne ?? 0), 0) / 10 +
+          teamGolfers.reduce((sum, g) => sum + (g.roundTwo ?? 0), 0) / 10 +
+          round3ActiveGolfers.reduce((sum, g) => sum + (g.roundThree ?? 0), 0) /
+            5 +
+          round4ActiveGolfers.reduce((sum, g) => sum + (g.roundFour ?? 0), 0) /
+            5 -
+          tournament.course.par * 4) *
+          10,
+      ) / 10;
   }
 
   return result;
@@ -503,15 +595,17 @@ function calculateTeamPositionData(
   const tierPayouts = tournament.tier.payouts;
   const tierPoints = tournament.tier.points;
 
-  const points =
+  const points = Math.round(
     tierPoints
       .slice(betterTeams, betterTeams + tiedTeams)
-      .reduce((sum, point) => sum + point, 0) / tiedTeams;
+      .reduce((sum, point) => sum + point, 0) / tiedTeams,
+  );
 
-  const earnings =
+  const earnings = Math.round(
     tierPayouts
       .slice(betterTeams, betterTeams + tiedTeams)
-      .reduce((sum, payout) => sum + payout, 0) / tiedTeams;
+      .reduce((sum, payout) => sum + payout, 0) / tiedTeams,
+  );
 
   return {
     position,
@@ -538,7 +632,7 @@ function calculatePastScore(
     (team.round === 2 && tournament.livePlay) ||
     (team.round === 3 && !tournament.livePlay)
   ) {
-    return team.roundOne ?? 0;
+    return Math.round((team.roundOne ?? 0) * 10) / 10;
   }
 
   // Round 3 live or Round 4 not live: past score is after round 2
@@ -546,16 +640,21 @@ function calculatePastScore(
     (team.round === 3 && tournament.livePlay) ||
     (team.round === 4 && !tournament.livePlay)
   ) {
-    return (team.roundOne ?? 0) + (team.roundTwo ?? 0);
+    return Math.round(((team.roundOne ?? 0) + (team.roundTwo ?? 0)) * 10) / 10;
   }
 
   // Round 4 live or Round 5+: past score is after round 3
   if ((team.round === 4 && tournament.livePlay) || team.round > 4) {
-    return (team.roundOne ?? 0) + (team.roundTwo ?? 0) + (team.roundThree ?? 0);
+    return (
+      Math.round(
+        ((team.roundOne ?? 0) + (team.roundTwo ?? 0) + (team.roundThree ?? 0)) *
+          10,
+      ) / 10
+    );
   }
 
   // Default to current score
-  return team.score;
+  return Math.round((team.score ?? 0) * 10) / 10;
 }
 
 /**

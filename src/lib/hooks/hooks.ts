@@ -14,10 +14,7 @@
  */
 
 import { api } from "@pgc-trpcClient";
-import {useSeasonalStore,
-  useTournaments,
-  useAllTourCards,
-} from "@pgc-store";
+import { useSeasonalStore, useTournaments, useAllTourCards } from "@pgc-store";
 import { useMemo } from "react";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { fetchDataGolf } from "@pgc-utils";
@@ -87,6 +84,11 @@ export function useRecentChampions() {
     isLoading,
     error,
   };
+}
+
+export function useChampionsByMemberId(memberId: string | undefined) {
+  if (!memberId) throw new Error("memberId is required");
+  return api.team.getChampionsByUser.useQuery({ memberId }).data;
 }
 
 /**
@@ -335,7 +337,6 @@ export function useCurrentSchedule() {
     error,
   };
 }
-
 
 export function useAuthData() {
   const { user, member, isLoading: isAuthLoading } = useHeaderUser();

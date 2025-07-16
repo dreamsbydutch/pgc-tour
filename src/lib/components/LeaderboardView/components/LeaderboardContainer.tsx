@@ -18,6 +18,7 @@ interface LeaderboardContainerProps {
   variant?: "regular" | "playoff" | "historical";
   inputTour?: string;
   userId?: string;
+  isPreTournament?: boolean;
   onRefetch?: () => void;
 }
 
@@ -26,6 +27,7 @@ export const LeaderboardContainer: React.FC<LeaderboardContainerProps> = ({
   variant = "regular",
   inputTour,
   userId,
+  isPreTournament = false,
   onRefetch,
 }) => {
   const searchParams = useSearchParams();
@@ -128,6 +130,7 @@ export const LeaderboardContainer: React.FC<LeaderboardContainerProps> = ({
           golfers={props.golfers}
           tournament={props.tournament}
           tourCard={props.tourCard}
+          isPreTournament={isPreTournament}
         />
       ) : (
         <PGCLeaderboard
@@ -138,6 +141,7 @@ export const LeaderboardContainer: React.FC<LeaderboardContainerProps> = ({
           member={props.member}
           activeTour={activeTour}
           variant={variant === "historical" ? "regular" : variant}
+          isPreTournament={isPreTournament}
         />
       )}
     </div>

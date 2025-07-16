@@ -41,7 +41,31 @@ function RegularStandingsHeader() {
     </div>
   );
 }
-
+function BumpedHeader() {
+  return (
+    <div className="mt-12 grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-red-200 text-center text-red-900">
+      <div
+        className={cn("col-span-17 my-2 font-varela text-2xl font-extrabold")}
+      >
+        KNOCKED OUT
+      </div>
+      <div className="col-span-16 grid grid-flow-row grid-cols-10 text-center">
+        <TableHeaderCell className="text-xs font-bold sm:text-sm">
+          Rank
+        </TableHeaderCell>
+        <TableHeaderCell className="col-span-5 text-base font-bold sm:text-lg">
+          Name
+        </TableHeaderCell>
+        <TableHeaderCell className="col-span-2 text-xs font-bold xs:text-sm sm:text-base">
+          Cup Points
+        </TableHeaderCell>
+        <TableHeaderCell className="col-span-2 text-2xs xs:text-xs sm:text-sm">
+          Earnings
+        </TableHeaderCell>
+      </div>
+    </div>
+  );
+}
 const PlayoffHeader = ({
   title,
   tier,
@@ -105,7 +129,11 @@ const SilverPlayoffHeader = ({ tier }: { tier: Tier }) => (
 );
 
 // --- Unified Header Component ---
-export type StandingsTableHeaderVariant = "regular" | "gold" | "silver";
+export type StandingsTableHeaderVariant =
+  | "regular"
+  | "gold"
+  | "silver"
+  | "bumped";
 
 export interface StandingsTableHeaderProps {
   variant: StandingsTableHeaderVariant;
@@ -121,6 +149,9 @@ export function StandingsTableHeader({
   }
   if (variant === "silver" && tier) {
     return <SilverPlayoffHeader tier={tier} />;
+  }
+  if (variant === "bumped") {
+    return <BumpedHeader />;
   }
   // default to regular
   return <RegularStandingsHeader />;

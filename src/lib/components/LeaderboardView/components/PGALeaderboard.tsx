@@ -15,18 +15,20 @@ interface PGALeaderboardProps {
   golfers: LeaderboardGolfer[];
   tournament: LeaderboardTournament;
   tourCard?: LeaderboardTourCard | null;
+  isPreTournament?: boolean;
 }
 
 export const PGALeaderboard: React.FC<PGALeaderboardProps> = ({
   golfers,
   tournament,
-  tourCard,
+  tourCard,isPreTournament = false,
 }) => {
   // Create simplified golfers for sorting, keeping the id
   const golfersForSorting = golfers.map((golfer) => ({
     id: golfer.id,
     position: golfer.position ?? "CUT",
     score: golfer.score ?? 999,
+    group: golfer.group ?? null,
   }));
 
   const sortedGolfers = sortGolfers(golfersForSorting);
@@ -34,7 +36,6 @@ export const PGALeaderboard: React.FC<PGALeaderboardProps> = ({
   return (
     <>
       {sortedGolfers.map((sortedGolfer) => {
-        if (!tourCard) return null;
 
         // Find the original golfer to get the full data
         const originalGolfer = golfers.find((g) => g.id === sortedGolfer.id);
@@ -46,8 +47,9 @@ export const PGALeaderboard: React.FC<PGALeaderboardProps> = ({
             type="PGA"
             tournament={tournament}
             tournamentGolfers={golfers}
-            userTourCard={{ id: tourCard.id }}
+            userTourCard={tourCard && { id: tourCard?.id }}
             golfer={originalGolfer}
+          isPreTournament={isPreTournament}
           />
         );
       })}

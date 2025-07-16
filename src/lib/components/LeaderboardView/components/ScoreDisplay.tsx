@@ -34,8 +34,16 @@ export const ScoreDisplay: React.FC<
   if (isPlayerCutOrWithdrawn) {
     return (
       <>
-        <ScoreCell value="-" />
-        <ScoreCell value="-" />
+        <ScoreCell
+          value={
+            type === "PGA"
+              ? props.golfer.group === 0
+                ? "-"
+                : props.golfer.group
+              : "-"
+          }
+        />
+        <ScoreCell value={type === "PGA" ? props.golfer.rating : "-"} />
         <div className="col-span-1 hidden sm:flex"></div>
         <ScoreCell value={listItem.roundOne} hidden />
         <ScoreCell value={listItem.roundTwo} hidden />
@@ -86,7 +94,7 @@ const renderPGAScores = (golfer: LeaderboardGolfer) => {
   if (!golfer.thru || golfer.thru === 0) {
     return (
       <>
-        <div className="col-span-2 place-self-center font-varela text-xs">
+        <div className="col-span-4 place-self-center font-varela text-xs">
           {getGolferTeeTime(golfer)}
           {golfer.endHole === 9 ? "*" : ""}
         </div>
@@ -120,7 +128,7 @@ const renderPGCScores = (team: LeaderboardTeam) => {
   if (!team.thru || team.thru === 0) {
     return (
       <>
-        <div className="col-span-2 place-self-center font-varela text-xs">
+        <div className="col-span-4 place-self-center font-varela text-xs">
           {getGolferTeeTime(team)}
         </div>
 
