@@ -26,10 +26,8 @@ export const HomePageListingsContainer: React.FC<
     isLoading: standingsLoading,
     error: standingsError,
   } = useStandingsData();
-  const {
-    data: leaderboardData,
-    error: leaderboardError,
-  } = useLeaderboardData();
+  const { data: leaderboardData, error: leaderboardError } =
+    useLeaderboardData();
 
   // Show loading state if data is still loading
   if (standingsLoading && activeView === "standings") {
