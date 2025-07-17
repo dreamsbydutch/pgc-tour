@@ -25,8 +25,8 @@ export async function handleTeamUpdateCron(
     // Get current tournament with all relations
     const tournament = await db.tournament.findFirst({
       where: {
-        startDate: { lte: new Date("2025-07-12") },
-        endDate: { gte: new Date("2025-07-12") },
+        startDate: { lte: new Date() },
+        endDate: { gte: new Date() },
       },
       include: {
         course: true,

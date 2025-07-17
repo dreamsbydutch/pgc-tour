@@ -43,7 +43,9 @@ export const metadata: Metadata = {
     "apple-mobile-web-app-status-bar-style": "default",
     "mobile-web-app-title": "PGC Clubhouse",
     "apple-mobile-web-app-title": "PGC Clubhouse",
-    "theme-color": "#059669",
+    "theme-color": "#059669", // Fully Functional - Green
+    // "theme-color": "#FF8C00", // Partially Functional - Orange
+    // "theme-color": "#DC143C", // Non-Functional - Red
     "google-site-verification": "k_L19BEXJjcWOM7cHFMPMpK9MBdcv2uQ6qFt3HGPEbc",
   },
 };

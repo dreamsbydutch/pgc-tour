@@ -65,8 +65,8 @@ const renderTournamentResult = (
   tournament: Tournament,
   isWinner: boolean,
 ): JSX.Element | string => {
+  if (new Date(tournament.endDate) > new Date()) return "-";
   if (!team) {
-    if (new Date(tournament.endDate) > new Date()) return "-";
     return "DNP";
   }
   if (team.position === "CUT") return "CUT";
