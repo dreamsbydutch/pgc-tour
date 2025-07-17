@@ -8,13 +8,13 @@ import type { CronJobResult } from "./types";
 import { updateStandingsOptimized } from "./service";
 
 export async function handleUpdateStandingsCron(
-  request: Request,
+  _request: Request,
 ): Promise<CronJobResult> {
   try {
     // Security check (uncomment for production)
     // const cronSecret = process.env.CRON_SECRET;
     // if (cronSecret) {
-    //   const providedSecret = request.headers.get("x-cron-secret");
+    //   const providedSecret = _request.headers.get("x-cron-secret");
     //   if (providedSecret !== cronSecret) {
     //     return { success: false, message: "Unauthorized", error: "Unauthorized", status: 401 };
     //   }
