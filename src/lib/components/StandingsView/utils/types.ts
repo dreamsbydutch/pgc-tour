@@ -37,6 +37,36 @@ export interface TourWithCards extends Tour {
   tourCards?: ExtendedTourCard[];
 }
 
+/**
+ * Champion team with included tournament data
+ * Based on Team model with tournament relation from API
+ */
+export interface Champion {
+  /** Team ID */
+  id: number;
+  /** Associated tour card ID */
+  tourCardId: string;
+  /** Tournament ID */
+  tournamentId: string;
+  /** Final position (usually "1" or "T1" for champions) */
+  position: string | null;
+  /** Earnings from this tournament */
+  earnings: number | null;
+  /** Points earned from this tournament */
+  points: number | null;
+  /** Tournament information (always included from API) */
+  tournament: {
+    /** Tournament name */
+    name: string;
+    /** Tournament logo URL */
+    logoUrl: string | null;
+    /** Tournament start date */
+    startDate: Date;
+    /** Current round number */
+    currentRound: number | null;
+  };
+}
+
 // ================= DATA STRUCTURES =================
 
 /**
@@ -252,25 +282,3 @@ export interface PlayoffGroups {
   /** Teams that were bumped into playoffs */
   bumpedTeams: ExtendedTourCard[];
 }
-
-// ================= HOOK RETURN TYPES =================
-
-/**
- * Return type for useStandingsData hook
- */
-export interface UseStandingsDataReturn extends StandingsState {}
-
-/**
- * Return type for useFriendManagement hook
- */
-export interface UseFriendManagementReturn extends FriendManagementHook {}
-
-// Re-export Prisma types for convenience
-export type {
-  TourCard,
-  Tour,
-  Tier,
-  Member,
-  Team,
-  Tournament,
-} from "@prisma/client";

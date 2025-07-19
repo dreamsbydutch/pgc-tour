@@ -7,7 +7,6 @@ import type { ReactElement } from "react";
 import { sortMultiple, filterItems } from "@pgc-utils";
 import type {
   LeaderboardGolfer,
-  LeaderboardTeam,
   TeamWithTourCard,
   LeaderboardTour,
   LeaderboardTourCard,

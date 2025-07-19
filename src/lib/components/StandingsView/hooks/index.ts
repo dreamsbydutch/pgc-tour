@@ -6,9 +6,3 @@
 // Data fetching hooks
 export { useStandingsData } from "./useStandingsData";
 export { useFriendManagement } from "./useFriendManagement";
-
-// Type exports for hook returns
-export type {
-  UseStandingsDataReturn,
-  UseFriendManagementReturn,
-} from "../utils/types";

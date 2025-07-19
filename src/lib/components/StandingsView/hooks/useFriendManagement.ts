@@ -15,10 +15,7 @@
 import { useState, useCallback } from "react";
 import { api } from "@pgc-trpcClient";
 import type { Member } from "@prisma/client";
-import type {
-  FriendManagementState,
-  UseFriendManagementReturn,
-} from "../utils/types";
+import type { FriendManagementHook } from "../utils/types";
 
 /**
  * Hook for managing friend relationships
@@ -28,7 +25,7 @@ import type {
  */
 export function useFriendManagement(
   currentMember?: Member | null,
-): UseFriendManagementReturn {
+): FriendManagementHook {
   const utils = api.useUtils();
   const [friendChangingIds, setFriendChangingIds] = useState<Set<string>>(
     new Set(),

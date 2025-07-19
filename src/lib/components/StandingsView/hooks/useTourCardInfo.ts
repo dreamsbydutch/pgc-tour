@@ -5,7 +5,7 @@
  */
 
 import { api } from "@pgc-trpcClient";
-import type { TourCard, Tournament, Team, Member } from "@prisma/client";
+import type { TourCard, Tournament, Team } from "@prisma/client";
 
 /**
  * Pure helper functions
@@ -69,7 +69,7 @@ export interface UseTourCardInfoData {
   teams: Team[] | undefined;
   tiers: { id: string; name: string }[] | undefined;
   isLoading: boolean;
-  error: any;
+  error: unknown;
 }
 
 /**
@@ -109,6 +109,6 @@ export const useTourCardInfoData = (
     teams,
     tiers: allTiers,
     isLoading: tournamentsLoading || tiersLoading || teamsLoading,
-    error: tournamentsError || tiersError || teamsError,
+    error: tournamentsError ?? tiersError ?? teamsError,
   };
 };

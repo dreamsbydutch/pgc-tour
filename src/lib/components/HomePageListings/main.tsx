@@ -80,7 +80,7 @@ export const HomePageListingsContainer: React.FC<
               champions={leaderboardData.champions}
             />
           )}
-          {!leaderboardData && !leaderboardError && <div>asdsadad</div>}
+          {!leaderboardData && !leaderboardError && null}
         </>
       )}
     </>

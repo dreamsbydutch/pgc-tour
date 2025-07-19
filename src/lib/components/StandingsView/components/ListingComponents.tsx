@@ -20,7 +20,7 @@ import type { Tour, Member } from "@prisma/client";
 import { LoadingSpinner } from "src/lib/components/functional/ui";
 import { LittleFucker } from "../../functional/LittleFucker";
 import { useChampionsByMemberId } from "src/lib/hooks/hooks";
-import type { ExtendedTourCard } from "../utils/types";
+import type { ExtendedTourCard, Champion } from "../utils/types";
 import { StandingsTourCardInfo } from "./TourCardInfoComponents";
 
 // ============================================================================
@@ -120,7 +120,7 @@ interface RegularStandingsListingProps {
   currentMember?: Member | null;
   isFriendChanging?: boolean;
   isOpen?: boolean;
-  champions?: any[];
+  champions?: Champion[];
   onToggleOpen?: () => void;
   onAddFriend?: (memberId: string) => void;
   onRemoveFriend?: (memberId: string) => void;
@@ -203,7 +203,7 @@ interface BumpedStandingsListingProps {
   currentMember?: Member | null;
   tour?: Tour;
   isOpen?: boolean;
-  champions?: any[];
+  champions?: Champion[];
   onToggleOpen?: () => void;
 }
 
@@ -278,7 +278,7 @@ interface PlayoffStandingsListingProps {
   tour?: Tour;
   currentMember?: Member | null;
   isOpen?: boolean;
-  champions?: any[];
+  champions?: Champion[];
   onToggleOpen?: () => void;
 }
 
