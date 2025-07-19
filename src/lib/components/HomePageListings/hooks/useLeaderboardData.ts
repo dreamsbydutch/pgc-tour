@@ -24,7 +24,8 @@ export const useLeaderboardData = () => {
   // Fetch current active tournament
   const currentTournament = tournaments?.find(
     (t) =>
-      t.livePlay || ((t.currentRound ?? 0) > 1 && (t.currentRound ?? 0) < 5),
+      t.livePlay === true ||
+      ((t.currentRound ?? 0) > 1 && (t.currentRound ?? 0) < 5),
   );
 
   // Fetch teams for the current tournament
