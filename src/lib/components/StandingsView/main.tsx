@@ -1,22 +1,40 @@
+/**
+ * StandingsView - Main orchestrating component
+ *
+ * This is the primary entry point for the StandingsView component.
+ * It fetches all necessary data using custom hooks and renders the appropriate
+ * child components based on the data and user interactions.
+ *
+ * The component follows a container pattern where:
+ * - Hooks manage data fetching and business logic
+ * - Child components handle pure rendering
+ * - State is managed at this level and passed down
+ *
+ * @param initialTourId - Optional initial tour ID to display
+ */
+
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { useStandingsData } from "./hooks/useStandingsData";
 import { useFriendManagement } from "./hooks/useFriendManagement";
-import { StandingsHeader } from "./components/StandingsHeader";
-import { ToursToggle } from "./components/ToursToggle";
-import { StandingsContent } from "./components/StandingsContent";
-import { StandingsLoadingSkeleton } from "./components/StandingsLoadingSkeleton";
-import { StandingsError } from "./components/StandingsError";
-import type { StandingsViewProps } from "./types";
+import {
+  StandingsHeader,
+  ToursToggle,
+  StandingsLoadingSkeleton,
+  StandingsError,
+  StandingsContent,
+} from "./components";
+import type { StandingsViewProps } from "./utils/types";
 
 /**
  * Main StandingsView Component
  *
- * Orchestrates data fetching, state management, and renders the appropriate UI
- * All business logic and data fetching happens at this level
+ * Orchestrates data fetching, state management, and renders the appropriate UI.
+ * All business logic and data fetching happens at this level and is passed down
+ * to child components through props.
  */
 export function StandingsView({ initialTourId }: StandingsViewProps = {}) {
   const searchParams = useSearchParams();
@@ -40,14 +58,12 @@ export function StandingsView({ initialTourId }: StandingsViewProps = {}) {
 
   const [standingsToggle, setStandingsToggle] = useState<string>(defaultTourId);
 
-  // Update standings toggle when default changes
-  if (
-    defaultTourId &&
-    standingsToggle !== defaultTourId &&
-    !searchParams.get("tour")
-  ) {
-    setStandingsToggle(defaultTourId);
-  }
+  // Update standings toggle when default changes (but not when user manually changes it)
+  useEffect(() => {
+    if (defaultTourId && !searchParams.get("tour")) {
+      setStandingsToggle(defaultTourId);
+    }
+  }, [defaultTourId, searchParams]);
 
   // Find displayed tour
   const displayedTour = useMemo(() => {

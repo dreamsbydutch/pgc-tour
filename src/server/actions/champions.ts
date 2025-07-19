@@ -92,6 +92,7 @@ export async function getRecentChampions(
         name: recentTournament.name,
         logoUrl: recentTournament.logoUrl,
         startDate: recentTournament.startDate,
+        currentRound: recentTournament.currentRound ?? 0,
       },
       tour: {
         id: tour?.id ?? "",

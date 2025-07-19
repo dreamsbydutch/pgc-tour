@@ -1,3 +1,14 @@
+/**
+ * Custom hook for fetching all data needed for StandingsView
+ *
+ * This hook orchestrates all the data fetching required for the standings,
+ * including tours, tour cards, members, teams, and tournaments.
+ * It computes extended tour cards with position changes and returns
+ * the data in a normalized format with loading and error states.
+ *
+ * @returns Object containing standings data, loading state, and error state
+ */
+
 import { useMemo } from "react";
 import { api } from "@pgc-trpcClient";
 import {
@@ -9,11 +20,18 @@ import {
   useMember,
 } from "@pgc-store";
 import type { TourCard, Tournament, Team } from "@prisma/client";
-import type { StandingsData, StandingsState, ExtendedTourCard } from "../types";
+import type {
+  StandingsData,
+  StandingsState,
+  ExtendedTourCard,
+} from "../utils/types";
 
 /**
- * Main data fetching hook for standings
- * Handles all data fetching and computed properties
+ * Hook for fetching all standings data
+ *
+ * This hook manages the complex data fetching and transformation needed
+ * for the standings display, including computing position changes and
+ * other derived properties.
  */
 export function useStandingsData(): StandingsState {
   const currentMember = useMember();

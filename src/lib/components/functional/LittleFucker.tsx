@@ -23,6 +23,7 @@ export function LittleFucker({
           name: string;
           logoUrl: string | null;
           startDate: Date;
+          currentRound: number | null;
         };
       }[]
     | null;
@@ -35,16 +36,18 @@ export function LittleFucker({
   return (
     <div className="flex flex-row">
       {champions
-        .filter((c) =>
-          [
-            "TOUR Championship",
-            "The Masters",
-            "U.S. Open",
-            "The Open Championship",
-            "PGA Championship",
-            "Canadian Open",
-            "RBC Canadian Open",
-          ].includes(c.tournament.name),
+        .filter(
+          (c) =>
+            [
+              "TOUR Championship",
+              "The Masters",
+              "U.S. Open",
+              "The Open Championship",
+              "PGA Championship",
+              "Canadian Open",
+              "RBC Canadian Open",
+            ].includes(c.tournament.name) &&
+            (c.tournament.currentRound ?? 0) > 4,
         )
         .map((team) => (
           <TrophyIcon

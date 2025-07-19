@@ -1,5 +1,9 @@
 /**
- * UI components for LeaderboardView
+ * UI Components for LeaderboardView
+ *
+ * This file contains small, reusable UI components used throughout the leaderboard.
+ * These components are purely functional and handle specific display concerns like
+ * position changes, golfer details, country flags, and headers.
  */
 
 import { cn } from "@pgc-utils";
@@ -12,11 +16,16 @@ import {
 } from "../utils";
 import type { LeaderboardGolfer } from "../utils/types";
 
-// ================= POSITION CHANGE =================
+// ================= POSITION CHANGE INDICATOR =================
 
+/**
+ * PositionChange - Displays position change with appropriate icon and color
+ * @param posChange - Numeric change in position (positive = up, negative = down, 0 = no change)
+ */
 export const PositionChange: React.FC<{ posChange: number }> = ({
   posChange,
 }) => {
+  // No change indicator
   if (posChange === 0) {
     return (
       <span className="ml-1 flex items-center justify-center text-3xs">
@@ -112,7 +121,7 @@ export const LeaderboardHeaderRow: React.FC<{
   tournamentOver: boolean;
   activeTour: string;
 }> = ({ tournamentOver, activeTour }) => (
-  <div className="sm:grid-cols-33 mx-auto grid max-w-4xl grid-flow-row grid-cols-10 text-center">
+  <div className="mx-auto grid max-w-4xl grid-flow-row grid-cols-10 text-center sm:grid-cols-33">
     <div className="col-span-2 place-self-center font-varela text-sm font-bold sm:col-span-5">
       Rank
     </div>

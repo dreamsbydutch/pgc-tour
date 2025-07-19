@@ -1,3 +1,10 @@
+/**
+ * Table Components - Headers and table-related UI
+ *
+ * Consolidates all table header variants and related components
+ * while maintaining clear separation by functionality.
+ */
+
 import { cn } from "@pgc-utils";
 import type { Tier } from "@prisma/client";
 import {
@@ -5,9 +12,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "src/lib/components/functional/ui";
-import { PointsAndPayoutsPopover } from "./PointsAndPayoutsPopover";
+import { PointsAndPayoutsPopover } from "./UIComponents";
 
-// --- Utility Components ---
+// ============================================================================
+// UTILITY COMPONENTS
+// ============================================================================
+
 const TableHeaderCell = ({
   children,
   className = "",
@@ -20,7 +30,13 @@ const TableHeaderCell = ({
   </div>
 );
 
-// --- Table Headers ---
+// ============================================================================
+// HEADER VARIANTS
+// ============================================================================
+
+/**
+ * Regular standings table header
+ */
 function RegularStandingsHeader() {
   return (
     <div className="grid grid-flow-row grid-cols-17 text-center">
@@ -41,6 +57,10 @@ function RegularStandingsHeader() {
     </div>
   );
 }
+
+/**
+ * Bumped/eliminated players header
+ */
 function BumpedHeader() {
   return (
     <div className="mt-12 grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-red-200 text-center text-red-900">
@@ -66,6 +86,10 @@ function BumpedHeader() {
     </div>
   );
 }
+
+/**
+ * Playoff header with popover
+ */
 const PlayoffHeader = ({
   title,
   tier,
@@ -120,15 +144,24 @@ const PlayoffHeader = ({
   </Popover>
 );
 
+/**
+ * Gold playoff header
+ */
 const GoldPlayoffHeader = ({ tier }: { tier: Tier }) => (
   <PlayoffHeader title="PGC GOLD PLAYOFF" tier={tier} />
 );
 
+/**
+ * Silver playoff header
+ */
 const SilverPlayoffHeader = ({ tier }: { tier: Tier }) => (
   <PlayoffHeader title="PGC SILVER PLAYOFF" tier={tier} />
 );
 
-// --- Unified Header Component ---
+// ============================================================================
+// UNIFIED HEADER COMPONENT
+// ============================================================================
+
 export type StandingsTableHeaderVariant =
   | "regular"
   | "gold"
@@ -140,6 +173,10 @@ export interface StandingsTableHeaderProps {
   tier?: Tier;
 }
 
+/**
+ * Unified standings table header component
+ * Routes to the appropriate header variant based on props
+ */
 export function StandingsTableHeader({
   variant,
   tier,

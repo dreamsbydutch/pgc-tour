@@ -1,167 +1,155 @@
-# StandingsView Component Architecture
+# StandingsView Component Structure
 
-## Overview
+This document outlines the refactored structure of the StandingsView component, organized for maximum maintainability and reusability following the same patterns as LeaderboardView.
 
-The StandingsView component has been refactored to follow best practices with proper separation of concerns, improved type safety, and better data flow management.
-
-## Architecture
-
-### 📁 Directory Structure
+## 📁 Folder Structure
 
 ```
 StandingsView/
-├── index.ts                 # Main barrel export
-├── main.tsx                 # Main component orchestration
-├── types/
-│   └── index.ts            # Type definitions
-├── hooks/
-│   ├── index.ts            # Hook exports
-│   ├── useStandingsData.ts # Data fetching logic
-│   └── useFriendManagement.ts # Friend management logic
-├── components/
-│   ├── index.ts            # Component exports
-│   ├── StandingsContent.tsx # Content router
-│   ├── TourStandings.tsx   # Tour-specific standings
-│   ├── PlayoffStandings.tsx # Playoff standings
-│   ├── StandingsListing.tsx # Individual listing component
-│   └── ...                 # Other UI components
-└── utils/
-    └── standingsHelpers.ts # Helper functions
+├── main.tsx                     # Main orchestrating component
+├── index.ts                    # Main export file
+├── utils/                      # Pure utility functions, types, and constants
+│   ├── index.ts               # Export all utilities
+│   ├── standings-utils.ts     # Core utility functions
+│   ├── types.ts              # TypeScript type definitions
+│   └── constants.ts          # Constants and configurations
+├── hooks/                     # Custom hooks for data and logic
+│   ├── index.ts              # Export all hooks
+│   ├── useStandingsData.ts   # Data fetching hook
+│   └── useFriendManagement.ts # Friend management hook
+└── components/               # Pure functional UI components
+    ├── index.ts             # Export all components
+    ├── StandingsContent.tsx # Content router component
+    ├── TourStandings.tsx   # Regular tour standings
+    ├── PlayoffStandings.tsx # Playoff standings
+    ├── StandingsListing.tsx # Individual row component
+    ├── StandingsHeader.tsx # Header component
+    ├── ToursToggle.tsx     # Tour selection toggle
+    ├── StandingsTableHeader.tsx # Table header
+    ├── StandingsTourCardInfo.tsx # Tour card info
+    ├── PointsAndPayoutsPopover.tsx # Points popover
+    ├── StandingsLoadingSkeleton.tsx # Loading skeleton
+    └── StandingsError.tsx  # Error state component
 ```
 
-### 🔄 Data Flow
+## 🎯 Component Architecture
 
-```
-StandingsView (main.tsx)
-├── useStandingsData() ─────────────► Data fetching & processing
-├── useFriendManagement() ──────────► Friend state management
-├── StandingsHeader ────────────────► Header display
-├── ToursToggle ────────────────────► Tour selection
-└── StandingsContent ───────────────► Content routing
-    ├── TourStandings ──────────────► Tour-specific display
-    │   └── StandingsListing ───────► Individual entries
-    └── PlayoffStandings ───────────► Playoff display
-        └── StandingsListing ───────► Individual entries
-```
+### Main Component (`main.tsx`)
 
-## Key Features
+- **Purpose**: Orchestrates the entire standings view
+- **Responsibilities**:
+  - Fetches data using custom hooks
+  - Manages tour selection state
+  - Handles friend management
+  - Renders child components based on state
+  - Handles loading/error states
 
-### 🚀 Improved Data Management
+### Utils Folder
 
-- **Centralized Data Fetching**: All data fetching happens in `useStandingsData()`
-- **Computed Properties**: Position changes and other calculations are computed once
-- **Type Safety**: Strong typing with `ExtendedTourCard` and other interfaces
-- **Error Handling**: Centralized error states and handling
+- **Purpose**: Pure functions, types, and constants
+- **Key Features**:
+  - **standings-utils.ts**: Core utilities for:
+    - Position parsing and formatting
+    - Grouping tour cards by playoff status
+    - Sorting and filtering functions
+    - Position change calculations
+    - Styling helpers
+  - **types.ts**: Comprehensive TypeScript definitions
+  - **constants.ts**: Configuration constants and thresholds
 
-### 🔧 Hooks
+### Hooks Folder
 
-#### `useStandingsData()`
+- **Purpose**: Custom hooks for data fetching and business logic
+- **Key Hooks**:
+  - **useStandingsData**: Fetches and processes all standings data
+  - **useFriendManagement**: Handles friend add/remove operations
 
-- Fetches all standings-related data
-- Computes position changes and other derived properties
-- Returns unified data structure with loading and error states
+### Components Folder
 
-#### `useFriendManagement()`
+- **Purpose**: Pure functional UI components
+- **Key Components**:
+  - **StandingsContent**: Routes between different view types
+  - **TourStandings**: Displays regular season standings
+  - **PlayoffStandings**: Shows playoff qualification status
+  - **StandingsListing**: Individual player row
+  - **ToursToggle**: Tour selection interface
 
-- Manages friend addition/removal
-- Handles optimistic updates
-- Provides loading states for friend operations
+## 🔧 Key Features
 
-### 🎨 Component Architecture
+### Standings Types
 
-#### `StandingsView` (Main Component)
+- **Regular Tour Standings**: Shows current season points with playoff cut lines
+- **Playoff Standings**: Groups players by qualification status (Gold/Silver/Bumped)
 
-- **Single Responsibility**: Orchestrates data and state
-- **Props**: `{ initialTourId?: string }`
-- **State Management**: Tour selection, friend management
-- **Data Flow**: Passes data down, handles actions up
+### Friend Management
 
-#### `StandingsContent` (Router)
+- Optimistic updates for adding/removing friends
+- Loading states for friend operations
+- Visual indicators for friend status
 
-- Routes between tour and playoff views
-- Filters data appropriately
-- Maintains consistent interface
+### Data Processing
 
-#### `TourStandings` / `PlayoffStandings`
+- Position parsing from various formats ("T15", 12, "1")
+- Automatic grouping by playoff qualification
+- Real-time position change calculations
 
-- Specialized display components
-- Use helper functions for data grouping
-- Consistent prop interfaces
+### Responsive Design
 
-#### `StandingsListing`
+- Mobile-optimized table layouts
+- Progressive disclosure of information
+- Touch-friendly interactions
 
-- Variant-based rendering (`regular` | `playoff` | `bumped`)
-- Proper friend state management
-- Optimistic UI updates
+## 🎨 Visual Features
 
-### 🛠️ Utilities
+### Cut Line Indicators
 
-#### `standingsHelpers.ts`
+- **Gold Playoff Line**: Positions 1-15
+- **Silver Playoff Line**: Positions 16-35
+- Color-coded visual separators
 
-- `parsePosition()`: Parses position strings to numbers
-- `groupTourStandings()`: Groups cards by cut lines
-- `groupPlayoffStandings()`: Groups cards by playoff tiers
-- `sortTourCardsByPoints()`: Sorts cards by points
-- `filterTourCardsByTour()`: Filters cards by tour
+### Position Changes
 
-## Types
+- Up/down/neutral indicators
+- Color-coded change values
+- Historical position tracking
 
-### Core Types
+### User Highlighting
 
-```typescript
-interface ExtendedTourCard extends TourCard {
-  pastPoints?: number;
-  posChange?: number;
-  posChangePO?: number;
-}
+- Current user's row highlighted
+- Friends' rows visually distinguished
+- Interactive friend management buttons
 
-interface StandingsData {
-  tours: Tour[];
-  tiers: Tier[];
-  tourCards: ExtendedTourCard[];
-  currentTourCard: ExtendedTourCard | null;
-  currentMember: Member | null;
-  teams: Team[];
-  tournaments: Tournament[];
-  seasonId: string;
-}
+## 📝 Usage Examples
 
-interface StandingsState {
-  data: StandingsData | null;
-  isLoading: boolean;
-  error: Error | null;
-}
-```
+```tsx
+import { StandingsView } from './StandingsView';
 
-## Usage
-
-```typescript
 // Basic usage
 <StandingsView />
 
 // With initial tour selection
-<StandingsView initialTourId="tour-123" />
-
-// Using hooks directly
-const { data, isLoading, error } = useStandingsData();
-const friendManagement = useFriendManagement(currentMember);
+<StandingsView initialTourId="gold-tour" />
 ```
 
-## Best Practices Implemented
+## 🚀 Benefits of This Structure
 
-1. **Separation of Concerns**: Clear separation between data, state, and UI
-2. **Single Responsibility**: Each component has one clear purpose
-3. **Type Safety**: Strong typing throughout the component tree
-4. **Error Boundaries**: Proper error handling and user feedback
-5. **Performance**: Memoization and efficient re-renders
-6. **Maintainability**: Clear structure and documentation
-7. **Testability**: Isolated concerns make testing easier
+1. **Separation of Concerns**: Clear responsibility boundaries
+2. **Type Safety**: Comprehensive TypeScript coverage
+3. **Performance**: Optimized hooks and memoization
+4. **Maintainability**: Well-organized and documented code
+5. **Reusability**: Modular components and utilities
+6. **Friend Management**: Seamless social features
+7. **Responsive**: Works across all device sizes
+8. **Error Handling**: Comprehensive error states
+9. **Loading States**: Skeleton loading for better UX
+10. **Accessibility**: Screen reader friendly components
 
-## Migration Notes
+## 🔄 Data Flow
 
-- `useCurrentStandings()` has been replaced with `useStandingsData()`
-- Friend management is now handled by `useFriendManagement()`
-- Component props have been simplified and made more consistent
-- All data processing now happens at the top level
+1. **Data Fetching**: `useStandingsData` fetches and processes all data
+2. **Friend Management**: `useFriendManagement` handles social features
+3. **State Management**: Main component manages tour selection
+4. **Content Routing**: `StandingsContent` routes to appropriate view
+5. **Data Display**: Specialized components render different standings types
 
-This refactored architecture provides a more maintainable, type-safe, and performant standings component system.
+This structure ensures a maintainable, scalable, and user-friendly standings experience!

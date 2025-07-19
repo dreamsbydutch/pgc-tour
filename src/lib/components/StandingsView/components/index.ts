@@ -1,18 +1,65 @@
+/**
+ * Export all components for StandingsView
+ * This provides a clean API for importing consolidated components
+ */
+
+// Main content components
 export { StandingsContent } from "./StandingsContent";
-export { StandingsError } from "./StandingsError";
-export { StandingsHeader } from "./StandingsHeader";
-export { StandingsListing } from "./StandingsListing";
-export { StandingsLoadingSkeleton } from "./StandingsLoadingSkeleton";
-export { StandingsTableHeader } from "./StandingsTableHeader";
-export { StandingsTourCardInfo } from "./StandingsTourCardInfo";
 export { TourStandings } from "./TourStandings";
 export { PlayoffStandings } from "./PlayoffStandings";
-export { ToursToggle } from "./ToursToggle";
-export { PointsAndPayoutsPopover } from "./PointsAndPayoutsPopover";
 
+// ============================================================================
+// CONSOLIDATED COMPONENT EXPORTS
+// ============================================================================
+
+// UI Components (Header, Toggle, Error, Loading)
+export {
+  StandingsHeader,
+  ToursToggle,
+  PointsAndPayoutsPopover,
+  StandingsError,
+  StandingsLoadingSkeleton,
+  type StandingsHeaderProps,
+  type ToursToggleProps,
+  type PointsAndPayoutsPopoverProps,
+  type StandingsErrorProps,
+} from "./UIComponents";
+
+// Table Components (Headers and table-related UI)
+export {
+  StandingsTableHeader,
+  type StandingsTableHeaderProps,
+  type StandingsTableHeaderVariant,
+} from "./TableComponents";
+
+// Listing Components (All standings listing variants)
+export {
+  StandingsListing,
+  RegularStandingsListing,
+  BumpedStandingsListing,
+  PlayoffStandingsListing,
+  PositionChange,
+  type StandingsListingProps,
+  type StandingsListingVariant,
+} from "./ListingComponents";
+
+// Tour Card Info Components (Player details and tournament history)
+export {
+  StandingsTourCardInfo,
+  PlayerStats,
+  TournamentHistoryRow,
+  TournamentHistorySection,
+  useTourCardInfoData,
+  calculateAverageScore,
+  getNonPlayoffTournaments,
+  getTeamsForTourCard,
+  renderTournamentResult,
+  type UseTourCardInfoData,
+} from "./TourCardInfoComponents";
+
+// Re-export types for convenience
 export type {
   StandingsContentProps,
   TourStandingsProps,
   PlayoffStandingsProps,
-  StandingsListingProps,
-} from "../types";
+} from "../utils/types";

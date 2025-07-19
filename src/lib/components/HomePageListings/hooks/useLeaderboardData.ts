@@ -6,7 +6,7 @@
  */
 
 import { api } from "@pgc-trpcClient";
-import { useMember, useTournaments, useTours } from "@pgc-store";
+import { useMember, useTours } from "@pgc-store";
 import type {
   HomePageListingsLeaderboardProps,
   HomePageListingsLeaderboardTeam,
@@ -19,7 +19,7 @@ import type {
 export const useLeaderboardData = () => {
   const member = useMember();
   const tours = useTours();
-  const tournaments = useTournaments();
+  const { data: tournaments } = useLiveTournaments(tours?.[0]?.seasonId ?? "");
 
   // Fetch current active tournament
   const currentTournament = tournaments?.find(
@@ -97,4 +97,8 @@ export const useLeaderboardData = () => {
   }
 
   return { data, isLoading, error };
+};
+
+const useLiveTournaments = (seasonId: string) => {
+  return api.tournament.getBySeason.useQuery({ seasonId });
 };

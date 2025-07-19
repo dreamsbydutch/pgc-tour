@@ -30,6 +30,7 @@ export function ChampionsPopup({
       name: string;
       logoUrl: string | null;
       startDate: Date;
+      currentRound: number | null;
     };
     tour: { id: string; name: string; logoUrl: string | null };
     golfers: {
@@ -78,6 +79,7 @@ function ChampionSection({
       name: string;
       logoUrl: string | null;
       startDate: Date;
+      currentRound: number | null;
     };
     tour: { id: string; name: string; logoUrl: string | null };
     golfers: {

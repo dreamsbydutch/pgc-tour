@@ -1,7 +1,17 @@
 "use client";
 
 /**
- * LeaderboardListing component - Individual row in the leaderboard
+ * LeaderboardListing - Individual row component for leaderboard display
+ *
+ * This component renders a single row in the leaderboard, handling both
+ * PGC team entries and PGA golfer entries. It includes:
+ * - Position and position change indicators
+ * - Score display with proper formatting
+ * - Expandable dropdown for additional details
+ * - Proper styling based on user context (own team, friends, etc.)
+ *
+ * The component uses discriminated unions to ensure type safety between
+ * PGC and PGA variants while sharing common functionality.
  */
 
 import React, { useState, useCallback } from "react";
@@ -22,31 +32,56 @@ import type {
 } from "../utils/types";
 import { PositionChange } from "./UIComponents";
 
+/**
+ * Props for LeaderboardListing component using discriminated union
+ * This ensures proper typing based on the leaderboard type
+ */
 type LeaderboardListingProps =
   | {
+      /** PGC leaderboard type */
       type: "PGC";
+      /** Tournament details */
       tournament: LeaderboardTournament;
+      /** All golfers in tournament */
       tournamentGolfers: LeaderboardGolfer[];
+      /** Current user's tour card for highlighting */
       userTourCard?: { id: string } | null;
+      /** Team data for PGC entry */
       team: LeaderboardTeam;
+      /** Tour card associated with the team */
       tourCard: LeaderboardTourCard;
+      /** Member data for friend highlighting */
       member?: LeaderboardMember | null;
+      /** Whether tournament hasn't started */
       isPreTournament?: boolean;
     }
   | {
+      /** PGA leaderboard type */
       type: "PGA";
+      /** Tournament details */
       tournament: LeaderboardTournament;
+      /** All golfers in tournament */
       tournamentGolfers: LeaderboardGolfer[];
+      /** Current user's tour card for highlighting */
       userTourCard?: { id: string } | null;
+      /** Golfer data for PGA entry */
       golfer: LeaderboardGolfer;
+      /** Whether tournament hasn't started */
       isPreTournament?: boolean;
     };
 
+/**
+ * Individual leaderboard row component
+ *
+ * Renders a single entry in the leaderboard with proper styling and interaction.
+ * Supports both PGC team entries and PGA individual golfer entries.
+ */
 export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
   props,
 ) => {
   const { type, tournamentGolfers, userTourCard, tournament } = props;
 
+  // Extract team data for PGC type, undefined for PGA
   const team = type === "PGC" ? props.team : undefined;
   const golfer = type === "PGA" ? props.golfer : undefined;
   const tourCard = type === "PGC" ? props.tourCard : undefined;
@@ -94,7 +129,7 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
             ? "-"
             : formatScore((type === "PGA" ? golfer?.score : team?.score) ?? 0)}
         </div>
-        
+
         {type === "PGA" ? (
           <ScoreDisplay
             type="PGA"
@@ -108,7 +143,6 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
             tournamentComplete={(tournament.currentRound ?? 0) > 4}
           />
         )}
-        
       </div>
 
       {isOpen && !props.isPreTournament && (

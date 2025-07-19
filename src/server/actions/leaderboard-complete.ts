@@ -8,7 +8,7 @@ interface LeaderboardData {
   tournament: {
     id: string;
     name: string;
-    currentRound: number;
+    currentRound: number|null;
     course: {
       id: string;
       name: string;

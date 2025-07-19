@@ -15,6 +15,7 @@ export interface BaseTournament {
   logoUrl: string | null;
   startDate: Date;
   seasonId: string;
+  currentRound: number | null;
 }
 
 /**
@@ -125,7 +126,7 @@ export interface HomePageListingsChampion {
   tourCard: Pick<BaseTourCard, "memberId">;
   tournament: Pick<
     BaseTournament,
-    "name" | "seasonId" | "logoUrl" | "startDate"
+    "name" | "seasonId" | "logoUrl" | "startDate" | "currentRound"
   >;
 }
 

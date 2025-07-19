@@ -1,28 +1,51 @@
 "use client";
 
 /**
- * Hook for fetching all data needed for LeaderboardView using tRPC
- * Returns data in the format expected by the existing LeaderboardView component
+ * Custom hook for fetching all data needed for LeaderboardView
+ *
+ * This hook orchestrates all the data fetching required for the leaderboard,
+ * including tournament details, golfers, teams, tours, and user data.
+ * It returns the data in a normalized format with loading and error states.
+ *
+ * @param params - Parameters for data fetching including tournament ID and optional filters
+ * @returns Object containing props for LeaderboardView, loading state, error state, and refetch function
  */
 
 import { useMemo } from "react";
 import type { LeaderboardViewProps } from "../utils/types";
 import { api } from "@pgc-trpcClient";
 
+/**
+ * Parameters for useLeaderboardData hook
+ */
 export interface LeaderboardDataParams {
+  /** Tournament ID to fetch data for */
   tournamentId: string;
+  /** Leaderboard variant type */
   variant?: "regular" | "playoff" | "historical";
+  /** Optional tour ID to filter by */
   inputTour?: string;
+  /** Optional user ID for personalization */
   userId?: string;
 }
 
+/**
+ * Return type for useLeaderboardData hook
+ */
 export interface LeaderboardData {
+  /** Props formatted for LeaderboardView component */
   props: LeaderboardViewProps | null;
+  /** Whether any data is still loading */
   loading: boolean;
+  /** Error message if any fetch failed */
   error: string | null;
+  /** Function to refetch all data */
   refetch: () => void;
 }
 
+/**
+ * Hook for fetching all leaderboard data
+ */
 export const useLeaderboardData = (
   params: LeaderboardDataParams,
 ): LeaderboardData => {

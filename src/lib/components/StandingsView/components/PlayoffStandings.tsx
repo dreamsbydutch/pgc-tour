@@ -1,7 +1,7 @@
-import { groupPlayoffStandings } from "../utils/standingsHelpers";
-import { StandingsTableHeader } from "./StandingsTableHeader";
-import { StandingsListing } from "./StandingsListing";
-import type { PlayoffStandingsProps } from "../types";
+import { groupPlayoffStandings } from "../utils/standings-utils";
+import { StandingsTableHeader } from "./TableComponents";
+import { StandingsListing } from "./ListingComponents";
+import type { PlayoffStandingsProps, ExtendedTourCard } from "../utils/types";
 
 /**
  * PlayoffStandings Component
@@ -45,7 +45,7 @@ export function PlayoffStandings({
         }}
       />
 
-      {goldTeams.map((tourCard) => (
+      {goldTeams.map((tourCard: ExtendedTourCard) => (
         <StandingsListing
           variant="playoff"
           key={tourCard.id}
@@ -76,7 +76,7 @@ export function PlayoffStandings({
         }}
       />
 
-      {silverTeams.map((tourCard) => (
+      {silverTeams.map((tourCard: ExtendedTourCard) => (
         <StandingsListing
           variant="playoff"
           key={tourCard.id}
@@ -96,7 +96,7 @@ export function PlayoffStandings({
       {/* Bumped Section */}
       <StandingsTableHeader variant="bumped" />
 
-      {bumpedTeams.map((tourCard) => (
+      {bumpedTeams.map((tourCard: ExtendedTourCard) => (
         <StandingsListing
           variant="bumped"
           key={tourCard.id}

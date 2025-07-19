@@ -103,7 +103,7 @@ export const teamRouter = createTRPCRouter({
         },
         include: {
           tournament: {
-            select: { name: true, logoUrl: true, startDate: true },
+            select: { name: true, logoUrl: true, startDate: true,currentRound: true},
           },
         },
         orderBy: { tournament: { tier: { payouts: "asc" } } },

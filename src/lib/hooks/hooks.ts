@@ -146,6 +146,7 @@ export interface ChampionTrophy {
     name: string;
     logoUrl: string | null;
     startDate: Date;
+    currentRound: number| null;
     seasonId: string;
     tierId: string;
   };

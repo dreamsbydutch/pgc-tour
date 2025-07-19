@@ -1,25 +1,34 @@
 "use client";
 
+/**
+ * Custom hook for managing friend relationships in StandingsView
+ *
+ * This hook provides functionality for adding and removing friends,
+ * with optimistic updates and proper loading state management.
+ * It handles the complex state management needed for friend operations
+ * including tracking which friends are currently being updated.
+ *
+ * @param currentMember - The current user's member data
+ * @returns Object containing friend management state and actions
+ */
+
 import { useState, useCallback } from "react";
 import { api } from "@pgc-trpcClient";
 import type { Member } from "@prisma/client";
-import type { FriendManagementState } from "../types";
-
-export interface UseFriendManagementResult {
-  state: FriendManagementState;
-  actions: {
-    addFriend: (memberId: string) => Promise<void>;
-    removeFriend: (memberId: string) => Promise<void>;
-  };
-}
+import type {
+  FriendManagementState,
+  UseFriendManagementReturn,
+} from "../utils/types";
 
 /**
  * Hook for managing friend relationships
- * Handles optimistic updates and loading states
+ *
+ * Provides optimistic updates, loading states, and error handling
+ * for adding and removing friends in the standings view.
  */
 export function useFriendManagement(
   currentMember?: Member | null,
-): UseFriendManagementResult {
+): UseFriendManagementReturn {
   const utils = api.useUtils();
   const [friendChangingIds, setFriendChangingIds] = useState<Set<string>>(
     new Set(),

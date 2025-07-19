@@ -38,6 +38,7 @@ export const HomePageListingsContainer: React.FC<
     );
   }
 
+  console.log(leaderboardData, "leaderboardData");
   return (
     <>
       {activeView === "standings" && (
@@ -79,7 +80,7 @@ export const HomePageListingsContainer: React.FC<
               champions={leaderboardData.champions}
             />
           )}
-          {!leaderboardData && !leaderboardError && null}
+          {!leaderboardData && !leaderboardError && <div>asdsadad</div>}
         </>
       )}
     </>

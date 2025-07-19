@@ -32,6 +32,7 @@ export interface NavigationChampion {
     name: string;
     logoUrl: string | null;
     startDate: Date;
+    currentRound: number | null;
   };
 }
 

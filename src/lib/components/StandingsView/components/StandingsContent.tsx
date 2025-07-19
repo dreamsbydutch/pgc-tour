@@ -1,5 +1,5 @@
-import type { StandingsContentProps } from "../types";
-import { filterTourCardsByTour } from "../utils/standingsHelpers";
+import type { StandingsContentProps } from "../utils/types";
+import { filterTourCardsByTour } from "../utils/standings-utils";
 import { TourStandings } from "./TourStandings";
 import { PlayoffStandings } from "./PlayoffStandings";
 

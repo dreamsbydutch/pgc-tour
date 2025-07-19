@@ -73,7 +73,7 @@ export interface CronJobResult {
     totalTeams: number;
     teamsUpdated: number;
     tournamentName: string;
-    currentRound: number;
+    currentRound: number|null;
     livePlay: boolean;
   };
   error?: string;
