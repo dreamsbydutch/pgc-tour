@@ -23,6 +23,7 @@ import { useFriendManagement } from "./hooks/useFriendManagement";
 import {
   StandingsHeader,
   ToursToggle,
+  FriendsOnlyToggle,
   StandingsLoadingSkeleton,
   StandingsError,
   StandingsContent,
@@ -57,6 +58,9 @@ export function StandingsView({ initialTourId }: StandingsViewProps = {}) {
   }, [initialTourId, searchParams, data?.currentTourCard?.tourId, data?.tours]);
 
   const [standingsToggle, setStandingsToggle] = useState<string>(defaultTourId);
+
+  // Friends-only filter state
+  const [friendsOnly, setFriendsOnly] = useState<boolean>(false);
 
   // Update standings toggle when default changes (but not when user manually changes it)
   useEffect(() => {
@@ -104,6 +108,9 @@ export function StandingsView({ initialTourId }: StandingsViewProps = {}) {
       <StandingsContent
         standingsToggle={standingsToggle}
         data={data}
+        friendsOnly={friendsOnly}
+        setFriendsOnly={setFriendsOnly}
+        disabled={!data?.currentMember}
         friendState={friendManagement.state}
         onAddFriend={friendManagement.actions.addFriend}
         onRemoveFriend={friendManagement.actions.removeFriend}

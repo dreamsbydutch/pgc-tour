@@ -153,6 +153,9 @@ export interface StandingsContentProps {
   standingsToggle: string;
   /** Complete standings data */
   data: StandingsData;
+  friendsOnly: boolean;
+  setFriendsOnly: (value: boolean) => void;
+  disabled?: boolean;
   /** Friend management state */
   friendState: FriendManagementState;
   /** Function to add a friend */
@@ -173,6 +176,9 @@ export interface TourStandingsProps {
   currentMember: Member | null;
   /** Friend management state */
   friendState: FriendManagementState;
+  friendsOnly: boolean;
+  setFriendsOnly: (value: boolean) => void;
+  disabled?: boolean;
   /** Function to add a friend */
   onAddFriend: (memberId: string) => Promise<void>;
   /** Function to remove a friend */
@@ -191,6 +197,9 @@ export interface PlayoffStandingsProps {
   tourCards: ExtendedTourCard[];
   /** Current user's member info */
   currentMember: Member | null;
+  friendsOnly: boolean;
+  setFriendsOnly: (value: boolean) => void;
+  disabled?: boolean;
   /** Friend management state */
   friendState: FriendManagementState;
   /** Function to add a friend */

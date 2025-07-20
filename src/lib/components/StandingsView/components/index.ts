@@ -16,6 +16,7 @@ export { PlayoffStandings } from "./PlayoffStandings";
 export {
   StandingsHeader,
   ToursToggle,
+  FriendsOnlyToggle,
   PointsAndPayoutsPopover,
   StandingsError,
   StandingsLoadingSkeleton,

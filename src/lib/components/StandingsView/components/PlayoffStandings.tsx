@@ -13,6 +13,8 @@ export function PlayoffStandings({
   tourCards,
   tiers,
   currentMember,
+  friendsOnly,
+  setFriendsOnly,
   friendState,
   onAddFriend,
   onRemoveFriend,
@@ -43,6 +45,8 @@ export function PlayoffStandings({
           updatedAt: new Date(),
           createdAt: new Date(),
         }}
+        friendsOnly={friendsOnly}
+        setFriendsOnly={setFriendsOnly}
       />
 
       {goldTeams.map((tourCard: ExtendedTourCard) => (
@@ -54,6 +58,7 @@ export function PlayoffStandings({
           strokes={playoffTier?.points.slice(0, 30) ?? []}
           tour={tours.find((t) => t.id === tourCard.tourId)}
           currentMember={currentMember}
+          friendsOnly={friendsOnly}
           isFriendChanging={friendState.friendChangingIds.has(
             tourCard.memberId,
           )}
@@ -74,6 +79,8 @@ export function PlayoffStandings({
           updatedAt: new Date(),
           createdAt: new Date(),
         }}
+        friendsOnly={friendsOnly}
+        setFriendsOnly={setFriendsOnly}
       />
 
       {silverTeams.map((tourCard: ExtendedTourCard) => (
@@ -84,6 +91,7 @@ export function PlayoffStandings({
           teams={silverTeams}
           strokes={playoffTier?.points.slice(0, 40) ?? []}
           tour={tours.find((t) => t.id === tourCard.tourId)}
+          friendsOnly={friendsOnly}
           currentMember={currentMember}
           isFriendChanging={friendState.friendChangingIds.has(
             tourCard.memberId,
@@ -94,7 +102,11 @@ export function PlayoffStandings({
       ))}
 
       {/* Bumped Section */}
-      <StandingsTableHeader variant="bumped" />
+      <StandingsTableHeader
+        variant="bumped"
+        friendsOnly={friendsOnly}
+        setFriendsOnly={setFriendsOnly}
+      />
 
       {bumpedTeams.map((tourCard: ExtendedTourCard) => (
         <StandingsListing
@@ -104,6 +116,7 @@ export function PlayoffStandings({
           teams={bumpedTeams}
           strokes={[]}
           tour={tours.find((t) => t.id === tourCard.tourId)}
+          friendsOnly={friendsOnly}
           currentMember={currentMember}
           isFriendChanging={friendState.friendChangingIds.has(
             tourCard.memberId,

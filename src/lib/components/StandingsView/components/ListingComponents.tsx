@@ -121,6 +121,8 @@ interface RegularStandingsListingProps {
   isFriendChanging?: boolean;
   isOpen?: boolean;
   champions?: Champion[];
+  friendsOnly: boolean;
+  disabled?: boolean;
   onToggleOpen?: () => void;
   onAddFriend?: (memberId: string) => void;
   onRemoveFriend?: (memberId: string) => void;
@@ -135,6 +137,7 @@ export const RegularStandingsListing: React.FC<
   isFriendChanging = false,
   isOpen = false,
   champions,
+  friendsOnly,
   onToggleOpen,
   onAddFriend,
   onRemoveFriend,
@@ -142,6 +145,9 @@ export const RegularStandingsListing: React.FC<
   const isCurrent = currentMember?.id === tourCard.memberId;
   const isFriend = currentMember?.friends?.includes(tourCard.memberId) ?? false;
 
+  if (friendsOnly && !isFriend && !isCurrent) {
+    return null;
+  }
   return (
     <div
       key={tourCard.id}
@@ -151,29 +157,25 @@ export const RegularStandingsListing: React.FC<
         isCurrent ? "bg-slate-200 font-semibold" : "",
         isFriend ? "bg-slate-100" : "",
       )}
+      onClick={onToggleOpen}
     >
-      <div
-        className="col-span-16 grid grid-flow-row grid-cols-10 rounded-lg text-center"
-        onClick={onToggleOpen}
-      >
-        <div className="flex place-self-center font-varela text-sm sm:text-base">
-          {tourCard.position}
-          <PositionChange posChange={tourCard.posChange ?? 0} />
-        </div>
-        <div className="col-span-5 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
-          {tourCard.displayName}
-          {champions && (
-            <LittleFucker
-              champions={champions.filter((c) => c.tourCardId === tourCard.id)}
-            />
-          )}
-        </div>
-        <div className="col-span-2 place-self-center font-varela text-sm xs:text-base sm:text-lg">
-          {tourCard.points}
-        </div>
-        <div className="col-span-2 place-self-center font-varela text-xs xs:text-sm sm:text-base">
-          {formatMoney(tourCard.earnings)}
-        </div>
+      <div className="col-span-2 flex place-self-center font-varela text-sm sm:text-base">
+        {tourCard.position}
+        <PositionChange posChange={tourCard.posChange ?? 0} />
+      </div>
+      <div className="col-span-8 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
+        {tourCard.displayName}
+        {champions && (
+          <LittleFucker
+            champions={champions.filter((c) => c.tourCardId === tourCard.id)}
+          />
+        )}
+      </div>
+      <div className="col-span-3 place-self-center font-varela text-sm xs:text-base sm:text-lg">
+        {tourCard.points}
+      </div>
+      <div className="col-span-3 place-self-center font-varela text-xs xs:text-sm sm:text-base">
+        {formatMoney(tourCard.earnings)}
       </div>
 
       {currentMember && (
@@ -203,6 +205,8 @@ interface BumpedStandingsListingProps {
   currentMember?: Member | null;
   tour?: Tour;
   isOpen?: boolean;
+  friendsOnly: boolean;
+  setFriendsOnly: (value: boolean) => void;
   champions?: Champion[];
   onToggleOpen?: () => void;
 }
@@ -214,11 +218,15 @@ export const BumpedStandingsListing: React.FC<BumpedStandingsListingProps> = ({
   tour,
   isOpen = false,
   champions,
+  friendsOnly,
   onToggleOpen,
 }) => {
   const isCurrent = currentMember?.id === tourCard.memberId;
   const isFriend = currentMember?.friends?.includes(tourCard.memberId) ?? false;
 
+  if (friendsOnly && !isFriend && !isCurrent) {
+    return null;
+  }
   return (
     <div
       key={tourCard.id}
@@ -228,29 +236,25 @@ export const BumpedStandingsListing: React.FC<BumpedStandingsListingProps> = ({
         isCurrent ? "bg-slate-200 font-semibold" : "",
         isFriend ? "bg-slate-100" : "",
       )}
+      onClick={onToggleOpen}
     >
-      <div
-        className="col-span-16 grid grid-flow-row grid-cols-10 rounded-lg text-center"
-        onClick={onToggleOpen}
-      >
-        <div className="flex place-self-center font-varela text-sm sm:text-base">
-          {tourCard.position}
-          <PositionChange posChange={tourCard.posChange ?? 0} />
-        </div>
-        <div className="col-span-5 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
-          {tourCard.displayName}
-          {champions && (
-            <LittleFucker
-              champions={champions.filter((c) => c.tourCardId === tourCard.id)}
-            />
-          )}
-        </div>
-        <div className="col-span-2 place-self-center font-varela text-sm xs:text-base sm:text-lg">
-          {tourCard.points}
-        </div>
-        <div className="col-span-2 place-self-center font-varela text-xs xs:text-sm sm:text-base">
-          {formatMoney(tourCard.earnings)}
-        </div>
+      <div className="col-span-2 flex place-self-center font-varela text-sm sm:text-base">
+        {tourCard.position}
+        <PositionChange posChange={tourCard.posChange ?? 0} />
+      </div>
+      <div className="col-span-8 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
+        {tourCard.displayName}
+        {champions && (
+          <LittleFucker
+            champions={champions.filter((c) => c.tourCardId === tourCard.id)}
+          />
+        )}
+      </div>
+      <div className="col-span-3 place-self-center font-varela text-sm xs:text-base sm:text-lg">
+        {tourCard.points}
+      </div>
+      <div className="col-span-3 place-self-center font-varela text-xs xs:text-sm sm:text-base">
+        {formatMoney(tourCard.earnings)}
       </div>
       <div className="max-h-8 min-h-6 min-w-6 max-w-8 place-self-center p-1 font-varela text-sm sm:text-base">
         <Image
@@ -279,6 +283,7 @@ interface PlayoffStandingsListingProps {
   currentMember?: Member | null;
   isOpen?: boolean;
   champions?: Champion[];
+  friendsOnly: boolean;
   onToggleOpen?: () => void;
 }
 
@@ -291,6 +296,7 @@ export const PlayoffStandingsListing: React.FC<
   className,
   tour,
   currentMember,
+  friendsOnly,
   isOpen = false,
   champions,
   onToggleOpen,
@@ -315,6 +321,9 @@ export const PlayoffStandingsListing: React.FC<
   const isCurrent = currentMember?.id === tourCard.memberId;
   const isFriend = currentMember?.friends?.includes(tourCard.memberId) ?? false;
 
+  if (friendsOnly && !isFriend && !isCurrent) {
+    return null;
+  }
   return (
     <div
       key={tourCard.id}
@@ -324,29 +333,25 @@ export const PlayoffStandingsListing: React.FC<
         isCurrent ? "bg-slate-200 font-semibold" : "",
         isFriend ? "bg-slate-100" : "",
       )}
+      onClick={onToggleOpen}
     >
-      <div
-        className="col-span-16 grid grid-flow-row grid-cols-10 rounded-lg text-center"
-        onClick={onToggleOpen}
-      >
-        <div className="flex place-self-center font-varela text-sm sm:text-base">
-          {position}
-          <PositionChange posChange={tourCard.posChangePO ?? 0} />
-        </div>
-        <div className="col-span-5 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
-          {tourCard.displayName}{" "}
-          {champions && (
-            <LittleFucker
-              champions={champions.filter((c) => c.tourCardId === tourCard.id)}
-            />
-          )}
-        </div>
-        <div className="col-span-2 place-self-center font-varela text-sm xs:text-base sm:text-lg">
-          {tourCard.points}
-        </div>
-        <div className="col-span-2 place-self-center font-varela text-xs xs:text-sm sm:text-base">
-          {startingStrokes ?? "-"}
-        </div>
+      <div className="col-span-2 flex place-self-center font-varela text-sm sm:text-base">
+        {position}
+        <PositionChange posChange={tourCard.posChangePO ?? 0} />
+      </div>
+      <div className="col-span-8 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
+        {tourCard.displayName}{" "}
+        {champions && (
+          <LittleFucker
+            champions={champions.filter((c) => c.tourCardId === tourCard.id)}
+          />
+        )}
+      </div>
+      <div className="col-span-3 place-self-center font-varela text-sm xs:text-base sm:text-lg">
+        {tourCard.points}
+      </div>
+      <div className="col-span-3 place-self-center font-varela text-xs xs:text-sm sm:text-base">
+        {startingStrokes ?? "-"}
       </div>
       <div className="max-h-8 min-h-6 min-w-6 max-w-8 place-self-center p-1 font-varela text-sm sm:text-base">
         <Image
@@ -375,6 +380,7 @@ interface RegularStandingsContainerProps {
   className?: string;
   currentMember?: Member | null;
   isFriendChanging?: boolean;
+  friendsOnly: boolean;
   onAddFriend?: (memberId: string) => void;
   onRemoveFriend?: (memberId: string) => void;
 }
@@ -384,6 +390,7 @@ const RegularStandingsContainer: React.FC<RegularStandingsContainerProps> = ({
   className,
   currentMember,
   isFriendChanging = false,
+  friendsOnly = false,
   onAddFriend,
   onRemoveFriend,
 }) => {
@@ -396,6 +403,7 @@ const RegularStandingsContainer: React.FC<RegularStandingsContainerProps> = ({
       className={className}
       currentMember={currentMember}
       isFriendChanging={isFriendChanging}
+      friendsOnly={friendsOnly}
       isOpen={isOpen}
       champions={champions ?? undefined}
       onToggleOpen={() => setIsOpen(!isOpen)}
@@ -412,6 +420,7 @@ interface BumpedStandingsContainerProps {
   tourCard: ExtendedTourCard;
   className?: string;
   currentMember?: Member | null;
+  friendsOnly?: boolean;
   tour?: Tour;
 }
 
@@ -419,6 +428,7 @@ const BumpedStandingsContainer: React.FC<BumpedStandingsContainerProps> = ({
   tourCard,
   className,
   currentMember,
+  friendsOnly,
   tour,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -429,6 +439,7 @@ const BumpedStandingsContainer: React.FC<BumpedStandingsContainerProps> = ({
       tourCard={tourCard}
       className={className}
       currentMember={currentMember}
+      friendsOnly={friendsOnly}
       tour={tour}
       isOpen={isOpen}
       champions={champions ?? undefined}
@@ -447,6 +458,7 @@ interface PlayoffStandingsContainerProps {
   className?: string;
   tour?: Tour;
   currentMember?: Member | null;
+  friendsOnly?: boolean;
 }
 
 const PlayoffStandingsContainer: React.FC<PlayoffStandingsContainerProps> = ({
@@ -456,6 +468,7 @@ const PlayoffStandingsContainer: React.FC<PlayoffStandingsContainerProps> = ({
   className,
   tour,
   currentMember,
+  friendsOnly,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const champions = useChampionsByMemberId(tourCard.memberId);
@@ -471,6 +484,7 @@ const PlayoffStandingsContainer: React.FC<PlayoffStandingsContainerProps> = ({
       isOpen={isOpen}
       champions={champions ?? undefined}
       onToggleOpen={() => setIsOpen(!isOpen)}
+      friendsOnly={friendsOnly}
     />
   );
 };
@@ -489,7 +503,8 @@ export interface StandingsListingProps {
   className?: string;
   tour?: Tour;
   currentMember?: Member | null;
-  isFriendChanging?: boolean;
+  friendsOnly: boolean;
+  isFriendChanging: boolean;
   onAddFriend?: (memberId: string) => void;
   onRemoveFriend?: (memberId: string) => void;
 }

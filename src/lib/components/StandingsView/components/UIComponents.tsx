@@ -60,7 +60,7 @@ export function ToursToggle({
   if ((tours?.length ?? 0) <= 1) return null;
 
   return (
-    <div className="mx-auto my-4 flex w-full flex-row items-center justify-center gap-4 text-center">
+    <div className="mx-auto mt-4 flex w-full flex-row items-center justify-center gap-4 text-center">
       {tours
         ?.sort((a, b) => a.shortForm.localeCompare(b.shortForm))
         .map((tour) => (
@@ -82,6 +82,50 @@ export function ToursToggle({
         tourToggle={standingsToggle}
         setTourToggle={setStandingsToggle}
       />
+    </div>
+  );
+}
+
+/**
+ * Friends Only Toggle Component
+ */
+export interface FriendsOnlyToggleProps {
+  friendsOnly: boolean;
+  setFriendsOnly: (value: boolean) => void;
+  disabled?: boolean;
+}
+
+export function FriendsOnlyToggle({
+  friendsOnly,
+  setFriendsOnly,
+  disabled = false,
+}: FriendsOnlyToggleProps) {
+  return (
+    <div className="flex items-center justify-end">
+      <div className="flex flex-col items-center justify-center p-2">
+        <label htmlFor="friends-only-toggle" className="font-barlow text-xs">
+          Friends
+        </label>
+        <button
+          id="friends-only-toggle"
+          type="button"
+          role="switch"
+          aria-checked={friendsOnly}
+          disabled={disabled}
+          onClick={() => setFriendsOnly(!friendsOnly)}
+          className={cn(
+            "relative inline-flex h-3 w-6 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:opacity-50",
+            friendsOnly ? "bg-slate-600" : "bg-gray-300",
+          )}
+        >
+          <span
+            className={cn(
+              "inline-block h-2 w-2 transform rounded-full bg-white transition-transform",
+              friendsOnly ? "translate-x-3.5" : "translate-x-1",
+            )}
+          />
+        </button>
+      </div>
     </div>
   );
 }

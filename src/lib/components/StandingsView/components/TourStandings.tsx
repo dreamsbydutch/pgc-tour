@@ -33,6 +33,9 @@ export function TourStandings({
   tourCards,
   currentMember,
   friendState,
+  friendsOnly,
+  setFriendsOnly,
+  disabled,
   onAddFriend,
   onRemoveFriend,
 }: TourStandingsProps) {
@@ -51,7 +54,12 @@ export function TourStandings({
 
   return (
     <div className="mx-auto px-1">
-      <StandingsTableHeader variant="regular" />
+      <StandingsTableHeader
+        variant="regular"
+        friendsOnly={friendsOnly}
+        setFriendsOnly={setFriendsOnly}
+        disabled={disabled}
+      />
 
       {/* Gold Playoff Qualifiers (Positions 1-15) */}
       {goldCutCards.map((tourCard: ExtendedTourCard) => (
@@ -59,6 +67,7 @@ export function TourStandings({
           key={tourCard.id}
           variant="regular"
           tourCard={tourCard}
+          friendsOnly={friendsOnly}
           currentMember={currentMember}
           isFriendChanging={friendState.friendChangingIds.has(
             tourCard.memberId,
@@ -78,6 +87,7 @@ export function TourStandings({
           key={tourCard.id}
           variant="regular"
           tourCard={tourCard}
+          friendsOnly={friendsOnly}
           currentMember={currentMember}
           isFriendChanging={friendState.friendChangingIds.has(
             tourCard.memberId,
@@ -99,6 +109,7 @@ export function TourStandings({
           variant="regular"
           tourCard={tourCard}
           currentMember={currentMember}
+          friendsOnly={friendsOnly}
           isFriendChanging={friendState.friendChangingIds.has(
             tourCard.memberId,
           )}

@@ -2,6 +2,7 @@ import type { StandingsContentProps } from "../utils/types";
 import { filterTourCardsByTour } from "../utils/standings-utils";
 import { TourStandings } from "./TourStandings";
 import { PlayoffStandings } from "./PlayoffStandings";
+import { useAuthData } from "@pgc-hooks";
 
 /**
  * StandingsContent Component
@@ -12,6 +13,9 @@ export function StandingsContent({
   standingsToggle,
   data,
   friendState,
+  friendsOnly,
+  setFriendsOnly,
+  disabled,
   onAddFriend,
   onRemoveFriend,
 }: StandingsContentProps) {
@@ -25,6 +29,9 @@ export function StandingsContent({
         tiers={tiers}
         tourCards={tourCards}
         currentMember={currentMember}
+        friendsOnly={friendsOnly}
+        setFriendsOnly={setFriendsOnly}
+        disabled={!data?.currentMember}
         friendState={friendState}
         onAddFriend={onAddFriend}
         onRemoveFriend={onRemoveFriend}
@@ -40,7 +47,10 @@ export function StandingsContent({
   }
 
   // Filter tour cards for the selected tour
-  const filteredTourCards = filterTourCardsByTour(tourCards, selectedTour.id);
+  const filteredTourCards = filterTourCardsByTour(
+    tourCards,
+    selectedTour.id,
+  );
 
   return (
     <TourStandings
@@ -48,6 +58,9 @@ export function StandingsContent({
       tourCards={filteredTourCards}
       currentMember={currentMember}
       friendState={friendState}
+      friendsOnly={friendsOnly}
+        setFriendsOnly={setFriendsOnly}
+        disabled={!data?.currentMember}
       onAddFriend={onAddFriend}
       onRemoveFriend={onRemoveFriend}
     />

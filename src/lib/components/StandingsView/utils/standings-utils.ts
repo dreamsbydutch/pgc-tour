@@ -3,11 +3,8 @@
  * These functions are reusable and have no side effects
  */
 
-import type {
-  ExtendedTourCard,
-  StandingsGroups,
-  PlayoffGroups,
-} from "./types";
+import { Member } from "@pgc-store";
+import type { ExtendedTourCard, StandingsGroups, PlayoffGroups } from "./types";
 
 // ================= PARSING & FORMATTING =================
 
@@ -39,24 +36,24 @@ export function formatPoints(points: number): string {
  * @param posChange - Position change value (positive = improvement)
  * @returns Object with display value and CSS classes
  */
-export function formatPositionChange(posChange: number): { 
-  value: string; 
+export function formatPositionChange(posChange: number): {
+  value: string;
   className: string;
   icon: "up" | "down" | "neutral";
 } {
   if (posChange === 0) {
-    return { 
-      value: "—", 
+    return {
+      value: "—",
       className: "text-gray-500",
-      icon: "neutral"
+      icon: "neutral",
     };
   }
-  
+
   const isImprovement = posChange > 0;
   return {
     value: isImprovement ? `+${posChange}` : posChange.toString(),
     className: isImprovement ? "text-green-600" : "text-red-600",
-    icon: isImprovement ? "up" : "down"
+    icon: isImprovement ? "up" : "down",
   };
 }
 
@@ -153,8 +150,8 @@ export function sortTourCardsByPoints(
 export function sortTourCardsByPosition(
   tourCards: ExtendedTourCard[],
 ): ExtendedTourCard[] {
-  return [...tourCards].sort((a, b) => 
-    parsePosition(a.position) - parsePosition(b.position)
+  return [...tourCards].sort(
+    (a, b) => parsePosition(a.position) - parsePosition(b.position),
   );
 }
 
@@ -202,12 +199,12 @@ export function getTourCardRowClasses(
   friends?: string[] | null,
 ): string {
   const classes = ["standings-row"];
-  
+
   if (tourCard.memberId === currentMemberId) {
     classes.push("bg-blue-50 font-semibold border-blue-200");
   } else if (friends?.includes(tourCard.memberId)) {
     classes.push("bg-gray-50 border-gray-200");
   }
-  
+
   return classes.join(" ");
 }
