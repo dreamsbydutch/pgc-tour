@@ -360,3 +360,18 @@ export function useAuthData() {
     isLoading: isAuthLoading || isLoadingTourCards,
   };
 }
+
+
+export function useLiveTournaments({ currentSeasonId }: { currentSeasonId: string }) {
+  const { data: tournaments, isLoading, error } =
+    api.tournament.getBySeason.useQuery({ seasonId: currentSeasonId }, {
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
+    });
+
+  return {
+    tournaments: tournaments ?? [],
+    isLoading,
+    error,
+  };
+}

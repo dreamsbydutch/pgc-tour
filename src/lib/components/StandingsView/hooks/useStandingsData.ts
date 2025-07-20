@@ -15,7 +15,6 @@ import {
   useAllTourCards,
   useSeason,
   useTiers,
-  useTournaments,
   useTours,
   useMember,
 } from "@pgc-store";
@@ -25,6 +24,7 @@ import type {
   StandingsState,
   ExtendedTourCard,
 } from "../utils/types";
+import { useLiveTournaments } from "@pgc-hooks";
 
 /**
  * Hook for fetching all standings data
@@ -36,7 +36,9 @@ import type {
 export function useStandingsData(): StandingsState {
   const currentMember = useMember();
   const season = useSeason();
-  const tournaments = useTournaments();
+  const { tournaments } = useLiveTournaments({
+    currentSeasonId: season?.id ?? "",
+  });
   const tourCards = useAllTourCards();
   const tours = useTours();
   const tiers = useTiers();
@@ -165,6 +167,12 @@ function computeExtendedTourCards(
       pastPoints,
     };
   });
+
+  console.log(
+    tournaments?.filter(
+      (t) => t.seasonId === seasonId && new Date(t.endDate) < new Date(),
+    ),
+  );
 
   // Calculate position changes
   const withPositionChanges = pastPoints.map((tc): ExtendedTourCard => {

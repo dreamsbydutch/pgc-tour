@@ -12,6 +12,7 @@ import type {
   HomePageListingsLeaderboardTeam,
   TeamFromTournamentAPI,
 } from "../utils/types";
+import { useLiveTournaments } from "@pgc-hooks";
 
 /**
  * Hook to fetch leaderboard data
@@ -19,7 +20,9 @@ import type {
 export const useLeaderboardData = () => {
   const member = useMember();
   const tours = useTours();
-  const { data: tournaments } = useLiveTournaments(tours?.[0]?.seasonId ?? "");
+  const { tournaments } = useLiveTournaments({
+    currentSeasonId: tours?.[0]?.seasonId ?? "",
+  });
 
   // Fetch current active tournament
   const currentTournament = tournaments?.find(
@@ -98,8 +101,4 @@ export const useLeaderboardData = () => {
   }
 
   return { data, isLoading, error };
-};
-
-const useLiveTournaments = (seasonId: string) => {
-  return api.tournament.getBySeason.useQuery({ seasonId });
 };

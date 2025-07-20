@@ -1,1 +1,1 @@
-export { useCurrentSchedule } from "./hooks";
+export { useCurrentSchedule, useLiveTournaments } from "./hooks";
