@@ -23,7 +23,6 @@ import { useFriendManagement } from "./hooks/useFriendManagement";
 import {
   StandingsHeader,
   ToursToggle,
-  FriendsOnlyToggle,
   StandingsLoadingSkeleton,
   StandingsError,
   StandingsContent,

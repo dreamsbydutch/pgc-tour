@@ -2,7 +2,6 @@ import type { StandingsContentProps } from "../utils/types";
 import { filterTourCardsByTour } from "../utils/standings-utils";
 import { TourStandings } from "./TourStandings";
 import { PlayoffStandings } from "./PlayoffStandings";
-import { useAuthData } from "@pgc-hooks";
 
 /**
  * StandingsContent Component
@@ -15,7 +14,6 @@ export function StandingsContent({
   friendState,
   friendsOnly,
   setFriendsOnly,
-  disabled,
   onAddFriend,
   onRemoveFriend,
 }: StandingsContentProps) {

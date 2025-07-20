@@ -3,7 +3,6 @@
  * These functions are reusable and have no side effects
  */
 
-import { Member } from "@pgc-store";
 import type { ExtendedTourCard, StandingsGroups, PlayoffGroups } from "./types";
 
 // ================= PARSING & FORMATTING =================
