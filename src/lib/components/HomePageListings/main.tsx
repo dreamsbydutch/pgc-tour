@@ -38,7 +38,6 @@ export const HomePageListingsContainer: React.FC<
     );
   }
 
-  console.log(leaderboardData, "leaderboardData");
   return (
     <>
       {activeView === "standings" && (

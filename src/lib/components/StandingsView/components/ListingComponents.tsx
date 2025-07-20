@@ -206,7 +206,6 @@ interface BumpedStandingsListingProps {
   tour?: Tour;
   isOpen?: boolean;
   friendsOnly: boolean;
-  setFriendsOnly: (value: boolean) => void;
   champions?: Champion[];
   onToggleOpen?: () => void;
 }
@@ -420,7 +419,7 @@ interface BumpedStandingsContainerProps {
   tourCard: ExtendedTourCard;
   className?: string;
   currentMember?: Member | null;
-  friendsOnly?: boolean;
+  friendsOnly: boolean;
   tour?: Tour;
 }
 
@@ -458,7 +457,7 @@ interface PlayoffStandingsContainerProps {
   className?: string;
   tour?: Tour;
   currentMember?: Member | null;
-  friendsOnly?: boolean;
+  friendsOnly: boolean;
 }
 
 const PlayoffStandingsContainer: React.FC<PlayoffStandingsContainerProps> = ({

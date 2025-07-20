@@ -65,9 +65,9 @@ export function getTourLink(
   tournamentId?: string,
 ): string {
   if (viewType === "standings") {
-    return `/standings?tour=${tourId}`;
+    return `/standings?tourId=${tourId}`;
   } else {
-    return `/tournament?id=${tournamentId}&tour=${tourId}`;
+    return `/tournament/${tournamentId}?tourId=${tourId}`;
   }
 }
 

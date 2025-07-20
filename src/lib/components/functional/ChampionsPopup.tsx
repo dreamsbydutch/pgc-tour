@@ -96,7 +96,7 @@ function ChampionSection({
 
   return (
     <Link
-      href={`/tournament?id=${champion.tournament.id}&tour=${champion.tour.id}`}
+      href={`/tournament/${champion.tournament.id}?tourId=${champion.tour.id}`}
       className="block transition-colors duration-200 hover:bg-amber-50"
     >
       <div className="mx-auto w-11/12 border-b border-slate-800" />
