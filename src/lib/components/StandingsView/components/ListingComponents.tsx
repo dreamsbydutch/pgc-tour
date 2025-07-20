@@ -153,7 +153,7 @@ export const RegularStandingsListing: React.FC<
       key={tourCard.id}
       className={cn(
         className,
-        "grid grid-flow-row grid-cols-17 rounded-lg py-[1px] text-center",
+        "grid grid-flow-row grid-cols-16 rounded-lg py-[1px] text-center",
         isCurrent ? "bg-slate-200 font-semibold" : "",
         isFriend ? "bg-slate-100" : "",
       )}
@@ -163,7 +163,7 @@ export const RegularStandingsListing: React.FC<
         {tourCard.position}
         <PositionChange posChange={tourCard.posChange ?? 0} />
       </div>
-      <div className="col-span-8 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
+      <div className="col-span-7 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
         {tourCard.displayName}
         {champions && (
           <LittleFucker
@@ -231,7 +231,7 @@ export const BumpedStandingsListing: React.FC<BumpedStandingsListingProps> = ({
       key={tourCard.id}
       className={cn(
         className,
-        "grid grid-flow-row grid-cols-17 rounded-lg py-[1px] text-center",
+        "grid grid-flow-row grid-cols-16 rounded-lg py-[1px] text-center",
         isCurrent ? "bg-slate-200 font-semibold" : "",
         isFriend ? "bg-slate-100" : "",
       )}
@@ -241,7 +241,7 @@ export const BumpedStandingsListing: React.FC<BumpedStandingsListingProps> = ({
         {tourCard.position}
         <PositionChange posChange={tourCard.posChange ?? 0} />
       </div>
-      <div className="col-span-8 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
+      <div className="col-span-7 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
         {tourCard.displayName}
         {champions && (
           <LittleFucker
@@ -328,7 +328,7 @@ export const PlayoffStandingsListing: React.FC<
       key={tourCard.id}
       className={cn(
         className,
-        "grid grid-flow-row grid-cols-17 rounded-lg py-[1px] text-center",
+        "grid grid-flow-row grid-cols-16 rounded-lg py-[1px] text-center",
         isCurrent ? "bg-slate-200 font-semibold" : "",
         isFriend ? "bg-slate-100" : "",
       )}
@@ -338,7 +338,7 @@ export const PlayoffStandingsListing: React.FC<
         {position}
         <PositionChange posChange={tourCard.posChangePO ?? 0} />
       </div>
-      <div className="col-span-8 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
+      <div className="col-span-7 flex items-center justify-center place-self-center font-varela text-lg sm:text-xl">
         {tourCard.displayName}{" "}
         {champions && (
           <LittleFucker

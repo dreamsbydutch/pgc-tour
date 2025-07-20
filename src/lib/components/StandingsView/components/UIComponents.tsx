@@ -103,7 +103,10 @@ export function FriendsOnlyToggle({
   return (
     <div className="flex items-center justify-end">
       <div className="flex flex-col items-center justify-center p-2">
-        <label htmlFor="friends-only-toggle" className="font-barlow text-xs">
+        <label
+          htmlFor="friends-only-toggle"
+          className="overflow-clip font-barlow text-2xs"
+        >
           Friends
         </label>
         <button

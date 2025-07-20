@@ -47,11 +47,11 @@ function RegularStandingsHeader({
   disabled?: boolean;
 }) {
   return (
-    <div className="grid grid-flow-row grid-cols-17 text-center">
+    <div className="grid grid-flow-row grid-cols-16 text-center">
       <TableHeaderCell className="col-span-2 text-xs font-bold sm:text-sm">
         Rank
       </TableHeaderCell>
-      <TableHeaderCell className="col-span-8 text-base font-bold sm:text-lg">
+      <TableHeaderCell className="col-span-7 text-base font-bold sm:text-lg">
         Name
       </TableHeaderCell>
       <TableHeaderCell className="col-span-3 text-xs font-bold xs:text-sm sm:text-base">
@@ -84,16 +84,16 @@ function BumpedHeader({
   disabled?: boolean;
 }) {
   return (
-    <div className="mt-12 grid grid-flow-row grid-cols-17 rounded-xl bg-gradient-to-b from-red-200 text-center text-red-900">
+    <div className="mt-12 grid grid-flow-row grid-cols-16 rounded-xl bg-gradient-to-b from-red-200 text-center text-red-900">
       <div
-        className={cn("col-span-17 my-2 font-varela text-2xl font-extrabold")}
+        className={cn("col-span-16 my-2 font-varela text-2xl font-extrabold")}
       >
         KNOCKED OUT
       </div>
       <TableHeaderCell className="col-span-2 text-xs font-bold sm:text-sm">
         Rank
       </TableHeaderCell>
-      <TableHeaderCell className="col-span-8 text-base font-bold sm:text-lg">
+      <TableHeaderCell className="col-span-7 text-base font-bold sm:text-lg">
         Name
       </TableHeaderCell>
       <TableHeaderCell className="col-span-3 text-xs font-bold xs:text-sm sm:text-base">
@@ -133,7 +133,7 @@ const PlayoffHeader = ({
 }) => (
   <div
     className={cn(
-      "grid grid-flow-row grid-cols-17 rounded-xl text-center",
+      "grid grid-flow-row grid-cols-16 rounded-xl text-center",
       title.includes("GOLD")
         ? "mt-4 bg-gradient-to-b from-champ-400"
         : "mt-12 bg-gradient-to-b from-zinc-300",
@@ -145,7 +145,7 @@ const PlayoffHeader = ({
       <PopoverTrigger className={cn("col-span-17")}>
         <div
           className={cn(
-            "col-span-17 my-2 font-varela text-2xl font-extrabold",
+            "col-span-16 my-2 font-varela text-2xl font-extrabold",
             title.includes("GOLD") ? "text-champ-900" : "text-zinc-600",
           )}
         >
@@ -159,7 +159,7 @@ const PlayoffHeader = ({
     <TableHeaderCell className="col-span-2 text-xs font-bold sm:text-sm">
       Rank
     </TableHeaderCell>
-    <TableHeaderCell className="col-span-8 text-base font-bold sm:text-lg">
+    <TableHeaderCell className="col-span-7 text-base font-bold sm:text-lg">
       Name
     </TableHeaderCell>
     <TableHeaderCell className="col-span-3 text-xs font-bold xs:text-sm sm:text-base">
