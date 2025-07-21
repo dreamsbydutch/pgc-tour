@@ -60,7 +60,7 @@ function RegularStandingsHeader({
       <TableHeaderCell className="col-span-3 text-2xs xs:text-xs sm:text-sm">
         Earnings
       </TableHeaderCell>
-      <TableHeaderCell className="col-span-1 text-2xs xs:text-xs sm:text-sm">
+      <TableHeaderCell className="col-span-1 overflow-x-clip text-2xs xs:text-xs sm:text-sm">
         <FriendsOnlyToggle
           friendsOnly={friendsOnly}
           setFriendsOnly={setFriendsOnly}
@@ -102,7 +102,7 @@ function BumpedHeader({
       <TableHeaderCell className="col-span-3 text-2xs xs:text-xs sm:text-sm">
         Earnings
       </TableHeaderCell>
-      <TableHeaderCell className="col-span-1 text-2xs xs:text-xs sm:text-sm">
+      <TableHeaderCell className="col-span-1 overflow-x-clip text-2xs xs:text-xs sm:text-sm">
         <FriendsOnlyToggle
           friendsOnly={friendsOnly}
           setFriendsOnly={setFriendsOnly}
@@ -168,7 +168,7 @@ const PlayoffHeader = ({
     <TableHeaderCell className="col-span-3 text-2xs xs:text-xs sm:text-sm">
       Starting Strokes
     </TableHeaderCell>
-    <TableHeaderCell className="col-span-1 text-2xs xs:text-xs sm:text-sm">
+    <TableHeaderCell className="col-span-1 overflow-x-clip text-2xs xs:text-xs sm:text-sm">
       <FriendsOnlyToggle
         friendsOnly={friendsOnly}
         setFriendsOnly={setFriendsOnly}

@@ -60,7 +60,7 @@ export function ToursToggle({
   if ((tours?.length ?? 0) <= 1) return null;
 
   return (
-    <div className="mx-auto mt-4 flex w-full flex-row items-center justify-center gap-4 text-center">
+    <div className="mx-auto mb-4 mt-4 flex w-full flex-row items-center justify-center gap-4 text-center">
       {tours
         ?.sort((a, b) => a.shortForm.localeCompare(b.shortForm))
         .map((tour) => (
@@ -102,7 +102,7 @@ export function FriendsOnlyToggle({
 }: FriendsOnlyToggleProps) {
   return (
     <div className="flex items-center justify-end">
-      <div className="flex flex-col items-center justify-center p-2">
+      <div className="flex flex-col items-center justify-center">
         <label
           htmlFor="friends-only-toggle"
           className="overflow-clip font-barlow text-2xs"
