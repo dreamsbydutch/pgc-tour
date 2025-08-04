@@ -149,6 +149,7 @@ async function updateTourCardPositions(
         topTen: calculation.topTen,
         madeCut: calculation.madeCut,
         appearances: calculation.appearances,
+        playoff: betterPointsCount < 15 ? 1 : betterPointsCount < 35 ? 2 : 0,
       });
 
       updatedCount++;
