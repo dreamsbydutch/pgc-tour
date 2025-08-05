@@ -13,6 +13,23 @@ export const teamRouter = createTRPCRouter({
     });
   }),
 
+  getBySeason: publicProcedure
+    .input(z.object({ seasonId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.team.findMany({
+        where: {
+          tournament: {
+            seasonId: input.seasonId,
+          },
+        },
+        include: {
+          tournament: true,
+          tourCard: true,
+        },
+        orderBy: { score: "asc" },
+      });
+    }),
+
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
@@ -103,7 +120,12 @@ export const teamRouter = createTRPCRouter({
         },
         include: {
           tournament: {
-            select: { name: true, logoUrl: true, startDate: true,currentRound: true},
+            select: {
+              name: true,
+              logoUrl: true,
+              startDate: true,
+              currentRound: true,
+            },
           },
         },
         orderBy: { tournament: { tier: { payouts: "asc" } } },

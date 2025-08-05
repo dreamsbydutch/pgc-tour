@@ -97,6 +97,7 @@ model Tournament {
   tier         Tier     @relation(fields: [tierId], references: [id])
 
   @@unique([name, startDate, tierId])
+  @@index([seasonId, endDate]) // Performance optimization for standings
   @@map("tournaments")
 }
 
@@ -148,6 +149,7 @@ model Team {
   tournament        Tournament @relation(fields: [tournamentId], references: [id])
 
   @@unique([tournamentId, tourCardId])
+  @@index([tournamentId, tourCardId]) // Performance optimization for standings
   @@map("teams")
 }
 
@@ -176,6 +178,8 @@ model TourCard {
   tour   Tour   @relation(fields: [tourId], references: [id])
 
   @@unique([memberId, seasonId])
+  @@index([seasonId, points]) // Performance optimization for standings
+  @@index([tourId, points]) // Performance optimization for tour standings
   @@map("tour_cards")
 }
 

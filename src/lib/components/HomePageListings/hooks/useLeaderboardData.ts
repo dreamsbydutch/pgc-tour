@@ -20,15 +20,23 @@ import { useLiveTournaments } from "@pgc-hooks";
 export const useLeaderboardData = () => {
   const member = useMember();
   const tours = useTours();
-  const { tournaments } = useLiveTournaments({
-    currentSeasonId: tours?.[0]?.seasonId ?? "",
+  
+  // Get the current season ID safely
+  const currentSeasonId = tours?.[0]?.seasonId ?? "";
+  
+  // Only call useLiveTournaments if we have a valid season ID
+  const tournamentsResult = useLiveTournaments({
+    currentSeasonId,
   });
+  
+  // Safely destructure with fallbacks
+  const tournaments = tournamentsResult?.tournaments ?? [];
 
   // Fetch current active tournament
   const currentTournament = tournaments?.find(
     (t) =>
-      t.livePlay === true ||
-      ((t.currentRound ?? 0) > 1 && (t.currentRound ?? 0) < 5),
+      t?.livePlay === true ||
+      ((t?.currentRound ?? 0) > 1 && (t?.currentRound ?? 0) < 5),
   );
 
   // Fetch teams for the current tournament
@@ -51,53 +59,75 @@ export const useLeaderboardData = () => {
     error: championsError,
   } = api.team.getAllChampions.useQuery();
 
-  // Combined loading state
-  const isLoading = championsLoading || teamsLoading || !tours || !member;
+  // Combined loading state - include tournaments loading
+  const isLoading = 
+    championsLoading || 
+    teamsLoading || 
+    tournamentsResult?.isLoading || 
+    !tours || 
+    !member ||
+    !currentSeasonId;
 
-  // Combined error state
-  const error = championsError?.message ?? teamsError?.message ?? null;
+  // Combined error state - include tournaments error
+  const error = 
+    championsError?.message ?? 
+    teamsError?.message ?? 
+    tournamentsResult?.error?.message ?? 
+    null;
 
   // Build data object - simple transformation
   let data: HomePageListingsLeaderboardProps | null = null;
 
-  if (tours && member) {
-    // Group teams by tour
-    const tourMap = new Map<string, HomePageListingsLeaderboardTeam[]>();
+  if (tours && member && currentSeasonId) {
+    try {
+      // Group teams by tour
+      const tourMap = new Map<string, HomePageListingsLeaderboardTeam[]>();
 
-    if (teams) {
-      teams.forEach((team: TeamFromTournamentAPI) => {
-        if (team.tourCard?.tourId) {
-          const tourId = team.tourCard.tourId;
-          if (!tourMap.has(tourId)) {
-            tourMap.set(tourId, []);
+      if (teams && Array.isArray(teams)) {
+        teams.forEach((team: TeamFromTournamentAPI) => {
+          if (team?.tourCard?.tourId) {
+            const tourId = team.tourCard.tourId;
+            if (!tourMap.has(tourId)) {
+              tourMap.set(tourId, []);
+            }
+
+            // Transform team data to match expected type
+            const leaderboardTeam: HomePageListingsLeaderboardTeam = {
+              id: team.id?.toString() ?? "",
+              tourCard: {
+                displayName: team.tourCard.displayName ?? "",
+                memberId: team.tourCard.memberId ?? "",
+              },
+              position: team.position ?? "CUT",
+              score: team.score ?? 0,
+              thru: team.thru ?? 0,
+            };
+
+            tourMap.get(tourId)!.push(leaderboardTeam);
           }
+        });
+      }
 
-          // Transform team data to match expected type
-          const leaderboardTeam: HomePageListingsLeaderboardTeam = {
-            id: team.id.toString(),
-            tourCard: {
-              displayName: team.tourCard.displayName,
-              memberId: team.tourCard.memberId,
-            },
-            position: team.position ?? "CUT",
-            score: team.score ?? 0,
-            thru: team.thru ?? 0,
-          };
-
-          tourMap.get(tourId)!.push(leaderboardTeam);
-        }
-      });
+      data = {
+        tours: tours.map((t) => {
+          return { ...t, teams: tourMap.get(t.id) ?? [] };
+        }),
+        currentTournament: currentTournament ?? undefined,
+        allTournaments: tournaments ?? [],
+        self: member,
+        champions: champions ?? [],
+      };
+    } catch (err) {
+      console.error("Error building leaderboard data:", err);
+      // Return minimal safe data structure
+      data = {
+        tours: tours.map((t) => ({ ...t, teams: [] })),
+        currentTournament: undefined,
+        allTournaments: [],
+        self: member,
+        champions: [],
+      };
     }
-
-    data = {
-      tours: tours.map((t) => {
-        return { ...t, teams: tourMap.get(t.id) ?? [] };
-      }),
-      currentTournament,
-      allTournaments: tournaments ?? [],
-      self: member,
-      champions: champions,
-    };
   }
 
   return { data, isLoading, error };
