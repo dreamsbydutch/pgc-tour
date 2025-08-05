@@ -154,8 +154,8 @@ export function PreTournamentContent({
       {!canMakePicks && !tourCard && member && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
           <p className="font-medium text-red-800">
-            Tour Card was not found for {member?.firstname || "this member"}{" "}
-            {member?.lastname || ""}
+            Tour Card was not found for {member?.firstname ?? ""}{" "}
+            {member?.lastname ?? ""}
           </p>
         </div>
       )}

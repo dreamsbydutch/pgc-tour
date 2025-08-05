@@ -2,7 +2,7 @@
  * Optimized loading states for better perceived performance
  */
 
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "../../functional/ui/skeleton";
 
 export function OptimizedStandingsLoader() {
   return (
@@ -31,7 +31,7 @@ export function OptimizedStandingsLoader() {
       </div>
 
       {/* Table rows with staggered animation */}
-      {[...Array(10)].map((_, i) => (
+      {Array.from({ length: 10 }, (_, i) => (
         <div
           key={i}
           className="grid grid-cols-6 gap-4 p-2"

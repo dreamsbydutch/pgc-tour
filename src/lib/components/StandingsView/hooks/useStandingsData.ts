@@ -69,7 +69,7 @@ export function useStandingsData(): StandingsState {
     },
   );
 
-  const teams = teamsQuery.data ?? [];
+  const teams = useMemo(() => teamsQuery.data ?? [], [teamsQuery.data]);
 
   // Compute extended tour cards with position changes (memoized for performance)
   const extendedTourCards = useMemo(() => {

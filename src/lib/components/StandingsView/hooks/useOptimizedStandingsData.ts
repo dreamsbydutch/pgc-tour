@@ -11,6 +11,8 @@ import { useMemo } from "react";
 import { api } from "@pgc-trpcClient";
 import { useMember, useSeason } from "@pgc-store";
 import type { StandingsData, StandingsState } from "../utils/types";
+import type { Team } from "@prisma/client";
+
 
 /**
  * Optimized hook for fetching all standings data
@@ -43,14 +45,14 @@ export function useOptimizedStandingsData(): StandingsState {
     );
   }, [standingsQuery.data?.allTourCards, currentMember]);
 
-  // Filter tournaments for current season (already filtered on server)
-  const seasonTournaments = standingsQuery.data?.tournaments ?? [];
-
   const isLoading = standingsQuery.isLoading || !seasonId;
   const error = standingsQuery.error;
 
   const data: StandingsData | null = useMemo(() => {
     if (!standingsQuery.data || !seasonId) return null;
+
+    // Filter tournaments for current season (already filtered on server)
+    const seasonTournaments = standingsQuery.data.tournaments ?? [];
 
     return {
       tours: standingsQuery.data.tours,
@@ -58,17 +60,11 @@ export function useOptimizedStandingsData(): StandingsState {
       tourCards: standingsQuery.data.allTourCards,
       currentTourCard,
       currentMember,
-      teams: standingsQuery.data.teams,
+      teams: standingsQuery.data.teams as Team[], // Type assertion for compatibility
       tournaments: seasonTournaments,
       seasonId,
     };
-  }, [
-    standingsQuery.data,
-    seasonId,
-    currentTourCard,
-    currentMember,
-    seasonTournaments,
-  ]);
+  }, [standingsQuery.data, seasonId, currentTourCard, currentMember]);
 
   return {
     data,
