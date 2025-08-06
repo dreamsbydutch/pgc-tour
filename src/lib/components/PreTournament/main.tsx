@@ -31,6 +31,7 @@ export async function PreTournamentPage({
     return (
       <>
         <TournamentCountdown tourney={tournament} />
+        <div className="text-center">Please sign in to pick a team.</div>
         <PreTournamentContent
           tournament={tournament}
           member={null}
