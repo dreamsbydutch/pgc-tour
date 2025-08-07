@@ -97,7 +97,11 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
 
   const posChange = getPositionChange(team, golfer, type);
   const shouldShowPositionChange =
-    (props.tournament?.currentRound ?? 0) > 1 &&
+    ((props.tournament?.currentRound ?? 0) === 2 &&
+      props.tournament?.livePlay) ||
+    (props.tournament?.currentRound ?? 0) >= 3;
+  const shouldShowPositionChangeWithCutCheck =
+    shouldShowPositionChange &&
     !isPlayerCut(team?.position ?? null) &&
     !isPlayerCut(golfer?.position ?? null);
 
@@ -119,7 +123,9 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
       <div className={rowClass}>
         <div className="col-span-2 flex place-self-center font-varela text-base sm:col-span-5">
           {type === "PGA" ? golfer?.position : team?.position}
-          {shouldShowPositionChange && <PositionChange posChange={posChange} />}
+          {shouldShowPositionChangeWithCutCheck && (
+            <PositionChange posChange={posChange} />
+          )}
         </div>
         <div className="col-span-4 place-self-center font-varela text-lg sm:col-span-10">
           {type === "PGA" ? golfer?.playerName : tourCard?.displayName}

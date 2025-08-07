@@ -540,7 +540,8 @@ const LeaderboardListing: React.FC<LeaderboardListingProps> = ({
       <div className={rowClass}>
         <div className="col-span-2 flex place-self-center font-varela text-base sm:col-span-3">
           {type === "PGA" ? golfer?.position : team?.position}
-          {(tournament?.currentRound ?? 0) > 1 &&
+          {(((tournament?.currentRound ?? 0) === 2 && tournament?.livePlay) ||
+            (tournament?.currentRound ?? 0) >= 3) &&
             team?.position !== "CUT" &&
             golfer?.position !== "CUT" &&
             golfer?.position !== "WD" &&
