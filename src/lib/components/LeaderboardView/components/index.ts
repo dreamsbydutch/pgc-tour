@@ -7,7 +7,6 @@
 export { PGCLeaderboard } from "./PGCLeaderboard";
 export { PGALeaderboard } from "./PGALeaderboard";
 export { PlayoffLeaderboard } from "./PlayoffLeaderboard";
-export { PlayoffDebugInfo } from "./PlayoffDebugInfo";
 export { LeaderboardListing } from "./LeaderboardListing";
 
 // UI components

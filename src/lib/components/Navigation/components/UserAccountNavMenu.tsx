@@ -27,7 +27,6 @@ import type {
   NavigationMember,
   NavigationTourCard,
   NavigationChampion,
-  NavigationError,
 } from "../utils/types";
 
 interface UserAccountNavMenuProps {
@@ -100,8 +99,8 @@ function UserInfo({
 }) {
   // Safely calculate user display name
   const displayName = useMemo(() => {
-    const firstname = member?.firstname?.trim() || "";
-    const lastname = member?.lastname?.trim() || "";
+    const firstname = member?.firstname?.trim() ?? "";
+    const lastname = member?.lastname?.trim() ?? "";
     return firstname || lastname ? `${firstname} ${lastname}`.trim() : "User";
   }, [member?.firstname, member?.lastname]);
 

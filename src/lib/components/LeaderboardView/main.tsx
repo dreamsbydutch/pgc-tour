@@ -20,7 +20,6 @@ import { useLeaderboardLogic } from "./hooks/useLeaderboardLogic";
 import { PGCLeaderboard } from "./components/PGCLeaderboard";
 import { PGALeaderboard } from "./components/PGALeaderboard";
 import { PlayoffLeaderboard } from "./components/PlayoffLeaderboard";
-import { PlayoffDebugInfo } from "./components/PlayoffDebugInfo";
 import { LeaderboardHeaderRow } from "./components/UIComponents";
 import { ToursToggleButton } from "@pgc-components";
 

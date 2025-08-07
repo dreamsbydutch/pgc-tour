@@ -7,12 +7,7 @@ import { useMemo, useCallback, useRef, useEffect } from "react";
 import type { NavigationData, NavigationError } from "../utils/types";
 import { useHeaderUser } from "@pgc-auth";
 import { api } from "@pgc-trpcClient";
-import {
-  createNavigationError,
-  isNetworkError,
-  getRetryDelay,
-  safeAggregate,
-} from "../utils";
+import { createNavigationError, isNetworkError, getRetryDelay } from "../utils";
 
 // Major tournament names for champion filtering
 const MAJOR_TOURNAMENTS = [
@@ -120,16 +115,23 @@ export function useNavigationData(): NavigationData {
       clearTimeout(retryTimeoutRef.current);
     }
 
-    retryTimeoutRef.current = setTimeout(async () => {
-      try {
-        console.log(
-          `Retrying navigation data fetch (attempt ${retryCountRef.current})`,
-        );
-        await Promise.all([refetchTourCards(), refetchTeams()]);
-        retryCountRef.current = 0; // Reset on success
-      } catch (error) {
-        console.error(`Retry attempt ${retryCountRef.current} failed:`, error);
-      }
+    retryTimeoutRef.current = setTimeout(() => {
+      const executeRetry = async () => {
+        try {
+          console.log(
+            `Retrying navigation data fetch (attempt ${retryCountRef.current})`,
+          );
+          await Promise.all([refetchTourCards(), refetchTeams()]);
+          retryCountRef.current = 0; // Reset on success
+        } catch (error) {
+          console.error(
+            `Retry attempt ${retryCountRef.current} failed:`,
+            error,
+          );
+        }
+      };
+
+      void executeRetry();
     }, delay);
   }, [refetchTourCards, refetchTeams]);
 
@@ -171,18 +173,23 @@ export function useNavigationData(): NavigationData {
 
   // Determine error state with detailed information
   const navigationError: NavigationError | null = useMemo(() => {
-    const hasError = tourCardsError || teamsError;
+    const hasError = tourCardsError ?? teamsError;
     if (!hasError) return null;
 
-    const primaryError = tourCardsError || teamsError;
+    const primaryError = tourCardsError ?? teamsError;
     const isNetwork = isNetworkError(primaryError);
+
+    // Create sync wrapper for async retry function
+    const syncRetryWrapper = () => {
+      void retryData();
+    };
 
     return createNavigationError(
       isNetwork ? "NETWORK_ERROR" : "DATA_ERROR",
       isNetwork
         ? "Unable to connect to server. Please check your internet connection."
         : "Unable to load navigation data. Please try again.",
-      retryData,
+      syncRetryWrapper,
     );
   }, [tourCardsError, teamsError, retryData]);
 

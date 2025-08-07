@@ -103,7 +103,7 @@ export class ErrorBoundary extends Component<
   };
 
   render() {
-    const { hasError, error, retryCount } = this.state;
+    const { hasError, retryCount } = this.state;
     const { children, fallback, maxRetries = MAX_RETRIES } = this.props;
 
     if (hasError) {

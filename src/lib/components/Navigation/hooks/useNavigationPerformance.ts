@@ -53,7 +53,7 @@ export function useNavigationPerformance(config: PerformanceConfig = {}) {
   // Determine if we should monitor this session
   const shouldMonitor = useRef<boolean>(
     Boolean(finalConfig.enabled) &&
-      Math.random() < (finalConfig.sampleRate || 0.1),
+      Math.random() < (finalConfig.sampleRate ?? 0.1),
   );
 
   const recordApiCall = useCallback(() => {

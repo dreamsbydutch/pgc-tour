@@ -57,7 +57,9 @@ export function isNetworkError(error: unknown): boolean {
   const errorMessage =
     error instanceof Error
       ? error.message.toLowerCase()
-      : String(error).toLowerCase();
+      : typeof error === "string"
+        ? error.toLowerCase()
+        : JSON.stringify(error).toLowerCase();
 
   return (
     errorMessage.includes("network") ||
@@ -86,14 +88,17 @@ export function getRetryDelay(retryCount: number): number {
 export function safeAggregate<T>(
   array: T[] | undefined | null,
   reducer: (acc: number, item: T) => number,
-  initialValue: number = 0,
+  initialValue = 0,
 ): number {
   if (!Array.isArray(array)) return initialValue;
 
   try {
     return array.reduce(reducer, initialValue);
   } catch (error) {
-    console.warn("Error during array aggregation:", error);
+    console.warn(
+      "Error during array aggregation:",
+      error instanceof Error ? error.message : String(error),
+    );
     return initialValue;
   }
 }
