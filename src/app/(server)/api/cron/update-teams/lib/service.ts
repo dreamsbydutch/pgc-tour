@@ -42,7 +42,7 @@ export async function updateAllTeamsOptimized(
 
   // Calculate team scores
   const calculatedTeams = tournament.teams.map((team) =>
-    calculateTeamScore(team, tournament.golfers, tournament),
+    calculateTeamScore(team, tournament.golfers, tournament, tourCards),
   );
 
   // Calculate positions
@@ -127,6 +127,7 @@ function calculateTeamScore(
   team: Team,
   allGolfers: Golfer[],
   tournament: TournamentWithRelations,
+  tourCards: (TourCard & { member: Member; tour: Tour })[],
 ): Team & TeamCalculation {
   const teamGolfers = allGolfers.filter((g) =>
     team.golferIds.includes(g.apiId),
@@ -495,6 +496,19 @@ function calculateTeamScore(
       ) / 10;
   }
 
+  // Apply playoff starting strokes if this is a playoff tournament
+  if (isPlayoffTournament(tournament) && result.score !== null) {
+    const startingStrokes = calculatePlayoffStartingStrokes(
+      team,
+      tourCards,
+      tournament,
+    );
+    result.score = Math.round((result.score + startingStrokes) * 10) / 10;
+    console.log(
+      `🏌️ Team ${team.id} - Base Score: ${result.score - startingStrokes}, Starting Strokes: ${startingStrokes}, Final Score: ${result.score}`,
+    );
+  }
+
   return result;
 }
 
@@ -565,7 +579,7 @@ function calculateTeamPositionData(
   );
 
   // Calculate past position
-  const pastScore = calculatePastScore(team, tournament);
+  const pastScore = calculatePastScore(team, tournament, tourCard, tourCards);
   const teamsForPastCalculation =
     team.round > 3 ? getActiveTeams(allTeams) : allTeams;
   const pastTeamsInSameTour = getTeamsInSameTour(
@@ -575,12 +589,14 @@ function calculateTeamPositionData(
   );
 
   const tiedPastTeams = pastTeamsInSameTour.filter((t) => {
-    const tPastScore = calculatePastScore(t, tournament);
+    const tTourCard = tourCards.find((tc) => tc.id === t.tourCardId);
+    const tPastScore = calculatePastScore(t, tournament, tTourCard, tourCards);
     return tPastScore === pastScore;
   });
 
   const betterPastTeams = pastTeamsInSameTour.filter((t) => {
-    const tPastScore = calculatePastScore(t, tournament);
+    const tTourCard = tourCards.find((tc) => tc.id === t.tourCardId);
+    const tPastScore = calculatePastScore(t, tournament, tTourCard, tourCards);
     return (tPastScore ?? 999) < (pastScore ?? 999);
   });
 
@@ -621,10 +637,24 @@ function calculateTeamPositionData(
 function calculatePastScore(
   team: Team & TeamCalculation,
   tournament: TournamentWithRelations,
+  tourCard?: TourCard & { member: Member; tour: Tour },
+  tourCards?: (TourCard & { member: Member; tour: Tour })[],
 ): number | null {
   // Round 1 or Round 2 not live: no past score
   if (team.round === 1 || (team.round === 2 && !tournament.livePlay)) {
-    return 0;
+    let pastScore = 0;
+
+    // Apply playoff starting strokes if this is a playoff tournament
+    if (isPlayoffTournament(tournament) && tourCard && tourCards) {
+      const startingStrokes = calculatePlayoffStartingStrokes(
+        { ...team, tourCardId: tourCard.id } as Team,
+        tourCards,
+        tournament,
+      );
+      pastScore += startingStrokes;
+    }
+
+    return pastScore;
   }
 
   // Round 2 live or Round 3 not live: past score is after round 1
@@ -632,7 +662,19 @@ function calculatePastScore(
     (team.round === 2 && tournament.livePlay) ||
     (team.round === 3 && !tournament.livePlay)
   ) {
-    return Math.round((team.roundOne ?? 0) * 10) / 10;
+    let pastScore = Math.round((team.roundOne ?? 0) * 10) / 10;
+
+    // Apply playoff starting strokes if this is a playoff tournament
+    if (isPlayoffTournament(tournament) && tourCard && tourCards) {
+      const startingStrokes = calculatePlayoffStartingStrokes(
+        { ...team, tourCardId: tourCard.id } as Team,
+        tourCards,
+        tournament,
+      );
+      pastScore = Math.round((pastScore + startingStrokes) * 10) / 10;
+    }
+
+    return pastScore;
   }
 
   // Round 3 live or Round 4 not live: past score is after round 2
@@ -640,21 +682,57 @@ function calculatePastScore(
     (team.round === 3 && tournament.livePlay) ||
     (team.round === 4 && !tournament.livePlay)
   ) {
-    return Math.round(((team.roundOne ?? 0) + (team.roundTwo ?? 0)) * 10) / 10;
+    let pastScore =
+      Math.round(((team.roundOne ?? 0) + (team.roundTwo ?? 0)) * 10) / 10;
+
+    // Apply playoff starting strokes if this is a playoff tournament
+    if (isPlayoffTournament(tournament) && tourCard && tourCards) {
+      const startingStrokes = calculatePlayoffStartingStrokes(
+        { ...team, tourCardId: tourCard.id } as Team,
+        tourCards,
+        tournament,
+      );
+      pastScore = Math.round((pastScore + startingStrokes) * 10) / 10;
+    }
+
+    return pastScore;
   }
 
   // Round 4 live or Round 5+: past score is after round 3
   if ((team.round === 4 && tournament.livePlay) || team.round > 4) {
-    return (
+    let pastScore =
       Math.round(
         ((team.roundOne ?? 0) + (team.roundTwo ?? 0) + (team.roundThree ?? 0)) *
           10,
-      ) / 10
-    );
+      ) / 10;
+
+    // Apply playoff starting strokes if this is a playoff tournament
+    if (isPlayoffTournament(tournament) && tourCard && tourCards) {
+      const startingStrokes = calculatePlayoffStartingStrokes(
+        { ...team, tourCardId: tourCard.id } as Team,
+        tourCards,
+        tournament,
+      );
+      pastScore = Math.round((pastScore + startingStrokes) * 10) / 10;
+    }
+
+    return pastScore;
   }
 
   // Default to current score
-  return Math.round((team.score ?? 0) * 10) / 10;
+  let defaultScore = Math.round((team.score ?? 0) * 10) / 10;
+
+  // Apply playoff starting strokes if this is a playoff tournament
+  if (isPlayoffTournament(tournament) && tourCard && tourCards) {
+    const startingStrokes = calculatePlayoffStartingStrokes(
+      { ...team, tourCardId: tourCard.id } as Team,
+      tourCards,
+      tournament,
+    );
+    defaultScore = Math.round((defaultScore + startingStrokes) * 10) / 10;
+  }
+
+  return defaultScore;
 }
 
 /**
@@ -745,4 +823,55 @@ async function batchUpdateTeams(updateData: TeamUpdateData[]): Promise<number> {
 
   console.log(`✅ Successfully updated ${updated} teams`);
   return updated;
+}
+
+/**
+ * Check if a tournament is a playoff tournament
+ */
+function isPlayoffTournament(tournament: TournamentWithRelations): boolean {
+  return tournament.tier.name.toLowerCase().includes("playoff");
+}
+
+/**
+ * Calculate starting strokes for a team in playoff tournaments
+ * based on their playoff standings position
+ */
+function calculatePlayoffStartingStrokes(
+  team: Team,
+  tourCards: (TourCard & { member: Member; tour: Tour })[],
+  tournament: TournamentWithRelations,
+): number {
+  const tourCard = tourCards.find((tc) => tc.id === team.tourCardId);
+  if (!tourCard || !tourCard.playoff) {
+    return 0; // No starting strokes if not in playoffs
+  }
+
+  // Get the playoff tier points array (contains starting strokes from -10 to 0)
+  const playoffStrokes = tournament.tier.points;
+
+  // Get all teams in the same playoff division
+  const samePlayoffDivision = tourCards.filter(
+    (tc) => tc.playoff === tourCard.playoff,
+  );
+
+  // Sort by points (highest first) to determine playoff standings position
+  const sortedByPoints = samePlayoffDivision.sort(
+    (a, b) => b.points - a.points,
+  );
+
+  // Find this player's position within their playoff division
+  const playoffPosition =
+    sortedByPoints.findIndex((tc) => tc.id === tourCard.id) + 1;
+
+  // Calculate starting strokes based on position
+  // Gold playoff (playoff = 1): uses first 30 strokes (positions 1-30)
+  // Silver playoff (playoff = 2): uses first 30 strokes but for their own standings (positions 1-30 in silver)
+  const strokesIndex = playoffPosition - 1;
+  const startingStrokes = playoffStrokes[strokesIndex] ?? 0;
+
+  console.log(
+    `🎯 Team ${team.id} (${tourCard.displayName}) - Playoff Division: ${tourCard.playoff}, Position: ${playoffPosition}, Starting Strokes: ${startingStrokes}`,
+  );
+
+  return startingStrokes;
 }
