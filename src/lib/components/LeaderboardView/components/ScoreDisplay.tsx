@@ -94,7 +94,7 @@ const renderPGAScores = (golfer: LeaderboardGolfer) => {
   if (!golfer.thru || golfer.thru === 0) {
     return (
       <>
-        <div className="col-span-4 place-self-center font-varela text-xs">
+        <div className="col-span-2 place-self-center font-varela text-xs">
           {getGolferTeeTime(golfer)}
           {golfer.endHole === 9 ? "*" : ""}
         </div>
@@ -128,7 +128,7 @@ const renderPGCScores = (team: LeaderboardTeam) => {
   if (!team.thru || team.thru === 0) {
     return (
       <>
-        <div className="col-span-4 place-self-center font-varela text-xs">
+        <div className="col-span-2 place-self-center font-varela text-xs">
           {getGolferTeeTime(team)}
         </div>
 

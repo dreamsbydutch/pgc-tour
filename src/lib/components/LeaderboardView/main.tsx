@@ -19,6 +19,8 @@ import { useLeaderboardData } from "./hooks/useLeaderboardData";
 import { useLeaderboardLogic } from "./hooks/useLeaderboardLogic";
 import { PGCLeaderboard } from "./components/PGCLeaderboard";
 import { PGALeaderboard } from "./components/PGALeaderboard";
+import { PlayoffLeaderboard } from "./components/PlayoffLeaderboard";
+import { PlayoffDebugInfo } from "./components/PlayoffDebugInfo";
 import { LeaderboardHeaderRow } from "./components/UIComponents";
 import { ToursToggleButton } from "@pgc-components";
 
@@ -68,12 +70,13 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   });
 
   // Determine tour toggle logic based on data and variant
-  const { toggleTours, defaultToggle } = useLeaderboardLogic({
-    variant: variant === "historical" ? "regular" : variant,
-    tours: props?.tours,
-    tourCards: props?.tourCards,
-    inputTourId: props?.inputTour,
-  });
+  const { toggleTours, defaultToggle, isPlayoff, maxPlayoffLevel } =
+    useLeaderboardLogic({
+      variant: variant === "historical" ? "regular" : variant,
+      tours: props?.tours,
+      tourCards: props?.tourCards,
+      inputTourId: props?.inputTour,
+    });
 
   // State for currently active tour
   const [activeTour, setActiveTour] = useState<string>(defaultToggle);
@@ -160,8 +163,21 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
         }
       />
 
-      {/* Conditional leaderboard rendering based on active tour */}
-      {activeTour === "pga" ? (
+      {/* Conditional leaderboard rendering based on playoff detection and active tour */}
+      {isPlayoff &&
+      (activeTour === "gold" ||
+        activeTour === "silver" ||
+        (activeTour === "playoffs" && maxPlayoffLevel === 1)) ? (
+        <PlayoffLeaderboard
+          teams={props.teams}
+          golfers={props.golfers}
+          tournament={props.tournament}
+          tourCard={props.tourCard}
+          member={props.member}
+          activeTour={activeTour}
+          isPreTournament={isPreTournament}
+        />
+      ) : activeTour === "pga" ? (
         <PGALeaderboard
           golfers={props.golfers}
           tournament={props.tournament}

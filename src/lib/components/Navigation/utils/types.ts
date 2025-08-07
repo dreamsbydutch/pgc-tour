@@ -5,6 +5,8 @@
 import type { LucideIcon } from "lucide-react";
 
 export interface NavigationUser {
+  id: string;
+  email: string;
   avatar?: string;
 }
 
@@ -42,13 +44,22 @@ export interface NavItem {
   label: string;
 }
 
+export interface NavigationError {
+  code: string;
+  message: string;
+  retry?: () => void;
+}
+
 export interface NavigationData {
   user: NavigationUser | null;
   member: NavigationMember | null;
   tourCards: NavigationTourCard[];
-  champions?: NavigationChampion[] | null;
+  champions: NavigationChampion[];
   isLoading: boolean;
-  tourCardLoading?: boolean; // Optional for loading state of tour cards
+  tourCardLoading: boolean;
+  error: NavigationError | null;
+  hasNetworkError: boolean;
+  retryCount: number;
 }
 
 export interface NavigationProviderProps {

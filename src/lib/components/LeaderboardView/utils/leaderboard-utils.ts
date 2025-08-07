@@ -17,6 +17,66 @@ import {
   COUNTRY_FLAG_DATA,
 } from "./constants";
 
+// ================= PLAYOFF LOGIC =================
+
+/**
+ * Determines if a tournament is a playoff tournament based on tour cards
+ * @param tourCards - Array of tour cards to analyze
+ * @returns Boolean indicating if this is a playoff tournament
+ */
+export const isPlayoffTournament = (
+  tourCards: LeaderboardTourCard[],
+): boolean => {
+  if (!Array.isArray(tourCards) || tourCards.length === 0) return false;
+
+  // Check if any tour cards have playoff levels set
+  return tourCards.some(
+    (card) =>
+      card?.playoff !== null &&
+      card?.playoff !== undefined &&
+      card?.playoff > 0,
+  );
+};
+
+/**
+ * Gets the maximum playoff level from tour cards
+ * @param tourCards - Array of tour cards to analyze
+ * @returns Maximum playoff level found
+ */
+export const getMaxPlayoffLevel = (
+  tourCards: LeaderboardTourCard[],
+): number => {
+  if (!Array.isArray(tourCards) || tourCards.length === 0) return 0;
+
+  const playoffLevels = tourCards
+    .map((card) => card?.playoff ?? 0)
+    .filter((level) => level > 0);
+
+  return playoffLevels.length > 0 ? Math.max(...playoffLevels) : 0;
+};
+
+/**
+ * Determines playoff division counts for display purposes
+ * @param tourCards - Array of tour cards to analyze
+ * @returns Object with counts for each playoff division
+ */
+export const getPlayoffDivisionCounts = (
+  tourCards: LeaderboardTourCard[],
+): { gold: number; silver: number; total: number } => {
+  if (!Array.isArray(tourCards)) {
+    return { gold: 0, silver: 0, total: 0 };
+  }
+
+  const goldCount = tourCards.filter((card) => card?.playoff === 1).length;
+  const silverCount = tourCards.filter((card) => card?.playoff === 2).length;
+
+  return {
+    gold: goldCount,
+    silver: silverCount,
+    total: goldCount + silverCount,
+  };
+};
+
 // ================= FORMATTING & DISPLAY =================
 
 /**

@@ -11,6 +11,10 @@
 
 import { useMemo } from "react";
 import { PLAYOFF_CONFIGS } from "../utils/constants";
+import {
+  isPlayoffTournament,
+  getMaxPlayoffLevel,
+} from "../utils/leaderboard-utils";
 import type { LeaderboardTour, LeaderboardTourCard } from "../utils/types";
 
 /**
@@ -35,6 +39,10 @@ interface UseLeaderboardLogicReturn {
   toggleTours: LeaderboardTour[];
   /** Default tour ID to select */
   defaultToggle: string;
+  /** Whether this is detected as a playoff tournament */
+  isPlayoff: boolean;
+  /** Maximum playoff level found in tour cards */
+  maxPlayoffLevel: number;
 }
 
 /**
@@ -48,34 +56,48 @@ export const useLeaderboardLogic = (
 ): UseLeaderboardLogicReturn => {
   const { variant, tours = [], tourCards = [], inputTourId = "" } = props;
 
+  // Detect if this is a playoff tournament based on tour cards
+  const isPlayoff = useMemo(() => {
+    return variant === "playoff" || isPlayoffTournament(tourCards);
+  }, [variant, tourCards]);
+
+  // Get maximum playoff level for logic decisions
+  const maxPlayoffLevel = useMemo(() => {
+    return getMaxPlayoffLevel(tourCards);
+  }, [tourCards]);
+
   /**
-   * Calculate available toggle tours based on variant type
+   * Calculate available toggle tours based on variant type and playoff detection
    * - For playoffs: Determine gold/silver or single playoff based on max playoff level
    * - For regular: Include all regular tours plus PGA
    */
   const toggleTours = useMemo(() => {
-    if (variant === "playoff") {
-      const maxPlayoff = Math.max(
-        ...(tourCards?.map((card) => card.playoff ?? 0) ?? []),
-      );
-      return maxPlayoff > 1
+    if (isPlayoff) {
+      return maxPlayoffLevel > 1
         ? [PLAYOFF_CONFIGS.gold, PLAYOFF_CONFIGS.silver, PLAYOFF_CONFIGS.pga]
         : [PLAYOFF_CONFIGS.solo, PLAYOFF_CONFIGS.pga];
     }
 
     return [...tours, PLAYOFF_CONFIGS.pga];
-  }, [variant, tours, tourCards]);
+  }, [isPlayoff, maxPlayoffLevel, tours]);
 
   /**
    * Determine default tour selection based on variant and input
-   * - For playoffs: Default to "gold"
+   * - For playoffs: Default to "gold" if multiple levels, otherwise "playoffs"
    * - For regular: Use inputTourId if provided, otherwise first available tour
    */
   const defaultToggle = useMemo(() => {
-    if (variant === "playoff") return "gold";
+    if (isPlayoff) {
+      return maxPlayoffLevel > 1 ? "gold" : "playoffs";
+    }
     if (inputTourId) return inputTourId;
     return toggleTours[0]?.id ?? "";
-  }, [variant, inputTourId, toggleTours]);
+  }, [isPlayoff, maxPlayoffLevel, inputTourId, toggleTours]);
 
-  return { toggleTours, defaultToggle };
+  return {
+    toggleTours,
+    defaultToggle,
+    isPlayoff,
+    maxPlayoffLevel,
+  };
 };

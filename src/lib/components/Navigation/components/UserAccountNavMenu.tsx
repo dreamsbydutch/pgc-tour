@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useState, useMemo, type Dispatch, type SetStateAction } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -27,15 +27,16 @@ import type {
   NavigationMember,
   NavigationTourCard,
   NavigationChampion,
+  NavigationError,
 } from "../utils/types";
 
 interface UserAccountNavMenuProps {
   user: NavigationUser;
   member: NavigationMember;
   tourCards: NavigationTourCard[];
-  champions?: NavigationChampion[] | null;
+  champions: NavigationChampion[];
   setIsSigningOut: Dispatch<SetStateAction<boolean>>;
-  tourCardLoading?: boolean; // Optional for loading state of tour cards
+  tourCardLoading: boolean;
 }
 
 export function UserAccountNavMenu({
@@ -47,6 +48,12 @@ export function UserAccountNavMenu({
   tourCardLoading,
 }: UserAccountNavMenuProps) {
   const [isEditing, setIsEditing] = useState(false);
+
+  // Defensive check for required props
+  if (!user || !member) {
+    console.warn("UserAccountNavMenu: Missing required user or member data");
+    return null;
+  }
 
   return (
     <div className="w-fit">
@@ -86,32 +93,88 @@ function UserInfo({
   user: NavigationUser;
   member: NavigationMember;
   tourCards: NavigationTourCard[];
-  champions?: NavigationChampion[] | null;
+  champions: NavigationChampion[];
   isEditing: boolean;
   setIsEditing: Dispatch<SetStateAction<boolean>>;
-  tourCardLoading?: boolean; // Optional for loading state of tour cards
+  tourCardLoading: boolean;
 }) {
+  // Safely calculate user display name
+  const displayName = useMemo(() => {
+    const firstname = member?.firstname?.trim() || "";
+    const lastname = member?.lastname?.trim() || "";
+    return firstname || lastname ? `${firstname} ${lastname}`.trim() : "User";
+  }, [member?.firstname, member?.lastname]);
+
+  // Safely calculate tour card statistics with error handling
+  const tourCardStats = useMemo(() => {
+    if (!Array.isArray(tourCards)) {
+      return {
+        seasons: 0,
+        tournaments: 0,
+        wins: 0,
+        topTens: 0,
+        points: 0,
+        earnings: 0,
+      };
+    }
+
+    try {
+      return tourCards.reduce(
+        (stats, card) => {
+          // Defensive null checks for each property
+          stats.seasons += 1;
+          stats.tournaments += Number(card?.appearances) || 0;
+          stats.wins += Number(card?.win) || 0;
+          stats.topTens += Number(card?.topTen) || 0;
+          stats.points += Number(card?.points) || 0;
+          stats.earnings += Number(card?.earnings) || 0;
+          return stats;
+        },
+        {
+          seasons: 0,
+          tournaments: 0,
+          wins: 0,
+          topTens: 0,
+          points: 0,
+          earnings: 0,
+        },
+      );
+    } catch (error) {
+      console.error("Error calculating tour card stats:", error);
+      return {
+        seasons: 0,
+        tournaments: 0,
+        wins: 0,
+        topTens: 0,
+        points: 0,
+        earnings: 0,
+      };
+    }
+  }, [tourCards]);
+
   return (
     <div className="flex items-center justify-start gap-2 p-2">
       <div className="flex flex-col gap-1 space-y-1 leading-none">
         <div className="flex w-[200px] flex-row gap-2 truncate text-base font-bold text-slate-800">
           <UserAvatar user={user} size="small" />
-          {member.firstname + " " + member.lastname}
+          {displayName}
         </div>
         <p className="w-[200px] truncate text-base text-slate-800">
-          {member.email}
+          {member?.email || "No email"}
         </p>
-        {champions && <LittleFucker champions={champions} showSeasonText />}
+        {Array.isArray(champions) && champions.length > 0 && (
+          <LittleFucker champions={champions} showSeasonText />
+        )}
         {!tourCardLoading && (
           <div className="flex w-[200px] flex-col text-sm text-slate-800">
             <p>
-              {`${tourCards.length} seasons - ${tourCards.reduce((p, c) => (p += c.appearances ?? 0), 0)} tournaments`}
+              {`${tourCardStats.seasons} seasons - ${tourCardStats.tournaments} tournaments`}
             </p>
             <p>
-              {`${formatNumber(tourCards.reduce((p, c) => (p += c.win ?? 0), 0))} wins - ${formatNumber(tourCards.reduce((p, c) => (p += c.topTen ?? 0), 0))} top tens`}
+              {`${formatNumber(tourCardStats.wins)} wins - ${formatNumber(tourCardStats.topTens)} top tens`}
             </p>
             <p>
-              {`${formatNumber(tourCards.reduce((p, c) => (p += c.points ?? 0), 0))} pts - ${formatMoney(tourCards.reduce((p, c) => (p += c.earnings ?? 0), 0))}`}
+              {`${formatNumber(tourCardStats.points)} pts - ${formatMoney(tourCardStats.earnings)}`}
             </p>
           </div>
         )}
