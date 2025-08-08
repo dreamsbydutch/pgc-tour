@@ -134,7 +134,7 @@ async function handleFetch(request) {
     if (request.destination === "document") {
       const cache = await caches.open(DYNAMIC_CACHE_NAME);
       const cachedResponse = await cache.match(request);
-      
+
       // Return cached version if available, otherwise let the network error propagate
       if (cachedResponse) {
         console.log("[SW] Returning cached version instead of offline page");
@@ -152,7 +152,13 @@ async function cacheFirstStrategy(request, cacheName) {
   const cachedResponse = await cache.match(request);
 
   if (cachedResponse) {
-    console.log("[SW] Cache hit:", request.url);
+    // Only log cache hits for API calls and important resources, not static assets
+    if (
+      request.url.includes("/api/") ||
+      request.url.includes("manifest.json")
+    ) {
+      console.log("[SW] Cache hit:", request.url);
+    }
     return cachedResponse;
   }
 
@@ -180,7 +186,10 @@ async function networkFirstStrategy(request, cacheName, timeout = 30000) {
     ]);
 
     if (networkResponse.ok) {
-      console.log("[SW] Network success:", request.url);
+      // Only log network success for API calls, not static assets
+      if (request.url.includes("/api/")) {
+        console.log("[SW] Network success:", request.url);
+      }
       cache.put(request, networkResponse.clone());
       return networkResponse;
     }
@@ -232,8 +241,9 @@ async function staleWhileRevalidateStrategy(request, cacheName) {
   try {
     const networkResponse = await Promise.race([
       fetchPromise,
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Network timeout")), 20000), // Increased to 20s
+      new Promise(
+        (_, reject) =>
+          setTimeout(() => reject(new Error("Network timeout")), 20000), // Increased to 20s
       ),
     ]);
 
@@ -264,7 +274,10 @@ async function staleWhileRevalidateStrategy(request, cacheName) {
     }
 
     // Still no cache found - let the app handle this instead of showing offline page
-    console.log("[SW] No cached version found, letting app handle:", request.url);
+    console.log(
+      "[SW] No cached version found, letting app handle:",
+      request.url,
+    );
     throw error;
   }
 }

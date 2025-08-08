@@ -41,7 +41,10 @@ export function ToursToggleButton({
    * Handles button click: sets localStorage, updates state, and triggers animation
    */
   const handleClick = () => {
-    localStorage.setItem("activeTour", tour.id);
+    // Only access localStorage on client-side
+    if (typeof window !== "undefined") {
+      localStorage.setItem("activeTour", tour.id);
+    }
     setTourToggle(tour.id);
     setEffect(true);
   };

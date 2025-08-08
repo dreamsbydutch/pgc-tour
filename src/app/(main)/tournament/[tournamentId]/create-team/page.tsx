@@ -47,7 +47,9 @@ export default async function CreateTeamPage({
 }) {
   const tourCard = await getCurrentTourCard();
   const allTournaments = await getSeasonTournament(tourCard?.seasonId ?? "");
-  const tournament = await getNextTournament();
+
+  // Get the specific tournament by ID instead of using getNextTournament
+  const tournament = allTournaments.find((t) => t.id === params.tournamentId);
 
   // Ensure both tourCard and tournament are defined before proceeding
   if (!tourCard || !tournament) {
@@ -61,12 +63,30 @@ export default async function CreateTeamPage({
     tourCard.id,
   );
 
-  if (tournament.id !== params.tournamentId) {
-    return (
-      <div className="text-red-500">
-        Tournament not found - {params.tournamentId}
-      </div>
+  // Check if this is a playoff tournament and get all playoff tournaments
+  const isPlayoffTournament =
+    tournament.tier?.name?.toLowerCase().includes("playoff") ?? false;
+  let playoffTournamentIds: string[] = [];
+
+  if (isPlayoffTournament) {
+    const playoffTournaments = allTournaments.filter((t) =>
+      t.tier?.name?.toLowerCase().includes("playoff"),
     );
+
+    // Sort by start date to determine if this is the first playoff tournament
+    playoffTournaments.sort(
+      (a, b) => a.startDate.getTime() - b.startDate.getTime(),
+    );
+
+    // Allow team creation for first playoff tournament, or if existing team has empty golferIds
+    const isFirstPlayoffTournament =
+      playoffTournaments.length > 0 &&
+      playoffTournaments[0]?.id === params.tournamentId;
+    const hasEmptyTeam = existingTeam && existingTeam.golferIds.length === 0;
+
+    if (isFirstPlayoffTournament || hasEmptyTeam) {
+      playoffTournamentIds = playoffTournaments.map((t) => t.id);
+    }
   }
 
   const golfers = await getGolfersByTournament(params.tournamentId);
@@ -113,6 +133,7 @@ export default async function CreateTeamPage({
           existingTeam: existingTeam ?? null,
           groups,
           initialGroups,
+          playoffTournamentIds, // Pass the playoff tournament IDs
         }}
       />
     </div>

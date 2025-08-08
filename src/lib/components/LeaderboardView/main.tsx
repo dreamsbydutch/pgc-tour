@@ -78,14 +78,76 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
     });
 
   // State for currently active tour
-  const [activeTour, setActiveTour] = useState<string>(defaultToggle);
+  const [activeTour, setActiveTour] = useState<string>("");
 
-  // Update activeTour when defaultToggle changes (e.g., data loads)
+  // Initialize activeTour from localStorage or defaultToggle
   useEffect(() => {
-    if (defaultToggle && !activeTour) {
-      setActiveTour(defaultToggle);
+    if (toggleTours.length > 0 && defaultToggle) {
+      // Check localStorage for stored activeTour (client-side only)
+      const storedActiveTour = localStorage.getItem("activeTour");
+
+      // Validate that stored tour exists in current toggleTours
+      const isStoredTourValid =
+        storedActiveTour &&
+        toggleTours.some((tour) => tour.id === storedActiveTour);
+
+      // Use stored tour if valid, otherwise use defaultToggle
+      const tourToSet = isStoredTourValid ? storedActiveTour : defaultToggle;
+
+      // Only set if different from current to avoid unnecessary re-renders
+      if (tourToSet !== activeTour) {
+        setActiveTour(tourToSet);
+      }
     }
-  }, [defaultToggle, activeTour]);
+  }, [defaultToggle, toggleTours, activeTour, props?.teams]);
+
+  // Separate effect to validate stored tour when teams data becomes available
+  useEffect(() => {
+    if (props?.teams && activeTour && activeTour !== "pga") {
+      // Check if current activeTour has any teams
+      const currentTourHasTeams = props.teams.some(
+        (team) => team.tourCard?.tourId === activeTour,
+      );
+
+      // If no teams found for current tour, but we have teams for other tours,
+      // and defaultToggle is different, switch to defaultToggle
+      if (
+        !currentTourHasTeams &&
+        props.teams.length > 0 &&
+        activeTour !== defaultToggle
+      ) {
+        // Check if defaultToggle has teams
+        const defaultHasTeams =
+          defaultToggle === "pga" ||
+          props.teams.some((team) => team.tourCard?.tourId === defaultToggle);
+
+        if (defaultHasTeams) {
+          setActiveTour(defaultToggle);
+        }
+      }
+    }
+  }, [props?.teams, activeTour, defaultToggle]);
+
+  // Safety fallback - ensure we have a valid activeTour after data loads
+  useEffect(() => {
+    // If we have data but no activeTour, force set one
+    if (!loading && !error && props && toggleTours.length > 0 && !activeTour) {
+      const fallbackTour = defaultToggle || toggleTours[0]?.id || "pga";
+      setActiveTour(fallbackTour);
+    }
+  }, [loading, error, props, toggleTours, activeTour, defaultToggle]);
+
+  // Additional safety check - if we have tours but no active tour for too long, force one
+  useEffect(() => {
+    if (toggleTours.length > 0 && !activeTour) {
+      const timeoutId = setTimeout(() => {
+        const fallbackTour = defaultToggle || toggleTours[0]?.id || "pga";
+        setActiveTour(fallbackTour);
+      }, 2000); // 2 second timeout
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [toggleTours, activeTour, defaultToggle]);
 
   /**
    * Handle data refetch - combines internal refetch with optional callback
@@ -95,12 +157,34 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
     onRefetch?.();
   };
 
-  // Loading state
-  if (loading) {
+  // Loading state with better feedback
+  if (loading || !props || toggleTours.length === 0) {
     return (
-      <div className="mx-auto mt-8 w-full max-w-4xl">
-        <div className="flex items-center justify-center py-12">
-          <div className="text-lg font-semibold">Loading leaderboard...</div>
+      <div className="flex min-h-[400px] w-full items-center justify-center">
+        <div className="mx-auto max-w-md rounded-lg border border-slate-200 bg-white p-8 shadow-lg">
+          <div className="text-center">
+            {/* Loading spinner */}
+            <div className="mb-6 flex justify-center">
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-slate-600"></div>
+            </div>
+
+            {/* Main loading message */}
+            <h2 className="mb-3 font-yellowtail text-3xl text-slate-800">
+              Loading Leaderboard
+            </h2>
+
+            {/* Subtitle */}
+            <p className="font-varela text-sm text-slate-600">
+              Gathering the latest tournament scores and standings...
+            </p>
+
+            {/* Animated dots */}
+            <div className="mt-4 flex justify-center space-x-1">
+              <div className="h-2 w-2 animate-bounce rounded-full bg-slate-600 [animation-delay:-0.3s]"></div>
+              <div className="h-2 w-2 animate-bounce rounded-full bg-slate-600 [animation-delay:-0.15s]"></div>
+              <div className="h-2 w-2 animate-bounce rounded-full bg-slate-600"></div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -125,12 +209,21 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
     );
   }
 
-  // No data state
-  if (!props) {
+  // No data state - only for actual errors or truly empty states after loading
+  if (!loading && error && !props) {
     return (
       <div className="mx-auto mt-8 w-full max-w-4xl">
-        <div className="flex items-center justify-center py-12">
+        <div className="flex flex-col items-center justify-center gap-4 py-12">
           <div className="text-lg font-semibold">Tournament not found</div>
+          <div className="text-center text-sm text-red-500">
+            Failed to load tournament data
+          </div>
+          <button
+            onClick={handleRefetch}
+            className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -163,10 +256,14 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
       />
 
       {/* Conditional leaderboard rendering based on playoff detection and active tour */}
-      {isPlayoff &&
-      (activeTour === "gold" ||
-        activeTour === "silver" ||
-        (activeTour === "playoffs" && maxPlayoffLevel === 1)) ? (
+      {!activeTour ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-lg font-semibold">Loading tour selection...</div>
+        </div>
+      ) : isPlayoff &&
+        (activeTour === "gold" ||
+          activeTour === "silver" ||
+          (activeTour === "playoffs" && maxPlayoffLevel === 1)) ? (
         <PlayoffLeaderboard
           teams={props.teams}
           golfers={props.golfers}

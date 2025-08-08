@@ -38,12 +38,14 @@ export function CreateTeamForm({
   groups,
   initialGroups,
   existingTeam,
+  playoffTournamentIds = [],
 }: {
   tournament: TournamentFormFields;
   tourCard: TourCardFormFields;
   groups: { key: string; golfers: GolferFormFields[] }[];
   initialGroups: { golfers: number[] }[];
   existingTeam: { golferIds: number[] } | null;
+  playoffTournamentIds?: string[];
 }) {
   const utils = api.useUtils();
   const router = useRouter();
@@ -69,11 +71,28 @@ export function CreateTeamForm({
     setIsSubmitting(true);
     setFormError(null);
     try {
-      await updateTeam.mutateAsync({
-        tourCardId: tourCard.id,
-        tournamentId: tournament.id,
-        golferIds: data.groups.flatMap((g) => g.golfers),
-      });
+      const golferIds = data.groups.flatMap((g) => g.golfers);
+
+      // If this is the first playoff tournament, create teams for all playoff tournaments
+      if (playoffTournamentIds.length > 0) {
+        await Promise.all(
+          playoffTournamentIds.map((tournamentId) =>
+            updateTeam.mutateAsync({
+              tourCardId: tourCard.id,
+              tournamentId,
+              golferIds,
+            }),
+          ),
+        );
+      } else {
+        // Regular tournament, just create one team
+        await updateTeam.mutateAsync({
+          tourCardId: tourCard.id,
+          tournamentId: tournament.id,
+          golferIds,
+        });
+      }
+
       await utils.team.invalidate();
       router.push(`/tournament/${tournament.id}`);
     } catch (error) {

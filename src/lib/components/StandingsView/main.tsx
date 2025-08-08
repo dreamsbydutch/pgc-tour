@@ -76,13 +76,13 @@ export function StandingsView({ initialTourId }: StandingsViewProps = {}) {
     );
   }, [data?.tours, standingsToggle]);
 
-  // Loading state
-  if (isLoading) {
+  // Loading state - show until we have complete data
+  if (isLoading || !data?.tours?.length || !data?.tourCards?.length) {
     return <StandingsLoadingSkeleton />;
   }
 
-  // Error state
-  if (error || !data?.tours?.length) {
+  // Error state - only show for actual errors, not missing data during loading
+  if (!isLoading && error && !data?.tours?.length) {
     return (
       <StandingsError
         error={error?.message ?? "Error loading standings"}

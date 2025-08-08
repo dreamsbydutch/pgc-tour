@@ -84,14 +84,17 @@ export const useLeaderboardLogic = (
   /**
    * Determine default tour selection based on variant and input
    * - For playoffs: Default to "gold" if multiple levels, otherwise "playoffs"
-   * - For regular: Use inputTourId if provided, otherwise first available tour
+   * - For regular: Use inputTourId if provided, prioritize PGC tours over PGA
    */
   const defaultToggle = useMemo(() => {
     if (isPlayoff) {
       return maxPlayoffLevel > 1 ? "gold" : "playoffs";
     }
     if (inputTourId) return inputTourId;
-    return toggleTours[0]?.id ?? "";
+
+    // For regular tournaments, prioritize PGC tours over PGA
+    const pgcTour = toggleTours.find((tour) => tour.id !== "pga");
+    return pgcTour?.id ?? toggleTours[0]?.id ?? "";
   }, [isPlayoff, maxPlayoffLevel, inputTourId, toggleTours]);
 
   return {

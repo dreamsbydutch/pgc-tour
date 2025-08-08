@@ -9,7 +9,7 @@ import {
 } from "src/lib/components/functional/ui";
 
 export default async function AdminDashboard() {
-  const currentTourney = (await api.tournament.getInfo()).next;
+  const currentTourney = (await api.tournament.getInfo()).current;
   const tourCards = await api.tourCard.getBySeason({
     seasonId: currentTourney?.seasonId ?? "",
   });
@@ -17,7 +17,9 @@ export default async function AdminDashboard() {
     tournamentId: currentTourney?.id ?? "",
   });
   const missingTeams = tourCards?.filter(
-    (obj) => teams.filter((a) => a.tourCardId === obj.id).length === 0,
+    (obj) =>
+      teams.filter((a) => a.tourCardId === obj.id).length === 0 &&
+      obj.playoff > 0,
   );
   const tours = await api.tour.getActive();
 
