@@ -20,22 +20,17 @@ import {
 // ================= PLAYOFF LOGIC =================
 
 /**
- * Determines if a tournament is a playoff tournament based on tour cards
- * @param tourCards - Array of tour cards to analyze
+ * Determines if a tournament is a playoff tournament based on tournament tier
+ * @param tournament - Tournament object to analyze
  * @returns Boolean indicating if this is a playoff tournament
  */
-export const isPlayoffTournament = (
-  tourCards: LeaderboardTourCard[],
-): boolean => {
-  if (!Array.isArray(tourCards) || tourCards.length === 0) return false;
+export const isPlayoffTournament = (tournament?: {
+  tier?: { name?: string } | null;
+}): boolean => {
+  if (!tournament?.tier?.name) return false;
 
-  // Check if any tour cards have playoff levels set
-  return tourCards.some(
-    (card) =>
-      card?.playoff !== null &&
-      card?.playoff !== undefined &&
-      card?.playoff > 0,
-  );
+  // Check if the tournament tier name contains "playoff"
+  return tournament.tier.name.toLowerCase().includes("playoff");
 };
 
 /**

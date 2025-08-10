@@ -74,6 +74,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
       variant: variant === "historical" ? "regular" : variant,
       tours: props?.tours,
       tourCards: props?.tourCards,
+      tournament: props?.tournament,
       inputTourId: props?.inputTour,
     });
 

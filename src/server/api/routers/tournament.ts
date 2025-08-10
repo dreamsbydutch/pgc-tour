@@ -38,6 +38,7 @@ export const tournamentRouter = createTRPCRouter({
         where: { id: input.tournamentId },
         include: {
           course: true,
+          tier: true,
         },
       });
 

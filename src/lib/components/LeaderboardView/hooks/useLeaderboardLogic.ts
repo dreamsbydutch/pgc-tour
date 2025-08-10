@@ -27,6 +27,8 @@ interface UseLeaderboardLogicProps {
   tours?: LeaderboardTour[];
   /** Available tour cards from data */
   tourCards?: LeaderboardTourCard[];
+  /** Tournament data for playoff detection */
+  tournament?: { tier?: { name?: string } | null };
   /** Input tour ID from props/URL */
   inputTourId?: string;
 }
@@ -54,12 +56,18 @@ interface UseLeaderboardLogicReturn {
 export const useLeaderboardLogic = (
   props: UseLeaderboardLogicProps,
 ): UseLeaderboardLogicReturn => {
-  const { variant, tours = [], tourCards = [], inputTourId = "" } = props;
+  const {
+    variant,
+    tours = [],
+    tourCards = [],
+    tournament,
+    inputTourId = "",
+  } = props;
 
-  // Detect if this is a playoff tournament based on tour cards
+  // Detect if this is a playoff tournament based on tournament tier
   const isPlayoff = useMemo(() => {
-    return variant === "playoff" || isPlayoffTournament(tourCards);
-  }, [variant, tourCards]);
+    return variant === "playoff" || isPlayoffTournament(tournament);
+  }, [variant, tournament]);
 
   // Get maximum playoff level for logic decisions
   const maxPlayoffLevel = useMemo(() => {
