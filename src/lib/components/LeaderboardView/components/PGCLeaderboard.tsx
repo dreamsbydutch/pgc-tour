@@ -16,7 +16,7 @@
  */
 
 import React from "react";
-import { LeaderboardListing } from "./LeaderboardListing";
+import { PGCLeaderboardRow } from "./LeaderboardListing";
 import { filterTeamsByTour } from "../utils";
 import type {
   TeamWithTourCard,
@@ -74,14 +74,13 @@ export const PGCLeaderboard: React.FC<PGCLeaderboardProps> = ({
         if (!team.tourCard) return null;
 
         return (
-          <LeaderboardListing
+          <PGCLeaderboardRow
             key={team.id}
-            type="PGC"
             tournament={tournament}
             tournamentGolfers={golfers}
-            tourCard={team.tourCard}
-            userTourCard={tourCard}
+            userTourCard={tourCard ?? undefined}
             team={team}
+            tourCard={team.tourCard}
             member={member}
             isPreTournament={isPreTournament}
           />

@@ -31,12 +31,26 @@ import type {
   LeaderboardMember,
 } from "../utils/types";
 import { PositionChange } from "./UIComponents";
+import { LittleFucker } from "../../functional/LittleFucker";
+import { useChampionsByMemberId } from "src/lib/hooks/hooks";
+
+// Minimal champion type for the LittleFucker component
+type ChampionLite = {
+  id: number;
+  tourCardId: string;
+  tournament: {
+    name: string;
+    logoUrl: string | null;
+    startDate: Date;
+    currentRound: number | null;
+  };
+};
 
 /**
  * Props for LeaderboardListing component using discriminated union
  * This ensures proper typing based on the leaderboard type
  */
-type LeaderboardListingProps =
+ type LeaderboardListingProps =
   | {
       /** PGC leaderboard type */
       type: "PGC";
@@ -54,6 +68,8 @@ type LeaderboardListingProps =
       member?: LeaderboardMember | null;
       /** Whether tournament hasn't started */
       isPreTournament?: boolean;
+      /** Optional champions for LittleFucker display */
+      champions?: ChampionLite[] | null;
     }
   | {
       /** PGA leaderboard type */
@@ -68,6 +84,8 @@ type LeaderboardListingProps =
       golfer: LeaderboardGolfer;
       /** Whether tournament hasn't started */
       isPreTournament?: boolean;
+      /** Optional champions (unused for PGA) */
+      champions?: ChampionLite[] | null;
     };
 
 /**
@@ -127,8 +145,15 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
             <PositionChange posChange={posChange} />
           )}
         </div>
-        <div className="col-span-4 place-self-center font-varela text-lg sm:col-span-10">
+        <div className="col-span-4 flex items-center justify-center place-self-center font-varela text-lg sm:col-span-10">
           {type === "PGA" ? golfer?.playerName : tourCard?.displayName}
+          {type === "PGC" && props.champions && tourCard && (
+            <LittleFucker
+              champions={props.champions.filter(
+                (c) => c.tourCardId === tourCard.id,
+              )}
+            />
+          )}
         </div>
         <div className="col-span-2 place-self-center font-varela text-base sm:col-span-5">
           {type !== "PGA" && team?.position === "CUT"
@@ -161,5 +186,31 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
         </div>
       )}
     </div>
+  );
+};
+
+// Wrapper component for PGC rows to fetch champions by member id
+export const PGCLeaderboardRow: React.FC<{
+  tournament: LeaderboardTournament;
+  tournamentGolfers: LeaderboardGolfer[];
+  userTourCard?: { id: string } | null;
+  team: LeaderboardTeam;
+  tourCard: LeaderboardTourCard;
+  member?: LeaderboardMember | null;
+  isPreTournament?: boolean;
+}> = ({ tournament, tournamentGolfers, userTourCard, team, tourCard, member, isPreTournament }) => {
+  const champions = useChampionsByMemberId(tourCard.memberId) as ChampionLite[] | null | undefined;
+  return (
+    <LeaderboardListing
+      type="PGC"
+      tournament={tournament}
+      tournamentGolfers={tournamentGolfers}
+      userTourCard={userTourCard}
+      team={team}
+      tourCard={tourCard}
+      member={member}
+      isPreTournament={isPreTournament}
+      champions={champions ?? null}
+    />
   );
 };

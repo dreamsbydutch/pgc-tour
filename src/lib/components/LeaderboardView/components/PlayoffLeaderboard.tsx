@@ -18,7 +18,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { LeaderboardListing } from "./LeaderboardListing";
+import { PGCLeaderboardRow } from "./LeaderboardListing";
 import { sortTeams } from "../utils";
 import type {
   TeamWithTourCard,
@@ -171,7 +171,6 @@ export const PlayoffLeaderboard: React.FC<PlayoffLeaderboardProps> = ({
 
   return (
     <div className="playoff-leaderboard">
-
       {/* Render filtered teams */}
       {filteredTeams.map((team) => {
         // Additional defensive check
@@ -184,14 +183,13 @@ export const PlayoffLeaderboard: React.FC<PlayoffLeaderboardProps> = ({
         }
 
         return (
-          <LeaderboardListing
+          <PGCLeaderboardRow
             key={`playoff-${team.id}`}
-            type="PGC"
             tournament={tournament}
             tournamentGolfers={golfers}
-            tourCard={team.tourCard}
-            userTourCard={tourCard}
+            userTourCard={tourCard ?? undefined}
             team={team}
+            tourCard={team.tourCard}
             member={member}
             isPreTournament={isPreTournament}
           />
