@@ -50,7 +50,7 @@ type ChampionLite = {
  * Props for LeaderboardListing component using discriminated union
  * This ensures proper typing based on the leaderboard type
  */
- type LeaderboardListingProps =
+type LeaderboardListingProps =
   | {
       /** PGC leaderboard type */
       type: "PGC";
@@ -198,8 +198,19 @@ export const PGCLeaderboardRow: React.FC<{
   tourCard: LeaderboardTourCard;
   member?: LeaderboardMember | null;
   isPreTournament?: boolean;
-}> = ({ tournament, tournamentGolfers, userTourCard, team, tourCard, member, isPreTournament }) => {
-  const champions = useChampionsByMemberId(tourCard.memberId) as ChampionLite[] | null | undefined;
+}> = ({
+  tournament,
+  tournamentGolfers,
+  userTourCard,
+  team,
+  tourCard,
+  member,
+  isPreTournament,
+}) => {
+  const champions = useChampionsByMemberId(tourCard.memberId) as
+    | ChampionLite[]
+    | null
+    | undefined;
   return (
     <LeaderboardListing
       type="PGC"
