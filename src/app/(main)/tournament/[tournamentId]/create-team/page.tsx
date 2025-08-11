@@ -3,7 +3,6 @@ import {
   getGolfersByTournament,
   getTeamByTournamentAndUser,
   getCurrentTourCard,
-  getNextTournament,
   getSeasonTournament,
 } from "@pgc-serverActions";
 import type { Golfer, Team } from "@prisma/client";

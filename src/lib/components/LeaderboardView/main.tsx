@@ -133,7 +133,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   useEffect(() => {
     // If we have data but no activeTour, force set one
     if (!loading && !error && props && toggleTours.length > 0 && !activeTour) {
-      const fallbackTour = defaultToggle || toggleTours[0]?.id || "pga";
+      const fallbackTour = defaultToggle ?? toggleTours[0]?.id ?? "pga";
       setActiveTour(fallbackTour);
     }
   }, [loading, error, props, toggleTours, activeTour, defaultToggle]);
@@ -142,7 +142,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   useEffect(() => {
     if (toggleTours.length > 0 && !activeTour) {
       const timeoutId = setTimeout(() => {
-        const fallbackTour = defaultToggle || toggleTours[0]?.id || "pga";
+        const fallbackTour = defaultToggle ?? toggleTours[0]?.id ?? "pga";
         setActiveTour(fallbackTour);
       }, 2000); // 2 second timeout
 

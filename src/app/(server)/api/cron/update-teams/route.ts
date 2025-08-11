@@ -11,13 +11,12 @@ import { NextResponse } from "next/server";
 import {
   loadCurrentTournament,
   loadTourCardsForSeason,
-  batchUpdateTeams,
   loadPlayoffCarryInMap,
   loadPlayoffEventIndex,
 } from "./core/service";
 import { buildTeamCalculations } from "./core/builder";
 
-export async function GET(request: Request) {
+export async function GET() {
   const start = Date.now();
   const timestamp = new Date().toISOString();
   try {

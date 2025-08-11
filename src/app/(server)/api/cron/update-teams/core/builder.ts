@@ -1,5 +1,5 @@
 import type { TournamentWithRelations, TeamCalculation } from "./types";
-import type { Team, Golfer, TourCard } from "@prisma/client";
+import type { Golfer, TourCard } from "@prisma/client";
 import { roundDecimal } from "./utils";
 import { getTeamGolfers, getActive, pickTopNForRound } from "./selection";
 import { avgOverPar, avgToday, avgThru } from "./aggregates";
@@ -39,12 +39,13 @@ function earliestTimeStr(
   return valid.sort()[0] ?? null;
 }
 
-function avgRawRound(
-  golfers: Golfer[],
-  roundKey: "roundOne" | "roundTwo" | "roundThree" | "roundFour",
-): number | null {
+type RoundKey = Extract<
+  keyof Golfer,
+  "roundOne" | "roundTwo" | "roundThree" | "roundFour"
+>;
+function avgRawRound(golfers: Golfer[], roundKey: RoundKey): number | null {
   const vals = golfers
-    .map((g) => (g as any)[roundKey] as number | null)
+    .map((g) => g[roundKey])
     .filter((v): v is number => typeof v === "number");
   if (!vals.length) return null;
   return vals.reduce((a, b) => a + b, 0) / vals.length;
@@ -103,10 +104,7 @@ export async function buildTeamCalculations(
       roundFourTeeTime: null,
     };
 
-    const teamGolfers = getTeamGolfers(
-      team as Team,
-      tournament.golfers as Golfer[],
-    );
+    const teamGolfers = getTeamGolfers(team, tournament.golfers);
     const active = getActive(teamGolfers);
 
     // Populate team tee times if source golfer tee times are available
@@ -172,12 +170,12 @@ export async function buildTeamCalculations(
           const tdy = avgToday(top5) ?? 0;
           result.score = roundDecimal(r1ov + r2ov + tdy);
         } else {
-          const r2ov = avgOverPar(teamGolfers, "roundTwo", par);
-          result.today = roundDecimal(r2ov);
+          const r2ovVal = avgOverPar(teamGolfers, "roundTwo", par);
+          result.today = roundDecimal(r2ovVal);
           result.thru = 18;
           const r1ov = avgOverPar(teamGolfers, "roundOne", par) ?? 0;
-          const r2v = avgOverPar(teamGolfers, "roundTwo", par) ?? 0;
-          result.score = roundDecimal(r1ov + r2v);
+          const r2ovNum = r2ovVal ?? 0;
+          result.score = roundDecimal(r1ov + r2ovNum);
         }
       } else if (r === 4 || r === 5) {
         result.roundOne = roundDecimal(avgRawRound(teamGolfers, "roundOne"));
@@ -204,8 +202,7 @@ export async function buildTeamCalculations(
             result.thru = 18;
             const r1ov = avgOverPar(teamGolfers, "roundOne", par) ?? 0;
             const r2ov = avgOverPar(teamGolfers, "roundTwo", par) ?? 0;
-            const r3v = avgOverPar(top5r3, "roundThree", par) ?? 0;
-            result.score = roundDecimal(r1ov + r2ov + r3v);
+            result.score = roundDecimal(r1ov + r2ov + (r3ov ?? 0));
           }
         } else if (r === 5) {
           const top5r4 = pickTopNForRound(active, 4, false, par, 5);
@@ -232,7 +229,7 @@ export async function buildTeamCalculations(
       // Gold: rank 1..30; Silver: rank 1..40. Tie-average across identical points.
       let startingStrokes = 0;
       if (evIdx === 1) {
-        const bracket = getTeamBracket(team as Team, tourCards);
+        const bracket = getTeamBracket(team, tourCards);
         const participantIds = new Set(
           (tournament.teams ?? []).map((t) => t.tourCardId),
         );
@@ -289,7 +286,7 @@ export async function buildTeamCalculations(
           wantLive,
           evIdx,
         );
-        const bracket = getTeamBracket(team as Team, tourCards);
+        const bracket = getTeamBracket(team, tourCards);
         const value =
           bracket === "gold" ? worst.gold.value : worst.silver.value;
         const thru = bracket === "gold" ? worst.gold.thru : worst.silver.thru;
@@ -298,8 +295,8 @@ export async function buildTeamCalculations(
 
       const rawRoundPost = (roundNum: 1 | 2 | 3 | 4): number | null => {
         const info = teamEligibleForRound(
-          team as Team,
-          tournament.golfers as Golfer[],
+          team,
+          tournament.golfers,
           evIdx,
           roundNum,
         );
@@ -313,7 +310,7 @@ export async function buildTeamCalculations(
             false,
             evIdx,
           );
-          const bracket = getTeamBracket(team as Team, tourCards);
+          const bracket = getTeamBracket(team, tourCards);
           const over =
             bracket === "gold" ? worst.gold.value : worst.silver.value;
           return (over ?? 0) + par;
@@ -323,7 +320,7 @@ export async function buildTeamCalculations(
             ? info.teamGolfers
             : pickTopNForRound(info.active, roundNum, false, par, n);
         const key = roundKeyFor(roundNum);
-        return avgRawRound(pool as Golfer[], key);
+        return avgRawRound(pool, key);
       };
 
       // Precompute completed-round over-par averages and raw averages (post semantics) for R1..R4
@@ -420,10 +417,11 @@ export async function buildTeamCalculations(
         if (evIdx === 3) {
           const payouts = tournament.tier?.payouts ?? [];
           const posStr = team.position ?? null;
-          const match = posStr ? posStr.match(/\d+/) : null;
+          const regex = /\d+/;
+          const match = posStr ? regex.exec(posStr) : null;
           const pos = match ? parseInt(match[0], 10) : NaN;
           if (!Number.isNaN(pos) && pos > 0) {
-            const bracket = getTeamBracket(team as Team, tourCards);
+            const bracket = getTeamBracket(team, tourCards);
             const baseIdx = pos - 1; // 0-based within bracket
             const idx = bracket === "gold" ? baseIdx : 75 + baseIdx;
             result.earnings = payouts[idx] ?? 0;
@@ -456,21 +454,19 @@ export async function buildTeamCalculations(
         (t) => playoffByTeamId.get(t.id) === bracket,
       );
       const withScore = bracketTeamsAll.filter(
-        (t) => typeof t.score === "number",
+        (t): t is (TeamCalculation & { id: number }) & { score: number } =>
+          typeof t.score === "number",
       );
 
       // Sort ascending by score (lower is better)
-      withScore.sort((a, b) => (a.score as number) - (b.score as number));
+      withScore.sort((a, b) => a.score - b.score);
 
       // Walk through sorted list and assign tie-aware positions
       let i = 0;
       while (i < withScore.length) {
-        const score = withScore[i]!.score as number;
+        const score = withScore[i]!.score;
         let j = i + 1;
-        while (
-          j < withScore.length &&
-          (withScore[j]!.score as number) === score
-        ) {
+        while (j < withScore.length && withScore[j]!.score === score) {
           j++;
         }
         const tieCount = j - i;

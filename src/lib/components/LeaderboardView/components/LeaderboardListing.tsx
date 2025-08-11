@@ -116,7 +116,7 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
   const posChange = getPositionChange(team, golfer, type);
   const shouldShowPositionChange =
     ((props.tournament?.currentRound ?? 0) === 2 &&
-      props.tournament?.livePlay) ||
+      props.tournament?.livePlay) ??
     (props.tournament?.currentRound ?? 0) >= 3;
   const shouldShowPositionChangeWithCutCheck =
     shouldShowPositionChange &&

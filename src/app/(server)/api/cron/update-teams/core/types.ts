@@ -4,7 +4,6 @@ import type {
   Tournament,
   Tier,
   Course,
-  TourCard,
   Tour,
 } from "@prisma/client";
 

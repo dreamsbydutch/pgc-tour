@@ -8,8 +8,18 @@ export type EventIndex = 1 | 2 | 3;
 export function getEventIndex(t: TournamentWithRelations): EventIndex {
   const name = (t.name ?? "").toLowerCase();
   const tierName = (t.tier?.name ?? "").toLowerCase();
-  if (/(event|playoff).*3/.test(name) || /3/.test(tierName)) return 3;
-  if (/(event|playoff).*2/.test(name) || /2/.test(tierName)) return 2;
+  const eventPos = (() => {
+    const e = name.indexOf("event");
+    const p = name.indexOf("playoff");
+    if (e === -1 && p === -1) return -1;
+    if (e === -1) return p;
+    if (p === -1) return e;
+    return Math.min(e, p);
+  })();
+  const pos3 = name.indexOf("3");
+  const pos2 = name.indexOf("2");
+  if ((eventPos !== -1 && pos3 > eventPos) || tierName.includes("3")) return 3;
+  if ((eventPos !== -1 && pos2 > eventPos) || tierName.includes("2")) return 2;
   return 1;
 }
 
@@ -67,7 +77,11 @@ export function computeTeamDailyContribution(
     const thru = avgThru(pool) ?? null;
     return { today, thru, overPar: today };
   }
-  const key =
+  type RoundKey = Extract<
+    keyof Golfer,
+    "roundOne" | "roundTwo" | "roundThree" | "roundFour"
+  >;
+  const key: RoundKey =
     round === 1
       ? "roundOne"
       : round === 2
@@ -75,7 +89,7 @@ export function computeTeamDailyContribution(
         : round === 3
           ? "roundThree"
           : "roundFour";
-  const overPar = avgOverPar(pool, key as any, par) ?? 0;
+  const overPar = avgOverPar(pool, key, par) ?? 0;
   return { today: overPar, thru: 18, overPar };
 }
 

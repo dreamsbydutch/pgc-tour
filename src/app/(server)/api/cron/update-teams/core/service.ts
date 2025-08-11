@@ -113,5 +113,5 @@ export async function loadPlayoffEventIndex(
     index = prior; // 0-based
   }
   const oneBased = index + 1;
-  return (oneBased <= 1 ? 1 : oneBased === 2 ? 2 : 3) as 1 | 2 | 3;
+  return oneBased <= 1 ? 1 : oneBased === 2 ? 2 : 3;
 }
