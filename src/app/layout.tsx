@@ -8,6 +8,7 @@ import { TRPCReactProvider } from "@pgc-trpcClient";
 import { ServiceWorkerRegistration } from "@pgc-components";
 import { LoadSeasonalData } from "@pgc-store";
 import { NavigationProvider } from "@pgc-components/Navigation";
+import { SignInButton } from "src/lib/components/Navigation";
 
 const varela = Varela({
   weight: ["400"],
@@ -72,7 +73,10 @@ export default async function RootLayout({
             <LoadSeasonalData />
             <NavigationProvider>
               <main className="mx-auto mb-24 mt-4 max-w-4xl lg:mb-8 lg:mt-20">
-                <div className="mx-1">{children}</div>
+                <div className="mx-1">
+                  {!user && <SignInButton />}
+                  {children}
+                </div>
               </main>
             </NavigationProvider>
           </AuthProvider>

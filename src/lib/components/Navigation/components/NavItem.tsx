@@ -71,19 +71,28 @@ export function NavItem({
     <Link
       href={href}
       className={cn(
-        "rounded-sm py-1 text-sm text-muted-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
-        {
-          "text-secondary-foreground": isActive,
-          "pointer-events-none opacity-75": isNavigating,
-        },
-        className,
+        "inline-flex h-[55px] items-center justify-center rounded-md text-sm",
       )}
       aria-label={ariaLabel}
       aria-current={isActive ? "page" : undefined}
       onClick={handleClick}
       tabIndex={0}
+      style={{ WebkitTapHighlightColor: "transparent" }}
     >
-      {children}
+      <div
+        className={cn(
+          "inline-flex h-[45px] items-center justify-center rounded-md px-2 text-sm",
+          isActive
+            ? "bg-gray-900 text-white"
+            : "bg-transparent text-gray-700 hover:bg-gray-900/10 hover:text-gray-900",
+          {
+            "pointer-events-none opacity-75": isNavigating,
+          },
+          className,
+        )}
+      >
+        {children}
+      </div>
     </Link>
   );
 }

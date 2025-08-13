@@ -64,15 +64,12 @@ export async function createTournamentGroups(
         context.currentTourney,
       );
       if (eventIndex > 1) {
-        const copyRes = await copyGolfersFromFirstPlayoff(
-          api,
-          context.currentTourney,
-        );
+        const copyRes = await copyFromFirstPlayoff(api, context.currentTourney);
         return {
           success: true,
           groupsCreated: copyRes.groupsCreated,
-          golfersProcessed: copyRes.totalProcessed,
-          message: `Copied ${copyRes.totalProcessed} golfers from first playoff event into ${context.currentTourney.name}`,
+          golfersProcessed: copyRes.golfersCopied,
+          message: `Copied ${copyRes.golfersCopied} golfers and ${copyRes.teamsCopied} teams from first playoff event into ${context.currentTourney.name}`,
         };
       }
     }
@@ -191,11 +188,15 @@ async function computePlayoffEventIndex(
   return oneBased <= 1 ? 1 : oneBased === 2 ? 2 : 3;
 }
 
-async function copyGolfersFromFirstPlayoff(
+async function copyFromFirstPlayoff(
   api: ReturnType<typeof createCaller>,
   current: CurrentTournament,
-): Promise<{ totalProcessed: number; groupsCreated: number }> {
-  // Find first playoff tournament in season for overlapping tours
+): Promise<{
+  golfersCopied: number;
+  groupsCreated: number;
+  teamsCopied: number;
+}> {
+  // Find first playoff tournament in season
   const season = await api.tournament.getBySeason({
     seasonId: current.seasonId,
   });
@@ -205,50 +206,30 @@ async function copyGolfersFromFirstPlayoff(
       (a, b) =>
         new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
     );
-
   const first = playoffEvents[0];
-  if (!first) {
-    // No playoff baseline; nothing to copy
-    return { totalProcessed: 0, groupsCreated: 0 };
-  }
+  if (!first) return { golfersCopied: 0, groupsCreated: 0, teamsCopied: 0 };
 
-  // Fetch golfers from the first playoff event
+  // 1) Copy golfers
   const baseGolfers = await api.golfer.getByTournament({
     tournamentId: first.id,
   });
-  if (!baseGolfers?.length) {
-    return { totalProcessed: 0, groupsCreated: 0 };
-  }
-
-  // Count distinct non-null groups
   const groupSet = new Set<number>();
-  for (const g of baseGolfers) {
+  const golfersToCopy = baseGolfers.map((g) => {
     if (typeof g.group === "number") groupSet.add(g.group);
-  }
-
-  // Prepare a typed payload to avoid `any` usage
-  type BaseGolferForCopy = {
-    apiId: number;
-    playerName: string;
-    group: number | null;
-    worldRank: number | null;
-    rating: number | null;
-    country: string | null;
-  };
-  const golfersToCopy: BaseGolferForCopy[] = baseGolfers.map((g) => ({
-    apiId: g.apiId,
-    playerName: g.playerName,
-    group: g.group ?? null,
-    worldRank: g.worldRank ?? null,
-    rating: g.rating ?? null,
-    country: g.country ?? null,
-  }));
-
-  let totalProcessed = 0;
+    return {
+      apiId: g.apiId,
+      playerName: g.playerName,
+      group: g.group ?? null,
+      worldRank: g.worldRank ?? null,
+      rating: g.rating ?? null,
+      country: g.country ?? null,
+    };
+  });
+  let golfersCopied = 0;
   await batchProcess(
     golfersToCopy,
     BATCH_SIZE,
-    async (g: BaseGolferForCopy) => {
+    async (g) => {
       await api.golfer.create({
         apiId: g.apiId,
         playerName: g.playerName,
@@ -258,12 +239,30 @@ async function copyGolfersFromFirstPlayoff(
         rating: g.rating ?? undefined,
         country: g.country ?? undefined,
       });
-      totalProcessed++;
+      golfersCopied++;
     },
     BATCH_DELAY,
   );
 
-  return { totalProcessed, groupsCreated: groupSet.size };
+  // 2) Copy teams
+  const baseTeams = await api.team.getByTournament({ tournamentId: first.id });
+  let teamsCopied = 0;
+  await batchProcess(
+    baseTeams,
+    BATCH_SIZE,
+    async (t) => {
+      // Create team with same tourCardId and golferIds in the new tournament
+      await api.team.create({
+        golferIds: t.golferIds,
+        tournamentId: current.id,
+        tourCardId: t.tourCardId,
+      });
+      teamsCopied++;
+    },
+    BATCH_DELAY,
+  );
+
+  return { golfersCopied, groupsCreated: groupSet.size, teamsCopied };
 }
 
 /**

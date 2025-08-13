@@ -116,14 +116,10 @@ export function PreTournamentContent({
         return false;
       }
 
-      // Additional rule: Only allow picks for the FIRST playoff event.
-      // If this is the 2nd or later playoff event, disable new picks.
-      if (
-        isPlayoff &&
-        playoffEventIndex >= 2 &&
-        existingTeam?.golferIds.length === 0
-      ) {
-        return false;
+      // Rule: For later playoff events, allow picks ONLY if team is not filled yet
+      if (isPlayoff && playoffEventIndex >= 2) {
+        const filled = (existingTeam?.golferIds.length ?? 0) > 0;
+        if (filled) return false; // hide create option when already filled
       }
 
       return true;
@@ -163,14 +159,14 @@ export function PreTournamentContent({
           </div>
         )}
 
-      {/* Show message when picks are closed for later playoff events */}
+      {/* Show message when picks are closed for later playoff events (team already filled) */}
       {isPlayoff &&
         playoffEventIndex >= 2 &&
-        existingTeam?.golferIds.length === 0 && (
+        (existingTeam?.golferIds.length ?? 0) > 0 && (
           <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-center">
             <p className="font-medium text-yellow-800">
-              Picks are closed for this playoff event. Teams carry over from the
-              first playoff.
+              Picks are closed for this playoff event. Your team carried over
+              from the first playoff.
             </p>
           </div>
         )}
