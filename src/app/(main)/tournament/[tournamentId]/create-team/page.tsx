@@ -86,6 +86,17 @@ export default async function CreateTeamPage({
     if (isFirstPlayoffTournament || hasEmptyTeam) {
       playoffTournamentIds = playoffTournaments.map((t) => t.id);
     }
+    if (!(existingTeam?.golferIds.length === 0))
+      return (
+        <div className="mx-auto max-w-6xl px-4 py-6 font-varela">
+          {/* Back button to parent tournament page */}
+          <LeaderboardHeader
+            focusTourney={tournament}
+            inputTournaments={allTournaments}
+          />
+          <BackButton />
+        </div>
+      );
   }
 
   const golfers = await getGolfersByTournament(params.tournamentId);

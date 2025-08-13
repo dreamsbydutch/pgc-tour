@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import type {
   Golfer,
   Member,
@@ -9,6 +9,7 @@ import type {
   Tournament,
 } from "@prisma/client";
 import { TeamPickForm } from "./TeamPickForm";
+import { SignInButton } from "../../Navigation";
 
 /**
  * Helper function to determine if a tournament is a playoff tournament
@@ -80,14 +81,16 @@ export function PreTournamentContent({
   playoffEventIndex = 0,
 }: PreTournamentContentProps) {
   // Memoize the time calculation to prevent constant re-calculations
-  const canPickTeam = useMemo(() => {
+  // Avoid hydration mismatch: initialize as false on server and compute after mount
+  const [isPreTournament, setIsPreTournament] = useState(false);
+  useEffect(() => {
     try {
       const msUntilStart =
         new Date(tournament.startDate).getTime() - Date.now();
-      return msUntilStart <= 4 * 24 * 60 * 60 * 1000;
+      setIsPreTournament(msUntilStart <= 4 * 24 * 60 * 60 * 1000);
     } catch (error) {
       console.warn("Error calculating team pick availability:", error);
-      return false;
+      setIsPreTournament(false);
     }
   }, [tournament.startDate]);
 
@@ -101,77 +104,37 @@ export function PreTournamentContent({
     [tourCard],
   );
 
-  // Determine if user can make picks
-  const canMakePicks = useMemo(() => {
-    try {
-      if (!canPickTeam || !tourCard || !member) return false;
-
-      // For playoff tournaments, check playoff eligibility
-      // Only apply this restriction if we have playoff data available
-      if (
-        isPlayoff &&
-        typeof tourCard.playoff === "number" &&
-        !isEligibleForPlayoffs
-      ) {
-        return false;
-      }
-
-      // Rule: For later playoff events, allow picks ONLY if team is not filled yet
-      if (isPlayoff && playoffEventIndex >= 2) {
-        const filled = (existingTeam?.golferIds.length ?? 0) > 0;
-        if (filled) return false; // hide create option when already filled
-      }
-
-      return true;
-    } catch (error) {
-      console.warn("Error determining pick eligibility:", error);
-      // Fallback to original behavior on error
-      return canPickTeam && !!tourCard && !!member;
-    }
-  }, [
-    canPickTeam,
-    tourCard,
-    member,
-    isPlayoff,
-    isEligibleForPlayoffs,
-    playoffEventIndex,
-    existingTeam?.golferIds.length,
-  ]);
+  // Simplified guards via clear boolean helpers
+  const hasEssentials = isPreTournament && !!tourCard && !!member;
+  const hasPlayoffData = typeof tourCard?.playoff === "number";
+  const isLaterPlayoff = isPlayoff && playoffEventIndex > 1;
+  const hasEmptyTeam = existingTeam?.golferIds?.length === 0;
 
   // Early return for basic cases to prevent hydration issues
   if (!tournament || !tournament.startDate) {
     return <div>Loading tournament information...</div>;
   }
 
-  return (
-    <div>
-      {/* Show ineligibility message for playoff tournaments */}
-      {canPickTeam &&
-        tourCard &&
-        member &&
-        isPlayoff &&
-        typeof tourCard.playoff === "number" &&
-        !isEligibleForPlayoffs && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
-            <p className="font-medium text-red-800">
-              You did not qualify for the 2025 PGC Playoffs
-            </p>
-          </div>
-        )}
-
-      {/* Show message when picks are closed for later playoff events (team already filled) */}
-      {isPlayoff &&
-        playoffEventIndex >= 2 &&
-        (existingTeam?.golferIds.length ?? 0) > 0 && (
-          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-center">
-            <p className="font-medium text-yellow-800">
-              Picks are closed for this playoff event. Your team carried over
-              from the first playoff.
-            </p>
-          </div>
-        )}
-
-      {canMakePicks && tourCard && member && (
+  if (!isPreTournament) {
+    return (
+      <div className="text-center">
+        Picks are closed for this tournament. Please check back later.
+      </div>
+    );
+  }
+  if (!hasEssentials) {
+    return (
+      <div className="text-center">
+        <p className="font-medium text-red-800">
+          Please sign in to pick a team.
+        </p>
+        <SignInButton />
+      </div>
+    );
+  }
+  if (!isPlayoff) {
+    return (
+      <div>
         <TeamPickForm
           tournament={tournament}
           tourCard={tourCard}
@@ -179,15 +142,59 @@ export function PreTournamentContent({
           existingTeam={existingTeam}
           teamGolfers={teamGolfers}
         />
-      )}
-      {!canMakePicks && !tourCard && member && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
-          <p className="font-medium text-red-800">
-            Tour Card was not found for {member?.firstname ?? ""}{" "}
-            {member?.lastname ?? ""}
-          </p>
-        </div>
-      )}
+      </div>
+    );
+  }
+  if (hasPlayoffData && !isEligibleForPlayoffs) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
+        <p className="font-medium text-red-800">
+          You did not qualify for the {tournament.tier?.name ?? "Playoffs"}.
+        </p>
+      </div>
+    );
+  }
+  if (!isLaterPlayoff) {
+    return (
+      <div>
+        <TeamPickForm
+          tournament={tournament}
+          tourCard={tourCard}
+          member={member}
+          existingTeam={existingTeam}
+          teamGolfers={teamGolfers}
+        />
+      </div>
+    );
+  }
+  if (hasEmptyTeam) {
+    return (
+      <div>
+        <TeamPickForm
+          tournament={tournament}
+          tourCard={tourCard}
+          member={member}
+          existingTeam={existingTeam}
+          teamGolfers={teamGolfers}
+        />
+      </div>
+    );
+  }
+  if (!hasEmptyTeam) {
+    return (
+      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-center">
+        <p className="font-medium text-yellow-800">
+          Picks are closed for this playoff event. Your team carried over from
+          the first playoff.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-lg border border-amber-200 bg-yellow-50 p-4 text-center">
+      <p className="font-medium text-yellow-800">
+        How did you even get here? This should never be displayed.
+      </p>
     </div>
   );
 }

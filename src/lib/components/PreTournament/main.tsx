@@ -102,10 +102,15 @@ export async function PreTournamentPage({
       />
       {playoffEventIndex > 0 && (
         <>
-        <div className="mt-4 text-center text-sm text-gray-500">
-          Playoff Event {playoffEventIndex} of 3
-        </div>
-        <LeaderboardView tournamentId={tournament.id} userId={member?.id} inputTour={tourCard.tourId} /></>
+          <div className="mt-4 text-center text-sm text-gray-500">
+            Playoff Event {playoffEventIndex} of 3
+          </div>
+          <LeaderboardView
+            tournamentId={tournament.id}
+            userId={member?.id}
+            inputTour={tourCard.tourId}
+          />
+        </>
       )}
     </>
   );
