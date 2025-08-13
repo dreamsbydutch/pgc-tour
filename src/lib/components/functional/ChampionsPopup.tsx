@@ -7,6 +7,7 @@ import {
   isNonEmptyString,
 } from "@pgc-utils";
 import { LittleFucker } from "@pgc-components";
+import type { ScheduleTournament } from "@pgc-serverActions";
 
 /**
  * ChampionsPopup Component
@@ -20,6 +21,7 @@ import { LittleFucker } from "@pgc-components";
  */
 export function ChampionsPopup({
   champs,
+  tournament,
 }: {
   champs: {
     id: number;
@@ -31,6 +33,7 @@ export function ChampionsPopup({
       logoUrl: string | null;
       startDate: Date;
       currentRound: number | null;
+      tier?: { name?: string };
     };
     tour: { id: string; name: string; logoUrl: string | null };
     golfers: {
@@ -40,9 +43,14 @@ export function ChampionsPopup({
       score: number;
     }[];
   }[];
+  tournament?: ScheduleTournament;
 }) {
-  const tournament = champs?.[0]?.tournament;
-  if (!hasItems(champs) || !tournament) return null;
+  if (
+    !hasItems(champs) ||
+    !tournament ||
+    tournament.tier?.name?.toLowerCase() === "playoff"
+  )
+    return null;
   return (
     <div className="mx-auto my-3 rounded-2xl bg-amber-100 bg-opacity-70 shadow-lg md:w-10/12 lg:w-7/12">
       <div className="mx-auto max-w-3xl p-2 text-center">

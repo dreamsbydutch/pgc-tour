@@ -29,6 +29,7 @@ import {
   BATCH_SIZE,
   BATCH_DELAY,
 } from "./types";
+import type { CurrentTournament } from "./types";
 
 /**
  * Main service function to create tournament groups
@@ -53,6 +54,27 @@ export async function createTournamentGroups(
         golfersProcessed: 0,
         message: validation.message,
       };
+    }
+
+    // Playoff logic: If current tournament is a playoff and not the first playoff event,
+    // copy golfers from the first playoff tournament of the season (overlapping tours).
+    if (context.currentTourney && isPlayoffTournament(context.currentTourney)) {
+      const eventIndex = await computePlayoffEventIndex(
+        api,
+        context.currentTourney,
+      );
+      if (eventIndex > 1) {
+        const copyRes = await copyGolfersFromFirstPlayoff(
+          api,
+          context.currentTourney,
+        );
+        return {
+          success: true,
+          groupsCreated: copyRes.groupsCreated,
+          golfersProcessed: copyRes.totalProcessed,
+          message: `Copied ${copyRes.totalProcessed} golfers from first playoff event into ${context.currentTourney.name}`,
+        };
+      }
     }
 
     // Process golfers and create groups
@@ -133,6 +155,115 @@ function validateTournamentState(context: GroupCreationContext): {
     shouldProceed: true,
     message: "Ready to create groups",
   };
+}
+
+/**
+ * Helpers: playoffs detection and indexing
+ */
+function isPlayoffTournament(t: CurrentTournament): boolean {
+  const name = t.tier?.name?.toLowerCase() ?? "";
+  return name.includes("playoff");
+}
+
+async function computePlayoffEventIndex(
+  api: ReturnType<typeof createCaller>,
+  current: CurrentTournament,
+): Promise<1 | 2 | 3> {
+  const season = await api.tournament.getBySeason({
+    seasonId: current.seasonId,
+  });
+  const events = (season ?? [])
+    .filter((t) => (t.tier?.name ?? "").toLowerCase().includes("playoff"))
+    .sort(
+      (a, b) =>
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+    );
+  if (!events.length) return 1;
+  const target = new Date(current.startDate).getTime();
+  let idx = events.findIndex((e) => new Date(e.startDate).getTime() === target);
+  if (idx === -1) {
+    const prior = events.filter(
+      (e) => new Date(e.startDate).getTime() < target,
+    ).length;
+    idx = prior; // 0-based
+  }
+  const oneBased = idx + 1;
+  return oneBased <= 1 ? 1 : oneBased === 2 ? 2 : 3;
+}
+
+async function copyGolfersFromFirstPlayoff(
+  api: ReturnType<typeof createCaller>,
+  current: CurrentTournament,
+): Promise<{ totalProcessed: number; groupsCreated: number }> {
+  // Find first playoff tournament in season for overlapping tours
+  const season = await api.tournament.getBySeason({
+    seasonId: current.seasonId,
+  });
+  const playoffEvents = (season ?? [])
+    .filter((t) => (t.tier?.name ?? "").toLowerCase().includes("playoff"))
+    .sort(
+      (a, b) =>
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+    );
+
+  const first = playoffEvents[0];
+  if (!first) {
+    // No playoff baseline; nothing to copy
+    return { totalProcessed: 0, groupsCreated: 0 };
+  }
+
+  // Fetch golfers from the first playoff event
+  const baseGolfers = await api.golfer.getByTournament({
+    tournamentId: first.id,
+  });
+  if (!baseGolfers?.length) {
+    return { totalProcessed: 0, groupsCreated: 0 };
+  }
+
+  // Count distinct non-null groups
+  const groupSet = new Set<number>();
+  for (const g of baseGolfers) {
+    if (typeof g.group === "number") groupSet.add(g.group);
+  }
+
+  // Prepare a typed payload to avoid `any` usage
+  type BaseGolferForCopy = {
+    apiId: number;
+    playerName: string;
+    group: number | null;
+    worldRank: number | null;
+    rating: number | null;
+    country: string | null;
+  };
+  const golfersToCopy: BaseGolferForCopy[] = baseGolfers.map((g) => ({
+    apiId: g.apiId,
+    playerName: g.playerName,
+    group: g.group ?? null,
+    worldRank: g.worldRank ?? null,
+    rating: g.rating ?? null,
+    country: g.country ?? null,
+  }));
+
+  let totalProcessed = 0;
+  await batchProcess(
+    golfersToCopy,
+    BATCH_SIZE,
+    async (g: BaseGolferForCopy) => {
+      await api.golfer.create({
+        apiId: g.apiId,
+        playerName: g.playerName,
+        tournamentId: current.id,
+        group: g.group ?? undefined,
+        worldRank: g.worldRank ?? undefined,
+        rating: g.rating ?? undefined,
+        country: g.country ?? undefined,
+      });
+      totalProcessed++;
+    },
+    BATCH_DELAY,
+  );
+
+  return { totalProcessed, groupsCreated: groupSet.size };
 }
 
 /**

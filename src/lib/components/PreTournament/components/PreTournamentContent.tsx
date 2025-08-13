@@ -62,11 +62,13 @@ export interface PreTournamentContentProps {
         playoff?: number;
       })
     | null;
-  existingTeam?: Pick<Team, "id"> | null;
+  existingTeam?: Pick<Team, "id" | "golferIds"> | null;
   teamGolfers?: Pick<
     Golfer,
     "id" | "playerName" | "worldRank" | "rating" | "group"
   >[];
+  // 0 for regular season or unknown, 1 for first playoff, 2/3 for later playoffs
+  playoffEventIndex?: number;
 }
 
 export function PreTournamentContent({
@@ -75,6 +77,7 @@ export function PreTournamentContent({
   tourCard,
   existingTeam,
   teamGolfers,
+  playoffEventIndex = 0,
 }: PreTournamentContentProps) {
   // Memoize the time calculation to prevent constant re-calculations
   const canPickTeam = useMemo(() => {
@@ -113,13 +116,31 @@ export function PreTournamentContent({
         return false;
       }
 
+      // Additional rule: Only allow picks for the FIRST playoff event.
+      // If this is the 2nd or later playoff event, disable new picks.
+      if (
+        isPlayoff &&
+        playoffEventIndex >= 2 &&
+        existingTeam?.golferIds.length === 0
+      ) {
+        return false;
+      }
+
       return true;
     } catch (error) {
       console.warn("Error determining pick eligibility:", error);
       // Fallback to original behavior on error
       return canPickTeam && !!tourCard && !!member;
     }
-  }, [canPickTeam, tourCard, member, isPlayoff, isEligibleForPlayoffs]);
+  }, [
+    canPickTeam,
+    tourCard,
+    member,
+    isPlayoff,
+    isEligibleForPlayoffs,
+    playoffEventIndex,
+    existingTeam?.golferIds.length,
+  ]);
 
   // Early return for basic cases to prevent hydration issues
   if (!tournament || !tournament.startDate) {
@@ -138,6 +159,18 @@ export function PreTournamentContent({
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
             <p className="font-medium text-red-800">
               You did not qualify for the 2025 PGC Playoffs
+            </p>
+          </div>
+        )}
+
+      {/* Show message when picks are closed for later playoff events */}
+      {isPlayoff &&
+        playoffEventIndex >= 2 &&
+        existingTeam?.golferIds.length === 0 && (
+          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-center">
+            <p className="font-medium text-yellow-800">
+              Picks are closed for this playoff event. Teams carry over from the
+              first playoff.
             </p>
           </div>
         )}

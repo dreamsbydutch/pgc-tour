@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Navigation data hook
  * Optimized with error handling, retry logic, and efficient caching

@@ -1,78 +1,83 @@
 import type { TournamentWithRelations, TeamCalculation } from "./types";
-import type { Golfer, TourCard } from "@prisma/client";
-import { roundDecimal } from "./utils";
-import { getTeamGolfers, getActive, pickTopNForRound } from "./selection";
-import { avgOverPar, avgToday, avgThru } from "./aggregates";
+import type { TourCard, Team } from "@prisma/client";
 import {
-  selectionCountFor,
-  computeTeamDailyContribution,
-  computeWorstOfDay,
-  getTeamBracket,
-  teamEligibleForRound,
+  earliestTimeStr,
+  isPlayoffTournament,
+  roundContrib,
+  roundDecimal,
+  rawTeamTotals,
+} from "./utils";
+import { getTeamGolfers, getActive } from "./selection";
+import { avgField } from "./aggregates";
+import {
   type EventIndex,
+  computeStartingStrokes,
 } from "./playoffs";
 
-// Simple playoff detection based on tier name
-function isPlayoffTournament(tournament: TournamentWithRelations): boolean {
-  const tierName = (tournament.tier?.name ?? "").toLowerCase();
-  const tourneyName = (tournament.name ?? "").toLowerCase();
-  return tierName.includes("playoff") || tourneyName.includes("playoff");
-}
-
-function earliestTimeStr(
-  times: Array<string | null | undefined>,
-): string | null {
-  const valid = times.filter((t): t is string => Boolean(t && t.trim().length));
-  if (!valid.length) return null;
-  // Prefer ISO/HH:MM parsing if possible; fallback to lexicographically smallest
-  try {
-    const parsed = valid
-      .map((t) => ({ t, d: new Date(t).getTime() }))
-      .filter(({ d }) => !Number.isNaN(d));
-    if (parsed.length === valid.length && parsed.length > 0) {
-      parsed.sort((a, b) => a.d - b.d);
-      return parsed[0]?.t ?? null;
-    }
-  } catch {
-    // ignore
-  }
-  return valid.sort()[0] ?? null;
-}
-
-type RoundKey = Extract<
-  keyof Golfer,
-  "roundOne" | "roundTwo" | "roundThree" | "roundFour"
->;
-function avgRawRound(golfers: Golfer[], roundKey: RoundKey): number | null {
-  const vals = golfers
-    .map((g) => g[roundKey])
-    .filter((v): v is number => typeof v === "number");
-  if (!vals.length) return null;
-  return vals.reduce((a, b) => a + b, 0) / vals.length;
-}
-
-function roundKeyFor(
-  n: 1 | 2 | 3 | 4,
-): "roundOne" | "roundTwo" | "roundThree" | "roundFour" {
-  return n === 1
-    ? "roundOne"
-    : n === 2
-      ? "roundTwo"
-      : n === 3
-        ? "roundThree"
-        : "roundFour";
-}
-
-// Local avg helper
-function avg(values: number[] | null): number | null {
-  if (!values || !values.length) return null;
-  return values.reduce((a, b) => a + b, 0) / values.length;
-}
-
+/**
+ * The build result is the list of per-team calculations paired with the team id,
+ * which is used downstream to persist back to the DB.
+ */
 export type BuildResult = {
   teams: (TeamCalculation & { id: number })[];
 };
 
+// DRY: Precompute per-round post contributions and raw averages for a team
+function precomputeTeamRounds(
+  team: Team,
+  tourCards: TourCard[],
+  tournament: TournamentWithRelations,
+  evIdx: EventIndex,
+  par: number,
+) {
+  const r1Post = roundContrib(
+    1,
+    team,
+    tourCards,
+    tournament,
+    evIdx,
+    par,
+    false,
+  );
+  const r2Post = roundContrib(
+    2,
+    team,
+    tourCards,
+    tournament,
+    evIdx,
+    par,
+    false,
+  );
+  const r3Post = roundContrib(
+    3,
+    team,
+    tourCards,
+    tournament,
+    evIdx,
+    par,
+    false,
+  );
+  const r4Post = roundContrib(
+    4,
+    team,
+    tourCards,
+    tournament,
+    evIdx,
+    par,
+    false,
+  );
+  const {
+    r1: r1Raw,
+    r2: r2Raw,
+    r3: r3Raw,
+    r4: r4Raw,
+  } = rawTeamTotals(team, tourCards, tournament, evIdx, par);
+  return { r1Post, r2Post, r3Post, r4Post, r1Raw, r2Raw, r3Raw, r4Raw };
+}
+
+/**
+ * Core calculation entry point for the update-teams job.
+ */
 export async function buildTeamCalculations(
   tournament: TournamentWithRelations,
   tourCards: TourCard[],
@@ -83,7 +88,9 @@ export async function buildTeamCalculations(
   const par = tournament.course.par;
   const live = Boolean(tournament.livePlay);
 
+  // Compute a result row for each team in the tournament snapshot
   const teams = tournament.teams.map((team) => {
+    // Initialize an empty result row with sane defaults
     const result: TeamCalculation & { id: number } = {
       id: team.id,
       round: tournament.currentRound ?? 1,
@@ -104,346 +111,173 @@ export async function buildTeamCalculations(
       roundFourTeeTime: null,
     };
 
+    // Gather convenience lists and derive active golfers (not CUT)
     const teamGolfers = getTeamGolfers(team, tournament.golfers);
     const active = getActive(teamGolfers);
 
-    // Populate team tee times if source golfer tee times are available
+    // Derive earliest team tee-times
     const r1Times = teamGolfers.map((g) => g.roundOneTeeTime);
     const r2Times = teamGolfers.map((g) => g.roundTwoTeeTime);
     const r3Times = teamGolfers.map((g) => g.roundThreeTeeTime);
     const r4Times = teamGolfers.map((g) => g.roundFourTeeTime);
     const r = (tournament.currentRound ?? 1) as 1 | 2 | 3 | 4 | 5;
-    // R1 and often R2 are known at tournament start
-    result.roundOneTeeTime = earliestTimeStr(r1Times);
-    result.roundTwoTeeTime = earliestTimeStr(r2Times) ?? result.roundTwoTeeTime;
-    // R3 known after R2 ends; set when data appears
+    result.roundOneTeeTime = earliestTimeStr(r1Times, 1);
+    result.roundTwoTeeTime =
+      earliestTimeStr(r2Times, 1) ?? result.roundTwoTeeTime;
     if (r >= 3) {
-      const t3 = earliestTimeStr(r3Times);
+      const t3 = earliestTimeStr(r3Times, 6);
       if (t3) result.roundThreeTeeTime = t3;
     }
-    // R4 known after R3 ends; set when data appears
     if (r >= 4) {
-      const t4 = earliestTimeStr(r4Times);
+      const t4 = earliestTimeStr(r4Times, 6);
       if (t4) result.roundFourTeeTime = t4;
     }
 
-    if (!isPlayoff) {
-      // Regular season
-      const r = tournament.currentRound ?? 1;
-      if (r === 1) {
-        if (live) {
-          result.today = roundDecimal(avgToday(teamGolfers) ?? null);
-          result.thru = roundDecimal(avgThru(teamGolfers) ?? null);
-          result.score = roundDecimal(
-            avg(teamGolfers.map((g) => g.score ?? 0)) ?? null,
-          );
-        }
-      } else if (r === 2) {
-        // roundOne is raw average of round one strokes across all 10
-        result.roundOne = roundDecimal(avgRawRound(teamGolfers, "roundOne"));
-        if (live) {
-          result.today = roundDecimal(avgToday(teamGolfers));
-          result.thru = roundDecimal(avgThru(teamGolfers));
-          const r1ov = avgOverPar(teamGolfers, "roundOne", par) ?? 0;
-          const tdy = avgToday(teamGolfers) ?? 0;
-          result.score = roundDecimal(r1ov + tdy);
-        } else {
-          const r1ov = avgOverPar(teamGolfers, "roundOne", par);
-          result.today = roundDecimal(r1ov);
-          result.thru = 18;
-          result.score = roundDecimal(r1ov);
-        }
-      } else if (r === 3) {
-        result.roundOne = roundDecimal(avgRawRound(teamGolfers, "roundOne"));
-        result.roundTwo = roundDecimal(avgRawRound(teamGolfers, "roundTwo"));
-        if (active.length < 5) {
-          // Regular season cut
-          result.position = "CUT";
-          return result;
-        }
-        if (live) {
-          const top5 = pickTopNForRound(active, 3, true, par, 5);
-          result.today = roundDecimal(avgToday(top5));
-          result.thru = roundDecimal(avgThru(top5));
-          const r1ov = avgOverPar(teamGolfers, "roundOne", par) ?? 0;
-          const r2ov = avgOverPar(teamGolfers, "roundTwo", par) ?? 0;
-          const tdy = avgToday(top5) ?? 0;
-          result.score = roundDecimal(r1ov + r2ov + tdy);
-        } else {
-          const r2ovVal = avgOverPar(teamGolfers, "roundTwo", par);
-          result.today = roundDecimal(r2ovVal);
-          result.thru = 18;
-          const r1ov = avgOverPar(teamGolfers, "roundOne", par) ?? 0;
-          const r2ovNum = r2ovVal ?? 0;
-          result.score = roundDecimal(r1ov + r2ovNum);
-        }
-      } else if (r === 4 || r === 5) {
-        result.roundOne = roundDecimal(avgRawRound(teamGolfers, "roundOne"));
-        result.roundTwo = roundDecimal(avgRawRound(teamGolfers, "roundTwo"));
-        if (active.length < 5) {
-          result.position = "CUT";
-          return result;
-        }
-        const top5r3 = pickTopNForRound(active, 3, false, par, 5);
-        result.roundThree = roundDecimal(avgRawRound(top5r3, "roundThree"));
-        if (r === 4) {
-          if (live) {
-            const top5r4 = pickTopNForRound(active, 4, true, par, 5);
-            result.today = roundDecimal(avgToday(top5r4));
-            result.thru = roundDecimal(avgThru(top5r4));
-            const r1ov = avgOverPar(teamGolfers, "roundOne", par) ?? 0;
-            const r2ov = avgOverPar(teamGolfers, "roundTwo", par) ?? 0;
-            const r3ov = avgOverPar(top5r3, "roundThree", par) ?? 0;
-            const tdy = avgToday(top5r4) ?? 0;
-            result.score = roundDecimal(r1ov + r2ov + r3ov + tdy);
-          } else {
-            const r3ov = avgOverPar(top5r3, "roundThree", par);
-            result.today = roundDecimal(r3ov);
-            result.thru = 18;
-            const r1ov = avgOverPar(teamGolfers, "roundOne", par) ?? 0;
-            const r2ov = avgOverPar(teamGolfers, "roundTwo", par) ?? 0;
-            result.score = roundDecimal(r1ov + r2ov + (r3ov ?? 0));
-          }
-        } else if (r === 5) {
-          const top5r4 = pickTopNForRound(active, 4, false, par, 5);
-          result.roundFour = roundDecimal(avgRawRound(top5r4, "roundFour"));
-          result.today = roundDecimal(avgOverPar(top5r4, "roundFour", par));
-          result.thru = 18;
-          const r1ov = avgOverPar(teamGolfers, "roundOne", par) ?? 0;
-          const r2ov = avgOverPar(teamGolfers, "roundTwo", par) ?? 0;
-          const r3ov = avgOverPar(top5r3, "roundThree", par) ?? 0;
-          const r4ov = avgOverPar(top5r4, "roundFour", par) ?? 0;
-          result.score = roundDecimal(r1ov + r2ov + r3ov + r4ov);
-        }
-      }
-    } else {
-      // Playoffs per README: starting strokes (Event 1), carry-in (Events 2/3),
-      // per-round selection counts, no CUTs, worst-of-day fallback within bracket.
-      const r = (tournament.currentRound ?? 1) as 1 | 2 | 3 | 4 | 5;
-      const evIdx: EventIndex = eventIndex ?? 1;
+    // Unified logic: evIdx=0 for regular season; 1..3 for playoffs
+    const evIdx: EventIndex = isPlayoff ? (eventIndex ?? 1) : 0;
 
-      // Determine carry-in from provided map (prior event total), default 0 when missing
-      const carryIn = carryInMap?.[team.tourCardId] ?? 0;
+    // Compute base: starting strokes (event 1) + carry-in (events 2/3), playoffs only
+    let base = 0;
+    if (isPlayoff) {
+      const startingStrokes =
+        evIdx === 1 ? computeStartingStrokes(team, tournament, tourCards) : 0;
+      const carryIn = evIdx >= 2 ? (carryInMap?.[team.tourCardId] ?? 0) : 0;
+      base = (startingStrokes ?? 0) + carryIn;
+    }
 
-      // Starting strokes for Event 1 only, rank within this event by tourCard.points
-      // Gold: rank 1..30; Silver: rank 1..40. Tie-average across identical points.
-      let startingStrokes = 0;
-      if (evIdx === 1) {
-        const bracket = getTeamBracket(team, tourCards);
-        const participantIds = new Set(
-          (tournament.teams ?? []).map((t) => t.tourCardId),
-        );
-        const bracketFlag = bracket === "gold" ? 1 : 2;
-        const group = tourCards.filter(
-          (c) => participantIds.has(c.id) && (c.playoff ?? 0) === bracketFlag,
-        );
-        const sorted = [...group].sort(
-          (a, b) => (b.points ?? 0) - (a.points ?? 0),
-        );
-        const me = sorted.find((c) => c.id === team.tourCardId);
-        if (me) {
-          const myPts = me.points ?? 0;
-          const better = sorted.filter((c) => (c.points ?? 0) > myPts).length;
-          const tied = sorted.filter((c) => (c.points ?? 0) === myPts).length;
-          const pointsArr = tournament.tier?.points ?? [];
-          // Gold uses positions 1..30 from the shared strokes table
-          // Silver uses positions 1..40 from the same strokes table
-          const strokes =
-            bracket === "gold"
-              ? pointsArr.slice(0, 30)
-              : pointsArr.slice(0, 40);
-          if (tied > 1) {
-            const slice = strokes.slice(better, better + tied);
-            const sum = slice.reduce((a, b) => a + (b ?? 0), 0);
-            const avg = tied > 0 ? sum / tied : 0;
-            startingStrokes = Math.round(avg * 10) / 10;
-          } else {
-            startingStrokes = strokes[better] ?? 0;
-          }
-        } else {
-          startingStrokes = 0;
-        }
-      }
+    // Precompute round values
+    const { r1Post, r2Post, r3Post, r4Post, r1Raw, r2Raw, r3Raw, r4Raw } =
+      precomputeTeamRounds(team, tourCards, tournament, evIdx, par);
 
-      const base = (startingStrokes ?? 0) + carryIn;
+    // Regular season CUT check
+    if (evIdx === 0 && r >= 3 && active.length < 5) {
+      result.position = "CUT";
+      result.roundOne = roundDecimal(r1Raw);
+      result.roundTwo = roundDecimal(r2Raw);
+      return result;
+    }
 
-      // Helpers to compute per-round contributions and raw round averages (post) with fallback
-      const roundContrib = (roundNum: 1 | 2 | 3 | 4, wantLive: boolean) => {
-        const contrib = computeTeamDailyContribution(
+    // Round-by-round scoreboard
+    if (r === 1) {
+      if (live) {
+        const liveC = roundContrib(
+          1,
           team,
-          tournament.golfers,
-          roundNum,
-          wantLive,
+          tourCards,
+          tournament,
           evIdx,
           par,
+          true,
         );
-        if (contrib) return contrib;
-        // Fallback: worst-of-day within the team's bracket.
-        const worst = computeWorstOfDay(
-          tournament,
-          tourCards,
-          roundNum,
-          wantLive,
-          evIdx,
-        );
-        const bracket = getTeamBracket(team, tourCards);
-        const value =
-          bracket === "gold" ? worst.gold.value : worst.silver.value;
-        const thru = bracket === "gold" ? worst.gold.thru : worst.silver.thru;
-        return { today: value, thru: thru, overPar: value };
-      };
-
-      const rawRoundPost = (roundNum: 1 | 2 | 3 | 4): number | null => {
-        const info = teamEligibleForRound(
+        result.today = roundDecimal(liveC.today);
+        result.thru = roundDecimal(liveC.thru ?? null);
+        result.score =
+          evIdx === 0
+            ? roundDecimal(avgField(teamGolfers, "score") ?? null)
+            : roundDecimal(base + liveC.today);
+      }
+    } else if (r === 2) {
+      result.roundOne = roundDecimal(r1Raw);
+      if (live) {
+        const liveC = roundContrib(
+          2,
           team,
-          tournament.golfers,
+          tourCards,
+          tournament,
           evIdx,
-          roundNum,
+          par,
+          true,
         );
-        const n = selectionCountFor(evIdx, roundNum);
-        if (!info.eligible) {
-          // worst-of-day overPar -> convert to raw by adding par
-          const worst = computeWorstOfDay(
-            tournament,
-            tourCards,
-            roundNum,
-            false,
-            evIdx,
-          );
-          const bracket = getTeamBracket(team, tourCards);
-          const over =
-            bracket === "gold" ? worst.gold.value : worst.silver.value;
-          return (over ?? 0) + par;
-        }
-        const pool =
-          n >= 10
-            ? info.teamGolfers
-            : pickTopNForRound(info.active, roundNum, false, par, n);
-        const key = roundKeyFor(roundNum);
-        return avgRawRound(pool, key);
-      };
-
-      // Precompute completed-round over-par averages and raw averages (post semantics) for R1..R4
-      const r1Post = roundContrib(1, false);
-      const r2Post = roundContrib(2, false);
-      const r3Post = roundContrib(3, false);
-      const r4Post = roundContrib(4, false);
-      const r1Raw = rawRoundPost(1);
-      const r2Raw = rawRoundPost(2);
-      const r3Raw = rawRoundPost(3);
-      const r4Raw = rawRoundPost(4);
-
-      if (r === 1) {
-        if (live) {
-          const liveC = roundContrib(1, true);
-          result.today = roundDecimal(liveC.today);
-          result.thru = roundDecimal(liveC.thru ?? null);
-          result.score = roundDecimal(base + liveC.today);
-        }
-      } else if (r === 2) {
-        // Set round 1 raw value
-        result.roundOne = roundDecimal(r1Raw);
-        if (live) {
-          const liveC = roundContrib(2, true);
-          result.today = roundDecimal(liveC.today);
-          result.thru = roundDecimal(liveC.thru ?? null);
-          result.score = roundDecimal(
-            base + (r1Post.overPar ?? 0) + liveC.today,
-          );
-        } else {
-          result.today = roundDecimal(r1Post.overPar);
-          result.thru = 18;
-          result.score = roundDecimal(base + (r1Post.overPar ?? 0));
-        }
-      } else if (r === 3) {
-        result.roundOne = roundDecimal(r1Raw);
-        result.roundTwo = roundDecimal(r2Raw);
-        if (live) {
-          const liveC = roundContrib(3, true);
-          result.today = roundDecimal(liveC.today);
-          result.thru = roundDecimal(liveC.thru ?? null);
-          result.score = roundDecimal(
-            base + (r1Post.overPar ?? 0) + (r2Post.overPar ?? 0) + liveC.today,
-          );
-        } else {
-          result.today = roundDecimal(r2Post.overPar);
-          result.thru = 18;
-          result.score = roundDecimal(
-            base + (r1Post.overPar ?? 0) + (r2Post.overPar ?? 0),
-          );
-        }
-      } else if (r === 4) {
-        result.roundOne = roundDecimal(r1Raw);
-        result.roundTwo = roundDecimal(r2Raw);
-        result.roundThree = roundDecimal(r3Raw);
-        if (live) {
-          const liveC = roundContrib(4, true);
-          result.today = roundDecimal(liveC.today);
-          result.thru = roundDecimal(liveC.thru ?? null);
-          result.score = roundDecimal(
-            base +
-              (r1Post.overPar ?? 0) +
-              (r2Post.overPar ?? 0) +
-              (r3Post.overPar ?? 0) +
-              liveC.today,
-          );
-        } else {
-          result.today = roundDecimal(r3Post.overPar);
-          result.thru = 18;
-          result.score = roundDecimal(
-            base +
-              (r1Post.overPar ?? 0) +
-              (r2Post.overPar ?? 0) +
-              (r3Post.overPar ?? 0),
-          );
-        }
-      } else if (r === 5) {
-        // Post tournament
-        result.roundOne = roundDecimal(r1Raw);
-        result.roundTwo = roundDecimal(r2Raw);
-        result.roundThree = roundDecimal(r3Raw);
-        result.roundFour = roundDecimal(r4Raw);
-        result.today = roundDecimal(r4Post.overPar);
+        result.today = roundDecimal(liveC.today);
+        result.thru = roundDecimal(liveC.thru ?? null);
+        result.score = roundDecimal(base + (r1Post.overPar ?? 0) + liveC.today);
+      } else {
+        result.today = roundDecimal(r1Post.overPar);
         result.thru = 18;
+        result.score = roundDecimal(base + (r1Post.overPar ?? 0));
+      }
+    } else if (r === 3) {
+      result.roundOne = roundDecimal(r1Raw);
+      result.roundTwo = roundDecimal(r2Raw);
+      if (live) {
+        const liveC = roundContrib(
+          3,
+          team,
+          tourCards,
+          tournament,
+          evIdx,
+          par,
+          true,
+        );
+        result.today = roundDecimal(liveC.today);
+        result.thru = roundDecimal(liveC.thru ?? null);
+        result.score = roundDecimal(
+          base + (r1Post.overPar ?? 0) + (r2Post.overPar ?? 0) + liveC.today,
+        );
+      } else {
+        result.today = roundDecimal(r2Post.overPar);
+        result.thru = 18;
+        result.score = roundDecimal(
+          base + (r1Post.overPar ?? 0) + (r2Post.overPar ?? 0),
+        );
+      }
+    } else if (r === 4) {
+      result.roundOne = roundDecimal(r1Raw);
+      result.roundTwo = roundDecimal(r2Raw);
+      result.roundThree = roundDecimal(r3Raw);
+      if (live) {
+        const liveC = roundContrib(
+          4,
+          team,
+          tourCards,
+          tournament,
+          evIdx,
+          par,
+          true,
+        );
+        result.today = roundDecimal(liveC.today);
+        result.thru = roundDecimal(liveC.thru ?? null);
         result.score = roundDecimal(
           base +
             (r1Post.overPar ?? 0) +
             (r2Post.overPar ?? 0) +
             (r3Post.overPar ?? 0) +
-            (r4Post.overPar ?? 0),
+            liveC.today,
         );
-
-        // Apply Event 3 payouts based on final bracket position
-        if (evIdx === 3) {
-          const payouts = tournament.tier?.payouts ?? [];
-          const posStr = team.position ?? null;
-          const regex = /\d+/;
-          const match = posStr ? regex.exec(posStr) : null;
-          const pos = match ? parseInt(match[0], 10) : NaN;
-          if (!Number.isNaN(pos) && pos > 0) {
-            const bracket = getTeamBracket(team, tourCards);
-            const baseIdx = pos - 1; // 0-based within bracket
-            const idx = bracket === "gold" ? baseIdx : 75 + baseIdx;
-            result.earnings = payouts[idx] ?? 0;
-          } else {
-            result.earnings = 0;
-          }
-        }
+      } else {
+        result.today = roundDecimal(r3Post.overPar);
+        result.thru = 18;
+        result.score = roundDecimal(
+          base +
+            (r1Post.overPar ?? 0) +
+            (r2Post.overPar ?? 0) +
+            (r3Post.overPar ?? 0),
+        );
       }
-
-      // Policy: Event 1 & 2 -> points=0, earnings=0 unless Event 3 case above
-      result.points = 0;
-      if (evIdx !== 3) {
-        result.earnings = 0;
-      }
+    } else if (r === 5) {
+      result.roundOne = roundDecimal(r1Raw);
+      result.roundTwo = roundDecimal(r2Raw);
+      result.roundThree = roundDecimal(r3Raw);
+      result.roundFour = roundDecimal(r4Raw);
+      result.today = roundDecimal(r4Post.overPar);
+      result.thru = 18;
+      result.score = roundDecimal(
+        base +
+          (r1Post.overPar ?? 0) +
+          (r2Post.overPar ?? 0) +
+          (r3Post.overPar ?? 0) +
+          (r4Post.overPar ?? 0),
+      );
     }
 
     return result;
   });
 
-  // For playoffs: assign positions within playoff bracket (gold/silver)
+  // ===================== PLAYOFF BRACKET POSITION ASSIGNMENT =====================
+  // For playoffs only, we assign bracket-relative positions (gold/silver) based on score.
+  let playoffByTeamId: Map<number, number | undefined> | undefined;
   if (isPlayoff) {
-    const playoffByTeamId = new Map<number, number | undefined>();
+    playoffByTeamId = new Map<number, number | undefined>();
     for (const t of tournament.teams) {
       const tc = tourCards.find((c) => c.id === t.tourCardId);
       playoffByTeamId.set(t.id, tc?.playoff ?? 0);
@@ -451,24 +285,20 @@ export async function buildTeamCalculations(
 
     const assignBracketPositions = (bracket: 1 | 2) => {
       const bracketTeamsAll = teams.filter(
-        (t) => playoffByTeamId.get(t.id) === bracket,
+        (t) => playoffByTeamId!.get(t.id) === bracket,
       );
       const withScore = bracketTeamsAll.filter(
         (t): t is (TeamCalculation & { id: number }) & { score: number } =>
           typeof t.score === "number",
       );
 
-      // Sort ascending by score (lower is better)
       withScore.sort((a, b) => a.score - b.score);
 
-      // Walk through sorted list and assign tie-aware positions
       let i = 0;
       while (i < withScore.length) {
         const score = withScore[i]!.score;
         let j = i + 1;
-        while (j < withScore.length && withScore[j]!.score === score) {
-          j++;
-        }
+        while (j < withScore.length && withScore[j]!.score === score) j++;
         const tieCount = j - i;
         const label = (tieCount > 1 ? "T" : "") + (i + 1);
         for (let k = i; k < j; k++) {
@@ -480,8 +310,91 @@ export async function buildTeamCalculations(
       }
     };
 
-    assignBracketPositions(1); // Gold
-    assignBracketPositions(2); // Silver
+    assignBracketPositions(1);
+    assignBracketPositions(2);
+  }
+
+  // ===================== TIE-AWARE POINTS AND EARNINGS =====================
+  const pointsArr = tournament.tier?.points ?? [];
+  const payoutsArr = tournament.tier?.payouts ?? [];
+  const parsePos = (pos?: string | null) => {
+    const m = pos ? /\d+/.exec(pos) : null;
+    return m ? parseInt(m[0], 10) : null;
+  };
+  const avgAwards = (arr: number[], start: number, count: number) => {
+    let sum = 0;
+    for (let i = 0; i < count; i++) sum += arr[start + i] ?? 0;
+    return count > 0 ? sum / count : 0;
+  };
+  const awardPointsAndEarningsGroup = (
+    group: (TeamCalculation & { id: number })[],
+    offset: number,
+  ) => {
+    const byPos = new Map<number, (TeamCalculation & { id: number })[]>();
+    for (const t of group) {
+      const n = parsePos(t.position ?? null);
+      if (!n || n <= 0) continue;
+      const arr = byPos.get(n) ?? [];
+      arr.push(t);
+      byPos.set(n, arr);
+    }
+    const positions = Array.from(byPos.keys()).sort((a, b) => a - b);
+    for (const p of positions) {
+      const tiedTeams = byPos.get(p)!;
+      const count = tiedTeams.length;
+      const baseIdx = p - 1 + offset;
+      const pts = avgAwards(pointsArr, baseIdx, count);
+      const pay = avgAwards(payoutsArr, baseIdx, count);
+      for (const t of tiedTeams) {
+        t.points = roundDecimal(pts);
+        t.earnings = roundDecimal(pay);
+      }
+    }
+  };
+  const awardEarningsGroupOnly = (
+    group: (TeamCalculation & { id: number })[],
+    offset: number,
+  ) => {
+    const byPos = new Map<number, (TeamCalculation & { id: number })[]>();
+    for (const t of group) {
+      const n = parsePos(t.position ?? null);
+      if (!n || n <= 0) continue;
+      const arr = byPos.get(n) ?? [];
+      arr.push(t);
+      byPos.set(n, arr);
+    }
+    const positions = Array.from(byPos.keys()).sort((a, b) => a - b);
+    for (const p of positions) {
+      const tiedTeams = byPos.get(p)!;
+      const count = tiedTeams.length;
+      const baseIdx = p - 1 + offset;
+      const pay = avgAwards(payoutsArr, baseIdx, count);
+      for (const t of tiedTeams) {
+        // Playoffs: points remain 0
+        t.points = 0;
+        t.earnings = roundDecimal(pay);
+      }
+    }
+  };
+
+  if (isPlayoff) {
+    // Reset playoff points to 0 for all teams
+    for (const t of teams) t.points = 0;
+    const isFinalPlayoff =
+      (eventIndex ?? 1) === 3 && (tournament.currentRound ?? 1) === 5;
+    if (isFinalPlayoff) {
+      const bracket1 = teams.filter((t) => playoffByTeamId!.get(t.id) === 1);
+      const bracket2 = teams.filter((t) => playoffByTeamId!.get(t.id) === 2);
+      // Gold uses payouts 1-75 (offset 0), Silver uses 76-150 (offset 75)
+      awardEarningsGroupOnly(bracket1, 0);
+      awardEarningsGroupOnly(bracket2, 75);
+    } else {
+      // Not the final playoff event or not completed: ensure earnings are 0
+      for (const t of teams) t.earnings = 0;
+    }
+  } else {
+    // Regular season: always compute both points and earnings
+    awardPointsAndEarningsGroup(teams, 0);
   }
 
   return { teams };

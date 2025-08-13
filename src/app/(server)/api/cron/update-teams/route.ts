@@ -16,6 +16,7 @@ import {
   batchUpdateTeams,
 } from "./core/service";
 import { buildTeamCalculations } from "./core/builder";
+import { isPlayoffTournament } from "src/lib/components/LeaderboardView/utils";
 
 export async function GET() {
   const start = Date.now();
@@ -37,19 +38,22 @@ export async function GET() {
       );
     }
 
-    // Preload carry-in map for playoffs
-    const carryInMap = await loadPlayoffCarryInMap(
-      tournament.seasonId,
-      tournament.startDate,
-      tournament.tours.map((t) => t.id),
-    );
+    // Load playoff-specific data only when needed
+    let carryInMap: Record<string, number> | undefined;
+    let eventIndex: 0 | 1 | 2 | 3 = 0;
+    if (isPlayoffTournament(tournament)) {
+      carryInMap = await loadPlayoffCarryInMap(
+        tournament.seasonId,
+        tournament.startDate,
+        tournament.tours.map((t) => t.id),
+      );
 
-    // Determine event index (1,2,3) by startDate ordering
-    const eventIndex = await loadPlayoffEventIndex(
-      tournament.seasonId,
-      tournament.startDate,
-      tournament.tours.map((t) => t.id),
-    );
+      eventIndex = await loadPlayoffEventIndex(
+        tournament.seasonId,
+        tournament.startDate,
+        tournament.tours.map((t) => t.id),
+      );
+    }
 
     const { teams } = await buildTeamCalculations(
       tournament,
@@ -71,7 +75,7 @@ export async function GET() {
           tournamentName: tournament.name,
           currentRound: tournament.currentRound ?? 1,
           livePlay: tournament.livePlay ?? false,
-          eventIndex,
+          eventIndex: eventIndex ?? null,
         },
       },
       {

@@ -31,7 +31,7 @@ export default async function Home() {
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
-      <ChampionsPopup champs={recentChamps} />
+      <ChampionsPopup champs={recentChamps} tournament={pastTournament} />
       <HomePageListingsContainer activeView="leaderboard" />
       <TournamentCountdown tourney={nextTournament ?? undefined} />
       <HomePageListingsContainer activeView="standings" />

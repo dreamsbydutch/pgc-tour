@@ -31,14 +31,22 @@ export interface GroupCreationRequestBody {
   tournamentId?: string;
 }
 
+// Minimal tournament info required for playoff detection and copying
+export type CurrentTournament = {
+  id: string;
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  seasonId: string;
+  tier?: { id: string; name: string } | null;
+  tours?: { id: string }[];
+};
+
 // Group creation context
 export interface GroupCreationContext {
   rankingsData: DatagolfRankingInput;
   fieldData: DatagolfFieldInput;
-  currentTourney: {
-    id: string;
-    name: string;
-  } | null;
+  currentTourney: CurrentTournament | null;
   existingGolfers: unknown[];
 }
 

@@ -105,7 +105,7 @@ export const ruleList: {
     rules: [
       {
         ruleText:
-          "At the end of the regular season, the top 15 players on each tour qualify for the PGC Gold Playoff tournament, and the next 15 players on each tour qualify for the PGC Silver Playoff Tournament.",
+          "At the end of the regular season, the top 15 players on each tour qualify for the PGC Gold Playoff tournament, and the next 20 players on each tour qualify for the PGC Silver Playoff Tournament.",
       },
       {
         ruleText:
@@ -121,6 +121,10 @@ export const ruleList: {
       },
       {
         ruleText:
+          "Each team will start the playoffs with strokes based on their position in the PGC standings. Scores will then carry over throughout the three playoff tournaments.",
+      },
+      {
+        ruleText:
           "The FedEx-St. Jude Championship runs just like a normal tournament.",
       },
       {
@@ -130,9 +134,6 @@ export const ruleList: {
       {
         ruleText:
           "The TOUR Championship only counts your top 3 golfers in each of the 4 rounds.",
-        details: [
-          "The TOUR Championship only counts a golfer's actual score and not their starting strokes awarded by the PGA.",
-        ],
       },
     ],
   },
