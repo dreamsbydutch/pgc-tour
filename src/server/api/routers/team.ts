@@ -198,6 +198,8 @@ export const teamRouter = createTRPCRouter({
         golferIds: z.array(z.number()),
         tournamentId: z.string(),
         tourCardId: z.string(),
+        score: z.number().optional(),
+        position: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

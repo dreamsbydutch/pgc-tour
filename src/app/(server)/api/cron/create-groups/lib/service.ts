@@ -256,6 +256,8 @@ async function copyFromFirstPlayoff(
         golferIds: t.golferIds,
         tournamentId: current.id,
         tourCardId: t.tourCardId,
+        score: t.score ?? undefined,
+        position: t.position ?? undefined,
       });
       teamsCopied++;
     },
