@@ -133,13 +133,18 @@ export function LeaderboardHeader({
         {/* Tier Information Popover */}
         <Popover>
           <PopoverTrigger className="col-span-7 row-span-1 text-center font-varela text-2xs xs:text-xs sm:text-sm md:text-base lg:text-lg">
-            {focusTourney.tier?.name} Tournament -{" "}
-            {`1st Place: ${focusTourney.tier?.points[0] ?? 0} pts, ${formatMoney(focusTourney.tier?.payouts[0] ?? 0)}`}
+            {focusTourney.tier &&
+              (focusTourney.tier.name.toLowerCase() === "playoff"
+                ? `${focusTourney.tier?.name} Tournament - 1st Place: ${formatMoney(focusTourney.tier?.payouts[0] ?? 0)}`
+                : `${focusTourney.tier?.name} Tournament - 1st Place: ${focusTourney.tier?.points[0] ?? 0} pts, ${formatMoney(focusTourney.tier?.payouts[0] ?? 0)}`)}
           </PopoverTrigger>
           <PopoverContent>
-            {focusTourney.tier && (
-              <PointsAndPayoutsPopover tier={focusTourney.tier} />
-            )}
+            {focusTourney.tier &&
+              (focusTourney.tier.name.toLowerCase() === "playoff" ? (
+                <PlayoffPopover tier={focusTourney.tier} />
+              ) : (
+                <PointsAndPayoutsPopover tier={focusTourney.tier} />
+              ))}
           </PopoverContent>
         </Popover>
       </div>
@@ -178,6 +183,43 @@ function PointsAndPayoutsPopover({
         {tier.points.slice(0, 35).map((points) => (
           <div key={"points-" + points} className="text-xs">
             {formatNumber(points, 1)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function PlayoffPopover({
+  tier,
+}: {
+  tier: { points: number[]; payouts: number[] };
+}) {
+  return (
+    <div className="grid grid-cols-3 text-center">
+      {/* Rank Column */}
+      <div className="mx-auto flex w-fit flex-col">
+        <div className="text-base font-semibold text-white">Rank</div>
+        {tier.payouts.slice(0, 30).map((_, i) => (
+          <div key={i} className="text-xs">
+            {formatRank(i + 1)}
+          </div>
+        ))}
+      </div>
+      {/* Payouts Column */}
+      <div className="mx-auto flex w-fit flex-col">
+        <div className="text-base font-semibold">Gold</div>
+        {tier.payouts.slice(0, 30).map((payout) => (
+          <div key={"gold-" + payout} className="text-xs">
+            {formatMoney(payout)}
+          </div>
+        ))}
+      </div>
+      {/* Points Column */}
+      <div className="mx-auto flex w-fit flex-col">
+        <div className="text-base font-semibold">Silver</div>
+        {tier.payouts.slice(75, 105).map((payout) => (
+          <div key={"silver-" + payout} className="text-xs">
+            {formatMoney(payout)}
           </div>
         ))}
       </div>
