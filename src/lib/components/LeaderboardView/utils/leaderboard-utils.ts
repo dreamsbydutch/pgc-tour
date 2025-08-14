@@ -358,12 +358,28 @@ export const getDefaultToggle = (
 export const getGolferRowClass = (
   team: { round: number | null },
   golfer: { position: string | null },
+  tournament: { name: string },
   i: number,
 ): string => {
   const classes = [];
 
-  if ((team.round ?? 0) >= 3 && i === 4)
+  if (tournament.name === "TOUR Championship") {
+    if (i === 2) classes.push("border-b border-gray-700");
+    if (i === 9) classes.push("border-b border-gray-700");
+    if (isPlayerCut(golfer.position)) classes.push("text-gray-400");
+
+    return classes.join(" ");
+  }
+  if (tournament.name === "BMW Championship") {
+    if (i === 4) classes.push("border-b border-gray-700");
+    if (i === 9) classes.push("border-b border-gray-700");
+    if (isPlayerCut(golfer.position)) classes.push("text-gray-400");
+
+    return classes.join(" ");
+  }
+  if ((team.round ?? 0) >= 3 && i === 4) {
     classes.push("border-b border-gray-700");
+  }
   if (i === 9) classes.push("border-b border-gray-700");
   if (isPlayerCut(golfer.position)) classes.push("text-gray-400");
 

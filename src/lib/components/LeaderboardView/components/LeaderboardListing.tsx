@@ -181,7 +181,7 @@ export const LeaderboardListing: React.FC<LeaderboardListingProps> = (
           {type === "PGA" ? (
             <PGADropdown golfer={golfer!} userTeam={team} />
           ) : (
-            <TeamGolfersTable team={team!} teamGolfers={tournamentGolfers} />
+            <TeamGolfersTable team={team!} teamGolfers={tournamentGolfers} tournament={tournament} />
           )}
         </div>
       )}

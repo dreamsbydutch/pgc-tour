@@ -12,7 +12,7 @@ import {
 import { Table, TableRow } from "src/lib/components/functional/ui";
 import { getSortedTeamGolfers, getGolferRowClass, isPlayerCut } from "../utils";
 import { CountryFlagDisplay, GolferStatsGrid } from "./UIComponents";
-import type { LeaderboardGolfer, LeaderboardTeam } from "../utils/types";
+import type { LeaderboardGolfer, LeaderboardTeam, LeaderboardTournament } from "../utils/types";
 
 // ================= PGA DROPDOWN =================
 
@@ -80,7 +80,8 @@ export const GolferScoreCell: React.FC<{
 export const TeamGolfersTable: React.FC<{
   team: LeaderboardTeam;
   teamGolfers: LeaderboardGolfer[] | undefined;
-}> = ({ team, teamGolfers }) => {
+  tournament: LeaderboardTournament;
+}> = ({ team, teamGolfers, tournament }) => {
   const sortedGolfers = [
     ...(getSortedTeamGolfers(
       team,
@@ -115,7 +116,7 @@ export const TeamGolfersTable: React.FC<{
       {sortedGolfers.map((golfer, i) => (
         <TableRow
           key={golfer.id}
-          className={getGolferRowClass(team, golfer, i)}
+          className={getGolferRowClass(team, golfer, tournament, i)}
         >
           <td className="px-1 text-xs">{golfer.position}</td>
           <td className="whitespace-nowrap px-1 text-sm">
