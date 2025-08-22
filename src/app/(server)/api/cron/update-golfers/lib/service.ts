@@ -108,6 +108,7 @@ export async function updateAllGolfersOptimized(
       teams,
     );
 
+  console.log(existingGolfers.filter((a) => a.round === 1));
   // Step 5: Update tournament status
   const tournamentUpdated = await updateTournamentStatus(
     tournament,

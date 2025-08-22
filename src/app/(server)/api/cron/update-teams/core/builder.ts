@@ -9,10 +9,7 @@ import {
 } from "./utils";
 import { getTeamGolfers, getActive } from "./selection";
 import { avgField } from "./aggregates";
-import {
-  type EventIndex,
-  computeStartingStrokes,
-} from "./playoffs";
+import { type EventIndex, computeStartingStrokes } from "./playoffs";
 
 /**
  * The build result is the list of per-team calculations paired with the team id,
@@ -152,8 +149,8 @@ export async function buildTeamCalculations(
     // Regular season CUT check
     if (evIdx === 0 && r >= 3 && active.length < 5) {
       result.position = "CUT";
-      result.roundOne = roundDecimal(r1Raw);
-      result.roundTwo = roundDecimal(r2Raw);
+      result.roundOne = roundDecimal(r1Raw, 1);
+      result.roundTwo = roundDecimal(r2Raw, 1);
       return result;
     }
 
@@ -169,15 +166,15 @@ export async function buildTeamCalculations(
           par,
           true,
         );
-        result.today = roundDecimal(liveC.today);
-        result.thru = roundDecimal(liveC.thru ?? null);
+        result.today = roundDecimal(liveC.today, 1);
+        result.thru = roundDecimal(liveC.thru ?? null, 1);
         result.score =
           evIdx === 0
-            ? roundDecimal(avgField(teamGolfers, "score") ?? null)
-            : roundDecimal(base + liveC.today);
+            ? roundDecimal(avgField(teamGolfers, "score") ?? null, 1)
+            : roundDecimal(base + liveC.today, 1);
       }
     } else if (r === 2) {
-      result.roundOne = roundDecimal(r1Raw);
+      result.roundOne = roundDecimal(r1Raw, 1);
       if (live) {
         const liveC = roundContrib(
           2,
@@ -188,17 +185,20 @@ export async function buildTeamCalculations(
           par,
           true,
         );
-        result.today = roundDecimal(liveC.today);
-        result.thru = roundDecimal(liveC.thru ?? null);
-        result.score = roundDecimal(base + (r1Post.overPar ?? 0) + liveC.today);
+        result.today = roundDecimal(liveC.today, 1);
+        result.thru = roundDecimal(liveC.thru ?? null, 1);
+        result.score = roundDecimal(
+          base + (r1Post.overPar ?? 0) + liveC.today,
+          1,
+        );
       } else {
-        result.today = roundDecimal(r1Post.overPar);
+        result.today = roundDecimal(r1Post.overPar, 1);
         result.thru = 18;
-        result.score = roundDecimal(base + (r1Post.overPar ?? 0));
+        result.score = roundDecimal(base + (r1Post.overPar ?? 0), 1);
       }
     } else if (r === 3) {
-      result.roundOne = roundDecimal(r1Raw);
-      result.roundTwo = roundDecimal(r2Raw);
+      result.roundOne = roundDecimal(r1Raw, 1);
+      result.roundTwo = roundDecimal(r2Raw, 1);
       if (live) {
         const liveC = roundContrib(
           3,
@@ -209,22 +209,24 @@ export async function buildTeamCalculations(
           par,
           true,
         );
-        result.today = roundDecimal(liveC.today);
-        result.thru = roundDecimal(liveC.thru ?? null);
+        result.today = roundDecimal(liveC.today, 1);
+        result.thru = roundDecimal(liveC.thru ?? null, 1);
         result.score = roundDecimal(
           base + (r1Post.overPar ?? 0) + (r2Post.overPar ?? 0) + liveC.today,
+          1,
         );
       } else {
-        result.today = roundDecimal(r2Post.overPar);
+        result.today = roundDecimal(r2Post.overPar, 1);
         result.thru = 18;
         result.score = roundDecimal(
           base + (r1Post.overPar ?? 0) + (r2Post.overPar ?? 0),
+          1,
         );
       }
     } else if (r === 4) {
-      result.roundOne = roundDecimal(r1Raw);
-      result.roundTwo = roundDecimal(r2Raw);
-      result.roundThree = roundDecimal(r3Raw);
+      result.roundOne = roundDecimal(r1Raw, 1);
+      result.roundTwo = roundDecimal(r2Raw, 1);
+      result.roundThree = roundDecimal(r3Raw, 1);
       if (live) {
         const liveC = roundContrib(
           4,
@@ -235,31 +237,33 @@ export async function buildTeamCalculations(
           par,
           true,
         );
-        result.today = roundDecimal(liveC.today);
-        result.thru = roundDecimal(liveC.thru ?? null);
+        result.today = roundDecimal(liveC.today, 1);
+        result.thru = roundDecimal(liveC.thru ?? null, 1);
         result.score = roundDecimal(
           base +
             (r1Post.overPar ?? 0) +
             (r2Post.overPar ?? 0) +
             (r3Post.overPar ?? 0) +
             liveC.today,
+          1,
         );
       } else {
-        result.today = roundDecimal(r3Post.overPar);
+        result.today = roundDecimal(r3Post.overPar, 1);
         result.thru = 18;
         result.score = roundDecimal(
           base +
             (r1Post.overPar ?? 0) +
             (r2Post.overPar ?? 0) +
             (r3Post.overPar ?? 0),
+          1,
         );
       }
     } else if (r === 5) {
-      result.roundOne = roundDecimal(r1Raw);
-      result.roundTwo = roundDecimal(r2Raw);
-      result.roundThree = roundDecimal(r3Raw);
-      result.roundFour = roundDecimal(r4Raw);
-      result.today = roundDecimal(r4Post.overPar);
+      result.roundOne = roundDecimal(r1Raw, 1);
+      result.roundTwo = roundDecimal(r2Raw, 1);
+      result.roundThree = roundDecimal(r3Raw, 1);
+      result.roundFour = roundDecimal(r4Raw, 1);
+      result.today = roundDecimal(r4Post.overPar, 1);
       result.thru = 18;
       result.score = roundDecimal(
         base +
@@ -267,6 +271,7 @@ export async function buildTeamCalculations(
           (r2Post.overPar ?? 0) +
           (r3Post.overPar ?? 0) +
           (r4Post.overPar ?? 0),
+        1,
       );
     }
 
