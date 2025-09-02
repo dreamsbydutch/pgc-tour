@@ -49,7 +49,9 @@ export const UserCollectForm: React.FC<UserCollectFormProps> = (props) => {
   );
 
   const updateMember = api.member.update.useMutation();
-  const { tourCard, member, champions } = props;
+  // Use the latest member data from the query after submit
+  const { tourCard, champions } = props;
+  const member = memberQuery.data ?? props.member;
   // tRPC React mutation hook for creating transactions
   const createTransaction = api.transaction.create.useMutation();
   const [eTransfer, setETransfer] = useState(0);
@@ -152,9 +154,8 @@ export const UserCollectForm: React.FC<UserCollectFormProps> = (props) => {
         account: member.account - totalTransactionAmount,
       });
     }
-    setSubmitting(false);
-    // Refetch member/account data to update balance
     await memberQuery.refetch();
+    setSubmitting(false);
   };
 
   return (
