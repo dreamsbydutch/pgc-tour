@@ -140,6 +140,7 @@ async function updateTourCardPositions(
       const position =
         (samePointsCount > 1 ? "T" : "") + (betterPointsCount + 1);
 
+      // Update the tour card
       await api.tourCard.update({
         id: calculation.id,
         position: position,

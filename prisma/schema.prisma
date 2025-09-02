@@ -226,6 +226,7 @@ model Transactions {
   seasonId        String
   description     String
   amount          Float
+  paid            Boolean         @default(false)
   transactionType TransactionType
 
   @@map("transactions")

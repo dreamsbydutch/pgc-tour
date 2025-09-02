@@ -94,7 +94,7 @@ export const tournamentRouter = createTRPCRouter({
   getInfo: publicProcedure.query(async ({ ctx }) => {
     const now = new Date();
 
-    const [current, next] = await Promise.all([
+    const [current, next, previous] = await Promise.all([
       ctx.db.tournament.findFirst({
         where: {
           startDate: { lte: now },
@@ -119,11 +119,24 @@ export const tournamentRouter = createTRPCRouter({
         },
         orderBy: { startDate: "asc" },
       }),
+      ctx.db.tournament.findFirst({
+        where: {
+          endDate: { lt: now },
+        },
+        include: {
+          course: true,
+          season: true,
+          tier: true,
+          tours: true,
+        },
+        orderBy: { endDate: "desc" },
+      }),
     ]);
 
     return {
       current: current ? transformTournamentDates(current) : null,
       next: next ? transformTournamentDates(next) : null,
+      previous: previous ? transformTournamentDates(previous) : null,
     };
   }),
 

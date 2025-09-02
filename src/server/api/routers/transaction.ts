@@ -44,6 +44,7 @@ export const transactionRouter = createTRPCRouter({
         description: z.string(),
         amount: z.number(),
         transactionType: z.nativeEnum(TransactionType),
+        paid: z.boolean().default(false),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -59,6 +60,7 @@ export const transactionRouter = createTRPCRouter({
         description: z.string().optional(),
         amount: z.number().optional(),
         transactionType: z.nativeEnum(TransactionType).optional(),
+        paid: z.boolean().default(false),
       }),
     )
     .mutation(async ({ ctx, input }) => {

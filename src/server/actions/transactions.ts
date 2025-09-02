@@ -1,3 +1,4 @@
+
 "use server";
 
 import { api } from "@pgc-trpcServer";
@@ -49,5 +50,17 @@ export async function processPayment(transaction: Transactions) {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
+  }
+}
+/**
+ * Get all transactions for a user
+ */
+export async function getUserTransactions(userId: string) {
+  try {
+    const transactions = await api.transaction.getByUser({ userId });
+    return transactions;
+  } catch (error) {
+    console.error("Error fetching user transactions:", error);
+    return [];
   }
 }

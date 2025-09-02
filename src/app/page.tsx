@@ -2,14 +2,18 @@ import Link from "next/link";
 import {
   ChampionsPopup,
   LeagueSchedule,
-  TournamentCountdown,
+  // TournamentCountdown,
 } from "@pgc-components";
 import {
   getCurrentSchedule,
+  getCurrentTourCard,
   getRecentChampions,
   getToursBySeason,
+  getUserChampions,
 } from "@pgc-serverActions";
 import { HomePageListingsContainer } from "@pgc-components/HomePageListings";
+import { UserCollectForm } from "src/lib/components/functional/UserCollectForm";
+import { getMemberFromHeaders } from "@pgc-auth";
 
 export default async function Home() {
   const schedule = await getCurrentSchedule();
@@ -22,8 +26,13 @@ export default async function Home() {
   const recentChamps = pastTournament
     ? await getRecentChampions(pastTournament, tours)
     : [];
-  const nextTournament = schedule.tournaments.find(
-    (t) => (t.currentRound ?? 0) <= 1 && !t.livePlay,
+  // const nextTournament = schedule.tournaments.find(
+  //   (t) => (t.currentRound ?? 0) <= 1 && !t.livePlay,
+  // );
+  const tourCard = await getCurrentTourCard();
+  const member = await getMemberFromHeaders();
+  const champions = (await getUserChampions(member?.id ?? ""))?.filter(
+    (c) => tourCard && c.tournament.startDate.getFullYear() === 2025,
   );
 
   return (
@@ -31,9 +40,14 @@ export default async function Home() {
       <h1 className="py-4 text-center font-yellowtail text-6xl md:text-7xl">
         PGC Tour Clubhouse
       </h1>
+      <UserCollectForm
+        tourCard={tourCard}
+        member={member}
+        champions={champions}
+      />
       <ChampionsPopup champs={recentChamps} tournament={pastTournament} />
       <HomePageListingsContainer activeView="leaderboard" />
-      <TournamentCountdown tourney={nextTournament ?? undefined} />
+      {/* <TournamentCountdown tourney={nextTournament ?? undefined} /> */}
       <HomePageListingsContainer activeView="standings" />
       {/* <TourCardForm /> */}
       <LeagueSchedule tournaments={schedule.tournaments} />

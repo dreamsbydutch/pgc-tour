@@ -34,6 +34,10 @@ export default function TournamentIndexPage() {
       router.replace(`/tournament/${tournamentInfo.next.id}`);
       return;
     }
+    if (tournamentInfo?.previous?.id) {
+      router.replace(`/tournament/${tournamentInfo.previous.id}`);
+      return;
+    }
 
     // If we have data but no tournaments
     if (tournamentInfo && !tournamentInfo.current && !tournamentInfo.next) {

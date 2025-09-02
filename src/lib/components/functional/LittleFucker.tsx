@@ -26,7 +26,7 @@ export function LittleFucker({
           currentRound: number | null;
         };
       }[]
-    | null;
+    | null | undefined;
   /**
    * Whether to display the tournament year below the trophy icon
    */

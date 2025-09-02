@@ -48,6 +48,7 @@ export type CurrentScheduleResult = {
 export async function getCurrentSchedule(): Promise<CurrentScheduleResult> {
   // Get the current season
   const season = await db.season.findFirst({
+    where: { year: new Date().getFullYear() },
     orderBy: { year: "desc" },
   });
   if (!season) return { tournaments: [], season: null };
