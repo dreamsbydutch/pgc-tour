@@ -303,7 +303,7 @@ export const UserCollectForm: React.FC<UserCollectFormProps> = (props) => {
               type="button"
               id="buyInToggle"
               aria-pressed={buyInChecked}
-              disabled={remaining < 100 && !buyInChecked}
+              disabled={!buyInChecked}
               onClick={() => setBuyInChecked(!buyInChecked)}
               className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${buyInChecked ? "bg-primary" : "bg-gray-300"} ${remaining < 100 && !buyInChecked ? "cursor-not-allowed opacity-50" : ""}`}
             >
