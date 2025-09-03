@@ -48,6 +48,17 @@ export const UserCollectForm: React.FC<UserCollectFormProps> = (props) => {
     { enabled: !!props.member?.id },
   );
 
+  const transactions = api.transaction.getByUser
+    .useQuery(
+      { userId: props.member?.id ?? "" },
+      { enabled: !!props.member?.id },
+    )
+    .data?.filter(
+      (a) =>
+        a.transactionType === "TourCardFee" &&
+        a.seasonId === "cm4w910dl000adx98dfjv9sdf",
+    );
+
   const updateMember = api.member.update.useMutation();
   // Use the latest member data from the query after submit
   const { tourCard, champions } = props;
@@ -303,7 +314,7 @@ export const UserCollectForm: React.FC<UserCollectFormProps> = (props) => {
               type="button"
               id="buyInToggle"
               aria-pressed={buyInChecked}
-              disabled={!buyInChecked}
+              disabled={(transactions?.length ?? 0) > 0 && !buyInChecked}
               onClick={() => setBuyInChecked(!buyInChecked)}
               className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${buyInChecked ? "bg-primary" : "bg-gray-300"} ${remaining < 100 && !buyInChecked ? "cursor-not-allowed opacity-50" : ""}`}
             >
